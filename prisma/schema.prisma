@@ -17,14 +17,15 @@ model NetworkSite {
   latitude    Float
   longitude   Float
   altitude    Float    @default(0)
-  frequency   String   @default("")    // e.g., "900MHz", "2100MHz", "1800MHz", "3500MHz"
-  bandwidth   Float    @default(0)      // MHz
+  frequency   String   @default("")
+  bandwidth   Float    @default(0)
   maxCapacity Int      @default(0)
-  vendor      String   @default("")    // Ericsson, Huawei, Nokia, ZTE
+  vendor      String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   kpiMetrics  KpiMetric[]
   alerts      Alert[]
+  anomalies   AnomalyEvent[]
 }
 
 model KpiMetric {
@@ -33,25 +34,25 @@ model KpiMetric {
   site        NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
   technology  String
   timestamp   DateTime    @default(now())
-  rssi        Float?      // Received Signal Strength Indicator (dBm)
-  rsrp        Float?      // Reference Signal Received Power (dBm) - 4G/5G
-  rsrq        Float?      // Reference Signal Received Quality (dB) - 4G/5G
-  sinr        Float?      // Signal to Interference plus Noise Ratio (dB)
-  rscp        Float?      // Received Signal Code Power (dBm) - 3G
-  ecno        Float?      // Ec/N0 (dB) - 3G
-  rxlev       Float?      // RX Level (dBm) - 2G
-  cqichannel  Float?      // CQI (0-15) - 4G
-  downloadThroughput Float?  // Mbps
-  uploadThroughput   Float?  // Mbps
-  latency      Float?      // ms
-  jitter       Float?      // ms
-  packetLoss   Float?      // percentage
-  availability Float?      // percentage
+  rssi        Float?
+  rsrp        Float?
+  rsrq        Float?
+  sinr        Float?
+  rscp        Float?
+  ecno        Float?
+  rxlev       Float?
+  cqichannel  Float?
+  downloadThroughput Float?
+  uploadThroughput   Float?
+  latency      Float?
+  jitter       Float?
+  packetLoss   Float?
+  availability Float?
   activeUsers  Int?        
-  handoverSuccessRate Float? // percentage
-  dropRate     Float?      // percentage
-  blockedCallRate     Float? // percentage
-  prbUtilization     Float? // percentage - 4G/5G
+  handoverSuccessRate Float?
+  dropRate     Float?
+  blockedCallRate     Float?
+  prbUtilization     Float?
   createdAt   DateTime    @default(now())
 
   @@index([siteId])
@@ -62,11 +63,11 @@ model KpiMetric {
 model AlertRule {
   id          String   @id @default(cuid())
   name        String
-  technology  String   // 2G, 3G, 4G, 5G, ALL
-  metric      String   // e.g., "rssi", "rsrp", "downloadThroughput"
-  condition   String   // "lt", "gt", "eq", "lte", "gte"
+  technology  String
+  metric      String
+  condition   String
   threshold   Float
-  severity    String   @default("warning") // critical, warning, info
+  severity    String   @default("warning")
   enabled     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -84,7 +85,7 @@ model Alert {
   value       Float
   threshold   Float
   condition   String
-  severity    String    // critical, warning, info
+  severity    String
   message     String
   acknowledged Boolean  @default(false)
   resolvedAt  DateTime?
@@ -101,11 +102,11 @@ model OptimizationLog {
   technology  String
   siteId      String?
   siteName    String?
-  category    String   // coverage, capacity, handover, interference, parameter
+  category    String
   issue       String
   recommendation String
-  impact      String   // high, medium, low
-  status      String   @default("pending") // pending, implemented, dismissed
+  impact      String
+  status      String   @default("pending")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -124,10 +125,60 @@ model NetworkParameter {
   minRange    String?
   maxRange    String?
   description String
-  category    String   @default("general") // rf, power, handover, capacity
+  category    String   @default("general")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([technology])
   @@index([category])
+}
+
+// --- ENTERPRISE-GRADE ADDITIONS ---
+
+model SLATarget {
+  id            String   @id @default(cuid())
+  technology    String
+  metric        String   // availability, dropRate, latency, handoverSuccessRate, prbUtilization
+  targetValue   Float    // e.g., 99.5 for availability %, 50 for latency ms
+  condition     String   // gte for availability, lte for latency/drop
+  severity      String   @default("warning") // breach severity
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AnomalyEvent {
+  id            String      @id @default(cuid())
+  siteId        String?
+  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology    String
+  metric        String
+  actualValue   Float
+  expectedValue Float
+  zScore        Float      // statistical deviation
+  severity      String      // critical, major, minor
+  status        String      @default("detected") // detected, investigating, resolved, false_positive
+  description   String
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([severity])
+  @@index([status])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  entityType  String   // parameter, alert, site, anomaly
+  entityId    String?
+  action      String   // create, update, delete, acknowledge, resolve
+  oldValue    String?
+  newValue    String?
+  description String
+  technology  String?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType])
+  @@index([createdAt])
 }
