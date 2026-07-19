@@ -215,9 +215,9 @@ export default function MonitoringView() {
                       <TableCell className="text-xs">{site.avgDownloadThroughput.toFixed(1)}</TableCell>
                       <TableCell className="text-xs">{site.avgUploadThroughput.toFixed(1)}</TableCell>
                       <TableCell className="text-xs">{site.avgLatency.toFixed(1)}</TableCell>
-                      <TableCell className="text-xs">{(site.avgAvailability * 100).toFixed(1)}%</TableCell>
+                      <TableCell className="text-xs">{site.avgAvailability.toFixed(1)}%</TableCell>
                       <TableCell className="text-xs">{Math.round(site.avgActiveUsers)}</TableCell>
-                      <TableCell className="text-xs">{(site.avgDropRate * 100).toFixed(2)}%</TableCell>
+                      <TableCell className="text-xs">{site.avgDropRate.toFixed(2)}%</TableCell>
                       <TableCell className="text-xs">{site.avgSinr?.toFixed(1) || 'N/A'}</TableCell>
                     </TableRow>
                   ))}

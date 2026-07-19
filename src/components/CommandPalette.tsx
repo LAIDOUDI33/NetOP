@@ -31,6 +31,7 @@ import {
   Brain,
   ArrowLeftRight,
   AlertTriangle,
+  Search,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -46,6 +47,7 @@ const NAV_COMMANDS: { view: ViewType; label: string; icon: React.ComponentType<{
   { view: 'sla', label: 'SLA Dashboard', icon: Shield },
   { view: 'anomaly', label: 'Anomaly Detection', icon: Brain },
   { view: 'correlation', label: 'Correlation Analysis', icon: ArrowLeftRight },
+  { view: 'rca', label: 'Root Cause Analysis', icon: Search },
 ];
 
 export function CommandPalette() {

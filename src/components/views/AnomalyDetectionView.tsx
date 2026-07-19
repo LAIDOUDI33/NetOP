@@ -30,38 +30,51 @@ import {
 } from '@/lib/constants';
 import type { Technology, AlertSeverity } from '@/types';
 
-// ─── Types ────────────────────────────────────────────────────────────
-type AnomalyStatus = 'investigating' | 'resolved' | 'false_positive';
+// ─── Types matching the API response ───────────────────────────────────
+type AnomalySeverity = 'critical' | 'major' | 'minor';
+type AnomalyStatus = 'detected' | 'investigating' | 'resolved' | 'false_positive';
 
 interface AnomalyItem {
   id: string;
-  site: string;
+  siteId?: string;
+  siteName?: string;
+  siteCode?: string;
   technology: Technology;
   metric: string;
+  actualValue: number;
+  expectedValue: number;
   zScore: number;
   description: string;
+  severity: AnomalySeverity;
   status: AnomalyStatus;
-  severity: AlertSeverity;
-  timestamp: string;
+  createdAt: string;
+  resolvedAt?: string;
 }
 
-interface AnomalySummary {
+interface AnomalyStats {
   total: number;
-  investigating: number;
-  resolved: number;
-  falsePositive: number;
+  bySeverity: Record<string, number>;
+  byStatus: Record<string, number>;
+  byTech: Record<string, number>;
 }
 
 interface AnomalyResponse {
   anomalies: AnomalyItem[];
-  summary: AnomalySummary;
+  stats: AnomalyStats;
 }
 
-const SEVERITY_SCATTER_COLORS: Record<AlertSeverity, string> = {
+const SEVERITY_SCATTER_COLORS: Record<AnomalySeverity, string> = {
   critical: '#EF4444',
-  warning: '#F59E0B',
-  info: '#06B6D4',
+  major: '#F59E0B',
+  minor: '#06B6D4',
 };
+
+// Map API severity to AlertSeverity for badge styling
+function severityToBadgeVariant(sev: AnomalySeverity): 'destructive' | 'secondary' | 'outline' {
+  if (sev === 'critical') return 'destructive';
+  if (sev === 'major') return 'secondary';
+  return 'outline';
+}
 
 // ─── Loading Skeleton ─────────────────────────────────────────────────
 function AnomalyLoadingSkeleton() {
@@ -122,25 +135,35 @@ export default function AnomalyDetectionView() {
 
   if (isLoading || !data) return <AnomalyLoadingSkeleton />;
 
-  const { anomalies, summary } = data;
+  const { anomalies, stats } = data;
+
+  // Derived summary from stats
+  const summaryCounts = {
+    total: stats.total,
+    active: (stats.byStatus?.detected ?? 0) + (stats.byStatus?.investigating ?? 0),
+    resolved: stats.byStatus?.resolved ?? 0,
+    falsePositive: stats.byStatus?.false_positive ?? 0,
+    critical: stats.bySeverity?.critical ?? 0,
+    major: stats.bySeverity?.major ?? 0,
+    minor: stats.bySeverity?.minor ?? 0,
+  };
 
   // Scatter chart data
   const scatterData = anomalies.map(a => ({
-    x: a.timestamp,
+    x: a.createdAt,
     y: a.zScore,
-    z: a.severity === 'critical' ? 80 : a.severity === 'warning' ? 50 : 30,
-    fill: SEVERITY_SCATTER_COLORS[a.severity],
+    z: a.severity === 'critical' ? 80 : a.severity === 'major' ? 50 : 30,
+    fill: SEVERITY_SCATTER_COLORS[a.severity] ?? '#06B6D4',
     technology: a.technology,
     severity: a.severity,
-    site: a.site,
+    site: a.siteName || a.siteCode || 'Unknown',
     metric: a.metric,
     description: a.description,
   }));
 
-  // Chart colors per severity
   const criticalData = scatterData.filter(d => d.severity === 'critical');
-  const warningData = scatterData.filter(d => d.severity === 'warning');
-  const infoData = scatterData.filter(d => d.severity === 'info');
+  const majorData = scatterData.filter(d => d.severity === 'major');
+  const minorData = scatterData.filter(d => d.severity === 'minor');
 
   // Detection summary: count by technology
   const byTech = TECHNOLOGIES.map(tech => ({
@@ -170,7 +193,7 @@ export default function AnomalyDetectionView() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Detected</p>
-                <p className="text-2xl font-bold">{summary.total}</p>
+                <p className="text-2xl font-bold">{summaryCounts.total}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-slate-500/10 flex items-center justify-center">
                 <Brain className="h-5 w-5 text-slate-600 dark:text-slate-400" />
@@ -183,8 +206,8 @@ export default function AnomalyDetectionView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active / Investigating</p>
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{summary.investigating}</p>
+                <p className="text-sm text-muted-foreground">Active (Detected / Investigating)</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{summaryCounts.active}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                 <Search className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -198,7 +221,7 @@ export default function AnomalyDetectionView() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Resolved</p>
-                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{summary.resolved}</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{summaryCounts.resolved}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                 <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -212,7 +235,7 @@ export default function AnomalyDetectionView() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">False Positives</p>
-                <p className="text-2xl font-bold text-slate-500">{summary.falsePositive}</p>
+                <p className="text-2xl font-bold text-slate-500">{summaryCounts.falsePositive}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-slate-500/10 flex items-center justify-center">
                 <XCircle className="h-5 w-5 text-slate-400" />
@@ -248,8 +271,8 @@ export default function AnomalyDetectionView() {
               <SelectContent>
                 <SelectItem value="all">All Severities</SelectItem>
                 <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="warning">Warning</SelectItem>
-                <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="major">Major</SelectItem>
+                <SelectItem value="minor">Minor</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -258,6 +281,7 @@ export default function AnomalyDetectionView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="detected">Detected</SelectItem>
                 <SelectItem value="investigating">Investigating</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="false_positive">False Positive</SelectItem>
@@ -288,6 +312,12 @@ export default function AnomalyDetectionView() {
                   dataKey="x"
                   name="Time"
                   tick={{ fontSize: 10 }}
+                  tickFormatter={(v: string) => {
+                    try {
+                      const d = new Date(v);
+                      return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    } catch { return ''; }
+                  }}
                   interval="preserveStartEnd"
                 />
                 <YAxis
@@ -314,8 +344,8 @@ export default function AnomalyDetectionView() {
                   formatter={(value: string) => {
                     const labels: Record<string, string> = {
                       critical: 'Critical',
-                      warning: 'Warning',
-                      info: 'Info',
+                      major: 'Major',
+                      minor: 'Minor',
                     };
                     return labels[value] ?? value;
                   }}
@@ -330,11 +360,11 @@ export default function AnomalyDetectionView() {
                 {criticalData.length > 0 && (
                   <Scatter name="critical" data={criticalData} fill={SEVERITY_SCATTER_COLORS.critical} />
                 )}
-                {warningData.length > 0 && (
-                  <Scatter name="warning" data={warningData} fill={SEVERITY_SCATTER_COLORS.warning} />
+                {majorData.length > 0 && (
+                  <Scatter name="major" data={majorData} fill={SEVERITY_SCATTER_COLORS.major} />
                 )}
-                {infoData.length > 0 && (
-                  <Scatter name="info" data={infoData} fill={SEVERITY_SCATTER_COLORS.info} />
+                {minorData.length > 0 && (
+                  <Scatter name="minor" data={minorData} fill={SEVERITY_SCATTER_COLORS.minor} />
                 )}
               </ScatterChart>
             </ResponsiveContainer>
@@ -372,11 +402,11 @@ export default function AnomalyDetectionView() {
                   {anomalies.map(anomaly => (
                     <TableRow key={anomaly.id}>
                       <TableCell>
-                        <Badge variant={SEVERITY_BADGE_VARIANT[anomaly.severity]}>
+                        <Badge variant={severityToBadgeVariant(anomaly.severity)}>
                           {anomaly.severity}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{anomaly.site}</TableCell>
+                      <TableCell className="font-medium">{anomaly.siteName || anomaly.siteCode || 'Unknown'}</TableCell>
                       <TableCell>
                         <Badge className={TECH_BG_CLASSES[anomaly.technology]}>
                           {anomaly.technology}
@@ -416,6 +446,12 @@ export default function AnomalyDetectionView() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="detected">
+                              <span className="flex items-center gap-1.5">
+                                <AlertTriangle className="h-3 w-3 text-red-500" />
+                                Detected
+                              </span>
+                            </SelectItem>
                             <SelectItem value="investigating">
                               <span className="flex items-center gap-1.5">
                                 <Search className="h-3 w-3 text-amber-500" />

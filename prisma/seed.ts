@@ -201,6 +201,79 @@ async function main() {
   })) });
   console.log(`  Parameters: ${params.length}`);
 
+  // Seed SLA targets
+  console.log('Seeding SLA targets...');
+  const slaTargets = [
+    { tech: '2G', metric: 'availability', target: 97, condition: 'gte', severity: 'warning' },
+    { tech: '2G', metric: 'dropRate', target: 2, condition: 'lte', severity: 'warning' },
+    { tech: '2G', metric: 'handoverSuccessRate', target: 95, condition: 'gte', severity: 'warning' },
+    { tech: '3G', metric: 'availability', target: 98, condition: 'gte', severity: 'warning' },
+    { tech: '3G', metric: 'dropRate', target: 1.5, condition: 'lte', severity: 'warning' },
+    { tech: '3G', metric: 'handoverSuccessRate', target: 96, condition: 'gte', severity: 'warning' },
+    { tech: '4G', metric: 'availability', target: 99, condition: 'gte', severity: 'critical' },
+    { tech: '4G', metric: 'dropRate', target: 1, condition: 'lte', severity: 'critical' },
+    { tech: '4G', metric: 'latency', target: 50, condition: 'lte', severity: 'warning' },
+    { tech: '4G', metric: 'handoverSuccessRate', target: 98, condition: 'gte', severity: 'critical' },
+    { tech: '4G', metric: 'prbUtilization', target: 85, condition: 'lte', severity: 'warning' },
+    { tech: '5G', metric: 'availability', target: 99.5, condition: 'gte', severity: 'critical' },
+    { tech: '5G', metric: 'latency', target: 10, condition: 'lte', severity: 'critical' },
+    { tech: '5G', metric: 'dropRate', target: 0.5, condition: 'lte', severity: 'critical' },
+    { tech: '5G', metric: 'handoverSuccessRate', target: 99, condition: 'gte', severity: 'warning' },
+    { tech: '5G', metric: 'prbUtilization', target: 80, condition: 'lte', severity: 'warning' },
+  ];
+  await db.sLATarget.createMany({ data: slaTargets.map(t => ({
+    technology: t.tech, metric: t.metric, targetValue: t.target,
+    condition: t.condition, severity: t.severity, enabled: true,
+  })) });
+  console.log(`  SLA targets: ${slaTargets.length}`);
+
+  // Seed anomaly events
+  console.log('Seeding anomaly events...');
+  const anomalySeverities = ['critical', 'major', 'minor'] as const;
+  const anomalyStatuses = ['detected', 'investigating', 'resolved', 'false_positive'] as const;
+  const anomalyMetrics = ['downloadThroughput', 'latency', 'availability', 'sinr', 'dropRate', 'prbUtilization'];
+  const anomalyData: any[] = [];
+  for (let i = 0; i < 15; i++) {
+    const site = pick(created);
+    const metric = pick(anomalyMetrics);
+    const actual = rand(0, 200);
+    const expected = rand(0, 200);
+    const z = rand(2.6, 6);
+    anomalyData.push({
+      siteId: site.id, technology: site.technology, metric,
+      actualValue: Number(actual.toFixed(2)),
+      expectedValue: Number(expected.toFixed(2)),
+      zScore: Number(z.toFixed(2)),
+      severity: pick(anomalySeverities),
+      status: pick(anomalyStatuses),
+      description: `${metric} anomaly at ${site.name} (z=${z.toFixed(2)})`,
+      createdAt: subHours(now, randInt(0, 6)),
+      ...(Math.random() > 0.5 ? { resolvedAt: subHours(now, randInt(0, 2)) } : {}),
+    });
+  }
+  await db.anomalyEvent.createMany({ data: anomalyData });
+  console.log(`  Anomaly events: ${anomalyData.length}`);
+
+  // Seed audit logs
+  console.log('Seeding audit logs...');
+  const auditActions = ['create', 'update', 'acknowledge', 'resolve'];
+  const auditEntities = ['parameter', 'alert', 'site', 'anomaly'];
+  for (let i = 0; i < 8; i++) {
+    await db.auditLog.create({
+      data: {
+        entityType: pick(auditEntities),
+        entityId: pick(created).id,
+        action: pick(auditActions),
+        oldValue: JSON.stringify({ val: rand(0, 100) }),
+        newValue: JSON.stringify({ val: rand(0, 100) }),
+        description: `${pick(auditActions)} ${pick(auditEntities)} via platform`,
+        technology: pick(['2G', '3G', '4G', '5G']),
+        createdAt: subHours(now, randInt(0, 24)),
+      },
+    });
+  }
+  console.log('  Audit logs: 8');
+
   console.log('\n✅ Seed complete!');
 }
 

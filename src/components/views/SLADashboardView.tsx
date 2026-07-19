@@ -22,16 +22,26 @@ import { TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber } f
 import type { Technology, AlertSeverity } from '@/types';
 
 // ─── Types for the SLA API response ───────────────────────────────────
+// API returns targetValue/actualValue, we derive unit from metric name
+const METRIC_UNITS: Record<string, string> = {
+  availability: '%',
+  dropRate: '%',
+  latency: 'ms',
+  handoverSuccessRate: '%',
+  prbUtilization: '%',
+  downloadThroughput: 'Mbps',
+};
+
 interface SLATarget {
   id: string;
   technology: Technology;
   metric: string;
-  target: number;
-  actual: number;
-  unit: string;
+  targetValue: number;
+  actualValue: number;
+  condition: string;
   compliant: boolean;
   breachPercent?: number;
-  severity?: AlertSeverity;
+  severity: string;
 }
 
 interface SLASummary {
@@ -221,8 +231,8 @@ export default function SLADashboardView() {
                   >
                     <span className="truncate font-medium">{t.metric}</span>
                     <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                      <span>{formatNumber(t.actual)} / {formatNumber(t.target)}</span>
-                      <span className="text-[10px] text-muted-foreground">{t.unit}</span>
+                      <span>{formatNumber(t.actualValue)} / {formatNumber(t.targetValue)}</span>
+                      <span className="text-[10px] text-muted-foreground">{METRIC_UNITS[t.metric] || ''}</span>
                     </div>
                   </div>
                 ))}
@@ -330,7 +340,7 @@ export default function SLADashboardView() {
                         <ShTooltipProvider>
                           <ShTooltip>
                             <ShTooltipTrigger className="cursor-help text-emerald-600 dark:text-emerald-400">
-                              {formatNumber(breach.target)} {breach.unit}
+                              {formatNumber(breach.targetValue)} {METRIC_UNITS[breach.metric] || ''}
                             </ShTooltipTrigger>
                             <ShTooltipContent>Target value</ShTooltipContent>
                           </ShTooltip>
@@ -340,7 +350,7 @@ export default function SLADashboardView() {
                         <ShTooltipProvider>
                           <ShTooltip>
                             <ShTooltipTrigger className="cursor-help text-red-600 dark:text-red-400 font-semibold">
-                              {formatNumber(breach.actual)} {breach.unit}
+                              {formatNumber(breach.actualValue)} {METRIC_UNITS[breach.metric] || ''}
                             </ShTooltipTrigger>
                             <ShTooltipContent>Actual value</ShTooltipContent>
                           </ShTooltip>
@@ -352,8 +362,8 @@ export default function SLADashboardView() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={SEVERITY_BADGE_VARIANT[breach.severity ?? 'info']}>
-                          {breach.severity ?? 'info'}
+                        <Badge variant={SEVERITY_BADGE_VARIANT[breach.severity as 'critical' | 'warning' | 'info'] ?? 'outline'}>
+                          {breach.severity}
                         </Badge>
                       </TableCell>
                     </TableRow>

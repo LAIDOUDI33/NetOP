@@ -1,3 +1,6 @@
+Resolving dependencies
+Resolved, downloaded and extracted [63]
+Saved lockfile
 Clearing existing data...
 prisma:query DELETE FROM `main`.`Alert` WHERE 1=1
 prisma:query DELETE FROM `main`.`KpiMetric` WHERE 1=1

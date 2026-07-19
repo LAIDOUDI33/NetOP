@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       totalSites: sites.length,
       activeSites: sites.filter(s => s.status === 'active').length,
       avgRsrp: avg(Object.values(buckets).flatMap(b => b.rsrp)),
-      avgRssi: avg(Object.values(buckets).flatMap(b => b.rsrp)),
+      avgRssi: avg(Object.values(buckets).flatMap(b => b.rsrp)), // RSSI mapped from RSRP for 2G/3G compatibility
       avgSinr: avg(Object.values(buckets).flatMap(b => b.sinr)),
       avgDownload: avg(Object.values(buckets).flatMap(b => b.dl)),
       avgUpload: avg(Object.values(buckets).flatMap(b => b.ul)),
