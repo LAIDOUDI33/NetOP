@@ -34,6 +34,12 @@ model NetworkSite {
   energyMetrics  EnergyMetric[]
   faultPredictions FaultPrediction[]
   incidents      Incident[]
+  healthScores   HealthScore[]
+  benchmarks     BenchmarkRecord[]
+  handoverKpis   HandoverKpi[]
+  cellLoads      CellLoad[]
+  interferenceEvents InterferenceEvent[]
+  outages        OutageEvent[]
 }
 
 model KpiMetric {
@@ -536,4 +542,246 @@ model ConfigTemplate {
   lastApplied     DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+}
+// ========== PHASE C: ADVANCED OPERATIONS & OPTIMIZATION ==========
+
+model HealthScore {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  region          String
+  overallScore    Float
+  coverageScore   Float
+  capacityScore   Float
+  qualityScore    Float
+  reliabilityScore Float
+  experienceScore Float
+  grade           String     @default("B")
+  trend           String     @default("stable")
+  issues          String     @default("[]")
+  timestamp       DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([region])
+  @@index([grade])
+}
+
+model BenchmarkRecord {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  region          String
+  metric          String
+  actualValue     Float
+  benchmarkValue  Float
+  targetValue     Float
+  percentileRank  Float
+  gap             Float
+  status          String     @default("on_track")
+  timestamp       DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([metric])
+  @@index([status])
+}
+
+model HandoverKpi {
+  id                String      @id @default(cuid())
+  servingCellId     String
+  servingCell       NetworkSite @relation(fields: [servingCellId], references: [id], onDelete: Cascade)
+  neighborCellName  String
+  neighborCellCode  String
+  technology        String
+  relationType      String
+  hoAttempts        Int        @default(0)
+  hoSuccess         Int        @default(0)
+  hoFailures        Int        @default(0)
+  hoSuccessRate     Float
+  avgPrepTime       Float?
+  avgExecTime       Float?
+  pingPongCount     Int        @default(0)
+  tooEarlyCount     Int        @default(0)
+  tooLateCount      Int        @default(0)
+  status            String     @default("normal")
+  recommendation    String     @default("")
+  timestamp         DateTime    @default(now())
+  createdAt         DateTime    @default(now())
+
+  @@index([servingCellId])
+  @@index([technology])
+  @@index([status])
+}
+
+model CellLoad {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  region          String
+  prbUtilDownlink  Float
+  prbUtilUplink   Float
+  activeUsers     Int
+  maxUsers        Int
+  userLoadPct     Float
+  throughputDown   Float
+  throughputUp     Float
+  balancedScore   Float
+  congestionLevel String     @default("low")
+  recommendation  String     @default("")
+  timestamp       DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([region])
+  @@index([congestionLevel])
+}
+
+model InterferenceEvent {
+  id              String      @id @default(cuid())
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology      String
+  interferenceType String
+  severity        String     @default("medium")
+  status          String     @default("detected")
+  sourceCell      String?
+  sourceCellName  String?
+  conflictingCell String?
+  conflictingCellName String?
+  frequency       String?
+  pci             String?
+  affectedKpis    String     @default("[]")
+  impactScore     Float      @default(0)
+  recommendation  String     @default("")
+  resolvedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([severity])
+  @@index([status])
+  @@index([interferenceType])
+}
+
+model CoverageHole {
+  id              String   @id @default(cuid())
+  technology      String
+  region          String
+  latitude        Float
+  longitude       Float
+  radiusMeters    Float    @default(500)
+  areaKm2         Float
+  signalStrength  Float
+  expectedSignal  Float
+  gapDb           Float
+  severity        String   @default("medium")
+  nearestSite     String?
+  nearestSiteName String?
+  nearestSiteDistKm Float?
+  affectedUsers   Int      @default(0)
+  recommendation  String   @default("")
+  status          String   @default("open")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([technology])
+  @@index([region])
+  @@index([severity])
+  @@index([status])
+}
+
+model ChangeRequest {
+  id              String   @id @default(cuid())
+  title           String
+  technology      String
+  siteId          String?
+  siteName        String?
+  category        String
+  parameter       String
+  previousValue   String
+  proposedValue   String
+  reason          String
+  impact          String   @default("")
+  riskLevel       String   @default("low")
+  status          String   @default("pending")
+  requestedBy     String   @default("system")
+  approvedBy      String?
+  implementedAt   DateTime?
+  rollbackReason  String?
+  kpiImpact       String   @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([technology])
+  @@index([category])
+  @@index([status])
+  @@index([riskLevel])
+  @@index([createdAt])
+}
+
+model OutageEvent {
+  id              String      @id @default(cuid())
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology      String
+  region          String
+  outageType      String
+  severity        String     @default("medium")
+  status          String     @default("active")
+  startedAt       DateTime
+  detectedAt      DateTime    @default(now())
+  estimatedDuration String?
+  actualDuration  Int?
+  affectedUsers   Int        @default(0)
+  rootCause       String?
+  compensationApplied String  @default("none")
+  compensationSites String    @default("[]")
+  resolvedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([region])
+  @@index([severity])
+  @@index([status])
+}
+
+model Playbook {
+  id              String          @id @default(cuid())
+  name            String
+  category        String
+  technology      String          @default("ALL")
+  description     String          @default("")
+  severity        String          @default("medium")
+  estimatedTime   String          @default("30min")
+  steps           PlaybookStep[]
+  usageCount      Int             @default(0)
+  successRate     Float           @default(0.85)
+  tags            String          @default("[]")
+  enabled         Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model PlaybookStep {
+  id              String   @id @default(cuid())
+  playbookId      String
+  playbook        Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  stepNumber      Int
+  title           String
+  description     String
+  action          String
+  target          String?
+  expectedOutcome String?
+  isBlocking      Boolean  @default(true)
+  createdAt       DateTime @default(now())
 }

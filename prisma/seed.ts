@@ -1813,8 +1813,718 @@ async function main() {
   await db.configTemplate.createMany({ data: configTemplates });
   console.log(`  ConfigTemplates: ${configTemplates.length}`);
 
+  // ================================================================
+  // PHASE C: ADVANCED OPERATIONS & OPTIMIZATION SEED DATA
+  // ================================================================
+  console.log('\n--- Seeding Phase C: Advanced Operations & Optimization ---');
+
+  // Re-fetch all sites for Phase C
+  const phaseCSites = await db.networkSite.findMany();
+  const pc4G = phaseCSites.filter(s => s.technology === '4G');
+  const pc5G = phaseCSites.filter(s => s.technology === '5G');
+  const pc3G = phaseCSites.filter(s => s.technology === '3G');
+  const pc2G = phaseCSites.filter(s => s.technology === '2G');
+
+  // ------------------------------------------------------------------
+  // 1. HealthScore (1 per site = 34 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding HealthScores...');
+
+  const issuePool = [
+    'Low RSRP', 'High PRB utilization', 'Poor SINR', 'High latency',
+    'Coverage gap detected', 'Handover failure spike', 'Capacity approaching limit',
+    'Interference detected', 'Power instability', 'Throughput degradation',
+    'High drop rate', 'Neighbor missing',
+  ];
+
+  function computeGrade(score: number): string {
+    if (score >= 90) return 'A+';
+    if (score >= 80) return 'A';
+    if (score >= 65) return 'B';
+    if (score >= 50) return 'C';
+    if (score >= 35) return 'D';
+    return 'F';
+  }
+
+  function pickTrend(): string {
+    const r = Math.random();
+    return r < 0.2 ? 'improving' : r < 0.8 ? 'stable' : 'degrading';
+  }
+
+  function pickIssues(): string {
+    const count = randInt(0, 3);
+    const picked: string[] = [];
+    const pool = [...issuePool];
+    for (let i = 0; i < count && pool.length > 0; i++) {
+      const idx = randInt(0, pool.length - 1);
+      picked.push(pool.splice(idx, 1)[0]);
+    }
+    return JSON.stringify(picked);
+  }
+
+  const healthScoresData: any[] = [];
+  for (const site of phaseCSites) {
+    const coverageScore = Number(rand(50, 98).toFixed(1));
+    const capacityScore = Number(rand(50, 98).toFixed(1));
+    const qualityScore = Number(rand(50, 98).toFixed(1));
+    const reliabilityScore = Number(rand(50, 98).toFixed(1));
+    const experienceScore = Number(rand(50, 98).toFixed(1));
+    const overallScore = Number((coverageScore * 0.25 + capacityScore * 0.2 + qualityScore * 0.25 + reliabilityScore * 0.2 + experienceScore * 0.1).toFixed(1));
+    healthScoresData.push({
+      siteId: site.id,
+      technology: site.technology,
+      region: site.region,
+      overallScore,
+      coverageScore,
+      capacityScore,
+      qualityScore,
+      reliabilityScore,
+      experienceScore,
+      grade: computeGrade(overallScore),
+      trend: pickTrend(),
+      issues: pickIssues(),
+      timestamp: subHours(now, randInt(0, 6)),
+    });
+  }
+  await db.healthScore.createMany({ data: healthScoresData });
+  console.log(`  HealthScores: ${healthScoresData.length}`);
+
+  // ------------------------------------------------------------------
+  // 2. BenchmarkRecord (~80 records, 2-3 per site for key metrics)
+  // ------------------------------------------------------------------
+  console.log('Seeding BenchmarkRecords...');
+
+  const benchmarkMetrics = [
+    { metric: 'rsrp', benchmark: -85, target: -82, techs: ['4G', '5G'] },
+    { metric: 'downloadThroughput', benchmark: 50, target: 55, techs: ['4G'] },
+    { metric: 'downloadThroughput', benchmark: 150, target: 170, techs: ['5G'] },
+    { metric: 'latency', benchmark: 20, target: 18, techs: ['4G'] },
+    { metric: 'latency', benchmark: 8, target: 7, techs: ['5G'] },
+    { metric: 'availability', benchmark: 99.5, target: 99.9, techs: ['4G', '5G', '3G', '2G'] },
+  ];
+
+  const benchmarkData: any[] = [];
+  for (const site of phaseCSites) {
+    const applicableMetrics = benchmarkMetrics.filter(m => m.techs.includes(site.technology));
+    const selectedMetrics = applicableMetrics.slice(0, randInt(2, 3));
+    for (const bm of selectedMetrics) {
+      const variation = 1 + (rand(-0.15, 0.15));
+      // For rsrp and latency, lower actual is worse; for throughput and availability, lower is also worse
+      // We apply variation differently based on metric sign
+      let actualValue: number;
+      if (bm.metric === 'rsrp' || bm.metric === 'latency') {
+        // Negative metrics: higher abs value is worse. variation > 1 means worse
+        actualValue = Number((bm.benchmark * (2 - variation)).toFixed(2)); // invert so variation>1 makes it worse
+      } else {
+        actualValue = Number((bm.benchmark * variation).toFixed(2));
+      }
+      const gap = Number((bm.benchmark - actualValue).toFixed(2));
+
+      let status: string;
+      if (bm.metric === 'rsrp' || bm.metric === 'latency') {
+        // For negative metrics: gap < 0 means better than benchmark
+        status = gap < -2 ? 'exceeding' : gap < 2 ? 'on_track' : gap < 8 ? 'below_target' : 'critical';
+      } else {
+        status = gap < -2 ? 'exceeding' : gap < 2 ? 'on_track' : gap < 8 ? 'below_target' : 'critical';
+      }
+
+      const percentileRank = Number(rand(20, 95).toFixed(1));
+      benchmarkData.push({
+        siteId: site.id,
+        technology: site.technology,
+        region: site.region,
+        metric: bm.metric,
+        actualValue,
+        benchmarkValue: bm.benchmark,
+        targetValue: bm.target,
+        percentileRank,
+        gap,
+        status,
+        timestamp: subHours(now, randInt(1, 24)),
+      });
+    }
+  }
+  await db.benchmarkRecord.createMany({ data: benchmarkData });
+  console.log(`  BenchmarkRecords: ${benchmarkData.length}`);
+
+  // ------------------------------------------------------------------
+  // 3. HandoverKpi (60 records for 4G/5G sites with neighbors)
+  // ------------------------------------------------------------------
+  console.log('Seeding HandoverKpis...');
+
+  const hoSites = [...pc4G, ...pc5G]; // 10 + 6 = 16 sites
+  const relationTypes = ['intra_freq', 'inter_freq', 'inter_tech'];
+  const hoStatuses: [string, number][] = [['normal', 0.7], ['degraded', 0.2], ['critical', 0.1]];
+
+  function pickHoStatus(): string {
+    const r = Math.random();
+    let cumulative = 0;
+    for (const [status, prob] of hoStatuses) {
+      cumulative += prob;
+      if (r < cumulative) return status;
+    }
+    return 'normal';
+  }
+
+  function pickRelationType(): string {
+    const r = Math.random();
+    if (r < 0.5) return 'intra_freq';
+    if (r < 0.8) return 'inter_freq';
+    return 'inter_tech';
+  }
+
+  const handoverData: any[] = [];
+  // Distribute 60 records across 4G/5G sites (~3-4 per site)
+  let hoIdx = 0;
+  for (const site of hoSites) {
+    const numRecords = randInt(3, 4);
+    for (let j = 0; j < numRecords && hoIdx < 60; j++) {
+      const hoAttempts = randInt(100, 5000);
+      const hoStatus = pickHoStatus();
+      let hoSuccessRate: number;
+      if (hoStatus === 'normal') hoSuccessRate = rand(95, 99.5);
+      else if (hoStatus === 'degraded') hoSuccessRate = rand(88, 95);
+      else hoSuccessRate = rand(85, 88);
+      const hoSuccess = Math.floor(hoAttempts * hoSuccessRate / 100);
+
+      const otherSites = hoSites.filter(s => s.id !== site.id);
+      const neighbor = pick(otherSites);
+      const relType = pickRelationType();
+
+      const avgPrepTime = Number(rand(10, 50).toFixed(1));
+      const avgExecTime = Number(rand(5, 30).toFixed(1));
+
+      let recommendation = '';
+      if (hoStatus === 'degraded') recommendation = 'Review handover parameters and neighbor cell configuration. Consider adjusting hysteresis and time-to-trigger.';
+      if (hoStatus === 'critical') recommendation = 'Immediate action required: Check for PCI conflicts, adjust power levels, and verify neighbor relations. Escalate to RF engineering.';
+
+      handoverData.push({
+        servingCellId: site.id,
+        neighborCellName: neighbor.name,
+        neighborCellCode: neighbor.code,
+        technology: site.technology,
+        relationType: relType,
+        hoAttempts,
+        hoSuccess,
+        hoFailures: hoAttempts - hoSuccess,
+        hoSuccessRate: Number(hoSuccessRate.toFixed(2)),
+        avgPrepTime,
+        avgExecTime,
+        pingPongCount: hoStatus === 'critical' ? randInt(10, 20) : hoStatus === 'degraded' ? randInt(3, 10) : randInt(0, 3),
+        tooEarlyCount: randInt(0, hoStatus === 'degraded' ? 12 : 5),
+        tooLateCount: randInt(0, hoStatus === 'degraded' ? 15 : 5),
+        status: hoStatus,
+        recommendation,
+        timestamp: subHours(now, randInt(1, 48)),
+      });
+      hoIdx++;
+    }
+  }
+  await db.handoverKpi.createMany({ data: handoverData });
+  console.log(`  HandoverKpis: ${handoverData.length}`);
+
+  // ------------------------------------------------------------------
+  // 4. CellLoad (1 per site = 34 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding CellLoads...');
+
+  const cellLoadData: any[] = [];
+  for (const site of phaseCSites) {
+    const prbUtilDownlink = Number(rand(20, 95).toFixed(1));
+    const prbUtilUplink = Number(rand(15, 80).toFixed(1));
+    const activeUsers = randInt(10, site.maxCapacity - 5);
+    const maxUsers = site.maxCapacity;
+    const userLoadPct = Number((activeUsers / maxUsers * 100).toFixed(1));
+    const throughputDown = Number(rand(20, 200).toFixed(1));
+    const throughputUp = Number(rand(5, 50).toFixed(1));
+    const balancedScore = Number(rand(30, 95).toFixed(1));
+
+    let congestionLevel: string;
+    const avgPrb = (prbUtilDownlink + prbUtilUplink) / 2;
+    if (avgPrb < 50) congestionLevel = 'low';
+    else if (avgPrb < 75) congestionLevel = 'medium';
+    else if (avgPrb < 90) congestionLevel = 'high';
+    else congestionLevel = 'congested';
+
+    let recommendation = '';
+    if (congestionLevel === 'high') {
+      recommendation = 'Consider enabling carrier aggregation or load balancing to offload traffic to neighboring cells. Monitor PRB utilization closely during peak hours.';
+    } else if (congestionLevel === 'congested') {
+      recommendation = 'Critical: Cell is congested. Immediate capacity expansion required. Evaluate small cell deployment, additional carrier activation, and traffic offloading strategies.';
+    }
+
+    cellLoadData.push({
+      siteId: site.id,
+      technology: site.technology,
+      region: site.region,
+      prbUtilDownlink,
+      prbUtilUplink,
+      activeUsers,
+      maxUsers,
+      userLoadPct,
+      throughputDown,
+      throughputUp,
+      balancedScore,
+      congestionLevel,
+      recommendation,
+      timestamp: subHours(now, randInt(0, 6)),
+    });
+  }
+  await db.cellLoad.createMany({ data: cellLoadData });
+  console.log(`  CellLoads: ${cellLoadData.length}`);
+
+  // ------------------------------------------------------------------
+  // 5. InterferenceEvent (25 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding InterferenceEvents...');
+
+  const interferenceTypes: [string, number][] = [
+    ['pci_conflict', 0.40], ['co_channel', 0.30], ['adjacent_channel', 0.15],
+    ['external', 0.10], ['inter_modulation', 0.05],
+  ];
+  const interferenceSeverities: [string, number][] = [
+    ['low', 0.25], ['medium', 0.40], ['high', 0.25], ['critical', 0.10],
+  ];
+  const interferenceStatuses: [string, number][] = [
+    ['detected', 0.20], ['investigating', 0.20], ['mitigating', 0.15],
+    ['resolved', 0.30], ['false_positive', 0.15],
+  ];
+
+  function pickByWeight<T>(items: [T, number][]): T {
+    const r = Math.random();
+    let cumulative = 0;
+    for (const [item, weight] of items) {
+      cumulative += weight;
+      if (r < cumulative) return item;
+    }
+    return items[0][0];
+  }
+
+  const interferenceData: any[] = [];
+  for (let i = 0; i < 25; i++) {
+    const site = pick(phaseCSites);
+    const otherSite = pick(phaseCSites.filter(s => s.id !== site.id));
+    const intType = pickByWeight<string>(interferenceTypes) as string;
+    const severity = pickByWeight<string>(interferenceSeverities) as string;
+    const status = pickByWeight<string>(interferenceStatuses) as string;
+
+    const affectedKpis = ['RSRP', 'SINR', 'Throughput', 'Drop Rate'];
+    const numKpis = randInt(1, 3);
+    const kpis = affectedKpis.sort(() => Math.random() - 0.5).slice(0, numKpis);
+
+    const impactScore = severity === 'critical' ? Number(rand(7, 10).toFixed(1))
+      : severity === 'high' ? Number(rand(5, 7).toFixed(1))
+      : severity === 'medium' ? Number(rand(3, 5).toFixed(1))
+      : Number(rand(1, 3).toFixed(1));
+
+    let recommendation = '';
+    if (intType === 'pci_conflict') recommendation = 'Reassign PCI to eliminate conflict. Use PCI planning tool to verify no collision with neighboring cells.';
+    else if (intType === 'co_channel') recommendation = 'Adjust frequency allocation or enable ICIC/FFR to mitigate co-channel interference.';
+    else if (intType === 'adjacent_channel') recommendation = 'Review guard band settings and filter configurations. Check for misaligned frequency assignments.';
+    else if (intType === 'external') recommendation = 'Identify external interference source. Perform drive test and spectrum analysis. Coordinate with spectrum management.';
+    else recommendation = 'Investigate inter-modulation products. Check for faulty RF components or non-linear amplifier behavior.';
+
+    interferenceData.push({
+      siteId: site.id,
+      technology: site.technology,
+      interferenceType: intType,
+      severity,
+      status,
+      sourceCell: site.code,
+      sourceCellName: site.name,
+      conflictingCell: otherSite.code,
+      conflictingCellName: otherSite.name,
+      frequency: site.frequency,
+      pci: randInt(0, 503).toString(),
+      affectedKpis: JSON.stringify(kpis),
+      impactScore,
+      recommendation,
+      resolvedAt: status === 'resolved' ? subHours(now, randInt(1, 48)) : null,
+      createdAt: subHours(now, randInt(1, 168)),
+    });
+  }
+  await db.interferenceEvent.createMany({ data: interferenceData });
+  console.log(`  InterferenceEvents: ${interferenceData.length}`);
+
+  // ------------------------------------------------------------------
+  // 6. CoverageHole (20 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding CoverageHoles...');
+
+  const covTechs = ['2G', '3G', '4G', '5G'];
+  const covRegions = ['Lagos Mainland', 'Lagos Island', 'Abuja Central', 'Port Harcourt', 'Kano Metro', 'Ibadan', 'Benin City', 'Kaduna'];
+
+  const coverageHoleData: any[] = [];
+  for (let i = 0; i < 20; i++) {
+    const tech = covTechs[i % 4];
+    const region = covRegions[i % covRegions.length];
+    const signalStrength = Number(rand(-110, -95).toFixed(1));
+    const expectedSignal = Number(rand(-85, -75).toFixed(1));
+    const gapDb = Number((expectedSignal - signalStrength).toFixed(1));
+    const affectedUsers = randInt(50, 5000);
+    const areaKm2 = Number(rand(0.1, 2.5).toFixed(2));
+    const radiusMeters = Number(rand(200, 1500).toFixed(0));
+
+    let severity: string;
+    if (gapDb >= 20 && affectedUsers > 2000) severity = 'critical';
+    else if (gapDb >= 15 || affectedUsers > 3000) severity = 'high';
+    else if (gapDb >= 10) severity = 'medium';
+    else severity = 'low';
+
+    // Pick nearest site of same tech
+    const techSites = phaseCSites.filter(s => s.technology === tech);
+    const nearestSite = techSites.length > 0 ? pick(techSites) : pick(phaseCSites);
+
+    let recommendation = '';
+    if (severity === 'critical') recommendation = 'Deploy small cell or repeater immediately. Consider temporary COW (Cell on Wheels) for rapid coverage restoration.';
+    else if (severity === 'high') recommendation = 'Optimize antenna tilt and azimuth. Evaluate new site acquisition for permanent coverage improvement.';
+    else recommendation = 'Fine-tune existing site parameters. Consider power adjustment and antenna optimization.';
+
+    coverageHoleData.push({
+      technology: tech,
+      region,
+      latitude: nearestSite.latitude + rand(-0.02, 0.02),
+      longitude: nearestSite.longitude + rand(-0.02, 0.02),
+      radiusMeters: Number(radiusMeters),
+      areaKm2,
+      signalStrength,
+      expectedSignal,
+      gapDb,
+      severity,
+      nearestSite: nearestSite.id,
+      nearestSiteName: nearestSite.name,
+      nearestSiteDistKm: Number(rand(0.3, 3.0).toFixed(1)),
+      affectedUsers,
+      recommendation,
+      status: Math.random() > 0.3 ? 'open' : 'investigating',
+    });
+  }
+  await db.coverageHole.createMany({ data: coverageHoleData });
+  console.log(`  CoverageHoles: ${coverageHoleData.length}`);
+
+  // ------------------------------------------------------------------
+  // 7. ChangeRequest (25 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding ChangeRequests...');
+
+  const crCategories: [string, number][] = [
+    ['radio', 0.40], ['power', 0.20], ['neighbor', 0.15],
+    ['handover', 0.10], ['capacity', 0.10], ['software', 0.05],
+  ];
+  const crStatuses = ['pending', 'pending', 'pending', 'pending', 'approved', 'approved', 'approved', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'implemented', 'rolled_back', 'rolled_back', 'rolled_back', 'rejected', 'rejected', 'rejected'];
+  const crRiskLevels: [string, number][] = [['low', 0.50], ['medium', 0.30], ['high', 0.20]];
+
+  const crParams: Record<string, string[]> = {
+    radio: ['antennaTilt', 'antennaAzimuth', 'rsPower', 'pdschPower', 'ssbPower'],
+    power: ['maxTxPower', 'referenceSignalPower', 'pA', 'pB'],
+    neighbor: ['neighborList', 'blacklistCell', 'cellIndividualOffset'],
+    handover: ['hysteresis', 'timeToTrigger', 'a3Offset', 'sIntraSearch'],
+    capacity: ['carrierActivation', 'bandwidth', 'carrierAggregation', 'loadBalancingThreshold'],
+    software: ['firmwareVersion', 'featureToggle', 'algorithmVersion'],
+  };
+
+  const crReasons = [
+    'SON-automated optimization based on KPI analysis.',
+    'Engineer-initiated change following coverage complaint.',
+    'Capacity planning threshold exceeded.',
+    'Post-outage restoration and hardening.',
+    'Interference mitigation after PCI conflict detection.',
+    'Neighbor optimization driven by ANR module.',
+    'Scheduled maintenance window parameter update.',
+    'Power optimization for energy savings initiative.',
+  ];
+
+  const changeRequestData: any[] = [];
+  for (let i = 0; i < 25; i++) {
+    const category = pickByWeight<string>(crCategories) as string;
+    const site = pick(phaseCSites);
+    const params = crParams[category];
+    const param = pick(params);
+    const status = crStatuses[i];
+    const riskLevel = pickByWeight<string>(crRiskLevels) as string;
+
+    const previousValue = param.includes('Power') || param === 'pA' || param === 'pB'
+      ? rand(10, 20).toFixed(1)
+      : param.includes('Tilt') ? rand(2, 8).toFixed(0) + '°'
+      : param.includes('Azimuth') ? rand(0, 359).toFixed(0) + '°'
+      : param.includes('List') ? JSON.stringify(['cell1', 'cell2'])
+      : param.includes('Trigger') ? randInt(64, 640).toString()
+      : param.includes('hysteresis') || param.includes('Offset') ? rand(1, 6).toFixed(1)
+      : param.includes('Version') ? 'v4.2.1'
+      : rand(0, 100).toFixed(0);
+
+    const proposedValue = param.includes('Power') || param === 'pA' || param === 'pB'
+      ? (Number(previousValue) + rand(-3, 3)).toFixed(1)
+      : param.includes('Tilt') ? (Number(previousValue) + rand(-2, 2)).toFixed(0) + '°'
+      : param.includes('Azimuth') ? ((Number(previousValue) + randInt(-30, 30) + 360) % 360).toFixed(0) + '°'
+      : param.includes('List') ? JSON.stringify(['cell1', 'cell2', 'cell3'])
+      : param.includes('Trigger') ? randInt(64, 640).toString()
+      : param.includes('hysteresis') || param.includes('Offset') ? (Number(previousValue) + rand(-1, 1)).toFixed(1)
+      : param.includes('Version') ? 'v4.3.0'
+      : rand(0, 100).toFixed(0);
+
+    changeRequestData.push({
+      title: `${category.charAt(0).toUpperCase() + category.slice(1)}: ${param} adjustment for ${site.name}`,
+      technology: site.technology,
+      siteId: site.id,
+      siteName: site.name,
+      category,
+      parameter: param,
+      previousValue,
+      proposedValue,
+      reason: pick(crReasons),
+      impact: `Expected ${riskLevel} impact on ${site.technology} coverage and performance in ${site.region}.`,
+      riskLevel,
+      status,
+      requestedBy: Math.random() > 0.5 ? 'system' : pick(['engineer_ade', 'engineer_chi', 'engineer_kunle', 'engineer_bola']),
+      approvedBy: ['approved', 'implemented', 'rolled_back'].includes(status) ? pick(['tech_lead_a', 'tech_lead_b', 'noc_supervisor']) : null,
+      implementedAt: status === 'implemented' ? subHours(now, randInt(1, 120)) : status === 'rolled_back' ? subHours(now, randInt(1, 120)) : null,
+      rollbackReason: status === 'rolled_back' ? 'KPI degradation observed post-implementation. Throughput dropped below acceptable threshold.' : null,
+      kpiImpact: JSON.stringify({ rsrpChange: rand(-3, 5).toFixed(1), throughputChange: rand(-5, 10).toFixed(1), availabilityChange: rand(-0.5, 0.3).toFixed(2) }),
+    });
+  }
+  await db.changeRequest.createMany({ data: changeRequestData });
+  console.log(`  ChangeRequests: ${changeRequestData.length}`);
+
+  // ------------------------------------------------------------------
+  // 8. OutageEvent (15 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding OutageEvents...');
+
+  const outageTypes: [string, number][] = [['partial', 0.50], ['full', 0.30], ['degradation', 0.20]];
+  const outageSeverities: [string, number][] = [['critical', 0.20], ['high', 0.33], ['medium', 0.33], ['low', 0.14]];
+  const outageStatuses = ['active', 'active', 'compensating', 'compensating', 'restored', 'restored', 'restored', 'restored', 'resolved', 'resolved', 'resolved', 'resolved', 'resolved', 'resolved', 'resolved'];
+  const compensationTypes: [string, number][] = [['none', 0.40], ['neighbor_boost', 0.30], ['traffic_reroute', 0.20], ['power_increase', 0.10]];
+
+  const rootCauses = [
+    'Fiber cut due to road construction',
+    'Power supply failure - battery depleted',
+    'Hardware fault in RRU unit',
+    'Software crash after firmware upgrade',
+    'Transport link failure',
+    'Lightning strike damaging antenna system',
+    'Vandalism - cable theft',
+    'BBU overheating and auto-shutdown',
+  ];
+
+  const outageData: any[] = [];
+  for (let i = 0; i < 15; i++) {
+    const site = pick(phaseCSites);
+    const outageType = pickByWeight<string>(outageTypes) as string;
+    const severity = pickByWeight<string>(outageSeverities) as string;
+    const status = outageStatuses[i];
+    const compensation = pickByWeight<string>(compensationTypes) as string;
+    const startedAt = subHours(now, randInt(1, 72));
+    const affectedUsers = randInt(50, 5000);
+
+    const actualDuration = ['resolved', 'restored'].includes(status) ? randInt(30, 480) : null;
+
+    const compensationSites = compensation !== 'none'
+      ? JSON.stringify(phaseCSites.filter(s => s.id !== site.id).slice(0, randInt(1, 3)).map(s => s.id))
+      : JSON.stringify([]);
+
+    outageData.push({
+      siteId: site.id,
+      technology: site.technology,
+      region: site.region,
+      outageType,
+      severity,
+      status,
+      startedAt,
+      detectedAt: new Date(startedAt.getTime() + randInt(1, 15) * 60000),
+      estimatedDuration: status === 'active' ? randInt(30, 240) + 'min' : null,
+      actualDuration,
+      affectedUsers,
+      rootCause: ['resolved', 'restored', 'compensating'].includes(status) ? pick(rootCauses) : null,
+      compensationApplied: compensation,
+      compensationSites,
+      resolvedAt: actualDuration ? new Date(startedAt.getTime() + actualDuration * 60000) : null,
+    });
+  }
+  await db.outageEvent.createMany({ data: outageData });
+  console.log(`  OutageEvents: ${outageData.length}`);
+
+  // ------------------------------------------------------------------
+  // 9. Playbook + PlaybookStep (12 playbooks, 3-6 steps each)
+  // ------------------------------------------------------------------
+  console.log('Seeding Playbooks & PlaybookSteps...');
+
+  const playbookDefs = [
+    {
+      name: 'Coverage Hole Remediation', category: 'coverage', technology: 'ALL',
+      description: 'Systematic approach to identify, analyze, and resolve coverage gaps across all technologies.',
+      severity: 'high', estimatedTime: '2h', tags: ['coverage', 'optimization', 'rf'],
+      steps: [
+        { title: 'Verify Coverage Hole', description: 'Confirm the coverage hole using drive test data, network metrics, and user complaint correlation.', action: 'check_kpi', target: 'RSRP > -100dBm', expectedOutcome: 'Coverage hole confirmed with geolocation and signal measurements.' },
+        { title: 'Analyze Root Cause', description: 'Determine if the gap is due to terrain, equipment, or parameter issues. Review antenna patterns and site configuration.', action: 'verify', target: 'Antenna tilt, azimuth, power', expectedOutcome: 'Root cause identified with recommended corrective action.' },
+        { title: 'Adjust Antenna Parameters', description: 'Modify antenna tilt and/or azimuth to extend coverage toward the gap area. Use prediction tool to verify.', action: 'modify_param', target: 'electricalTilt, mechanicalTilt', expectedOutcome: 'Antenna parameters updated; predicted coverage improvement > 5dB in target area.' },
+        { title: 'Verify Improvement', description: 'Check KPIs after parameter change to confirm coverage improvement in the affected area.', action: 'check_kpi', target: 'RSRP, RSRQ in coverage area', expectedOutcome: 'Coverage improved by at least 5dB; user complaints reduced.' },
+        { title: 'Escalate if Insufficient', description: 'If parameter changes are insufficient, escalate for new site acquisition or small cell deployment.', action: 'escalate', target: 'RF Planning Team', expectedOutcome: 'New site request submitted with business case and coverage analysis.' },
+      ],
+    },
+    {
+      name: 'Handover Failure Resolution', category: 'handover', technology: '4G',
+      description: 'Diagnose and fix handover failures in LTE networks, focusing on parameter optimization and neighbor verification.',
+      severity: 'medium', estimatedTime: '1h', tags: ['handover', 'mobility', '4g'],
+      steps: [
+        { title: 'Collect Handover KPIs', description: 'Gather handover success rate, preparation time, execution time, and failure causes for the affected cell pair.', action: 'check_kpi', target: 'HOSR > 95%', expectedOutcome: 'Current handover KPIs documented with failure pattern analysis.' },
+        { title: 'Verify Neighbor Configuration', description: 'Check that the serving and target cells have proper neighbor relationship defined. Verify no missing neighbors.', action: 'verify', target: 'Neighbor list, ANR status', expectedOutcome: 'Neighbor relation confirmed; missing neighbors identified and added.' },
+        { title: 'Optimize Handover Parameters', description: 'Adjust hysteresis, time-to-trigger, and cell offset parameters based on analysis.', action: 'modify_param', target: 'hysteresis, a3Offset, timeToTrigger', expectedOutcome: 'Parameters adjusted to balance handover trigger timing.' },
+        { title: 'Run SON Compensation', description: 'Execute SON handover optimization module to fine-tune parameters across the cluster.', action: 'run_command', target: 'SON MLB module', expectedOutcome: 'SON module executed; new parameters applied to cluster.' },
+      ],
+    },
+    {
+      name: 'Interference Detection & Mitigation', category: 'interference', technology: '4G',
+      description: 'Identify and resolve interference issues including PCI conflicts, co-channel, and external interference sources.',
+      severity: 'high', estimatedTime: '3h', tags: ['interference', 'pci', 'optimization'],
+      steps: [
+        { title: 'Detect Interference Source', description: 'Analyze RSRP/SINR correlation, uplink interference metrics, and spectrum analyzer data to identify interference type and source.', action: 'check_kpi', target: 'SINR > 0dB, UL interference < -110dBm', expectedOutcome: 'Interference type and source cell identified.' },
+        { title: 'Resolve PCI Conflict', description: 'If PCI conflict detected, reassign PCI using PCI planning tool. Ensure no collision or confusion with any neighbor.', action: 'modify_param', target: 'PCI assignment', expectedOutcome: 'PCI reassigned with no conflicts within 2-hop neighbor radius.' },
+        { title: 'Adjust Power Levels', description: 'Reduce transmit power on interfering cell or increase power on victim cell to improve SINR.', action: 'modify_param', target: 'rsPower, pdschPower', expectedOutcome: 'SINR improved by >3dB at cell edge.' },
+        { title: 'Enable ICIC/FFR', description: 'Activate Inter-Cell Interference Coordination or Frequency Reuse to mitigate persistent co-channel interference.', action: 'run_command', target: 'ICIC configuration', expectedOutcome: 'ICIC enabled; cell-edge throughput improved.' },
+        { title: 'Verify Resolution', description: 'Monitor interference metrics for 24 hours to confirm resolution. Check that no new issues were introduced.', action: 'verify', target: 'SINR, throughput, drop rate', expectedOutcome: 'Interference resolved; KPIs stable for 24 hours.' },
+      ],
+    },
+    {
+      name: 'Capacity Expansion', category: 'capacity', technology: '5G',
+      description: 'Handle capacity congestion on 5G NR cells through carrier activation, load balancing, and resource optimization.',
+      severity: 'critical', estimatedTime: '4h', tags: ['capacity', '5g', 'congestion'],
+      steps: [
+        { title: 'Assess Current Load', description: 'Evaluate PRB utilization, active users, and throughput demand. Determine if congestion is peak-time or persistent.', action: 'check_kpi', target: 'PRB util < 80%, user load < 70%', expectedOutcome: 'Load assessment complete with congestion pattern identified.' },
+        { title: 'Activate Additional Carrier', description: 'If spare carrier available, activate additional component carrier to increase capacity.', action: 'modify_param', target: 'SCell activation, carrierAggregation', expectedOutcome: 'Additional carrier activated; capacity increased by ~100%.' },
+        { title: 'Configure Load Balancing', description: 'Set up inter-frequency and inter-cell load balancing to distribute traffic evenly across available resources.', action: 'modify_param', target: 'loadBalancingThreshold, frequencyPriority', expectedOutcome: 'Load balancing configured; traffic distributed across cells.' },
+        { title: 'Verify Capacity Relief', description: 'Monitor PRB utilization and user experience metrics after capacity expansion.', action: 'check_kpi', target: 'PRB util, throughput per user', expectedOutcome: 'PRB utilization reduced below 70%; per-user throughput improved.' },
+      ],
+    },
+    {
+      name: 'Power Optimization', category: 'power', technology: 'ALL',
+      description: 'Optimize cell power settings to balance coverage, capacity, and energy consumption.',
+      severity: 'low', estimatedTime: '30min', tags: ['power', 'energy', 'green'],
+      steps: [
+        { title: 'Analyze Coverage vs Power', description: 'Evaluate current coverage area against transmit power. Identify over-powered cells where coverage overlaps significantly with neighbors.', action: 'check_kpi', target: 'Coverage radius, neighbor overlap', expectedOutcome: 'Over-powered cells identified with recommended power reduction.' },
+        { title: 'Adjust Reference Signal Power', description: 'Reduce RS power on identified cells while maintaining minimum coverage requirements.', action: 'modify_param', target: 'referenceSignalPower, rsPower', expectedOutcome: 'RS power reduced by 1-3dB; energy savings of 5-15%.' },
+        { title: 'Verify Coverage Integrity', description: 'Confirm that coverage is maintained after power reduction. Check for new coverage holes.', action: 'verify', target: 'RSRP, coverage area', expectedOutcome: 'No coverage degradation; coverage overlap reduced.' },
+      ],
+    },
+    {
+      name: 'Hardware Fault Response', category: 'hardware', technology: 'ALL',
+      description: 'Respond to hardware faults in RRU, BBU, or antenna systems with systematic diagnosis and resolution.',
+      severity: 'critical', estimatedTime: '6h', tags: ['hardware', 'fault', 'maintenance'],
+      steps: [
+        { title: 'Identify Faulty Component', description: 'Analyze alarms, fault codes, and performance degradation to pinpoint the faulty component (RRU, BBU, PSU, antenna, fiber).', action: 'check_kpi', target: 'Hardware alarms, error counters', expectedOutcome: 'Faulty component identified with part number and location.' },
+        { title: 'Activate Backup/Redundancy', description: 'If redundancy available, switch to backup unit to restore service while planning repair.', action: 'run_command', target: 'Redundancy switch', expectedOutcome: 'Service restored via backup; traffic flowing normally.' },
+        { title: 'Coordinate Field Dispatch', description: 'Create maintenance ticket and dispatch field technician with required spare parts.', action: 'escalate', target: 'Field Operations Team', expectedOutcome: 'Maintenance ticket created; technician dispatched within SLA.' },
+        { title: 'Replace and Verify', description: 'After hardware replacement, verify all alarms cleared and KPIs returned to normal levels.', action: 'verify', target: 'Alarm status, KPI metrics', expectedOutcome: 'Hardware replaced; all alarms cleared; KPIs normal.' },
+        { title: 'Update Fault Records', description: 'Document the fault, root cause, resolution, and any preventive measures for knowledge base.', action: 'check_kpi', target: 'MTBF tracking', expectedOutcome: 'Fault record updated; preventive maintenance schedule adjusted.' },
+      ],
+    },
+    {
+      name: '5G NR Coverage Optimization', category: 'coverage', technology: '5G',
+      description: 'Optimize 5G NR coverage through SSB beam management, power control, and beamforming adjustments.',
+      severity: 'high', estimatedTime: '2h', tags: ['5g', 'coverage', 'beamforming'],
+      steps: [
+        { title: 'Assess 5G Coverage Footprint', description: 'Evaluate current 5G coverage area, beam configuration, and SSB RSRP distribution across the cell.', action: 'check_kpi', target: 'SSB RSRP > -100dBm, beam coverage', expectedOutcome: 'Coverage footprint documented with beam-level analysis.' },
+        { title: 'Optimize SSB Power', description: 'Adjust SSB transmit power to improve coverage while avoiding excessive interference to neighboring gNBs.', action: 'modify_param', target: 'ssbPower, ss-PBCH-BlockPower', expectedOutcome: 'SSB power optimized; coverage extended by 10-15%.' },
+        { title: 'Configure Beam Sweeping', description: 'Review and adjust beam sweeping configuration for optimal horizontal and vertical coverage.', action: 'modify_param', target: 'ssb-PeriodicityServingCell, beamCount', expectedOutcome: 'Beam configuration optimized for coverage area.' },
+        { title: 'Verify Beam Performance', description: 'Confirm beam-level KPIs meet targets across the coverage area.', action: 'verify', target: 'Beam-level RSRP, SINR', expectedOutcome: 'All beams meeting coverage targets.' },
+      ],
+    },
+    {
+      name: 'Emergency Outage Response', category: 'hardware', technology: 'ALL',
+      description: 'Rapid response procedure for full or partial outages to minimize downtime and user impact.',
+      severity: 'critical', estimatedTime: '1h', tags: ['outage', 'emergency', 'sla'],
+      steps: [
+        { title: 'Activate Neighbor Compensation', description: 'Immediately boost power on neighboring cells to compensate for the outage area.', action: 'run_command', target: 'CODC power boost on neighbors', expectedOutcome: 'Neighboring cells boosting power; coverage gap reduced.' },
+        { title: 'Reroute Traffic', description: 'Activate traffic rerouting to ensure users are handed over to healthy neighboring cells.', action: 'run_command', target: 'Traffic reroute, load balancing', expectedOutcome: 'Traffic successfully rerouted; users connected to neighbor cells.' },
+        { title: 'Diagnose Root Cause', description: 'Perform remote diagnostics to identify the cause: power failure, fiber cut, hardware fault, or software issue.', action: 'check_kpi', target: 'System logs, hardware status', expectedOutcome: 'Root cause identified with estimated time to repair.' },
+        { title: 'Escalate to Field Team', description: 'If remote resolution not possible, dispatch field team with appropriate equipment.', action: 'escalate', target: 'NOC + Field Operations', expectedOutcome: 'Field team dispatched; SLA clock tracked.' },
+        { title: 'Verify Service Restoration', description: 'After repair, verify all services are restored and KPIs are back to normal before standing down.', action: 'verify', target: 'All KPIs, user connectivity', expectedOutcome: 'Full service restored; all KPIs within normal range.' },
+      ],
+    },
+    {
+      name: 'Neighbor List Optimization', category: 'neighbor', technology: '4G',
+      description: 'Comprehensive neighbor list cleanup and optimization using ANR data and drive test results.',
+      severity: 'medium', estimatedTime: '1.5h', tags: ['neighbor', 'anr', '4g'],
+      steps: [
+        { title: 'Audit Current Neighbor List', description: 'Review existing neighbor relations, identify missing neighbors, and detect ghost/invalid entries.', action: 'check_kpi', target: 'Neighbor list completeness', expectedOutcome: 'Neighbor audit complete; missing and invalid entries documented.' },
+        { title: 'Add Missing Neighbors', description: 'Use ANR and geolocation data to add missing neighbor relations that should exist based on proximity and signal strength.', action: 'modify_param', target: 'Neighbor list additions', expectedOutcome: 'All valid missing neighbors added to configuration.' },
+        { title: 'Remove Invalid Entries', description: 'Remove ghost neighbors, decommissioned cells, and entries with persistently low handover success rates.', action: 'modify_param', target: 'Neighbor list removals', expectedOutcome: 'Invalid entries removed; neighbor list optimized.' },
+        { title: 'Verify Handover Performance', description: 'Monitor handover success rate for all neighbor pairs to confirm optimization was effective.', action: 'verify', target: 'HOSR > 95% for all pairs', expectedOutcome: 'Handover performance verified; no degradation observed.' },
+      ],
+    },
+    {
+      name: 'Inter-Technology Handover Fix', category: 'handover', technology: 'ALL',
+      description: 'Resolve handover issues between different technology layers (4G-5G, 4G-3G, 3G-2G).',
+      severity: 'medium', estimatedTime: '1.5h', tags: ['handover', 'inter-tech', 'irat'],
+      steps: [
+        { title: 'Identify IRAT Failure Points', description: 'Analyze inter-RAT handover success rates between technology pairs to find problematic cell combinations.', action: 'check_kpi', target: 'IRAT HOSR, redirection rate', expectedOutcome: 'Failing IRAT handover pairs identified.' },
+        { title: 'Check Blind/Redirection Config', description: 'Verify blind handover and redirection thresholds between technology layers.', action: 'verify', target: 'Blind HO threshold, redirect threshold', expectedOutcome: 'IRAT threshold configuration verified and documented.' },
+        { title: 'Optimize IRAT Parameters', description: 'Adjust inter-RAT handover parameters including threshold offsets and priorities.', action: 'modify_param', target: 'threshServingLow, priorityReselection', expectedOutcome: 'IRAT parameters optimized for smoother handovers.' },
+        { title: 'Validate with Test Call', description: 'Perform drive test with test UE to verify inter-technology handover works correctly.', action: 'run_command', target: 'Drive test validation', expectedOutcome: 'Test calls successfully handed over between technologies.' },
+      ],
+    },
+    {
+      name: '3G WCDMA Optimization', category: 'coverage', technology: '3G',
+      description: 'Optimize 3G WCDMA network performance including coverage, capacity, and handover parameters.',
+      severity: 'medium', estimatedTime: '2h', tags: ['3g', 'wcdma', 'coverage'],
+      steps: [
+        { title: 'Review RSCP and Ec/No', description: 'Analyze RSCP and Ec/No levels to identify coverage and pilot pollution issues.', action: 'check_kpi', target: 'RSCP > -95dBm, Ec/No > -10dB', expectedOutcome: 'Coverage quality map produced with problem areas highlighted.' },
+        { title: 'Optimize CPICH Power', description: 'Adjust Common Pilot Channel power to improve coverage while managing pilot pollution.', action: 'modify_param', target: 'primaryCPICHPower', expectedOutcome: 'CPICH power optimized; coverage improved without increasing pollution.' },
+        { title: 'Tune Neighbor and Handover', description: 'Review and optimize 3G neighbor list and handover parameters for better mobility.', action: 'modify_param', target: 'Neighbor list, handover parameters', expectedOutcome: 'Handover success rate improved; dropped call rate reduced.' },
+        { title: 'Monitor Call Performance', description: 'Track call setup success rate, drop rate, and voice quality after optimization.', action: 'verify', target: 'CSR > 98%, DCR < 1%', expectedOutcome: 'Call performance metrics within target range.' },
+      ],
+    },
+    {
+      name: '2G GSM Capacity Management', category: 'capacity', technology: '2G',
+      description: 'Manage 2G GSM capacity through channel allocation, half-rate optimization, and traffic load balancing.',
+      severity: 'low', estimatedTime: '1h', tags: ['2g', 'gsm', 'capacity'],
+      steps: [
+        { title: 'Analyze Traffic Load', description: 'Evaluate current Erlang load against available TCH channels. Identify congestion periods.', action: 'check_kpi', target: 'GOS < 2%, channel utilization', expectedOutcome: 'Traffic analysis complete; congestion periods identified.' },
+        { title: 'Optimize Channel Allocation', description: 'Rebalance TRX allocation between BCCH and TCH based on current traffic patterns.', action: 'modify_param', target: 'TRX configuration, channel allocation', expectedOutcome: 'Channel allocation optimized; capacity increased by ~15%.' },
+        { title: 'Enable Half-Rate', description: 'Enable half-rate vocoder during peak congestion periods to double available voice channels.', action: 'modify_param', target: 'Half-rate threshold', expectedOutcome: 'Half-rate activated during peak hours; blocking reduced.' },
+        { title: 'Verify Voice Quality', description: 'Monitor voice quality metrics to ensure half-rate activation does not degrade user experience.', action: 'verify', target: 'Voice quality MOS > 3.5', expectedOutcome: 'Voice quality maintained within acceptable range.' },
+      ],
+    },
+  ];
+
+  const playbookCount = playbookDefs.length;
+  let stepCount = 0;
+  for (const pb of playbookDefs) {
+    const playbook = await db.playbook.create({
+      data: {
+        name: pb.name,
+        category: pb.category,
+        technology: pb.technology,
+        description: pb.description,
+        severity: pb.severity,
+        estimatedTime: pb.estimatedTime,
+        tags: JSON.stringify(pb.tags),
+        usageCount: randInt(0, 50),
+        successRate: Number(rand(0.75, 0.98).toFixed(2)),
+      },
+    });
+
+    for (let si = 0; si < pb.steps.length; si++) {
+      const step = pb.steps[si];
+      await db.playbookStep.create({
+        data: {
+          playbookId: playbook.id,
+          stepNumber: si + 1,
+          title: step.title,
+          description: step.description,
+          action: step.action,
+          target: step.target,
+          expectedOutcome: step.expectedOutcome,
+          isBlocking: si < pb.steps.length - 1,
+        },
+      });
+      stepCount++;
+    }
+  }
+  console.log(`  Playbooks: ${playbookCount}, PlaybookSteps: ${stepCount}`);
+
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());

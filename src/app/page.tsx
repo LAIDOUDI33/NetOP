@@ -16,6 +16,7 @@ import {
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
   Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
+  Heart, Target, ArrowRightLeft, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -46,6 +47,16 @@ const SubscribersView = lazy(() => import('@/components/views/SubscribersView'))
 const IncidentsView = lazy(() => import('@/components/views/IncidentsView'));
 const ConfigView = lazy(() => import('@/components/views/ConfigView'));
 const LiveView = lazy(() => import('@/components/views/LiveView'));
+const HealthView = lazy(() => import('@/components/views/HealthView'));
+const BenchmarkView = lazy(() => import('@/components/views/BenchmarkView'));
+const HandoverView = lazy(() => import('@/components/views/HandoverView'));
+const LoadBalancingView = lazy(() => import('@/components/views/LoadBalancingView'));
+const InterferenceView = lazy(() => import('@/components/views/InterferenceView'));
+const CoverageHolesView = lazy(() => import('@/components/views/CoverageHolesView'));
+const ChangesView = lazy(() => import('@/components/views/ChangesView'));
+const OutagesView = lazy(() => import('@/components/views/OutagesView'));
+const PlaybooksView = lazy(() => import('@/components/views/PlaybooksView'));
+const AssistantView = lazy(() => import('@/components/views/AssistantView'));
 
 const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -55,6 +66,7 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'onboarding', label: 'Site Onboarding', icon: PlusCircle, group: 'Operations' },
   { view: 'live', label: 'Live Dashboard', icon: Activity, group: 'Operations' },
   { view: 'incidents', label: 'Incidents', icon: AlertTriangle, group: 'Operations' },
+  { view: 'outages', label: 'Outages', icon: PowerOff, group: 'Operations' },
   // Analytics
   { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'Analytics' },
   { view: 'alerts', label: 'Alerts', icon: Bell, group: 'Analytics' },
@@ -62,17 +74,26 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'Analytics' },
   { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
   { view: 'capacity', label: 'Capacity Planning', icon: TrendingUp, group: 'Analytics' },
+  { view: 'handover', label: 'Handover Analysis', icon: ArrowRightLeft, group: 'Analytics' },
+  { view: 'load', label: 'Load Balancing', icon: Scale, group: 'Analytics' },
+  { view: 'interference', label: 'Interference', icon: Radio, group: 'Analytics' },
+  { view: 'coverage-holes', label: 'Coverage Holes', icon: MapPinOff, group: 'Analytics' },
   // Intelligence
   { view: 'slicing', label: 'Network Slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', label: 'Energy Management', icon: Zap, group: 'Intelligence' },
   { view: 'faults', label: 'Fault Prediction', icon: Brain, group: 'Intelligence' },
   { view: 'subscribers', label: 'Subscriber Analytics', icon: Users, group: 'Intelligence' },
+  { view: 'health', label: 'Health Score', icon: Heart, group: 'Intelligence' },
+  { view: 'benchmark', label: 'Benchmarking', icon: Target, group: 'Intelligence' },
+  { view: 'playbooks', label: 'Playbooks', icon: BookOpen, group: 'Intelligence' },
+  { view: 'assistant', label: 'AI Assistant', icon: MessageSquare, group: 'Intelligence' },
   // AI Engine
   { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'AI Engine' },
   { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'AI Engine' },
   { view: 'anomaly', label: 'Anomaly Detection', icon: Brain, group: 'AI Engine' },
   // Automation
   { view: 'policies', label: 'Automation Policies', icon: Shield, group: 'Automation' },
+  { view: 'changes', label: 'Change Mgmt', icon: GitBranch, group: 'Automation' },
   { view: 'vendors', label: 'Vendor Hub', icon: Plug, group: 'Automation' },
   // System
   { view: 'reports', label: 'Reports', icon: FileText, group: 'System' },
@@ -107,6 +128,16 @@ const VIEW_TITLES: Record<ViewType, string> = {
   incidents: 'Incident Management',
   config: 'Config Templates',
   live: 'Real-Time Dashboard',
+  health: 'Health Score',
+  benchmark: 'Benchmarking',
+  handover: 'Handover Analysis',
+  load: 'Load Balancing',
+  interference: 'Interference',
+  'coverage-holes': 'Coverage Holes',
+  changes: 'Change Management',
+  outages: 'Outage Management',
+  playbooks: 'Playbooks',
+  assistant: 'AI Assistant',
 };
 
 function ViewFallback() {
@@ -226,6 +257,16 @@ function ViewRenderer() {
           {currentView === 'incidents' && <IncidentsView />}
           {currentView === 'config' && <ConfigView />}
           {currentView === 'live' && <LiveView />}
+          {currentView === 'health' && <HealthView />}
+          {currentView === 'benchmark' && <BenchmarkView />}
+          {currentView === 'handover' && <HandoverView />}
+          {currentView === 'load' && <LoadBalancingView />}
+          {currentView === 'interference' && <InterferenceView />}
+          {currentView === 'coverage-holes' && <CoverageHolesView />}
+          {currentView === 'changes' && <ChangesView />}
+          {currentView === 'outages' && <OutagesView />}
+          {currentView === 'playbooks' && <PlaybooksView />}
+          {currentView === 'assistant' && <AssistantView />}
         </Suspense>
       </motion.div>
     </AnimatePresence>

@@ -165,7 +165,7 @@ export interface CoverageData {
   }[];
 }
 
-export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config';
+export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config' | 'health' | 'benchmark' | 'handover' | 'load' | 'interference' | 'coverage-holes' | 'changes' | 'outages' | 'playbooks' | 'assistant';
 
 // ========== PHASE A: SON & Automation Types ==========
 
