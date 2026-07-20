@@ -335,3 +335,193 @@ Stage Summary:
 - Phase A COMPLETE: All 9 foundational modules operational
 - 17 views in SPA, 22 API routes, 16 Prisma models, 742 seeded records
 - Zero lint errors, zero runtime errors
+
+---
+Task ID: B4-a
+Agent: Main Agent
+Task: Phase B — Create/rewrite 8 API route files for advanced intelligence & operations modules
+
+Work Log:
+- Rewrote /api/capacity/route.ts: GET returns forecasts with summary { total, byRisk, avgGrowthRate, sitesAtRisk }. POST creates manual forecast with auto-region from site lookup. Required fields: siteId, technology, metric, currentValue, forecastValue.
+- Rewrote /api/slicing/route.ts: GET returns slices with site name. Summary has { total, active, suspended, deactivated, byType, avgLoad }. JSON.parse on parameters field.
+- Rewrote /api/energy/route.ts: GET returns energy metrics. If siteId param provided, returns timeline (asc order). Default mode: latest per site with summary { totalSites, totalPowerKw, totalCO2kg, avgTemp, sleepModeCount, energySavingPct, byTech, byMode }.
+- Rewrote /api/faults/route.ts: GET returns fault predictions with site name. Summary includes { total, bySeverity, byStatus, byComponent, avgProbability, highRiskCount }. JSON.parse on indicators.
+- Rewrote /api/subscribers/route.ts: GET returns subscriber segments. Summary: { totalSegments, totalSubscribers, totalARPU, avgChurnRisk, byTech }. JSON.parse on criteria and topServices.
+- Rewrote /api/incidents/route.ts: GET returns incidents with site name. Summary: { total, bySeverity, byStatus, byCategory, avgMTTR, slaBreaches }. POST requires title, technology, severity; auto-sets reportedBy='system'. PATCH supports 3 actions: 'resolve' (sets status=closed, resolvedAt=now, requires rootCause+resolution), 'assign' (sets assignedTo), 'investigate' (sets status=investigating).
+- Rewrote /api/config/route.ts: GET returns config templates. Summary: { total, byCategory, byTech, totalApplications }. JSON.parse on parameters.
+- Rewrote /api/live/route.ts: GET returns aggregated real-time dashboard. Aggregates from kpiMetric (latest per site), alert (unresolved, last 10), energyMetric (latest per site), incident (open/investigating counts, today resolved, SLA breaches). Returns { overview, byTech[], topLoadedSites[], recentAlerts[], energySummary, incidentSummary }. Merges energy power into byTech.
+
+Key design decisions:
+- All JSON string fields parsed with JSON.parse()
+- All DateTime fields converted with .toISOString()
+- Used Record<string, unknown> instead of any for Prisma where clauses
+- Used instanceof Error for type-safe error extraction
+- Explicit field mapping in response (no spread with site relation to avoid sending nested objects)
+
+Stage Summary:
+- 8 API route files rewritten to match Phase B specifications exactly
+- Lint passes with 0 errors
+- Dev server compiles cleanly
+- All routes follow established project patterns (db from @/lib/db, NextResponse.json, ISO timestamps, try/catch)
+
+---
+Task ID: B3
+Agent: Main Agent
+Task: Phase B — Verify and fix Phase B seed data in prisma/seed.ts
+
+Work Log:
+- Analyzed existing Phase B seed data (lines 1364-1811) against B3 task specification
+- Found all 7 sections already present: CapacityForecast(40), NetworkSlice(12), EnergyMetric(~120), FaultPrediction(20), SubscriberSegment(8), Incident(15), ConfigTemplate(10)
+- Verified DB counts match: CapacityForecast=40, NetworkSlice=12, EnergyMetric=117, FaultPrediction=20, SubscriberSegment=8, Incident=15, ConfigTemplate=10
+- Fixed EnergyMetric mode/power logic:
+  - `energy_saving` mode now correctly reduces power to 60% of base (was previously treated as 100%)
+  - `shutdown` mode now correctly sets power to 0W (was previously 30-40% of base)
+  - `sleep` mode correctly uses 30-40% of base power (60-70% reduction) — unchanged
+  - Shutdown and sleep modes now correctly set activeUsers to 0 / 0-5 and trafficLoad to 0 / 0-5 respectively
+- Fixed SubscriberSegment names to match spec exactly:
+  - 'Voice-Only Subscribers' → 'Voice-Only'
+  - 'IoT/M2M Devices' → 'IoT/M2M'
+  - 'Enterprise Customers' → 'Enterprise'
+  - Fixed IoT/M2M subscriberCount from 85000 to 50000 (within 500-50000 range)
+- Verified all other sections match spec:
+  - CapacityForecast: risk logic (>15%=high, >8%=medium, else low) ✓, recommendations per risk ✓, horizons 7d/14d/30d ✓
+  - NetworkSlice: 4 eMBB(SST=1) + 4 URLLC(SST=2) + 4 mMTC(SST=3), 5G NR sites only, load 20-85% ✓
+  - FaultPrediction: 6 components (RRU/BBU/PSU/Antenna/Fiber/Transport), severity/status/probability/action/estimatedTimeToFail ✓
+  - Incident: 4 critical + 5 high + 4 medium + 2 low, 3 open + 4 investigating + 5 resolved + 3 closed ✓
+  - ConfigTemplate: 10 templates with correct vendor/tech mapping, 3-5 params each in JSON ✓
+- ESLint passes with 0 errors
+
+Stage Summary:
+- Phase B seed data verified and 2 bugs fixed (EnergyMetric mode logic, SubscriberSegment names)
+- All 7 Phase B tables have correct record counts in the database
+- Seed file ready for reseed to apply fixes (energy_saving/shutdown power logic, segment names)
+- Total Phase B seed: 40 + 12 + 117 + 20 + 8 + 15 + 10 = 222 records
+
+---
+Task ID: B5-c
+Agent: Main Agent
+Task: Build SubscribersView and IncidentsView view components
+
+Work Log:
+- Created /src/components/views/SubscribersView.tsx (~290 lines) as 'use client' component
+  - Header: "Subscriber Analytics" with Users icon and subtitle
+  - 5 KPI Cards: Total Subscribers (formatted K/M), Total ARPU ($), Avg Churn Risk (%, color-coded), Segments count, Avg Satisfaction
+  - Top Services BarChart: aggregates service appearance count across all segments, colored with TECH_COLORS palette
+  - ARPU by Segment BarChart: horizontal bars, sorted descending, colored per technology
+  - Churn Risk by Segment BarChart: vertical bars with conditional coloring (emerald <15%, amber <30%, red >=30%)
+  - Full Segment Table: 10 columns (Segment, Tech badge, Subscribers, Avg Data GB, Voice Min, ARPU, Churn Risk colored badge, Satisfaction score color-coded, Peak Hour, Top Services as small badges)
+  - Technology filter Select above table
+  - max-h-96 overflow-y-auto on table, loading skeletons, empty state
+- Created /src/components/views/IncidentsView.tsx (~370 lines) as 'use client' component
+  - Header: "Incident Management" with AlertTriangle icon and subtitle
+  - 6 KPI Cards: Open Incidents (red border), Investigating (amber border), Resolved Today (emerald), SLA Breaches (red border), Avg MTTR (min), Total Incidents
+  - Status Distribution BarChart: open=red, investigating=amber, resolved=emerald, closed=slate
+  - Category Distribution PieChart: donut chart with 6 category colors and legend
+  - Severity by Category Stacked BarChart: low=slate, medium=amber, high=red, critical=dark-red
+  - Full Incidents Table: 12 columns (Title, Tech badge, Severity badge colored, Status badge colored, Category badge, Priority, Site code, Assigned, MTTR with SLA target comparison, SLA breach badge, Tags as small badges, Created datetime)
+  - 4 filter Selects: Technology, Severity, Status, Category
+  - Severity coloring: low=default, medium=secondary(amber), high=destructive, critical=destructive
+  - Status coloring: open=red outline, investigating=amber, resolved=emerald, closed=secondary
+  - max-h-96 overflow-y-auto on table, loading skeletons, empty state
+- Both components use TanStack Query with refetchInterval 30000
+- Both import TECH_COLORS, TECH_BG_CLASSES from @/lib/constants
+- Both use shadcn/ui Card, Badge, Select, Table, Skeleton, ScrollArea, Separator
+- Both use Recharts BarChart, PieChart, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+- Both export default function ComponentName()
+- Lint passes with 0 errors on new files (4 pre-existing errors in ConfigView.tsx unrelated)
+
+Stage Summary:
+- 2 new view components: SubscribersView.tsx, IncidentsView.tsx
+- SubscribersView: 5 KPI cards + 3 charts (top services bar, ARPU horizontal bar, churn risk bar) + full filterable table
+- IncidentsView: 6 KPI cards + 3 charts (status bar, category pie, severity stacked bar) + full filterable table with 4 filters
+- Zero lint errors on new code
+- Dev server compiles cleanly
+
+---
+Task ID: B5-a
+Agent: Main Agent
+Task: Build CapacityView and EnergyView view components
+
+Work Log:
+- Created /src/components/views/CapacityView.tsx (~230 lines) as 'use client' component
+  - Header: "Capacity Planning & Forecasting" with TrendingUp icon and subtitle
+  - 4 KPI Cards: Total Forecasts, Sites at Risk (red), Avg Growth Rate (%), Avg Confidence (%)
+  - Risk Distribution BarChart: bars grouped by riskLevel (low=emerald, medium=amber, high=red, critical=red-700) with Cell-based coloring
+  - Forecast by Technology BarChart: avg forecast value per tech, colored with TECH_COLORS
+  - Full Forecast Table: 10 columns (Site, Tech badge, Region, Metric, Current, Forecast 7d, Growth% color-coded, Risk badge with variant, Confidence, Recommendation truncated)
+  - 2 filter Selects: Technology (all + 4 techs), Risk Level (all + 4 levels)
+  - Risk coloring: low=outline/emerald, medium=secondary/amber, high=destructive/red, critical=destructive/red-700
+  - Growth rate color: >10% red, else amber
+  - Confidence shown as percentage (value * 100)
+  - max-h-96 overflow-y-auto on table, loading skeletons for all sections, error state
+  - TanStack Query with queryKey ['capacity', {technology, riskLevel}], 30s auto-refresh
+- Created /src/components/views/EnergyView.tsx (~290 lines) as 'use client' component
+  - Header: "Energy Management" with Zap icon and subtitle
+  - 5 KPI Cards: Total Power (kW), CO₂ Emissions (kg), Avg Temperature (°C), Sites in Sleep Mode, Energy Saving (%) in emerald
+  - Power by Technology BarChart: totalPowerKw per tech, colored with TECH_COLORS (emerald/amber/cyan/slate)
+  - Energy Mode Distribution PieChart: donut chart for normal/energy_saving/sleep/shutdown with labels and legend
+  - CO₂ Emission by Technology BarChart: total CO2 in grams per tech, colored with TECH_COLORS
+  - Full Energy Table: 10 columns (Site, Tech badge, Power W, Energy Wh, Users, Load%, Temp °C color-coded, Mode badge, CO₂ g, Sleep? badge)
+  - Table sorted by power consumption descending
+  - 2 filter Selects: Technology (all + 4 techs), Mode (all + 4 modes)
+  - Mode badge coloring: normal=outline, energy_saving=secondary, sleep=secondary, shutdown=destructive
+  - Temperature color: >45°C red, >35°C amber, else default
+  - max-h-96 overflow-y-auto on table, loading skeletons, error state
+  - TanStack Query with queryKey ['energy', {technology, mode}], 30s auto-refresh
+- Both components import TECH_COLORS, formatNumber, TECHNOLOGIES from @/lib/constants
+- Both use shadcn/ui Card, Badge, Select, Table, Skeleton, Separator
+- Both use Recharts BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+- Both export default function ComponentName()
+- Lint passes with 0 errors on new files (4 pre-existing errors in ConfigView.tsx unrelated)
+
+Stage Summary:
+- 2 new view components: CapacityView.tsx, EnergyView.tsx
+- CapacityView: 4 KPI cards + 2 charts (risk distribution bar, forecast by tech bar) + filterable table with 2 filters
+- EnergyView: 5 KPI cards + 3 charts (power by tech bar, mode distribution donut pie, CO2 by tech bar) + filterable table with 2 filters
+- Zero lint errors on new code
+- Dev server compiles cleanly
+
+---
+Task ID: B5-b
+Agent: Main Agent
+Task: Build SlicingView and FaultsView view components
+
+Work Log:
+- Created /src/components/views/SlicingView.tsx (~310 lines) as 'use client' component
+  - Header: "Network Slicing (5G NR)" with Layers icon, subtitle "S-NSSAI slice lifecycle and QoS management"
+  - 5 KPI Cards: Total Slices, Active Slices (emerald border), Avg Load (% with colored progress bar), Total Active Users (with Users icon), URLLC Slices Count (amber)
+  - Slice Type Distribution: 3 cards side-by-side for eMBB (emerald/WiFi icon), URLLC (amber/Zap icon), mMTC (cyan/Cpu icon) — each shows count, avg load with progress bar, total users
+  - Slice Load BarChart: bars colored by sliceType via Cell (eMBB=#10B981, URLLC=#F59E0B, mMTC=#06B6D4), sorted by currentLoad desc, ReferenceLine at 80% target, rotated x-axis labels
+  - Full Slices Table: 13 columns (Name, Type badge colored, Site with code, SST/SD, Max BW, Guaranteed BW, Priority badge, Latency Target, Current Load with colored bar+%, Users, Throughput, Status badge, QCI/FiveQI)
+  - Filter by status (all/active/suspended/deactivated) and sliceType (all/eMBB/URLLC/mMTC)
+  - Color status: active=default, suspended=outline with amber border, deactivated=secondary
+  - Color type badges: eMBB=emerald bg, URLLC=amber bg, mMTC=cyan bg
+  - Load bar colors: ≥80% red, ≥60% amber, <60% emerald
+  - max-h-96 overflow-y-auto on table, loading skeletons for all sections
+  - TanStack Query with queryKey ['slicing', status, sliceType], 30s auto-refresh
+- Created /src/components/views/FaultsView.tsx (~360 lines) as 'use client' component
+  - Header: "AI Fault Prediction" with Brain icon, subtitle "Predictive maintenance and failure forecasting"
+  - 5 KPI Cards: Total Predictions, High/Critical Risk (red border with ShieldAlert icon), Avg Probability (% with colored progress bar), Confirmed Faults (red), Mitigated (emerald with ShieldCheck icon)
+  - Severity Distribution BarChart: 4 bars (low=slate, medium=amber, high=red, critical=dark-red) via Cell coloring
+  - Component Risk Heatmap Grid: rows=6 components (RRU, BBU, PSU, Antenna, Fiber, Transport), columns=4 severities, cells show count with severity-colored backgrounds (slate/amber/red/red-dark), total column, component badges colored per component
+  - Full Predictions Table: 11 columns (Site with code, Tech badge via TECH_BG_CLASSES, Component badge colored, Fault Type title-cased, Probability with colored bar+%, Severity badge, Status badge, Confidence %, Time to Fail, Action truncated with title tooltip, Created datetime)
+  - 3 filter Selects: Severity (all/low/medium/high/critical), Status (all/predicted/confirmed/mitigated/false_positive), Component (all + 6 components)
+  - Severity badges: low=default, medium=secondary, high=destructive, critical=destructive with red-700 bg override
+  - Status badges: predicted=default, confirmed=destructive, mitigated=outline with emerald border, false_positive=secondary
+  - Component badges: each component has unique color (RRU=amber, BBU=emerald, PSU=red, Antenna=cyan, Fiber=orange, Transport=rose)
+  - Probability bar colors: ≥80% red, ≥60% amber, ≥40% amber-400, <40% emerald
+  - max-h-96 overflow-y-auto on table, loading skeletons for all sections
+  - TanStack Query with queryKey ['faults', severity, status, component], 30s auto-refresh
+- Both components import TECH_COLORS, TECH_BG_CLASSES, formatNumber from @/lib/constants
+- Both use shadcn/ui Card, Badge, Select, Table, Skeleton, Separator
+- Both use Recharts BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine/ResponsiveContainer
+- Both export default function ComponentName()
+- Both use 'use client' directive
+- No indigo/blue colors used anywhere
+
+Stage Summary:
+- 2 new view components: SlicingView.tsx, FaultsView.tsx
+- SlicingView: 5 KPI cards + 3 slice type distribution cards + load bar chart with 80% target line + 13-column filterable table
+- FaultsView: 5 KPI cards + severity distribution bar chart + 6x4 component-severity heatmap grid + 11-column filterable table with 3 filters
+- ESLint passes with 0 errors
+- Dev server compiles cleanly

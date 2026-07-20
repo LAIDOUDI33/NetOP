@@ -15,6 +15,7 @@ import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
   Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
+  Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -37,25 +38,47 @@ const PoliciesView = lazy(() => import('@/components/views/PoliciesView'));
 const OnboardingView = lazy(() => import('@/components/views/OnboardingView'));
 const VendorsView = lazy(() => import('@/components/views/VendorsView'));
 const QoEView = lazy(() => import('@/components/views/QoEView'));
+const CapacityView = lazy(() => import('@/components/views/CapacityView'));
+const SlicingView = lazy(() => import('@/components/views/SlicingView'));
+const EnergyView = lazy(() => import('@/components/views/EnergyView'));
+const FaultsView = lazy(() => import('@/components/views/FaultsView'));
+const SubscribersView = lazy(() => import('@/components/views/SubscribersView'));
+const IncidentsView = lazy(() => import('@/components/views/IncidentsView'));
+const ConfigView = lazy(() => import('@/components/views/ConfigView'));
+const LiveView = lazy(() => import('@/components/views/LiveView'));
 
 const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
+  // Operations
   { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Operations' },
   { view: 'monitoring', label: 'Monitoring', icon: Activity, group: 'Operations' },
   { view: 'son', label: 'SON Automation', icon: Cpu, group: 'Operations' },
   { view: 'onboarding', label: 'Site Onboarding', icon: PlusCircle, group: 'Operations' },
+  { view: 'live', label: 'Live Dashboard', icon: Activity, group: 'Operations' },
+  { view: 'incidents', label: 'Incidents', icon: AlertTriangle, group: 'Operations' },
+  // Analytics
   { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'Analytics' },
   { view: 'alerts', label: 'Alerts', icon: Bell, group: 'Analytics' },
   { view: 'coverage', label: 'Coverage Map', icon: MapPin, group: 'Analytics' },
   { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'Analytics' },
+  { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
+  { view: 'capacity', label: 'Capacity Planning', icon: TrendingUp, group: 'Analytics' },
+  // Intelligence
+  { view: 'slicing', label: 'Network Slicing', icon: Layers, group: 'Intelligence' },
+  { view: 'energy', label: 'Energy Management', icon: Zap, group: 'Intelligence' },
+  { view: 'faults', label: 'Fault Prediction', icon: Brain, group: 'Intelligence' },
+  { view: 'subscribers', label: 'Subscriber Analytics', icon: Users, group: 'Intelligence' },
+  // AI Engine
   { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'AI Engine' },
   { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'AI Engine' },
   { view: 'anomaly', label: 'Anomaly Detection', icon: Brain, group: 'AI Engine' },
+  // Automation
   { view: 'policies', label: 'Automation Policies', icon: Shield, group: 'Automation' },
   { view: 'vendors', label: 'Vendor Hub', icon: Plug, group: 'Automation' },
+  // System
   { view: 'reports', label: 'Reports', icon: FileText, group: 'System' },
-  { view: 'settings', label: 'Parameters', icon: Settings, group: 'System' },
   { view: 'sla', label: 'SLA Dashboard', icon: Shield, group: 'System' },
-  { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
+  { view: 'config', label: 'Config Templates', icon: Settings2, group: 'System' },
+  { view: 'settings', label: 'Parameters', icon: Settings, group: 'System' },
 ];
 
 const VIEW_TITLES: Record<ViewType, string> = {
@@ -76,6 +99,14 @@ const VIEW_TITLES: Record<ViewType, string> = {
   policies: 'Automation Policies',
   vendors: 'Vendor Management',
   qoe: 'Customer Experience',
+  capacity: 'Capacity Planning',
+  slicing: 'Network Slicing',
+  energy: 'Energy Management',
+  faults: 'AI Fault Prediction',
+  subscribers: 'Subscriber Analytics',
+  incidents: 'Incident Management',
+  config: 'Config Templates',
+  live: 'Real-Time Dashboard',
 };
 
 function ViewFallback() {
@@ -118,7 +149,7 @@ function ThemeToggle() {
 
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
   const { currentView, setCurrentView } = useAppStore();
-  const groups = ['Operations', 'Analytics', 'AI Engine', 'Automation', 'System'] as const;
+  const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
 
   const renderGroup = (items: typeof NAV_ITEMS, label: string) => {
     if (items.length === 0) return null;
@@ -187,6 +218,14 @@ function ViewRenderer() {
           {currentView === 'onboarding' && <OnboardingView />}
           {currentView === 'vendors' && <VendorsView />}
           {currentView === 'qoe' && <QoEView />}
+          {currentView === 'capacity' && <CapacityView />}
+          {currentView === 'slicing' && <SlicingView />}
+          {currentView === 'energy' && <EnergyView />}
+          {currentView === 'faults' && <FaultsView />}
+          {currentView === 'subscribers' && <SubscribersView />}
+          {currentView === 'incidents' && <IncidentsView />}
+          {currentView === 'config' && <ConfigView />}
+          {currentView === 'live' && <LiveView />}
         </Suspense>
       </motion.div>
     </AnimatePresence>

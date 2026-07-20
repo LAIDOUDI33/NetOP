@@ -29,6 +29,11 @@ model NetworkSite {
   neighbors     NeighborRelation[]
   sonActions    SonAction[]
   qoeMetrics    QoEMetric[]
+  capacityForecasts CapacityForecast[]
+  networkSlices NetworkSlice[]
+  energyMetrics  EnergyMetric[]
+  faultPredictions FaultPrediction[]
+  incidents      Incident[]
 }
 
 model KpiMetric {
@@ -354,4 +359,181 @@ model SiteOnboarding {
   @@index([status])
   @@index([technology])
   @@index([createdAt])
+}
+
+// ========== PHASE B: ADVANCED INTELLIGENCE & OPERATIONS ==========
+
+model CapacityForecast {
+  id            String   @id @default(cuid())
+  siteId        String?
+  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology    String
+  region        String
+  metric        String   // prbUtilization, activeUsers, throughput
+  currentValue  Float
+  forecastValue Float
+  forecastHorizon String   @default("7d") // 7d, 14d, 30d, 90d
+  growthRate    Float    // percentage growth predicted
+  capacityLimit  Float?
+  utilizationAtLimit Float? // predicted utilization when capacity is reached
+  confidence    Float    @default(0.85) // 0-1 prediction confidence
+  riskLevel     String   @default("low") // low, medium, high, critical
+  recommendation String   @default("")
+  timestamp     DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([region])
+  @@index([riskLevel])
+  @@index([timestamp])
+}
+
+model NetworkSlice {
+  id            String   @id @default(cuid())
+  name          String
+  sliceType     String   // eMBB, URLLC, mMTC
+  technology    String   @default("5G")
+  status        String   @default("active") // active, suspended, deactivated
+  siteId        String?
+  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  sst           String?  // S-NSSAI SST
+  sd            String?  // S-NSSAI SD
+  maxBandwidth  Float    @default(100) // Mbps
+  guaranteedBw  Float    @default(30)  // Mbps guaranteed
+  maxUsers     Int      @default(100)
+  priorityLevel Int      @default(5)  // 1=highest
+  latencyTarget Float?  // ms
+  reliabilityTarget Float? // 99.999 etc
+  currentLoad  Float    @default(0)   // percentage
+  activeUsers  Int      @default(0)
+  avgThroughput Float?
+  avgLatency   Float?
+  qci           Int?     // QoS Class Identifier
+  FiveQi        Int?     // 5G QoS Identifier
+  parameters    String   @default("{}") // JSON: slice-specific params
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([status])
+  @@index([sliceType])
+}
+
+model EnergyMetric {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  timestamp       DateTime    @default(now())
+  powerConsumption Float      // Watts
+  energyConsumed  Float      // Wh in the interval
+  activeUsers     Int?
+  trafficLoad     Float?     // PRB utilization %
+  temperature     Float?     // Celsius
+  sleepMode       Boolean     @default(false)
+  mode            String      @default("normal") // normal, energy_saving, sleep, shutdown
+  co2Emission     Float?     // kg CO2 equivalent
+  solarGeneration  Float?     // Watts from solar
+  batteryLevel    Float?     // % if battery backup
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([timestamp])
+  @@index([mode])
+}
+
+model FaultPrediction {
+  id              String   @id @default(cuid())
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology      String
+  component       String   // RRU, BBU, PSU, Antenna, Fiber, Transport
+  faultType       String   // hardware_failure, software_bug, degradation, power_issue, environmental
+  probability      Float    // 0-1 predicted probability
+  severity        String   @default("medium") // low, medium, high, critical
+  status          String   @default("predicted") // predicted, confirmed, mitigated, false_positive
+  confidence      Float    @default(0.0)
+  indicators      String   @default("[]") // JSON: list of contributing KPIs
+  recommendedAction String   @default("")
+ estimatedTimeToFail String?  // e.g. "72h", "7d", "30d"
+  resolvedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([severity])
+  @@index([status])
+  @@index([component])
+}
+
+model SubscriberSegment {
+  id              String   @id @default(cuid())
+  segmentName     String
+  technology      String
+  criteria        String   @default("{}") // JSON: {dataRange, usagePattern, location, deviceType}
+  subscriberCount Int      @default(0)
+  avgDataUsage    Float    @default(0) // GB per month
+  avgVoiceMinutes Float    @default(0) // minutes per month
+  arpu            Float    @default(0) // Average Revenue Per User
+  churnRisk       Float    @default(0) // 0-1
+  satisfactionScore Float?  // 0-100
+  topServices     String   @default("[]") // JSON: ["video_streaming", "social_media", ...]
+  peakHour       String?  // e.g. "20:00-23:00"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([technology])
+}
+
+model Incident {
+  id              String   @id @default(cuid())
+  title           String
+  description     String   @default("")
+  technology      String
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  severity        String   @default("medium") // low, medium, high, critical
+  status          String   @default("open") // open, investigating, resolved, closed
+  category        String   @default("network") // network, hardware, software, power, environmental, third_party
+  priority        Int      @default(5)  // 1=highest
+  assignedTo      String?
+  reportedBy      String   @default("system")
+  mttrTarget      Int?     // minutes
+  mtbfValue      Float?   // hours
+  rootCause       String?
+  resolution      String?
+  affectedSites   String   @default("[]") // JSON: site IDs
+  relatedAlerts   String   @default("[]") // JSON: alert IDs
+  tags            String   @default("[]") // JSON: ["capacity", "interference", ...]
+  slaBreach       Boolean   @default(false)
+  resolvedAt      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([severity])
+  @@index([status])
+  @@index([category])
+  @@index([priority])
+  @@index([createdAt])
+}
+
+model ConfigTemplate {
+  id              String   @id @default(cuid())
+  name            String
+  technology      String
+  category        String   @default("general") // radio, neighbor, handover, power, capacity
+  description     String   @default("")
+  vendor          String   @default("")
+  parameters      String   @default("{}") // JSON: {paramName: {value, unit, range}}
+  isDefault       Boolean @default(false)
+  applyCount      Int      @default(0)
+  lastApplied     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }

@@ -75,7 +75,15 @@ function genKpi(siteId: string, tech: string, timestamp: Date) {
 
 async function main() {
   console.log('Clearing existing data...');
-  // Clear Phase A tables first (they have FKs to base tables)
+  // Clear Phase B tables first (FKs to NetworkSite)
+  await db.incident.deleteMany();
+  await db.faultPrediction.deleteMany();
+  await db.energyMetric.deleteMany();
+  await db.capacityForecast.deleteMany();
+  await db.networkSlice.deleteMany();
+  await db.configTemplate.deleteMany();
+  await db.subscriberSegment.deleteMany();
+  // Clear Phase A tables (they have FKs to base tables)
   await db.qoEMetric.deleteMany();
   await db.siteOnboarding.deleteMany();
   await db.policyExecution.deleteMany();
@@ -1353,8 +1361,460 @@ async function main() {
   }
   console.log(`  QoEMetrics: ${qoeBatch.length}`);
 
+  // ==================================================================
+  // PHASE B: ADVANCED INTELLIGENCE & OPERATIONS SEED DATA
+  // ==================================================================
+  console.log('\n--- Seeding Phase B: Advanced Intelligence & Operations ---');
+
+  const bSites = await db.networkSite.findMany();
+  const b4G = bSites.filter(s => s.technology === '4G');
+  const b5G = bSites.filter(s => s.technology === '5G');
+  const b3G = bSites.filter(s => s.technology === '3G');
+  const b2G = bSites.filter(s => s.technology === '2G');
+
+  // ------------------------------------------------------------------
+  // 1. CapacityForecast (40 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding CapacityForecasts...');
+  const forecastMetrics = ['prbUtilization', 'activeUsers', 'throughput'];
+  const forecastHorizons = ['7d', '14d', '30d'];
+  const capacityBatch: any[] = [];
+
+  // Use a subset of sites: pick sites from different techs and regions
+  const forecastSites = [...b4G.slice(0, 6), ...b5G.slice(0, 4), ...b3G.slice(0, 2), ...b2G.slice(0, 2)];
+  let fcCount = 0;
+  for (const site of forecastSites) {
+    if (fcCount >= 40) break;
+    for (const metric of forecastMetrics) {
+      if (fcCount >= 40) break;
+      const horizon = forecastHorizons[fcCount % 3];
+      let currentValue: number;
+      let capacityLimit: number | undefined;
+      let forecastValue: number;
+      let growthRate: number;
+
+      if (metric === 'prbUtilization') {
+        currentValue = Number(rand(40, 90).toFixed(1));
+        capacityLimit = 100;
+        growthRate = Number(rand(-2, 25).toFixed(1));
+        forecastValue = Number(Math.min(100, currentValue * (1 + growthRate / 100)).toFixed(1));
+      } else if (metric === 'activeUsers') {
+        currentValue = Number(rand(50, 400).toFixed(0));
+        capacityLimit = Number(rand(300, 1200).toFixed(0));
+        growthRate = Number(rand(-3, 20).toFixed(1));
+        forecastValue = Number((currentValue * (1 + growthRate / 100)).toFixed(0));
+      } else {
+        currentValue = Number(rand(20, 200).toFixed(1));
+        capacityLimit = Number(rand(100, 500).toFixed(1));
+        growthRate = Number(rand(-1, 22).toFixed(1));
+        forecastValue = Number((currentValue * (1 + growthRate / 100)).toFixed(1));
+      }
+
+      let riskLevel: string;
+      let recommendation: string;
+      if (growthRate > 15) {
+        riskLevel = 'high';
+        recommendation = 'Capacity expansion recommended within 30 days';
+      } else if (growthRate > 8) {
+        riskLevel = 'medium';
+        recommendation = 'Monitor closely, consider capacity expansion';
+      } else {
+        riskLevel = 'low';
+        recommendation = 'No action needed';
+      }
+
+      capacityBatch.push({
+        siteId: site.id,
+        technology: site.technology,
+        region: site.region,
+        metric,
+        currentValue,
+        forecastValue,
+        forecastHorizon: horizon,
+        growthRate,
+        capacityLimit,
+        utilizationAtLimit: capacityLimit && currentValue > 0 ? Number(((forecastValue / capacityLimit) * 100).toFixed(1)) : null,
+        confidence: Number(rand(0.7, 0.98).toFixed(2)),
+        riskLevel,
+        recommendation,
+        timestamp: subHours(now, randInt(1, 24)),
+      });
+      fcCount++;
+    }
+  }
+  const chunkSizeB = 50;
+  for (let i = 0; i < capacityBatch.length; i += chunkSizeB) {
+    await db.capacityForecast.createMany({ data: capacityBatch.slice(i, i + chunkSizeB) });
+  }
+  console.log(`  CapacityForecasts: ${capacityBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 2. NetworkSlice (12 records) — 5G NR sites only
+  // ------------------------------------------------------------------
+  console.log('Seeding NetworkSlices...');
+  const sliceData = [
+    // eMBB (4 slices)
+    { name: 'eMBB-Video-Streaming-LG001', sliceType: 'eMBB', siteIdx: 0, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 200, priority: 3, latTarget: 20, load: 72, users: 145, throughput: 65.3, latency: 12.4, fiveQi: 9 },
+    { name: 'eMBB-Broadband-LG002', sliceType: 'eMBB', siteIdx: 1, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 150, priority: 4, latTarget: 20, load: 58, users: 87, throughput: 48.7, latency: 14.1, fiveQi: 9 },
+    { name: 'eMBB-Enterprise-AB001', sliceType: 'eMBB', siteIdx: 3, sst: '1', maxBw: 100, guarBw: 50, maxUsers: 100, priority: 2, latTarget: 15, load: 45, users: 42, throughput: 38.2, latency: 10.8, fiveQi: 8 },
+    { name: 'eMBB-Public-Safety-PH001', sliceType: 'eMBB', siteIdx: 5, sst: '1', maxBw: 80, guarBw: 40, maxUsers: 80, priority: 1, latTarget: 20, load: 33, users: 26, throughput: 25.1, latency: 11.5, fiveQi: 8 },
+    // URLLC (4 slices)
+    { name: 'URLLC-Industrial-LG001', sliceType: 'URLLC', siteIdx: 0, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 50, priority: 1, latTarget: 5, load: 28, users: 12, throughput: 8.5, latency: 3.2, fiveQi: 80 },
+    { name: 'URLLC-Autonomous-AB002', sliceType: 'URLLC', siteIdx: 4, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 30, priority: 1, latTarget: 5, load: 85, users: 25, throughput: 42.3, latency: 4.1, fiveQi: 80 },
+    { name: 'URLLC-AR-VR-LG003', sliceType: 'URLLC', siteIdx: 2, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 100, priority: 2, latTarget: 5, load: 40, users: 38, throughput: 15.6, latency: 3.8, fiveQi: 82 },
+    { name: 'URLLC-Remote-Surgery-AB001', sliceType: 'URLLC', siteIdx: 3, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 10, priority: 1, latTarget: 5, load: 20, users: 4, throughput: 5.2, latency: 2.8, fiveQi: 84 },
+    // mMTC (4 slices)
+    { name: 'mMTC-Smart-Meter-LG001', sliceType: 'mMTC', siteIdx: 0, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 5, latTarget: 100, load: 65, users: 320, throughput: 3.2, latency: 45.6, fiveQi: 2 },
+    { name: 'mMTC-Agri-Sensors-KN001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 400, priority: 6, latTarget: 100, load: 22, users: 88, throughput: 1.1, latency: 62.3, fiveQi: 2 },
+    { name: 'mMTC-Tracking-AB001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 600, priority: 5, latTarget: 100, load: 51, users: 305, throughput: 4.8, latency: 38.9, fiveQi: 2 },
+    { name: 'mMTC-Smart-City-LG002', sliceType: 'mMTC', siteIdx: 1, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 4, latTarget: 100, load: 78, users: 390, throughput: 6.1, latency: 42.1, fiveQi: 2 },
+  ];
+
+  const networkSliceBatch = sliceData.map(sd => {
+    const site = b5G[sd.siteIdx % b5G.length];
+    return {
+      name: sd.name,
+      sliceType: sd.sliceType,
+      technology: '5G',
+      status: sd.load > 80 ? 'suspended' : 'active',
+      siteId: site.id,
+      sst: sd.sst,
+      maxBandwidth: sd.maxBw,
+      guaranteedBw: sd.guarBw,
+      maxUsers: sd.maxUsers,
+      priorityLevel: sd.priority,
+      latencyTarget: sd.latTarget,
+      reliabilityTarget: sd.sliceType === 'URLLC' ? 99.999 : sd.sliceType === 'eMBB' ? 99.99 : 99.9,
+      currentLoad: sd.load,
+      activeUsers: sd.users,
+      avgThroughput: sd.throughput,
+      avgLatency: sd.latency,
+      FiveQi: sd.fiveQi,
+      parameters: JSON.stringify({
+        sliceType: sd.sliceType,
+        description: sd.sliceType === 'eMBB' ? 'Enhanced Mobile Broadband' : sd.sliceType === 'URLLC' ? 'Ultra-Reliable Low Latency' : 'Massive Machine-Type Communications',
+      }),
+    };
+  });
+  await db.networkSlice.createMany({ data: networkSliceBatch });
+  console.log(`  NetworkSlices: ${networkSliceBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 3. EnergyMetric (120 records) — 3-4 per site across 6 hours
+  // ------------------------------------------------------------------
+  console.log('Seeding EnergyMetrics...');
+  const energyBatch: any[] = [];
+  const powerRanges: Record<string, [number, number]> = { '2G': [300, 800], '3G': [500, 1200], '4G': [800, 2000], '5G': [1500, 4000] };
+  const modeRoll = () => { const r = Math.random(); return r < 0.80 ? 'normal' : r < 0.92 ? 'energy_saving' : r < 0.97 ? 'sleep' : 'shutdown'; };
+
+  for (const site of bSites) {
+    const readingsCount = randInt(3, 4);
+    for (let r = 0; r < readingsCount; r++) {
+      const ts = subHours(now, r * 2 + rand(0, 1));
+      const mode = modeRoll();
+      const [pMin, pMax] = powerRanges[site.technology] || [500, 1500];
+      const basePower = rand(pMin, pMax);
+      // Mode-based power: normal=100%, energy_saving=60%, sleep=30-40% (60-70% reduction), shutdown=0W
+      let powerConsumption: number;
+      if (mode === 'shutdown') {
+        powerConsumption = 0;
+      } else if (mode === 'sleep') {
+        powerConsumption = Number((basePower * rand(0.30, 0.40)).toFixed(1));
+      } else if (mode === 'energy_saving') {
+        powerConsumption = Number((basePower * 0.6).toFixed(1));
+      } else {
+        powerConsumption = Number(basePower.toFixed(1));
+      }
+      const trafficLoad = mode === 'shutdown' ? 0 : mode === 'sleep' ? Number(rand(0, 5).toFixed(1)) : Number(rand(10, 85).toFixed(1));
+      const temperature = Number(rand(25, 45).toFixed(1));
+      const co2Emission = Number((powerConsumption * 0.0005).toFixed(4));
+      const energyConsumed = Number((powerConsumption * 2).toFixed(1)); // 2-hour interval in Wh
+
+      energyBatch.push({
+        siteId: site.id,
+        technology: site.technology,
+        timestamp: ts,
+        powerConsumption,
+        energyConsumed,
+        activeUsers: mode === 'shutdown' ? 0 : mode === 'sleep' ? randInt(0, 5) : randInt(5, 200),
+        trafficLoad,
+        temperature,
+        sleepMode: mode === 'sleep' || mode === 'shutdown',
+        mode,
+        co2Emission,
+        solarGeneration: Math.random() < 0.3 ? Number(rand(50, 500).toFixed(1)) : null,
+        batteryLevel: Math.random() < 0.4 ? Number(rand(60, 100).toFixed(0)) : null,
+      });
+    }
+  }
+  for (let i = 0; i < energyBatch.length; i += chunkSizeB) {
+    await db.energyMetric.createMany({ data: energyBatch.slice(i, i + chunkSizeB) });
+  }
+  console.log(`  EnergyMetrics: ${energyBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 4. FaultPrediction (20 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding FaultPredictions...');
+  const fpComponents = ['RRU', 'BBU', 'PSU', 'Antenna', 'Fiber', 'Transport'];
+  const fpFaultTypes = ['hardware_failure', 'software_bug', 'degradation', 'power_issue', 'environmental'];
+  const fpSeverities = ['low', 'medium', 'high', 'critical'];
+  const fpStatuses = ['predicted', 'predicted', 'predicted', 'predicted', 'confirmed', 'confirmed', 'mitigated', 'mitigated', 'false_positive'];
+  const fpActions = [
+    'Schedule preventive maintenance',
+    'Replace PSU unit',
+    'Update firmware',
+    'Check antenna connections',
+    'Inspect fiber optic cable for bends',
+    'Monitor BBU temperature closely',
+    'Clean RRU filters and check fans',
+    'Verify power supply voltage levels',
+    'Replace degraded antenna feeder cable',
+    'Update transport switch firmware',
+    'Schedule immediate hardware replacement',
+    'Escalate to vendor support team',
+  ];
+  const fpTimeToFail = ['24h', '72h', '7d', '14d', '30d'];
+  const fpBatch: any[] = [];
+
+  for (let i = 0; i < 20; i++) {
+    const site = bSites[i % bSites.length];
+    const component = fpComponents[i % fpComponents.length];
+    const faultType = fpFaultTypes[i % fpFaultTypes.length];
+    const severity = fpSeverities[i % fpSeverities.length];
+    const status = fpStatuses[i % fpStatuses.length];
+    const probability = Number(rand(0.1, 0.9).toFixed(2));
+
+    fpBatch.push({
+      siteId: site.id,
+      technology: site.technology,
+      component,
+      faultType,
+      probability,
+      severity,
+      status,
+      confidence: Number(rand(0.6, 0.99).toFixed(2)),
+      indicators: JSON.stringify([
+        `High ${component} temperature`,
+        `${component} error count elevated`,
+        `Degraded ${component} performance metrics`,
+      ].slice(0, randInt(1, 3))),
+      recommendedAction: fpActions[i % fpActions.length],
+      estimatedTimeToFail: fpTimeToFail[i % fpTimeToFail.length],
+      resolvedAt: (status === 'mitigated' || status === 'false_positive') ? subHours(now, randInt(1, 48)) : null,
+      createdAt: subHours(now, randInt(2, 72)),
+    });
+  }
+  await db.faultPrediction.createMany({ data: fpBatch });
+  console.log(`  FaultPredictions: ${fpBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 5. SubscriberSegment (8 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding SubscriberSegments...');
+  const segmentData = [
+    { name: 'Premium Data Users', tech: '4G,5G', count: 45000, data: 45, voice: 120, arpu: 38, churn: 0.05, satisfaction: 88, services: ['video_streaming', 'web_browsing', 'gaming'], peak: '20:00-23:00' },
+    { name: 'Voice-Only', tech: '2G,3G', count: 48000, data: 1, voice: 800, arpu: 8, churn: 0.15, satisfaction: 65, services: ['voip', 'messaging'], peak: '08:00-10:00' },
+    { name: 'Heavy Gamers', tech: '4G,5G', count: 12000, data: 50, voice: 30, arpu: 42, churn: 0.08, satisfaction: 82, services: ['gaming', 'social_media', 'web_browsing'], peak: '19:00-01:00' },
+    { name: 'IoT/M2M', tech: '4G,5G', count: 50000, data: 2, voice: 0, arpu: 3, churn: 0.03, satisfaction: 92, services: ['iot_data'], peak: '02:00-05:00' },
+    { name: 'Roaming Users', tech: '2G,3G,4G,5G', count: 5000, data: 8, voice: 60, arpu: 25, churn: 0.4, satisfaction: 55, services: ['video_streaming', 'voip', 'web_browsing', 'messaging'], peak: '12:00-18:00' },
+    { name: 'Enterprise', tech: '4G,5G', count: 3500, data: 35, voice: 200, arpu: 45, churn: 0.02, satisfaction: 90, services: ['enterprise_vpn', 'web_browsing', 'voip'], peak: '08:00-18:00' },
+    { name: 'Prepaid Budget', tech: '2G,3G,4G', count: 32000, data: 5, voice: 150, arpu: 2, churn: 0.35, satisfaction: 42, services: ['messaging', 'social_media', 'web_browsing'], peak: '18:00-22:00' },
+    { name: 'Social Media Users', tech: '3G,4G', count: 28000, data: 12, voice: 40, arpu: 12, churn: 0.18, satisfaction: 70, services: ['social_media', 'messaging', 'video_streaming'], peak: '19:00-23:00' },
+  ];
+
+  const subscriberBatch = segmentData.map(sd => ({
+    segmentName: sd.name,
+    technology: sd.tech,
+    criteria: JSON.stringify({
+      dataRange: `${sd.data}GB/month avg`,
+      usagePattern: sd.services[0],
+      arpuRange: `$${sd.arpu}/month`,
+    }),
+    subscriberCount: sd.count,
+    avgDataUsage: sd.data,
+    avgVoiceMinutes: sd.voice,
+    arpu: sd.arpu,
+    churnRisk: sd.churn,
+    satisfactionScore: sd.satisfaction,
+    topServices: JSON.stringify(sd.services),
+    peakHour: sd.peak,
+  }));
+  await db.subscriberSegment.createMany({ data: subscriberBatch });
+  console.log(`  SubscriberSegments: ${subscriberBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 6. Incident (15 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding Incidents...');
+  const incidentData = [
+    // 4 critical
+    { title: 'Major Outage - LTE-LG-001 Complete Service Loss', desc: 'All sectors down on LTE-LG-001 due to power supply unit failure. Affecting approximately 2000 active users in Lagos Mainland.', tech: '4G', siteIdx: 0, sev: 'critical', status: 'resolved', cat: 'power', mttr: 180, assigned: 'Team Alpha', root: 'PSU hardware failure causing complete power loss to RRU and BBU', resolution: 'Emergency PSU replacement completed. All sectors restored and verified.', slaBreach: true, tags: ['outage', 'hardware', 'power'] },
+    { title: 'Hardware Failure - NR-LG-001 BBU Crash', desc: 'Baseband Unit experiencing repeated crashes causing 5G service disruption in Lagos Island.', tech: '5G', siteIdx: 1, sev: 'critical', status: 'investigating', cat: 'hardware', mttr: 240, assigned: 'Team Beta', tags: ['hardware', '5g', 'bbu'] },
+    { title: 'Fiber Cut - Multiple Sites Port Harcourt', desc: 'Backbone fiber cut affecting 3G/4G backhaul for PH001 and PH002 clusters.', tech: '4G', siteIdx: 8, sev: 'critical', status: 'open', cat: 'network', mttr: 120, assigned: 'NOC Team', tags: ['fiber', 'backhaul', 'outage'] },
+    { title: 'Core Network Congestion - Kano Metro', desc: 'SGW/PGW overload causing throughput degradation for all 4G sites in Kano Metro region.', tech: '4G', siteIdx: 10, sev: 'critical', status: 'investigating', cat: 'network', mttr: 90, assigned: 'Core Team', tags: ['congestion', 'core', 'capacity'] },
+    // 5 high
+    { title: 'Capacity Saturation - LTE-LG-002', desc: 'PRB utilization consistently above 92% during peak hours causing call blocking.', tech: '4G', siteIdx: 1, sev: 'high', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'Insufficient capacity for growing user demand in Lagos Island business district', resolution: 'Additional carrier activated and load balancing parameters adjusted.', slaBreach: false, tags: ['capacity', 'prb'] },
+    { title: 'Interference Detection - LTE-AB-002', desc: 'High uplink interference detected causing elevated noise floor and degraded UL throughput.', tech: '4G', siteIdx: 5, sev: 'high', status: 'investigating', cat: 'network', mttr: 45, assigned: 'RF Team', tags: ['interference', 'uplink'] },
+    { title: 'Transport Link Flapping - NR-AB-001', desc: 'CPRI/OBSAI link to NR-AB-001 experiencing intermittent failures causing 5G service drops.', tech: '5G', siteIdx: 3, sev: 'high', status: 'open', cat: 'network', mttr: 30, assigned: 'Transport Team', tags: ['transport', '5g'] },
+    { title: 'High Drop Rate - UMTS-PH-001', desc: 'Call drop rate exceeding 3.5% threshold on UMTS-PH-001 due to poor neighbor relations.', tech: '3G', siteIdx: 13, sev: 'high', status: 'resolved', cat: 'network', mttr: 90, assigned: 'Optimization Team', root: 'Missing inter-frequency neighbor causing calls to drop at cell edge', resolution: 'ANR module added missing neighbors and MRO optimized handover parameters.', slaBreach: true, tags: ['drop_rate', 'handover'] },
+    { title: 'Thermal Alert - NR-LG-002 RRU', desc: 'RRU temperature exceeding 65°C threshold, auto-power reduction activated.', tech: '5G', siteIdx: 2, sev: 'high', status: 'resolved', cat: 'environmental', mttr: 30, assigned: 'Field Team', root: 'Cooling fan failure in RRU enclosure', resolution: 'Fan replaced and thermal paste reapplied. Temperature returned to normal.', slaBreach: false, tags: ['thermal', 'hardware'] },
+    // 4 medium
+    { title: 'Performance Degradation - LTE-IB-001', desc: 'Gradual throughput decline over 48 hours, likely due to interference from new co-located system.', tech: '4G', siteIdx: 11, sev: 'medium', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'External interference from newly installed DAS system in adjacent building', resolution: 'Coordination with building management to adjust DAS antenna tilt and power.', slaBreach: false, tags: ['degradation', 'interference'] },
+    { title: 'Power Issue - GSM-KN-001', desc: 'Battery backup failing to hold charge, risking service loss during power outages.', tech: '2G', siteIdx: 6, sev: 'medium', status: 'closed', cat: 'power', mttr: 120, assigned: 'Power Team', root: 'Aged battery cells reaching end of life', resolution: 'Full battery string replacement completed and tested.', slaBreach: false, tags: ['power', 'battery'] },
+    { title: 'Configuration Drift - LTE-IB-002', desc: 'Parameter values deviating from approved template causing sub-optimal performance.', tech: '4G', siteIdx: 12, sev: 'medium', status: 'open', cat: 'software', mttr: 30, assigned: 'SON Team', tags: ['config', 'parameter'] },
+    { title: 'Neighborhood Optimization Needed - UMTS-AB-001', desc: 'Handover success rate dropped below 93% indicating neighbor list issues.', tech: '3G', siteIdx: 10, sev: 'medium', status: 'investigating', cat: 'network', mttr: 60, assigned: 'Optimization Team', tags: ['handover', 'neighbor'] },
+    // 2 low
+    { title: 'Minor Config Issue - NR-AB-002', desc: 'PCI assignment not following regional plan, potential modulo-3 conflict with planned site.', tech: '5G', siteIdx: 4, sev: 'low', status: 'closed', cat: 'software', mttr: 30, assigned: 'Planning Team', root: 'PCI not updated during last site commissioning', resolution: 'PCI reassigned to conflict-free value per regional plan.', slaBreach: false, tags: ['pci', 'config'] },
+    { title: 'Alarm Storm - GSM-LG-001', desc: 'Multiple transient alarms triggered by brief power fluctuation. No service impact.', tech: '2G', siteIdx: 0, sev: 'low', status: 'resolved', cat: 'power', mttr: 30, assigned: 'NOC', root: 'Momentary power grid fluctuation', resolution: 'No action needed. Alarms cleared and monitoring continued.', slaBreach: false, tags: ['alarm', 'power'] },
+  ];
+
+  const incidentBatch = incidentData.map(inc => {
+    const site = bSites[inc.siteIdx % bSites.length];
+    const createdAt = subHours(now, randInt(2, 168));
+    const resolvedAt = ['resolved', 'closed'].includes(inc.status) ? new Date(createdAt.getTime() + inc.mttr * 60 * 1000) : null;
+    return {
+      title: inc.title,
+      description: inc.desc,
+      technology: inc.tech,
+      siteId: site.id,
+      severity: inc.sev,
+      status: inc.status,
+      category: inc.cat,
+      priority: inc.sev === 'critical' ? 1 : inc.sev === 'high' ? 2 : inc.sev === 'medium' ? 4 : 6,
+      assignedTo: inc.assigned,
+      reportedBy: 'system',
+      mttrTarget: inc.mttr,
+      rootCause: inc.root || null,
+      resolution: inc.resolution || null,
+      affectedSites: JSON.stringify([site.id]),
+      relatedAlerts: JSON.stringify([]),
+      tags: JSON.stringify(inc.tags),
+      slaBreach: inc.slaBreach || false,
+      resolvedAt,
+      createdAt,
+    };
+  });
+  await db.incident.createMany({ data: incidentBatch });
+  console.log(`  Incidents: ${incidentBatch.length}`);
+
+  // ------------------------------------------------------------------
+  // 7. ConfigTemplate (10 records)
+  // ------------------------------------------------------------------
+  console.log('Seeding ConfigTemplates...');
+  const configTemplates = [
+    {
+      name: '4G LTE Urban Macro Default', technology: '4G', category: 'radio', vendor: 'Ericsson', isDefault: true, applyCount: 45, lastApplied: subHours(now, 12),
+      description: 'Default configuration template for 4G LTE urban macro sites deployed with Ericsson equipment.',
+      parameters: JSON.stringify({
+        rsPower: { value: '15.2', unit: 'dBm', range: '10-20' },
+        electricalTilt: { value: '6', unit: 'degrees', range: '0-12' },
+        pci: { value: 'auto', unit: '', range: '0-503' },
+        prachConfigIndex: { value: '6', unit: '', range: '0-100' },
+        referenceSignalPower: { value: '-90', unit: 'dBm', range: '-120 to -60' },
+      }),
+    },
+    {
+      name: '4G LTE Rural Coverage', technology: '4G', category: 'radio', vendor: 'Huawei', isDefault: true, applyCount: 22, lastApplied: subHours(now, 36),
+      description: 'Optimized for maximum coverage area with higher power and lower frequency bands.',
+      parameters: JSON.stringify({
+        rsPower: { value: '18.0', unit: 'dBm', range: '10-20' },
+        electricalTilt: { value: '2', unit: 'degrees', range: '0-12' },
+        maxTxPower: { value: '46', unit: 'dBm', range: '40-46' },
+        cellRadius: { value: '15', unit: 'km', range: '5-30' },
+        drxCycleLength: { value: '320', unit: 'ms', range: '10-2560' },
+      }),
+    },
+    {
+      name: '5G NR Massive MIMO', technology: '5G', category: 'radio', vendor: 'Nokia', isDefault: true, applyCount: 6, lastApplied: subHours(now, 6),
+      description: 'Massive MIMO configuration for 5G NR high-capacity urban deployments with 64T64R antennas.',
+      parameters: JSON.stringify({
+        ssbPwr: { value: '-8', unit: 'dBm', range: '-20 to 5' },
+        beamWidth: { value: '65', unit: 'degrees', range: '45-120' },
+        maxTxPower: { value: '43', unit: 'dBm', range: '35-43' },
+        tciState: { value: 'auto', unit: '', range: '0-127' },
+        numTxPorts: { value: '64', unit: 'ports', range: '16-64' },
+      }),
+    },
+    {
+      name: '5G NR Coverage Layer', technology: '5G', category: 'radio', vendor: 'Huawei', isDefault: false, applyCount: 3, lastApplied: subHours(now, 48),
+      description: 'Coverage-focused 5G NR template for suburban and rural 5G deployments with 8T8R antennas.',
+      parameters: JSON.stringify({
+        ssbPwr: { value: '-5', unit: 'dBm', range: '-20 to 5' },
+        beamWidth: { value: '90', unit: 'degrees', range: '45-120' },
+        maxTxPower: { value: '46', unit: 'dBm', range: '35-46' },
+        sacPeriodicity: { value: '20', unit: 'ms', range: '5-160' },
+        pciRange: { value: '0-1007', unit: '', range: '0-1007' },
+      }),
+    },
+    {
+      name: 'Inter-technology Handover', technology: 'ALL', category: 'handover', vendor: '', isDefault: true, applyCount: 80, lastApplied: subHours(now, 8),
+      description: 'Standard inter-technology handover configuration for 2G-3G-4G-5G mobility.',
+      parameters: JSON.stringify({
+        hoTriggerOffset: { value: '2', unit: 'dB', range: '0-6' },
+        hoHysteresis: { value: '1', unit: 'dB', range: '0-4' },
+        timeToTrigger: { value: '320', unit: 'ms', range: '40-1024' },
+        a2Threshold: { value: '-90', unit: 'dBm', range: '-120 to -60' },
+        b2ThresholdOffset: { value: '4', unit: 'dB', range: '0-10' },
+      }),
+    },
+    {
+      name: 'Cell Edge Power Optimization', technology: 'ALL', category: 'power', vendor: '', isDefault: false, applyCount: 15, lastApplied: subHours(now, 24),
+      description: 'Optimizes transmit power at cell edges to reduce interference and improve handover performance.',
+      parameters: JSON.stringify({
+        maxPowerReduction: { value: '6', unit: 'dB', range: '0-15' },
+        pMax: { value: '23', unit: 'dBm', range: '10-30' },
+        pucchPowerOffset: { value: '0', unit: 'dB', range: '-8 to 7' },
+        alpha: { value: '0.8', unit: '', range: '0-1' },
+      }),
+    },
+    {
+      name: 'Load Balancing Template', technology: 'ALL', category: 'capacity', vendor: '', isDefault: true, applyCount: 34, lastApplied: subHours(now, 3),
+      description: 'Automatic load balancing configuration to distribute traffic evenly across cells.',
+      parameters: JSON.stringify({
+        lbTriggerThreshold: { value: '75', unit: '%', range: '50-90' },
+        lbTargetThreshold: { value: '55', unit: '%', range: '30-70' },
+        cellIndividualOffset: { value: '3', unit: 'dB', range: '0-15' },
+        lbPeriodicity: { value: '30', unit: 'seconds', range: '10-300' },
+      }),
+    },
+    {
+      name: '2G GSM Retransmission Optimization', technology: '2G', category: 'radio', vendor: 'Ericsson', isDefault: false, applyCount: 8, lastApplied: subHours(now, 72),
+      description: 'Optimizes GSM retransmission parameters for improved voice quality and throughput.',
+      parameters: JSON.stringify({
+        maxRetrans: { value: '4', unit: 'count', range: '1-7' },
+        t3101: { value: '8', unit: 'seconds', range: '4-20' },
+        ny1: { value: '10', unit: 'count', range: '4-32' },
+        rlTimeout: { value: '16', unit: 'seconds', range: '4-64' },
+      }),
+    },
+    {
+      name: '3G HSPA Power Control', technology: '3G', category: 'radio', vendor: 'Nokia', isDefault: false, applyCount: 12, lastApplied: subHours(now, 60),
+      description: 'HSPA uplink/downlink power control optimization for WCDMA coverage.',
+      parameters: JSON.stringify({
+        targetSIR: { value: '4.5', unit: 'dB', range: '0-12' },
+        powerStep: { value: '1', unit: 'dB', range: '0.5-3' },
+        maxUlpower: { value: '24', unit: 'dBm', range: '10-24' },
+        dpchPowerOffset: { value: '-3', unit: 'dB', range: '-6 to 0' },
+      }),
+    },
+    {
+      name: 'Neighbor List Management', technology: 'ALL', category: 'neighbor', vendor: '', isDefault: true, applyCount: 90, lastApplied: subHours(now, 1),
+      description: 'Automated neighbor list management with ANR-assisted optimization thresholds.',
+      parameters: JSON.stringify({
+        maxNeighbors: { value: '32', unit: 'count', range: '16-64' },
+        anrRemoveThreshold: { value: '3', unit: 'days', range: '1-14' },
+        hoSuccessThreshold: { value: '90', unit: '%', range: '80-99' },
+        nclUpdateInterval: { value: '60', unit: 'minutes', range: '10-360' },
+      }),
+    },
+  ];
+
+  await db.configTemplate.createMany({ data: configTemplates });
+  console.log(`  ConfigTemplates: ${configTemplates.length}`);
+
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());
