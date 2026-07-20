@@ -11,9 +11,9 @@ model NetworkSite {
   id          String   @id @default(cuid())
   name        String
   code        String   @unique
-  technology  String   // 2G, 3G, 4G, 5G
+  technology  String
   region      String
-  status      String   @default("active") // active, degraded, down, maintenance
+  status      String   @default("active")
   latitude    Float
   longitude   Float
   altitude    Float    @default(0)
@@ -23,9 +23,12 @@ model NetworkSite {
   vendor      String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  kpiMetrics  KpiMetric[]
-  alerts      Alert[]
-  anomalies   AnomalyEvent[]
+  kpiMetrics    KpiMetric[]
+  alerts        Alert[]
+  anomalies     AnomalyEvent[]
+  neighbors     NeighborRelation[]
+  sonActions    SonAction[]
+  qoeMetrics    QoEMetric[]
 }
 
 model KpiMetric {
@@ -48,7 +51,7 @@ model KpiMetric {
   jitter       Float?
   packetLoss   Float?
   availability Float?
-  activeUsers  Int?        
+  activeUsers  Int?
   handoverSuccessRate Float?
   dropRate     Float?
   blockedCallRate     Float?
@@ -75,26 +78,28 @@ model AlertRule {
 }
 
 model Alert {
-  id          String    @id @default(cuid())
-  ruleId      String?
-  rule        AlertRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
-  siteId      String?
-  site        NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
-  technology  String
-  metric      String
-  value       Float
-  threshold   Float
-  condition   String
-  severity    String
-  message     String
-  acknowledged Boolean  @default(false)
-  resolvedAt  DateTime?
-  createdAt   DateTime  @default(now())
+  id            String      @id @default(cuid())
+  ruleId        String?
+  rule          AlertRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  siteId        String?
+  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology    String
+  metric        String
+  value         Float
+  threshold     Float
+  condition     String
+  severity      String
+  message       String
+  acknowledged  Boolean     @default(false)
+  correlatedGroupId String?   // groups related alerts together
+  resolvedAt    DateTime?
+  createdAt     DateTime     @default(now())
 
   @@index([siteId])
   @@index([technology])
   @@index([severity])
   @@index([createdAt])
+  @@index([correlatedGroupId])
 }
 
 model OptimizationLog {
@@ -133,15 +138,13 @@ model NetworkParameter {
   @@index([category])
 }
 
-// --- ENTERPRISE-GRADE ADDITIONS ---
-
 model SLATarget {
   id            String   @id @default(cuid())
   technology    String
-  metric        String   // availability, dropRate, latency, handoverSuccessRate, prbUtilization
-  targetValue   Float    // e.g., 99.5 for availability %, 50 for latency ms
-  condition     String   // gte for availability, lte for latency/drop
-  severity      String   @default("warning") // breach severity
+  metric        String
+  targetValue   Float
+  condition     String
+  severity      String   @default("warning")
   enabled       Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -155,9 +158,9 @@ model AnomalyEvent {
   metric        String
   actualValue   Float
   expectedValue Float
-  zScore        Float      // statistical deviation
-  severity      String      // critical, major, minor
-  status        String      @default("detected") // detected, investigating, resolved, false_positive
+  zScore        Float
+  severity      String
+  status        String      @default("detected")
   description   String
   resolvedAt    DateTime?
   createdAt     DateTime    @default(now())
@@ -170,9 +173,9 @@ model AnomalyEvent {
 
 model AuditLog {
   id          String   @id @default(cuid())
-  entityType  String   // parameter, alert, site, anomaly
+  entityType  String
   entityId    String?
-  action      String   // create, update, delete, acknowledge, resolve
+  action      String
   oldValue    String?
   newValue    String?
   description String
@@ -180,5 +183,175 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   @@index([entityType])
+  @@index([createdAt])
+}
+
+// ========== PHASE A: SON & AUTOMATION MODELS ==========
+
+model SonModule {
+  id            String   @id @default(cuid())
+  name          String   // ANR, PCI, MRO, CCO, HLB, CODC, AIC, PnP
+  displayName   String
+  technology    String   // 2G, 3G, 4G, 5G, ALL
+  description   String
+  enabled       Boolean  @default(true)
+  mode          String   @default("semi-automated") // open-loop, semi-automated, closed-loop
+  schedule      String?  // cron expression or "always"
+  parameters    String   @default("{}") // JSON: module-specific config
+  stats         String   @default("{}") // JSON: {actions24h, successRate, avgImpact}
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  actions       SonAction[]
+}
+
+model SonAction {
+  id              String      @id @default(cuid())
+  moduleId        String
+  module          SonModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology      String
+  actionType      String      // add_neighbor, remove_neighbor, modify_pci, adjust_tilt, adjust_power, compensate_outage, correct_config
+  parameter       String      // which param was changed
+  previousValue   String
+  newValue        String
+  reason          String
+  status          String      @default("pending") // pending, applied, rolled_back, failed
+  kpiBefore       String      @default("{}") // JSON snapshot of KPIs before action
+  kpiAfter        String?     // JSON snapshot of KPIs after action
+  impactScore     Float?      // computed improvement
+  rollbackReason  String?
+  appliedAt       DateTime?
+  rolledBackAt    DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([moduleId])
+  @@index([siteId])
+  @@index([technology])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model NeighborRelation {
+  id              String      @id @default(cuid())
+  servingCellId   String
+  servingCell     NetworkSite @relation(fields: [servingCellId], references: [id], onDelete: Cascade)
+  neighborCellId  String
+  neighborCellName String
+  neighborCellCode String
+  technology      String
+  relationType    String  // intra_freq, inter_freq, inter_tech
+  hoType          String  @default("manual") // manual, anr_auto, pnp_auto
+  status          String  @default("active") // active, removed, blacklisted
+  hoSuccessRate   Float?
+  lastUpdated     DateTime @default(now())
+
+  @@index([servingCellId])
+  @@index([technology])
+}
+
+model Policy {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  technology    String   // ALL for cross-tech
+  triggerType   String   // kpi_breach, anomaly_detected, schedule, manual
+  triggerConfig String   @default("{}") // JSON: {metric, condition, threshold} or {cron}
+  actionModules String   @default("[]") // JSON: array of SON module IDs to execute
+  scope         String   @default("all") // all, region, site, cluster
+  scopeValue    String?  // region name or site ID
+  priority      Int      @default(5) // 1=highest
+  enabled       Boolean  @default(true)
+  cooldownMins  Int      @default(30)
+  stats         String   @default("{}") // JSON: {totalRuns, successRate, lastRun}
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  executions    PolicyExecution[]
+}
+
+model PolicyExecution {
+  id            String   @id @default(cuid())
+  policyId      String
+  policy        Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  status        String   @default("triggered") // triggered, running, completed, failed, rolled_back
+  triggerReason String
+  affectedSites String   @default("[]") // JSON: site IDs
+  actionsTaken  String   @default("[]") // JSON: SonAction IDs
+  kpiImpact     String   @default("{}") // JSON: before/after KPI summary
+  rollbackReason String?
+  durationMs    Int?
+  createdAt     DateTime @default(now())
+  completedAt   DateTime?
+
+  @@index([policyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model QoEMetric {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  timestamp       DateTime    @default(now())
+  mosScore        Float?      // Mean Opinion Score 1-5
+  dataRateExperienced Float?  // Actual user throughput (Mbps)
+  callSetupTime   Float?      // Seconds
+  callDropRate    Float?      // %
+  webPageLoadTime Float?      // Seconds
+  videoStartTime  Float?      // Seconds
+  pingLatency     Float?      // ms
+  jitterExperience Float?     // ms
+  satisfactionIndex Float?    // 0-100 composite
+  subscriberCount Int?
+  complaintCount  Int         @default(0)
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([timestamp])
+}
+
+model VendorProfile {
+  id          String   @id @default(cuid())
+  vendor      String   @unique // Ericsson, Huawei, Nokia, Samsung, ZTE
+  displayName String
+  technologies String   @default("[]") // JSON: supported techs
+  apiType     String   @default("rest") // rest, netconf, snmp, cli
+  apiEndpoint String?
+  credentials  String?  // encrypted reference (not actual creds)
+  status      String   @default("active") // active, disconnected, error
+  lastSync    DateTime?
+  stats       String   @default("{}") // JSON: {sitesManaged, lastActionCount, syncStatus}
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteOnboarding {
+  id          String   @id @default(cuid())
+  siteName    String
+  siteCode    String   @unique
+  technology  String
+  region      String
+  vendor      String
+  latitude    Float
+  longitude   Float
+  altitude    Float    @default(0)
+  frequency   String   @default("")
+  bandwidth   Float    @default(0)
+  maxCapacity Int      @default(0)
+  status      String   @default("pending") // pending, provisioning, configuring, verifying, completed, failed
+  assignedPci String?
+  assignedFreq String?
+  initialNeighbors String  @default("[]") // JSON: neighbor site codes
+  kpiBaseline String   @default("{}") // JSON: first KPI readings
+  errorMessage String?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([technology])
   @@index([createdAt])
 }

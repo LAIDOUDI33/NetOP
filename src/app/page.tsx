@@ -14,7 +14,7 @@ import { CommandPalette } from '@/components/CommandPalette';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
-  Shield, Brain, ArrowLeftRight, Search,
+  Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -32,25 +32,35 @@ const SLADashboardView = lazy(() => import('@/components/views/SLADashboardView'
 const AnomalyDetectionView = lazy(() => import('@/components/views/AnomalyDetectionView'));
 const CorrelationView = lazy(() => import('@/components/views/CorrelationView'));
 const RootCauseAnalysisView = lazy(() => import('@/components/views/RootCauseAnalysisView'));
+const SonView = lazy(() => import('@/components/views/SonView'));
+const PoliciesView = lazy(() => import('@/components/views/PoliciesView'));
+const OnboardingView = lazy(() => import('@/components/views/OnboardingView'));
+const VendorsView = lazy(() => import('@/components/views/VendorsView'));
 
 const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
-  { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'core' },
-  { view: 'monitoring', label: 'Monitoring', icon: Activity, group: 'core' },
-  { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'core' },
-  { view: 'alerts', label: 'Alerts', icon: Bell, group: 'core' },
-  { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'ai' },
-  { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'ai' },
-  { view: 'coverage', label: 'Coverage Map', icon: MapPin, group: 'analysis' },
-  { view: 'sla', label: 'SLA Dashboard', icon: Shield, group: 'analysis' },
-  { view: 'anomaly', label: 'Anomaly Detection', icon: Brain, group: 'analysis' },
-  { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'analysis' },
-  { view: 'reports', label: 'Reports', icon: FileText, group: 'system' },
-  { view: 'settings', label: 'Parameters', icon: Settings, group: 'system' },
+  { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Operations' },
+  { view: 'monitoring', label: 'Monitoring', icon: Activity, group: 'Operations' },
+  { view: 'son', label: 'SON Automation', icon: Cpu, group: 'Operations' },
+  { view: 'onboarding', label: 'Site Onboarding', icon: PlusCircle, group: 'Operations' },
+  { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'Analytics' },
+  { view: 'alerts', label: 'Alerts', icon: Bell, group: 'Analytics' },
+  { view: 'coverage', label: 'Coverage Map', icon: MapPin, group: 'Analytics' },
+  { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'Analytics' },
+  { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'AI Engine' },
+  { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'AI Engine' },
+  { view: 'anomaly', label: 'Anomaly Detection', icon: Brain, group: 'AI Engine' },
+  { view: 'policies', label: 'Automation Policies', icon: Shield, group: 'Automation' },
+  { view: 'vendors', label: 'Vendor Hub', icon: Plug, group: 'Automation' },
+  { view: 'reports', label: 'Reports', icon: FileText, group: 'System' },
+  { view: 'settings', label: 'Parameters', icon: Settings, group: 'System' },
+  { view: 'sla', label: 'SLA Dashboard', icon: Shield, group: 'System' },
 ];
 
 const VIEW_TITLES: Record<ViewType, string> = {
   dashboard: 'Dashboard',
   monitoring: 'Real-Time Monitoring',
+  son: 'SON Automation',
+  onboarding: 'Site Onboarding',
   kpi: 'KPI Analytics',
   alerts: 'Alert Management',
   optimizer: 'AI Network Optimizer',
@@ -61,6 +71,8 @@ const VIEW_TITLES: Record<ViewType, string> = {
   sla: 'SLA Compliance',
   anomaly: 'Anomaly Detection',
   correlation: 'Cross-Tech Correlation',
+  policies: 'Automation Policies',
+  vendors: 'Vendor Management',
 };
 
 function ViewFallback() {
@@ -103,46 +115,46 @@ function ThemeToggle() {
 
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
   const { currentView, setCurrentView } = useAppStore();
-  const core = NAV_ITEMS.filter(n => n.group === 'core');
-  const ai = NAV_ITEMS.filter(n => n.group === 'ai');
-  const analysis = NAV_ITEMS.filter(n => n.group === 'analysis');
-  const system = NAV_ITEMS.filter(n => n.group === 'system');
+  const groups = ['Operations', 'Analytics', 'AI Engine', 'Automation', 'System'] as const;
 
-  const renderGroup = (items: typeof NAV_ITEMS, label: string) => (
-    <div className="space-y-0.5">
-      {!collapsed && <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>}
-      {items.map((item) => {
-        const Icon = item.icon;
-        const isActive = currentView === item.view;
-        return (
-          <TooltipProvider key={item.view} delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-left
-                    ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
-                    ${collapsed ? 'justify-center px-2' : ''}`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
-                </button>
-              </TooltipTrigger>
-              {collapsed && <TooltipContent side="right"><p>{item.label}</p></TooltipContent>}
-            </Tooltip>
-          </TooltipProvider>
-        );
-      })}
-    </div>
-  );
+  const renderGroup = (items: typeof NAV_ITEMS, label: string) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-0.5">
+        {!collapsed && <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>}
+        {items.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentView === item.view;
+          return (
+            <TooltipProvider key={item.view} delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-left
+                      ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
+                      ${collapsed ? 'justify-center px-2' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span>{item.label}</span>}
+                  </button>
+                </TooltipTrigger>
+                {collapsed && <TooltipContent side="right"><p>{item.label}</p></TooltipContent>}
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <nav className="flex flex-col gap-3 px-2 py-4" role="navigation" aria-label="Main navigation">
-      {renderGroup(core, 'Operations')}
-      {renderGroup(ai, 'AI Engine')}
-      {renderGroup(analysis, 'Analytics')}
-      {renderGroup(system, 'System')}
+      {groups.map(g => {
+        const items = NAV_ITEMS.filter(n => n.group === g);
+        return items.length > 0 ? <div key={g}>{renderGroup(items, g)}</div> : null;
+      })}
     </nav>
   );
 }
@@ -167,6 +179,10 @@ function ViewRenderer() {
           {currentView === 'sla' && <SLADashboardView />}
           {currentView === 'anomaly' && <AnomalyDetectionView />}
           {currentView === 'correlation' && <CorrelationView />}
+          {currentView === 'son' && <SonView />}
+          {currentView === 'policies' && <PoliciesView />}
+          {currentView === 'onboarding' && <OnboardingView />}
+          {currentView === 'vendors' && <VendorsView />}
         </Suspense>
       </motion.div>
     </AnimatePresence>

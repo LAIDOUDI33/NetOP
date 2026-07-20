@@ -165,4 +165,179 @@ export interface CoverageData {
   }[];
 }
 
-export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation';
+export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors';
+
+// ========== PHASE A: SON & Automation Types ==========
+
+export type SonModuleMode = 'open-loop' | 'semi-automated' | 'closed-loop';
+export type SonActionStatus = 'pending' | 'applied' | 'rolled_back' | 'failed';
+export type SonActionType = 'add_neighbor' | 'remove_neighbor' | 'modify_pci' | 'adjust_tilt' | 'adjust_power' | 'compensate_outage' | 'correct_config';
+export type NeighborRelationType = 'intra_freq' | 'inter_freq' | 'inter_tech';
+export type NeighborHoType = 'manual' | 'anr_auto' | 'pnp_auto';
+export type NeighborStatus = 'active' | 'removed' | 'blacklisted';
+
+export interface SonModuleItem {
+  id: string;
+  name: string;
+  displayName: string;
+  technology: string;
+  description: string;
+  enabled: boolean;
+  mode: SonModuleMode;
+  schedule: string | null;
+  parameters: Record<string, any>;
+  stats: Record<string, number>;
+  actionCount: number;
+  recentActions: SonActionItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SonActionItem {
+  id: string;
+  moduleId?: string;
+  moduleName?: string;
+  moduleDisplayName?: string;
+  siteId?: string;
+  siteName?: string;
+  siteCode?: string;
+  technology: string;
+  actionType: SonActionType;
+  parameter: string;
+  previousValue: string;
+  newValue: string;
+  reason: string;
+  status: SonActionStatus;
+  kpiBefore: Record<string, number>;
+  kpiAfter: Record<string, number> | null;
+  impactScore: number | null;
+  rollbackReason?: string;
+  appliedAt?: string;
+  rolledBackAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface NeighborRelationItem {
+  id: string;
+  servingCellId: string;
+  servingCell: {
+    id: string;
+    name: string;
+    code: string;
+    technology: string;
+    region: string;
+    status: string;
+    vendor: string;
+    latitude: number;
+    longitude: number;
+  };
+  neighborCellId: string;
+  neighborCellName: string;
+  neighborCellCode: string;
+  technology: string;
+  relationType: NeighborRelationType;
+  hoType: NeighborHoType;
+  status: NeighborStatus;
+  hoSuccessRate: number | null;
+  lastUpdated: string;
+}
+
+// ========== PHASE A: Policy Types ==========
+
+export type PolicyTriggerType = 'kpi_breach' | 'anomaly_detected' | 'schedule' | 'manual';
+export type PolicyScope = 'all' | 'region' | 'site' | 'cluster';
+export type PolicyExecutionStatus = 'triggered' | 'running' | 'completed' | 'failed' | 'rolled_back';
+
+export interface PolicyItem {
+  id: string;
+  name: string;
+  description: string;
+  technology: string;
+  triggerType: PolicyTriggerType;
+  triggerConfig: Record<string, any>;
+  actionModules: string[];
+  scope: PolicyScope;
+  scopeValue: string | null;
+  priority: number;
+  enabled: boolean;
+  cooldownMins: number;
+  stats: Record<string, any>;
+  executionStats: {
+    totalRuns: number;
+    successRate: number;
+    lastRun: string | null;
+  };
+  recentExecutions: PolicyExecutionItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PolicyExecutionItem {
+  id: string;
+  policyId: string;
+  policyName?: string;
+  policyTechnology?: string;
+  policyTriggerType?: string;
+  status: PolicyExecutionStatus;
+  triggerReason: string;
+  affectedSites: string[];
+  actionsTaken: string[];
+  kpiImpact: Record<string, any>;
+  rollbackReason?: string;
+  durationMs: number | null;
+  createdAt: string;
+  completedAt?: string;
+}
+
+// ========== PHASE A: Onboarding Types ==========
+
+export type OnboardingStatus = 'pending' | 'provisioning' | 'configuring' | 'verifying' | 'completed' | 'failed';
+
+export interface SiteOnboardingItem {
+  id: string;
+  siteName: string;
+  siteCode: string;
+  technology: string;
+  region: string;
+  vendor: string;
+  latitude: number;
+  longitude: number;
+  altitude: number;
+  frequency: string;
+  bandwidth: number;
+  maxCapacity: number;
+  status: OnboardingStatus;
+  assignedPci?: string;
+  assignedFreq?: string;
+  initialNeighbors: string[];
+  kpiBaseline: Record<string, any>;
+  errorMessage?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ========== PHASE A: Vendor Types ==========
+
+export type VendorApiType = 'rest' | 'netconf' | 'snmp' | 'cli';
+export type VendorStatus = 'active' | 'disconnected' | 'error';
+
+export interface VendorProfileItem {
+  id: string;
+  vendor: string;
+  displayName: string;
+  technologies: string[];
+  apiType: VendorApiType;
+  apiEndpoint?: string;
+  status: VendorStatus;
+  lastSync?: string;
+  stats: {
+    sitesManaged?: number;
+    lastActionCount?: number;
+    syncStatus?: string;
+    lastSync?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
