@@ -14,7 +14,7 @@ import { CommandPalette } from '@/components/CommandPalette';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
-  Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug,
+  Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -36,6 +36,7 @@ const SonView = lazy(() => import('@/components/views/SonView'));
 const PoliciesView = lazy(() => import('@/components/views/PoliciesView'));
 const OnboardingView = lazy(() => import('@/components/views/OnboardingView'));
 const VendorsView = lazy(() => import('@/components/views/VendorsView'));
+const QoEView = lazy(() => import('@/components/views/QoEView'));
 
 const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
   { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Operations' },
@@ -54,6 +55,7 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'reports', label: 'Reports', icon: FileText, group: 'System' },
   { view: 'settings', label: 'Parameters', icon: Settings, group: 'System' },
   { view: 'sla', label: 'SLA Dashboard', icon: Shield, group: 'System' },
+  { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
 ];
 
 const VIEW_TITLES: Record<ViewType, string> = {
@@ -73,6 +75,7 @@ const VIEW_TITLES: Record<ViewType, string> = {
   correlation: 'Cross-Tech Correlation',
   policies: 'Automation Policies',
   vendors: 'Vendor Management',
+  qoe: 'Customer Experience',
 };
 
 function ViewFallback() {
@@ -183,6 +186,7 @@ function ViewRenderer() {
           {currentView === 'policies' && <PoliciesView />}
           {currentView === 'onboarding' && <OnboardingView />}
           {currentView === 'vendors' && <VendorsView />}
+          {currentView === 'qoe' && <QoEView />}
         </Suspense>
       </motion.div>
     </AnimatePresence>

@@ -165,7 +165,7 @@ export interface CoverageData {
   }[];
 }
 
-export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors';
+export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe';
 
 // ========== PHASE A: SON & Automation Types ==========
 
