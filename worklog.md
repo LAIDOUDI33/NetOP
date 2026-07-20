@@ -525,3 +525,27 @@ Stage Summary:
 - FaultsView: 5 KPI cards + severity distribution bar chart + 6x4 component-severity heatmap grid + 11-column filterable table with 3 filters
 - ESLint passes with 0 errors
 - Dev server compiles cleanly
+
+---
+Task ID: B-final
+Agent: Main Agent
+Task: Phase B — Build 6 remaining stub view components (Capacity, Slicing, Energy, Faults, Subscribers, Incidents)
+
+Work Log:
+- Assessed project state: found 6 views were "Coming Soon" stubs (19 lines each) despite APIs and seed data being complete
+- Read all 6 API routes to understand exact response shapes: /api/capacity, /api/slicing, /api/energy, /api/faults, /api/subscribers, /api/incidents
+- Launched 6 parallel subagent tasks to build all views simultaneously
+- All 6 views built with consistent patterns: KPI cards, Recharts charts, filterable tables, loading skeletons, error/empty states
+- Verified all files are real implementations (507-747 lines each, 3931 total)
+- ESLint: 0 errors across entire project
+- Browser-verified all 6 views render correctly with real data from APIs
+- Zero console errors in browser
+
+Stage Summary:
+- CapacityView.tsx (507 lines): 4 KPI cards + risk distribution bar chart + forecast by tech bar chart + 10-column filterable table
+- SlicingView.tsx (747 lines): 5 KPI cards + 3 slice type distribution cards + load bar chart with 80% target line + 13-column filterable table
+- EnergyView.tsx (605 lines): 5 KPI cards + power by tech bar + mode distribution donut pie + CO2 by tech bar + 10-column filterable table
+- FaultsView.tsx (693 lines): 5 KPI cards + severity distribution bar + component-severity heatmap grid + 11-column filterable table
+- SubscribersView.tsx (667 lines): 5 KPI cards + top services bar + ARPU by segment bar + churn risk bar + 10-column filterable table
+- IncidentsView.tsx (712 lines): 6 KPI cards + status bar chart + category pie chart + severity stacked bar + 12-column filterable table
+- Phase B is now COMPLETE: all views functional with real data
