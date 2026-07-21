@@ -330,7 +330,7 @@ export default function BenchmarkView() {
               {avgGap >= 0 ? '+' : ''}{formatNumber(avgGap)}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              {avgGap < 0 ? 'Performing above target' : 'Gap to close'}
+              {avgGap < 0 ? t('view.successfullyResolved') : t('view.awaitingResolution')}
             </p>
           </CardContent>
         </Card>

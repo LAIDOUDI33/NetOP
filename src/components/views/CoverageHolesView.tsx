@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPinOff, Frown, Users, AlertTriangle, CircleDot } from 'lucide-react';
 import { TECH_BG_CLASSES, TECHNOLOGIES, formatNumber } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
+import DataExportButton from '@/components/DataExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ───────────────────────────────────────────
@@ -507,6 +508,7 @@ export default function CoverageHolesView() {
                 ))}
               </SelectContent>
             </Select>
+            <DataExportButton data={holes as unknown as Record<string, unknown>[]} filename="coverage-holes" />
           </div>
         </CardHeader>
         <CardContent>

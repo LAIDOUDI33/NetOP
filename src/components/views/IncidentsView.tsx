@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import DataExportButton from '@/components/DataExportButton';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
@@ -573,6 +574,7 @@ export default function IncidentsView() {
             <SelectItem value="third_party">Third Party</SelectItem>
           </SelectContent>
         </Select>
+        <DataExportButton data={incidents as unknown as Record<string, unknown>[]} filename="incidents" />
       </div>
 
       {/* Incidents Table */}

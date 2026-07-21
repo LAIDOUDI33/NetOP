@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioTower, Frown, Radio, DollarSign, Repeat2, Signal } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
+import DataExportButton from '@/components/DataExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -539,6 +540,7 @@ export default function SpectrumView() {
                 <SelectItem value="reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
+            <DataExportButton data={items as unknown as Record<string, unknown>[]} filename="spectrum" />
           </div>
         </CardHeader>
         <CardContent>

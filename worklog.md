@@ -1010,3 +1010,24 @@ Stage Summary:
 - ESLint: 0 errors
 - Browser verified: French toggle works correctly across Dashboard, Alerts, Executive views
 - All 45 views now fully support French language switching via the 🌐 button
+---
+Task ID: 1.2-pilot
+Agent: DataExport Pilot
+Task: Add DataExportButton to 5 pilot views
+
+Work Log:
+- Added `import DataExportButton from '@/components/DataExportButton'` to 5 view files
+- AlertsView.tsx: Added DataExportButton in the filter bar (after Show Resolved switch), passing `data.alerts` with filename "alerts"
+- IncidentsView.tsx: Added DataExportButton in the filter bar (after Category select), passing `incidents` with filename "incidents"
+- FaultsView.tsx: Added DataExportButton in the filter row (after Component select), passing `predictions` with filename "faults"
+- SpectrumView.tsx: Added DataExportButton in the filter row (after Status select), passing `items` with filename "spectrum"
+- CoverageHolesView.tsx: Added DataExportButton in the filter row (after Status select), passing `holes` with filename "coverage-holes"
+- All data arrays cast via `as unknown as Record<string, unknown>[]` to satisfy TypeScript
+- No existing logic, styling, or layout was changed
+- No `columns` prop passed (object keys used as default headers)
+- Lint result: 0 errors, 0 warnings
+
+Stage Summary:
+- DataExportButton pilot deployed to all 5 target views
+- Each button exports the currently filtered dataset as CSV
+- Buttons are co-located with the existing filter controls

@@ -73,7 +73,7 @@ export default function OptimizerView() {
     onSuccess: (result) => {
       setChatHistory(prev => [
         ...prev,
-        { role: 'ai', content: result.response || 'No response generated.', timestamp: new Date().toISOString() },
+        { role: 'ai', content: result.response || t('toast.noResponse'), timestamp: new Date().toISOString() },
       ]);
       setPrompt('');
       queryClient.invalidateQueries({ queryKey: ['optimizer'] });

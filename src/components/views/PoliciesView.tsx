@@ -723,13 +723,13 @@ export default function PoliciesView() {
       queryClient.invalidateQueries({ queryKey: ['policies'] });
       queryClient.invalidateQueries({ queryKey: ['policy-executions'] });
       if (variables.action === 'toggle') {
-        toast.success('Policy toggled successfully');
+        toast.success(t('toast.policyToggled'));
       } else {
-        toast.success('Policy triggered successfully');
+        toast.success(t('toast.policyTriggered'));
       }
     },
     onError: () => {
-      toast.error('Failed to perform action on policy');
+      toast.error(t('toast.policyActionFailed'));
     },
   });
 
@@ -741,7 +741,7 @@ export default function PoliciesView() {
     patchMutation.mutate({
       policyId: id,
       action: 'trigger',
-      triggerReason: 'Manual trigger from UI',
+      triggerReason: t('pol.manualTrigger'),
     });
   };
 

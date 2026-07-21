@@ -244,6 +244,7 @@ const en: Record<string, string> = {
 
   // ========== COMMON BUTTON LABELS ==========
   'btn.refresh': 'Refresh',
+  'btn.exportCsv': 'Export CSV',
   'btn.save': 'Save',
   'btn.saveN': 'Save ({n})',
   'btn.ack': 'Ack',

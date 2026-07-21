@@ -15,6 +15,7 @@ import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff } from 'luci
 import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
+import DataExportButton from '@/components/DataExportButton';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -169,6 +170,7 @@ export default function AlertsView() {
           <Switch checked={showResolved} onCheckedChange={setShowResolved} />
           <span className="text-sm text-muted-foreground">{t('alert.showResolved')}</span>
         </div>
+        <DataExportButton data={data.alerts as unknown as Record<string, unknown>[]} filename="alerts" />
       </div>
 
       {/* Alerts Table */}

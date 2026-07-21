@@ -1,5 +1,6 @@
 'use client';
 import { useT } from '@/lib/i18n';
+import DataExportButton from '@/components/DataExportButton';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -548,6 +549,7 @@ export default function FaultsView() {
                 ))}
               </SelectContent>
             </Select>
+            <DataExportButton data={predictions as unknown as Record<string, unknown>[]} filename="faults" />
           </div>
         </CardHeader>
         <CardContent>
