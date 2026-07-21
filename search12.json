@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.tmforum.org/oda/open-apis",
+    "name": "Open APIs | TM Forum",
+    "snippet": "TM Forum's Open API program is a global initiative to enable seamless connectivity, interoperability and portability. Missing: northbound third 2024\nOver 100+ REST-based, Event driven and Domain Specific Open APIs have been collaboratively developed by TM Forum members working within the Open API project. Missing: northbound | Show results with: northbound",
+    "host_name": "www.tmforum.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/open-digital-architecture/implementation/open-apis",
+    "name": "Open Digital Architecture | Open APIs | TM Forum",
+    "snippet": "Discover TM Forum's Open APIs for seamless connectivity, interoperability & lifecycle management across diverse service ecosystems. Learn more. Missing: northbound third 2024\nTM Forum's Open APIs are based on representational state transfer (REST). They are technology agnostic and can be used in any digital service scenario, Missing: optimization northbound",
+    "host_name": "www.tmforum.org",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/open-digital-architecture/about-open-apis",
+    "name": "Introduction to Open APIs - TM Forum",
+    "snippet": "Forum's Open API program is a global initiative to enable seamless connectivity, interoperability and portability across complex ecosystem services Missing: northbound third 2024\nJoin TM Forum's Open APIs project, driving industrywide efforts to standardize collaboration between CSPs & vendors for enhanced interoperability. Missing: northbound | Show results with: northbound\nOver 70+ REST-based, Event driven and Domain Specific Open APIs have been collaboratively developed by TM Forum members working within the Open API project. Missing: northbound | Show results with: northbound",
+    "host_name": "www.tmforum.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/oda/solutions/network-api-monetization",
+    "name": "Network API monetization | TM Forum",
+    "snippet": "These APIs make it easy for developers to integrate network functions and data into their applications. With these APIs, developers can create new monetizable ...",
+    "host_name": "www.tmforum.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/oda/directory/software-providers/directory/mefdev/products/open-api-platform",
+    "name": "Open Api Platform | TM Forum ODA Component Directory",
+    "snippet": "There are various ready-to-use integrations with multiple third-party vendors, including Amdocs, Ericsson, Oracle, Nexign, SigScale and Bercut. Missing: northbound REST systems 2024",
+    "host_name": "www.tmforum.org",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ezywureyi7i.exactdn.com/wp-content/uploads/2025/03/softnet-whitepaper2024-v1.0_final.pdf",
+    "name": "[PDF] NETWORK AND SERVICE MANAGEMENT ADVANCEMENTS",
+    "snippet": "TM Forum OpenAPI is a suite of standardized REST-based APIs designed to enable seamless interoperability and integration across different systems within the ...",
+    "host_name": "ezywureyi7i.exactdn.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/open-digital-architecture/implementation",
+    "name": "Implementation Architecture - TM Forum",
+    "snippet": "ODA's implementation architecture enables an agile approach to building IT and network systems from reusable, microservices-based software components. Missing: northbound REST third 2024",
+    "host_name": "www.tmforum.org",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.tmforum.org/news-insight/newsroom/tm-forum-members-launch-ai-native-oda-roadmap-for-autonomous-telecoms",
+    "name": "TM Forum Members launch AI-native ODA roadmap for autonomous",
+    "snippet": "Industry-backed roadmap and new AI-native capabilities extend TM Forum's Open Digital Architecture (ODA) for the autonomous enterprise.",
+    "host_name": "www.tmforum.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2607.16066v1",
+    "name": "LLM-Powered Agentic AI for 5G/6G Networks: A Tutorial and Survey on",
+    "snippet": "TM Forum, Autonomous Networks program; TMF Open APIs (TMF620/641/688); ODA, Agent-driven OSS/BSS workflows; LLM intent decomposition over Open ...",
+    "host_name": "arxiv.org",
+    "rank": 8,
+    "date": "Jul 17, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/@nowusman/tmf-oda-and-open-apis-a-modern-path-for-telecom-transformation-574e418f84c9",
+    "name": "TMF ODA and Open APIs: A Modern Path for Telecom Transformation",
+    "snippet": "The TM Forum's Open Digital Architecture (ODA) is a cloud-native, modular framework designed to replace traditional, monolithic BSS and OSS. It ...",
+    "host_name": "medium.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

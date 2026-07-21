@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.ericsson.com/en/portfolio/cloud-software-and-services/network-management-and-automation/ericsson-network-manager",
+    "name": "Ericsson Network Manager",
+    "snippet": "Automate optimization and advanced troubleshooting for improved network performance; Obtain best-in-class usability and workflow management for improved ... Missing: Nokia Huawei NCE Amdocs",
+    "host_name": "www.ericsson.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/network-management",
+    "name": "Network Management for telecom operations - Ericsson",
+    "snippet": "Network deployment and monitoring · Fault management and maintenance · Security and access management · Network automation and ... Missing: Huawei NCE Amdocs",
+    "host_name": "www.ericsson.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.amdocs.com/products-services/bss-oss/mobile-networks/network-management-services",
+    "name": "Network Management Services - Amdocs",
+    "snippet": "Network assurance · NOC operations · Triage and SLA management · Network and service quality analytics ... Missing: Ericsson Nokia Huawei NCE",
+    "host_name": "www.amdocs.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/network-automation/network-optimization",
+    "name": "Network optimization – what, why and how - Ericsson",
+    "snippet": "Network optimization is effective in boosting network investment returns, while ensuring superior network experience and easier network operations, carbon ... Missing: Nokia Huawei NCE Amdocs",
+    "host_name": "www.ericsson.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.gartner.com/reviews/product/ericsson-network-manager",
+    "name": "Ericsson Network Manager Reviews & Ratings 2026 | Gartner Peer Insights",
+    "snippet": "Rating 4.8 (3) Ericsson Network Manager supports automation of routine network operations, real-time data analysis, and service provisioning, aiming to simplify network ... Missing: Nokia NCE Amdocs",
+    "host_name": "www.gartner.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.selector.ai/learning-center/network-operations-management-6-key-functions-technology-and-tips-for-success",
+    "name": "Network Operations Management: 6 Key Functions, Technology, and",
+    "snippet": "Network operations management (NOM) involves the processes, tools, and practices used to oversee a network's day-to-day performance, security, and reliability.",
+    "host_name": "www.selector.ai",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.amdocs.com/products-services/networks",
+    "name": "Amdocs Networks",
+    "snippet": "It spans service delivery, fault resolution, preventive operations, optimization, and change management across networks, Missing: Ericsson Nokia Huawei NCE",
+    "host_name": "www.amdocs.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/managed-services",
+    "name": "Managed Network Services: Empowering networks - Ericsson",
+    "snippet": "Ericsson Managed Services delivers comprehensive, end-to-end network operations and optimization, including field operations for communication services ... Missing: Nokia Huawei NCE Amdocs",
+    "host_name": "www.ericsson.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://telcomagazine.com/top10/top-10-network-optimisation-platforms-22-04-2026",
+    "name": "Top 10: Network Optimisation Platforms | Telco Magazine",
+    "snippet": "Amdocs excels in multi-vendor, multi-technology environments, providing a \"single pane of glass\" that simplifies the management of legacy 4G ...",
+    "host_name": "telcomagazine.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://e.huawei.com/en/products/network-analysis",
+    "name": "iMaster NCE Autonomous Network Management and Control System",
+    "snippet": "iMaster NCE leverages AI and big data to verify business intent and implement proactive O&M of physical networks, implementing intent-driven service automation. Missing: Ericsson Nokia Amdocs optimization",
+    "host_name": "e.huawei.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

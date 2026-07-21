@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.linkedin.com/posts/vikas-shokeen_ai-telecom-oss-activity-7484668383666335744-sbiV",
+    "name": "Vikas Shokeen's Post - LinkedIn",
+    "snippet": "AI-Powered OSS/BSS: The Future of Telecom Operations ──────── ✦ ──────── Most AI conversations in telecom focus on the RAN or the Core Network ... Missing: features SON 2024",
+    "host_name": "www.linkedin.com",
+    "rank": 0,
+    "date": "Jul 19, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/ran/intelligent-ran-automation/intelligent-automation-platform",
+    "name": "Intelligent Automation Platform (EIAP) - Ericsson",
+    "snippet": "AI-driven cApps, real-time insights, and closed-loop automation amplify capabilities for core networks. Discover the full capabilities of Intelligent Core. Missing: SON | Show results with: SON",
+    "host_name": "www.ericsson.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ieeexplore.ieee.org/iel8/6287639/10820123/11219010.pdf",
+    "name": "AI-Driven Autonomy in O-RAN and SON Architectures - IEEE Xplore",
+    "snippet": "Integrating AI and Machine Learning (ML) into O-RAN and SON enables autonomous network management . O-RAN aims to address these issues by ...",
+    "host_name": "ieeexplore.ieee.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.snstelecom.com/son",
+    "name": "RAN Automation, SON, RIC, xApps & rApps in the 5G Era: 2024 – 2030",
+    "snippet": "Key trends in intelligent RAN implementations, including the SON-to-RIC transition, closed loop automation, intent-driven management, operational AI/ML, Gen AI ... Missing: BSS | Show results with: BSS",
+    "host_name": "www.snstelecom.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/ericsson_autonomousnetworks-ossbss-ai-activity-7475261956812148736-fNr6",
+    "name": "#autonomousnetworks #ossbss #ai #networkautomation #5g  - LinkedIn",
+    "snippet": "These AI-driven applications have the potential to optimize cloud-native core functions, automate decision making, and improve service ... Missing: 2024 | Show results with: 2024\nThe evolution of autonomous telecom networks is expanding beyond the RAN. Most of us are familiar with rApps for RAN optimization, but an ...",
+    "host_name": "www.linkedin.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.5gamericas.org/5g-americas-publishes-white-paper-advancing-ai-driven-self-managing-networks",
+    "name": "5G Americas Publishes White Paper Advancing AI-Driven, Self",
+    "snippet": "Closed-loop automation, energy optimization, and predictive assurance reduce churn, improve SLA management, and deliver cost savings. OSS/BSS, ... Missing: SON 2024\ntelecom operators can harness AI-driven, self-configuring, and self-healing systems to meet the rising complexity of 5G, AI, IoT, and cloud- ... Missing: features | Show results with: features",
+    "host_name": "www.5gamericas.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.businesssolutionsus.com/feeds/blog/ai-based-bss-platforms-telecom-cost-reduction",
+    "name": "AI-Driven BSS Platforms for Telecom Cost Reduction and Margin",
+    "snippet": "AI-driven BSS addresses billing errors, revenue leakage, slow order management, and churn. AI-driven BSS integrates with OSS and network ... Missing: RAN SON 2024",
+    "host_name": "www.businesssolutionsus.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=y1j5wIvEhqI",
+    "name": "AI-driven RAN Automation transforming Networks for a smarter",
+    "snippet": "The conversation at FutureNet World was loud and clear: AI is no longer a pilot project; it's the engine of the modern network.",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.hpe.com/us/en/solutions/telecom-network-automation.html",
+    "name": "Telecom Operations, Network Automation, OSS & BSS Solutions",
+    "snippet": "HPE is the transformation catalyst for telco providing a breadth of operational efficiency tools to automate, orchestrate, and transform infrastructure. Missing: optimization SON 2024\nTelecom operations and network automation ... Optimize infrastructure resources and automate delivery of customized services when and where customers need them. Missing: driven features",
+    "host_name": "www.hpe.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.capgemini.com/us-en/insights/expert-perspectives/ai-ran-in-action-turning-5g-infrastructure-into-an-intelligent-growth-platform",
+    "name": "AI-RAN in Action: Turning 5G Infrastructure into an Intelligent",
+    "snippet": "The objective is clear: transform 5G and future 6G infrastructure into a shared, intelligent compute and connectivity platform, one that serves ...",
+    "host_name": "www.capgemini.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
