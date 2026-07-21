@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { MapPinOff, Frown, Users, AlertTriangle, CircleDot } from 'lucide-react';
 import { TECH_BG_CLASSES, TECHNOLOGIES, formatNumber } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ───────────────────────────────────────────
@@ -86,11 +87,11 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   mitigated: 'default',
 };
 
-const STATUS_TEXT: Record<string, string> = {
-  open: 'Open',
-  investigating: 'Investigating',
-  resolved: 'Resolved',
-  mitigated: 'Mitigated',
+const STATUS_KEYS: Record<string, string> = {
+  open: 'status.open',
+  investigating: 'status.investigating',
+  resolved: 'status.resolved',
+  mitigated: 'ch.mitigated',
 };
 
 const REGION_COLORS = [
@@ -211,6 +212,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────
 
 export default function CoverageHolesView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -277,8 +279,8 @@ export default function CoverageHolesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load coverage hole data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'coverage hole' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -288,9 +290,9 @@ export default function CoverageHolesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <MapPinOff className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Coverage Holes Detected</p>
+        <p className="text-lg font-medium">{t('ch.noHoles')}</p>
         <p className="text-sm mt-1">
-          No coverage holes match the current filters.
+          {t('ch.noMatch')}
         </p>
       </div>
     );
@@ -303,10 +305,10 @@ export default function CoverageHolesView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <MapPinOff className="h-6 w-6 text-rose-500" />
-          Coverage Hole Detection
+          {t('ch.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Identify coverage gaps and signal weakness areas
+          {t('ch.subtitle')}
         </p>
       </div>
 
@@ -317,14 +319,14 @@ export default function CoverageHolesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MapPinOff className="h-4 w-4 text-cyan-500" />
-              Total Holes
+              {t('ch.totalHoles')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Detected coverage gaps</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.detectedGaps')}</p>
           </CardContent>
         </Card>
 
@@ -333,14 +335,14 @@ export default function CoverageHolesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
-              Critical Holes
+              {t('ch.criticalHoles')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {criticalCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Require immediate action</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.requireAction')}</p>
           </CardContent>
         </Card>
 
@@ -349,7 +351,7 @@ export default function CoverageHolesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MapPinOff className="h-4 w-4 text-amber-500" />
-              Avg Gap (dB)
+              {t('ch.avgGapDb')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -363,7 +365,7 @@ export default function CoverageHolesView() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {avgGap > 15 ? 'Severe signal weakness' : avgGap > 10 ? 'Moderate gap' : 'Minor gap'}
+              {avgGap > 15 ? t('ch.severeWeakness') : avgGap > 10 ? t('ch.moderateGap') : t('ch.minorGap')}
             </p>
           </CardContent>
         </Card>
@@ -373,14 +375,14 @@ export default function CoverageHolesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-rose-500" />
-              Affected Users
+              {t('ch.affectedUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
               {formatUsers(totalAffectedUsers)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Subscribers impacted</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.subscribersImpacted')}</p>
           </CardContent>
         </Card>
 
@@ -389,14 +391,14 @@ export default function CoverageHolesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CircleDot className="h-4 w-4 text-amber-500" />
-              Open Holes
+              {t('ch.openHoles')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {openCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Awaiting resolution</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.awaitingResolution')}</p>
           </CardContent>
         </Card>
       </div>
@@ -406,7 +408,7 @@ export default function CoverageHolesView() {
         {/* Severity Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Holes by Severity</CardTitle>
+            <CardTitle className="text-base">{t('ch.holesBySev')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -423,7 +425,7 @@ export default function CoverageHolesView() {
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Holes" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t('ch.holes')} radius={[4, 4, 0, 0]}>
                     {severityChartData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -437,7 +439,7 @@ export default function CoverageHolesView() {
         {/* Holes by Region Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Holes by Region</CardTitle>
+            <CardTitle className="text-base">{t('ch.holesByRegion')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -457,7 +459,7 @@ export default function CoverageHolesView() {
                     width={80}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Holes" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="count" name={t('ch.holes')} radius={[0, 4, 4, 0]}>
                     {regionChartData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -472,36 +474,36 @@ export default function CoverageHolesView() {
       {/* Full Holes Table */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <CardTitle className="text-base">Coverage Hole Details</CardTitle>
+          <CardTitle className="text-base">{t('ch.details')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Severity" />
+                <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
                 {SEVERITY_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{s.value === 'all' ? t('filter.allSeveritiesShort') : s.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{s.value === 'all' ? t('filter.allStatus') : s.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -510,23 +512,23 @@ export default function CoverageHolesView() {
         <CardContent>
           {holes.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No coverage holes match the selected filters.
+              {t('ch.noMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead className="text-right">Signal (dBm)</TableHead>
-                    <TableHead className="text-right">Expected (dBm)</TableHead>
-                    <TableHead className="text-right">Gap (dB)</TableHead>
-                    <TableHead className="text-right">Area (km²)</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Nearest Site</TableHead>
-                    <TableHead className="text-right">Affected Users</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
+                    <TableHead>{t('filter.region')}</TableHead>
+                    <TableHead className="text-right">{t('ch.signalDbm')}</TableHead>
+                    <TableHead className="text-right">{t('ch.expectedDbm')}</TableHead>
+                    <TableHead className="text-right">{t('ch.gapDb')}</TableHead>
+                    <TableHead className="text-right">{t('ch.areaKm2')}</TableHead>
+                    <TableHead>{t('filter.severity')}</TableHead>
+                    <TableHead>{t('ch.nearestSiteCol')}</TableHead>
+                    <TableHead className="text-right">{t('ch.affectedUsers')}</TableHead>
+                    <TableHead>{t('filter.status')}</TableHead>
                     <TableHead className="min-w-[160px]">Recommendation</TableHead>
                     <TableHead>Created</TableHead>
                   </TableRow>
@@ -584,7 +586,7 @@ export default function CoverageHolesView() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={STATUS_VARIANT[hole.status] ?? 'outline'}>
-                          {STATUS_TEXT[hole.status] ?? hole.status}
+                          {STATUS_KEYS[hole.status] ? t(STATUS_KEYS[hole.status]) : (hole.status.charAt(0).toUpperCase() + hole.status.slice(1))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[160px] truncate" title={hole.recommendation}>

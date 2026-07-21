@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { GitBranch, Frown, CheckCircle2, AlertTriangle, RotateCcw, Clock } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -72,12 +73,11 @@ const STATUS_COLORS: Record<ChangeStatus, string> = {
   rejected: '#64748B',
 };
 
-const STATUS_LABELS: Record<ChangeStatus, string> = {
-  pending: 'Pending',
-  approved: 'Approved',
-  implemented: 'Implemented',
-  rolled_back: 'Rolled Back',
-  rejected: 'Rejected',
+const STATUS_KEYS: Partial<Record<ChangeStatus, string>> = {
+  pending: 'chg.pending',
+  implemented: 'chg.implemented',
+  rolled_back: 'chg.rolledBack',
+  rejected: 'chg.rejected',
 };
 
 const STATUS_BADGE_CLASSES: Record<ChangeStatus, string> = {
@@ -97,13 +97,13 @@ const CATEGORY_COLORS: Record<ChangeCategory, string> = {
   software: '#64748B',
 };
 
-const CATEGORY_LABELS: Record<ChangeCategory, string> = {
-  radio: 'Radio',
-  power: 'Power',
-  neighbor: 'Neighbor',
-  handover: 'Handover',
-  capacity: 'Capacity',
-  software: 'Software',
+const CATEGORY_KEYS: Record<ChangeCategory, string> = {
+  radio: 'chg.radio',
+  power: 'chg.power',
+  neighbor: 'chg.neighbor',
+  handover: 'chg.handover',
+  capacity: 'chg.capacity',
+  software: 'chg.software',
 };
 
 const CATEGORY_BADGE_CLASSES: Record<ChangeCategory, string> = {
@@ -218,6 +218,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function ChangesView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -240,14 +241,14 @@ export default function ChangesView() {
 
   // Chart data: Status Distribution
   const statusBarData = STATUSES.map((s) => ({
-    status: STATUS_LABELS[s],
+    status: STATUS_KEYS[s] ? t(STATUS_KEYS[s]) : (s.charAt(0).toUpperCase() + s.slice(1)),
     count: summary?.byStatus[s] ?? 0,
     fill: STATUS_COLORS[s],
   }));
 
   // Chart data: Category Distribution
   const categoryPieData = CATEGORIES.map((c) => ({
-    name: CATEGORY_LABELS[c],
+    name: CATEGORY_KEYS[c] ? t(CATEGORY_KEYS[c]) : (c.charAt(0).toUpperCase() + c.slice(1)),
     value: summary?.byCategory[c] ?? 0,
     fill: CATEGORY_COLORS[c],
   })).filter((d) => d.value > 0);
@@ -275,8 +276,8 @@ export default function ChangesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load change data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'change' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -286,9 +287,9 @@ export default function ChangesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <GitBranch className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Changes Available</p>
+        <p className="text-lg font-medium">{t('chg.noData')}</p>
         <p className="text-sm mt-1">
-          No parameter changes match the selected filters.
+          {t('chg.noMatchFilter')}
         </p>
       </div>
     );
@@ -299,9 +300,9 @@ export default function ChangesView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Change Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('chg.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Parameter change tracking, approval workflow, and audit trail
+          {t('chg.subtitle')}
         </p>
       </div>
 
@@ -312,7 +313,7 @@ export default function ChangesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <GitBranch className="h-4 w-4 text-slate-500" />
-              Total Changes
+              {t('chg.totalChanges')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -327,7 +328,7 @@ export default function ChangesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Implemented
+              {t('chg.implemented')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -342,7 +343,7 @@ export default function ChangesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-500" />
-              Pending
+              {t('chg.pending')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -357,7 +358,7 @@ export default function ChangesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <RotateCcw className="h-4 w-4 text-red-500" />
-              Rolled Back
+              {t('chg.rolledBack')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -372,7 +373,7 @@ export default function ChangesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-cyan-500" />
-              This Week
+              {t('chg.thisWeek')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -388,7 +389,7 @@ export default function ChangesView() {
         {/* Status Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status Distribution</CardTitle>
+            <CardTitle className="text-base">{t('chg.statusDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -406,7 +407,7 @@ export default function ChangesView() {
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Changes" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t('chg.changes')} radius={[4, 4, 0, 0]}>
                     {statusBarData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -420,7 +421,7 @@ export default function ChangesView() {
         {/* Category Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Category Distribution</CardTitle>
+            <CardTitle className="text-base">{t('chg.catDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -460,38 +461,38 @@ export default function ChangesView() {
       {/* Full Changes Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-          <CardTitle className="text-base">All Changes</CardTitle>
+          <CardTitle className="text-base">{t('chg.allChanges')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Tech" />
+                <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>{STATUS_KEYS[s] ? t(STATUS_KEYS[s]) : (s.charAt(0).toUpperCase() + s.slice(1))}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('filter.category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+                  <SelectItem key={c} value={c}>{CATEGORY_KEYS[c] ? t(CATEGORY_KEYS[c]) : (c.charAt(0).toUpperCase() + c.slice(1))}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -500,7 +501,7 @@ export default function ChangesView() {
         <CardContent>
           {changes.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No changes match the selected filters.
+              {t('chg.noChangesMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
@@ -508,13 +509,13 @@ export default function ChangesView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10 min-w-[180px]">Title</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Category</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
+                    <TableHead>{t('filter.category')}</TableHead>
                     <TableHead>Site</TableHead>
                     <TableHead>Parameter</TableHead>
-                    <TableHead>Previous → Proposed</TableHead>
+                    <TableHead>{t('chg.previousToProposed')}</TableHead>
                     <TableHead>Risk</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('filter.status')}</TableHead>
                     <TableHead>Requested By</TableHead>
                     <TableHead>Implemented</TableHead>
                     <TableHead>Rollback Reason</TableHead>
@@ -534,7 +535,7 @@ export default function ChangesView() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={CATEGORY_BADGE_CLASSES[change.category]}>
-                          {CATEGORY_LABELS[change.category]}
+                          {CATEGORY_KEYS[change.category] ? t(CATEGORY_KEYS[change.category]) : (change.category.charAt(0).toUpperCase() + change.category.slice(1))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs max-w-[120px] truncate">
@@ -555,7 +556,7 @@ export default function ChangesView() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={STATUS_BADGE_CLASSES[change.status]}>
-                          {STATUS_LABELS[change.status]}
+                          {STATUS_KEYS[change.status] ? t(STATUS_KEYS[change.status]) : (change.status.charAt(0).toUpperCase() + change.status.slice(1))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">

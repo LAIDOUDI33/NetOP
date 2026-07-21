@@ -1,0 +1,302 @@
+     1→/home/z/my-project/src/components/views/CoverageMapView.tsx:312:                    <TableHead>Region</TableHead>
+     2→/home/z/my-project/src/components/views/CoverageMapView.tsx:313:                    <TableHead className="text-right">Total Sites</TableHead>
+     3→/home/z/my-project/src/components/views/CoverageMapView.tsx:314:                    <TableHead className="text-right">Avg Availability</TableHead>
+     4→/home/z/my-project/src/components/views/CoverageMapView.tsx:315:                    <TableHead className="text-right">Avg Signal</TableHead>
+     5→/home/z/my-project/src/components/views/CoverageMapView.tsx:316:                    <TableHead>Tech Distribution</TableHead>
+     6→/home/z/my-project/src/components/views/IncidentsView.tsx:590:                  <TableHead className="min-w-[160px]">Title</TableHead>
+     7→/home/z/my-project/src/components/views/IncidentsView.tsx:591:                  <TableHead>Tech</TableHead>
+     8→/home/z/my-project/src/components/views/IncidentsView.tsx:592:                  <TableHead>Severity</TableHead>
+     9→/home/z/my-project/src/components/views/IncidentsView.tsx:593:                  <TableHead>Status</TableHead>
+    10→/home/z/my-project/src/components/views/IncidentsView.tsx:594:                  <TableHead>Category</TableHead>
+    11→/home/z/my-project/src/components/views/IncidentsView.tsx:595:                  <TableHead>Priority</TableHead>
+    12→/home/z/my-project/src/components/views/IncidentsView.tsx:596:                  <TableHead>Site</TableHead>
+    13→/home/z/my-project/src/components/views/IncidentsView.tsx:597:                  <TableHead>Assigned</TableHead>
+    14→/home/z/my-project/src/components/views/IncidentsView.tsx:598:                  <TableHead>MTTR</TableHead>
+    15→/home/z/my-project/src/components/views/IncidentsView.tsx:599:                  <TableHead>SLA</TableHead>
+    16→/home/z/my-project/src/components/views/IncidentsView.tsx:600:                  <TableHead>Tags</TableHead>
+    17→/home/z/my-project/src/components/views/IncidentsView.tsx:601:                  <TableHead>Created</TableHead>
+    18→/home/z/my-project/src/components/views/ConfigView.tsx:342:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Name</TableHead>
+    19→/home/z/my-project/src/components/views/ConfigView.tsx:343:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Value</TableHead>
+    20→/home/z/my-project/src/components/views/ConfigView.tsx:344:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Unit</TableHead>
+    21→/home/z/my-project/src/components/views/ConfigView.tsx:345:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Range</TableHead>
+    22→/home/z/my-project/src/components/views/HandoverView.tsx:491:                    <TableHead className="sticky left-0 bg-background z-10">Serving Cell</TableHead>
+    23→/home/z/my-project/src/components/views/HandoverView.tsx:492:                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
+    24→/home/z/my-project/src/components/views/HandoverView.tsx:493:                    <TableHead className="sticky left-[200px] bg-background z-10">Neighbor</TableHead>
+    25→/home/z/my-project/src/components/views/HandoverView.tsx:494:                    <TableHead className="sticky left-[340px] bg-background z-10">Code</TableHead>
+    26→/home/z/my-project/src/components/views/HandoverView.tsx:495:                    <TableHead>Tech</TableHead>
+    27→/home/z/my-project/src/components/views/HandoverView.tsx:496:                    <TableHead>Type</TableHead>
+    28→/home/z/my-project/src/components/views/HandoverView.tsx:497:                    <TableHead className="text-right">Attempts</TableHead>
+    29→/home/z/my-project/src/components/views/HandoverView.tsx:498:                    <TableHead className="text-right">Success</TableHead>
+    30→/home/z/my-project/src/components/views/HandoverView.tsx:499:                    <TableHead className="text-right">Failures</TableHead>
+    31→/home/z/my-project/src/components/views/HandoverView.tsx:500:                    <TableHead className="text-right">Success %</TableHead>
+    32→/home/z/my-project/src/components/views/HandoverView.tsx:501:                    <TableHead className="text-right">Prep ms</TableHead>
+    33→/home/z/my-project/src/components/views/HandoverView.tsx:502:                    <TableHead className="text-right">Exec ms</TableHead>
+    34→/home/z/my-project/src/components/views/HandoverView.tsx:503:                    <TableHead className="text-right">Ping-Pong</TableHead>
+    35→/home/z/my-project/src/components/views/HandoverView.tsx:504:                    <TableHead>Early/Late</TableHead>
+    36→/home/z/my-project/src/components/views/HandoverView.tsx:505:                    <TableHead>Status</TableHead>
+    37→/home/z/my-project/src/components/views/HandoverView.tsx:506:                    <TableHead>Action</TableHead>
+    38→/home/z/my-project/src/components/views/HealthView.tsx:570:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+    39→/home/z/my-project/src/components/views/HealthView.tsx:571:                    <TableHead>Tech</TableHead>
+    40→/home/z/my-project/src/components/views/HealthView.tsx:572:                    <TableHead>Region</TableHead>
+    41→/home/z/my-project/src/components/views/HealthView.tsx:573:                    <TableHead className="text-right">Overall</TableHead>
+    42→/home/z/my-project/src/components/views/HealthView.tsx:574:                    <TableHead className="text-right">Coverage</TableHead>
+    43→/home/z/my-project/src/components/views/HealthView.tsx:575:                    <TableHead className="text-right">Capacity</TableHead>
+    44→/home/z/my-project/src/components/views/HealthView.tsx:576:                    <TableHead className="text-right">Quality</TableHead>
+    45→/home/z/my-project/src/components/views/HealthView.tsx:577:                    <TableHead className="text-right">Reliability</TableHead>
+    46→/home/z/my-project/src/components/views/HealthView.tsx:578:                    <TableHead className="text-right">Experience</TableHead>
+    47→/home/z/my-project/src/components/views/HealthView.tsx:579:                    <TableHead>Grade</TableHead>
+    48→/home/z/my-project/src/components/views/HealthView.tsx:580:                    <TableHead>Trend</TableHead>
+    49→/home/z/my-project/src/components/views/HealthView.tsx:581:                    <TableHead>Issues</TableHead>
+    50→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:182:                    <TableHead className="text-xs">#</TableHead>
+    51→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:183:                    <TableHead className="text-xs">Site</TableHead>
+    52→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:184:                    <TableHead className="text-xs">Technology</TableHead>
+    53→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:185:                    <TableHead className="text-xs">Status</TableHead>
+    54→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:186:                    <TableHead className="text-xs text-right">Value</TableHead>
+    55→/home/z/my-project/src/components/views/OnboardingView.tsx:671:                      <TableHead className="text-xs font-semibold">Site</TableHead>
+    56→/home/z/my-project/src/components/views/OnboardingView.tsx:672:                      <TableHead className="text-xs font-semibold">Code</TableHead>
+    57→/home/z/my-project/src/components/views/OnboardingView.tsx:673:                      <TableHead className="text-xs font-semibold">Tech</TableHead>
+    58→/home/z/my-project/src/components/views/OnboardingView.tsx:674:                      <TableHead className="text-xs font-semibold">Region</TableHead>
+    59→/home/z/my-project/src/components/views/OnboardingView.tsx:675:                      <TableHead className="text-xs font-semibold">Vendor</TableHead>
+    60→/home/z/my-project/src/components/views/OnboardingView.tsx:676:                      <TableHead className="text-xs font-semibold">Status</TableHead>
+    61→/home/z/my-project/src/components/views/OnboardingView.tsx:677:                      <TableHead className="text-xs font-semibold">PCI</TableHead>
+    62→/home/z/my-project/src/components/views/OnboardingView.tsx:678:                      <TableHead className="text-xs font-semibold">Neighbors</TableHead>
+    63→/home/z/my-project/src/components/views/OnboardingView.tsx:679:                      <TableHead className="text-xs font-semibold">Created</TableHead>
+    64→/home/z/my-project/src/components/views/OnboardingView.tsx:680:                      <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+    65→/home/z/my-project/src/components/views/EvolutionView.tsx:542:                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
+    66→/home/z/my-project/src/components/views/EvolutionView.tsx:543:                    <TableHead>Migration</TableHead>
+    67→/home/z/my-project/src/components/views/EvolutionView.tsx:544:                    <TableHead>Region</TableHead>
+    68→/home/z/my-project/src/components/views/EvolutionView.tsx:545:                    <TableHead className="text-right">Progress</TableHead>
+    69→/home/z/my-project/src/components/views/EvolutionView.tsx:546:                    <TableHead className="text-right">Budget</TableHead>
+    70→/home/z/my-project/src/components/views/EvolutionView.tsx:547:                    <TableHead className="text-right">Cost %</TableHead>
+    71→/home/z/my-project/src/components/views/EvolutionView.tsx:548:                    <TableHead>Risk</TableHead>
+    72→/home/z/my-project/src/components/views/EvolutionView.tsx:549:                    <TableHead>Start</TableHead>
+    73→/home/z/my-project/src/components/views/EvolutionView.tsx:550:                    <TableHead>Target</TableHead>
+    74→/home/z/my-project/src/components/views/EvolutionView.tsx:551:                    <TableHead>Status</TableHead>
+    75→/home/z/my-project/src/components/views/EvolutionView.tsx:552:                    <TableHead>Notes</TableHead>
+    76→/home/z/my-project/src/components/views/ReportsView.tsx:317:                    <TableHead className="text-xs w-12">#</TableHead>
+    77→/home/z/my-project/src/components/views/ReportsView.tsx:318:                    <TableHead className="text-xs">Site</TableHead>
+    78→/home/z/my-project/src/components/views/ReportsView.tsx:319:                    <TableHead className="text-xs">Technology</TableHead>
+    79→/home/z/my-project/src/components/views/ReportsView.tsx:320:                    <TableHead className="text-xs">Status</TableHead>
+    80→/home/z/my-project/src/components/views/ReportsView.tsx:321:                    <TableHead className="text-xs text-right">Value</TableHead>
+    81→/home/z/my-project/src/components/views/ReportsView.tsx:460:                    <TableHead className="text-xs">Time</TableHead>
+    82→/home/z/my-project/src/components/views/ReportsView.tsx:461:                    <TableHead className="text-xs">Module</TableHead>
+    83→/home/z/my-project/src/components/views/ReportsView.tsx:462:                    <TableHead className="text-xs">Site</TableHead>
+    84→/home/z/my-project/src/components/views/ReportsView.tsx:463:                    <TableHead className="text-xs">Action Type</TableHead>
+    85→/home/z/my-project/src/components/views/ReportsView.tsx:464:                    <TableHead className="text-xs">Parameter</TableHead>
+    86→/home/z/my-project/src/components/views/ReportsView.tsx:465:                    <TableHead className="text-xs">Before → After</TableHead>
+    87→/home/z/my-project/src/components/views/ReportsView.tsx:466:                    <TableHead className="text-xs text-right">Impact</TableHead>
+    88→/home/z/my-project/src/components/views/ReportsView.tsx:467:                    <TableHead className="text-xs">Status</TableHead>
+    89→/home/z/my-project/src/components/views/ReportsView.tsx:596:                    <TableHead className="text-xs">Name</TableHead>
+    90→/home/z/my-project/src/components/views/ReportsView.tsx:597:                    <TableHead className="text-xs">Tech</TableHead>
+    91→/home/z/my-project/src/components/views/ReportsView.tsx:598:                    <TableHead className="text-xs">Trigger</TableHead>
+    92→/home/z/my-project/src/components/views/ReportsView.tsx:599:                    <TableHead className="text-xs">Scope</TableHead>
+    93→/home/z/my-project/src/components/views/ReportsView.tsx:600:                    <TableHead className="text-xs text-center">Priority</TableHead>
+    94→/home/z/my-project/src/components/views/ReportsView.tsx:601:                    <TableHead className="text-xs text-center">Enabled</TableHead>
+    95→/home/z/my-project/src/components/views/ReportsView.tsx:602:                    <TableHead className="text-xs text-right">Total Runs</TableHead>
+    96→/home/z/my-project/src/components/views/ReportsView.tsx:603:                    <TableHead className="text-xs text-right">Success Rate</TableHead>
+    97→/home/z/my-project/src/components/views/ReportsView.tsx:604:                    <TableHead className="text-xs">Last Run</TableHead>
+    98→/home/z/my-project/src/components/views/SubscribersView.tsx:573:                  <TableHead className="min-w-[140px]">Segment Name</TableHead>
+    99→/home/z/my-project/src/components/views/SubscribersView.tsx:574:                  <TableHead>Tech</TableHead>
+   100→/home/z/my-project/src/components/views/SubscribersView.tsx:575:                  <TableHead className="text-right">Subscribers</TableHead>
+   101→/home/z/my-project/src/components/views/SubscribersView.tsx:576:                  <TableHead className="text-right">Avg Data (GB)</TableHead>
+   102→/home/z/my-project/src/components/views/SubscribersView.tsx:577:                  <TableHead className="text-right">Voice (min)</TableHead>
+   103→/home/z/my-project/src/components/views/SubscribersView.tsx:578:                  <TableHead className="text-right">ARPU ($)</TableHead>
+   104→/home/z/my-project/src/components/views/SubscribersView.tsx:579:                  <TableHead className="text-center">Churn Risk</TableHead>
+   105→/home/z/my-project/src/components/views/SubscribersView.tsx:580:                  <TableHead className="text-right">Satisfaction</TableHead>
+   106→/home/z/my-project/src/components/views/SubscribersView.tsx:581:                  <TableHead>Peak Hour</TableHead>
+   107→/home/z/my-project/src/components/views/SubscribersView.tsx:582:                  <TableHead className="min-w-[180px]">Top Services</TableHead>
+   108→/home/z/my-project/src/components/views/OutagesView.tsx:526:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">Site</TableHead>
+   109→/home/z/my-project/src/components/views/OutagesView.tsx:527:                    <TableHead>Tech</TableHead>
+   110→/home/z/my-project/src/components/views/OutagesView.tsx:528:                    <TableHead>Type</TableHead>
+   111→/home/z/my-project/src/components/views/OutagesView.tsx:529:                    <TableHead>Severity</TableHead>
+   112→/home/z/my-project/src/components/views/OutagesView.tsx:530:                    <TableHead>Status</TableHead>
+   113→/home/z/my-project/src/components/views/OutagesView.tsx:531:                    <TableHead>Started</TableHead>
+   114→/home/z/my-project/src/components/views/OutagesView.tsx:532:                    <TableHead>Duration</TableHead>
+   115→/home/z/my-project/src/components/views/OutagesView.tsx:533:                    <TableHead className="text-right">Affected Users</TableHead>
+   116→/home/z/my-project/src/components/views/OutagesView.tsx:534:                    <TableHead>Compensation</TableHead>
+   117→/home/z/my-project/src/components/views/OutagesView.tsx:535:                    <TableHead>Root Cause</TableHead>
+   118→/home/z/my-project/src/components/views/OutagesView.tsx:536:                    <TableHead>Region</TableHead>
+   119→/home/z/my-project/src/components/views/OutagesView.tsx:537:                    <TableHead>Resolved</TableHead>
+   120→/home/z/my-project/src/components/views/SonView.tsx:541:                        <TableHead className="w-[150px] text-xs">Time</TableHead>
+   121→/home/z/my-project/src/components/views/SonView.tsx:542:                        <TableHead className="text-xs">Module</TableHead>
+   122→/home/z/my-project/src/components/views/SonView.tsx:543:                        <TableHead className="text-xs">Site</TableHead>
+   123→/home/z/my-project/src/components/views/SonView.tsx:544:                        <TableHead className="text-xs">Action Type</TableHead>
+   124→/home/z/my-project/src/components/views/SonView.tsx:545:                        <TableHead className="text-xs">Parameter</TableHead>
+   125→/home/z/my-project/src/components/views/SonView.tsx:546:                        <TableHead className="text-xs">Change</TableHead>
+   126→/home/z/my-project/src/components/views/SonView.tsx:547:                        <TableHead className="text-xs">Status</TableHead>
+   127→/home/z/my-project/src/components/views/SonView.tsx:548:                        <TableHead className="text-xs text-right">Impact</TableHead>
+   128→/home/z/my-project/src/components/views/SonView.tsx:691:                        <TableHead className="text-xs">Serving Cell</TableHead>
+   129→/home/z/my-project/src/components/views/SonView.tsx:692:                        <TableHead className="text-xs">Neighbor Cell</TableHead>
+   130→/home/z/my-project/src/components/views/SonView.tsx:693:                        <TableHead className="text-xs">Technology</TableHead>
+   131→/home/z/my-project/src/components/views/SonView.tsx:697:                        <TableHead className="text-xs">HO Type</TableHead>
+   132→/home/z/my-project/src/components/views/SonView.tsx:701:                        <TableHead className="text-xs">Status</TableHead>
+   133→/home/z/my-project/src/components/views/CoverageHolesView.tsx:520:                    <TableHead>Tech</TableHead>
+   134→/home/z/my-project/src/components/views/CoverageHolesView.tsx:521:                    <TableHead>Region</TableHead>
+   135→/home/z/my-project/src/components/views/CoverageHolesView.tsx:522:                    <TableHead className="text-right">Signal (dBm)</TableHead>
+   136→/home/z/my-project/src/components/views/CoverageHolesView.tsx:523:                    <TableHead className="text-right">Expected (dBm)</TableHead>
+   137→/home/z/my-project/src/components/views/CoverageHolesView.tsx:524:                    <TableHead className="text-right">Gap (dB)</TableHead>
+   138→/home/z/my-project/src/components/views/CoverageHolesView.tsx:525:                    <TableHead className="text-right">Area (km²)</TableHead>
+   139→/home/z/my-project/src/components/views/CoverageHolesView.tsx:526:                    <TableHead>Severity</TableHead>
+   140→/home/z/my-project/src/components/views/CoverageHolesView.tsx:527:                    <TableHead>Nearest Site</TableHead>
+   141→/home/z/my-project/src/components/views/CoverageHolesView.tsx:528:                    <TableHead className="text-right">Affected Users</TableHead>
+   142→/home/z/my-project/src/components/views/CoverageHolesView.tsx:529:                    <TableHead>Status</TableHead>
+   143→/home/z/my-project/src/components/views/CoverageHolesView.tsx:530:                    <TableHead className="min-w-[160px]">Recommendation</TableHead>
+   144→/home/z/my-project/src/components/views/CoverageHolesView.tsx:531:                    <TableHead>Created</TableHead>
+   145→/home/z/my-project/src/components/views/NpiView.tsx:483:                        <TableHead className="w-16">Rank</TableHead>
+   146→/home/z/my-project/src/components/views/NpiView.tsx:484:                        <TableHead>Site</TableHead>
+   147→/home/z/my-project/src/components/views/NpiView.tsx:485:                        <TableHead className="w-20">Tech</TableHead>
+   148→/home/z/my-project/src/components/views/NpiView.tsx:486:                        <TableHead className="w-48">Overall NPI</TableHead>
+   149→/home/z/my-project/src/components/views/NpiView.tsx:487:                        <TableHead className="w-20 text-right">Coverage</TableHead>
+   150→/home/z/my-project/src/components/views/NpiView.tsx:488:                        <TableHead className="w-20 text-right">Capacity</TableHead>
+   151→/home/z/my-project/src/components/views/NpiView.tsx:489:                        <TableHead className="w-20 text-right">Quality</TableHead>
+   152→/home/z/my-project/src/components/views/NpiView.tsx:490:                        <TableHead className="w-24 text-right">Reliability</TableHead>
+   153→/home/z/my-project/src/components/views/NpiView.tsx:491:                        <TableHead className="w-24 text-right">Cost Eff.</TableHead>
+   154→/home/z/my-project/src/components/views/NpiView.tsx:492:                        <TableHead className="w-28">Region</TableHead>
+   155→/home/z/my-project/src/components/views/CapacityView.tsx:438:                  <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   156→/home/z/my-project/src/components/views/CapacityView.tsx:439:                  <TableHead>Tech</TableHead>
+   157→/home/z/my-project/src/components/views/CapacityView.tsx:440:                  <TableHead>Region</TableHead>
+   158→/home/z/my-project/src/components/views/CapacityView.tsx:441:                  <TableHead>Metric</TableHead>
+   159→/home/z/my-project/src/components/views/CapacityView.tsx:442:                  <TableHead className="text-right">Current</TableHead>
+   160→/home/z/my-project/src/components/views/CapacityView.tsx:443:                  <TableHead className="text-right">Forecast</TableHead>
+   161→/home/z/my-project/src/components/views/CapacityView.tsx:444:                  <TableHead className="text-right">Growth%</TableHead>
+   162→/home/z/my-project/src/components/views/CapacityView.tsx:445:                  <TableHead>Risk</TableHead>
+   163→/home/z/my-project/src/components/views/CapacityView.tsx:446:                  <TableHead className="text-right">Confidence</TableHead>
+   164→/home/z/my-project/src/components/views/CapacityView.tsx:447:                  <TableHead>Recommendation</TableHead>
+   165→/home/z/my-project/src/components/views/EnergyView.tsx:537:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   166→/home/z/my-project/src/components/views/EnergyView.tsx:538:                    <TableHead>Tech</TableHead>
+   167→/home/z/my-project/src/components/views/EnergyView.tsx:539:                    <TableHead className="text-right">Power (W)</TableHead>
+   168→/home/z/my-project/src/components/views/EnergyView.tsx:540:                    <TableHead className="text-right">Energy (Wh)</TableHead>
+   169→/home/z/my-project/src/components/views/EnergyView.tsx:541:                    <TableHead className="text-right">Users</TableHead>
+   170→/home/z/my-project/src/components/views/EnergyView.tsx:542:                    <TableHead className="text-right">Load %</TableHead>
+   171→/home/z/my-project/src/components/views/EnergyView.tsx:543:                    <TableHead className="text-right">Temp °C</TableHead>
+   172→/home/z/my-project/src/components/views/EnergyView.tsx:544:                    <TableHead>Mode</TableHead>
+   173→/home/z/my-project/src/components/views/EnergyView.tsx:545:                    <TableHead className="text-right">CO₂ (g)</TableHead>
+   174→/home/z/my-project/src/components/views/EnergyView.tsx:546:                    <TableHead>Sleep?</TableHead>
+   175→/home/z/my-project/src/components/views/SettingsView.tsx:166:                      <TableHead className="text-xs">Parameter</TableHead>
+   176→/home/z/my-project/src/components/views/SettingsView.tsx:167:                      <TableHead className="text-xs">Current Value</TableHead>
+   177→/home/z/my-project/src/components/views/SettingsView.tsx:168:                      <TableHead className="text-xs">Min</TableHead>
+   178→/home/z/my-project/src/components/views/SettingsView.tsx:169:                      <TableHead className="text-xs">Max</TableHead>
+   179→/home/z/my-project/src/components/views/SettingsView.tsx:170:                      <TableHead className="text-xs">Unit</TableHead>
+   180→/home/z/my-project/src/components/views/SettingsView.tsx:171:                      <TableHead className="text-xs">Description</TableHead>
+   181→/home/z/my-project/src/components/views/SpectrumView.tsx:552:                    <TableHead className="sticky left-0 bg-background z-10">Band</TableHead>
+   182→/home/z/my-project/src/components/views/SpectrumView.tsx:553:                    <TableHead className="text-right">Bandwidth</TableHead>
+   183→/home/z/my-project/src/components/views/SpectrumView.tsx:554:                    <TableHead>Tech</TableHead>
+   184→/home/z/my-project/src/components/views/SpectrumView.tsx:555:                    <TableHead>Region</TableHead>
+   185→/home/z/my-project/src/components/views/SpectrumView.tsx:556:                    <TableHead className="text-right">Channels</TableHead>
+   186→/home/z/my-project/src/components/views/SpectrumView.tsx:557:                    <TableHead className="text-right">Utilization</TableHead>
+   187→/home/z/my-project/src/components/views/SpectrumView.tsx:558:                    <TableHead className="text-right">Avg Interference</TableHead>
+   188→/home/z/my-project/src/components/views/SpectrumView.tsx:559:                    <TableHead className="text-right">Avg RSRP</TableHead>
+   189→/home/z/my-project/src/components/views/SpectrumView.tsx:560:                    <TableHead className="text-center">Refarm?</TableHead>
+   190→/home/z/my-project/src/components/views/SpectrumView.tsx:561:                    <TableHead className="text-right">Potential Saving</TableHead>
+   191→/home/z/my-project/src/components/views/SpectrumView.tsx:562:                    <TableHead>Status</TableHead>
+   192→/home/z/my-project/src/components/views/FaultsView.tsx:561:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   193→/home/z/my-project/src/components/views/FaultsView.tsx:562:                    <TableHead>Tech</TableHead>
+   194→/home/z/my-project/src/components/views/FaultsView.tsx:563:                    <TableHead>Component</TableHead>
+   195→/home/z/my-project/src/components/views/FaultsView.tsx:564:                    <TableHead>Fault Type</TableHead>
+   196→/home/z/my-project/src/components/views/FaultsView.tsx:565:                    <TableHead className="text-right">Probability</TableHead>
+   197→/home/z/my-project/src/components/views/FaultsView.tsx:566:                    <TableHead>Severity</TableHead>
+   198→/home/z/my-project/src/components/views/FaultsView.tsx:567:                    <TableHead>Status</TableHead>
+   199→/home/z/my-project/src/components/views/FaultsView.tsx:568:                    <TableHead className="text-right">Confidence</TableHead>
+   200→/home/z/my-project/src/components/views/FaultsView.tsx:569:                    <TableHead>Time to Fail</TableHead>
+   201→/home/z/my-project/src/components/views/FaultsView.tsx:570:                    <TableHead>Action</TableHead>
+   202→/home/z/my-project/src/components/views/FaultsView.tsx:571:                    <TableHead className="sticky right-0 bg-background z-10">Created</TableHead>
+   203→/home/z/my-project/src/components/views/LiveView.tsx:289:                  <TableHead className="text-xs">Technology</TableHead>
+   204→/home/z/my-project/src/components/views/LiveView.tsx:290:                  <TableHead className="text-xs text-right">Sites</TableHead>
+   205→/home/z/my-project/src/components/views/LiveView.tsx:291:                  <TableHead className="text-xs text-right">Users</TableHead>
+   206→/home/z/my-project/src/components/views/LiveView.tsx:292:                  <TableHead className="text-xs text-right">DL (Mbps)</TableHead>
+   207→/home/z/my-project/src/components/views/LiveView.tsx:293:                  <TableHead className="text-xs text-right">UL (Mbps)</TableHead>
+   208→/home/z/my-project/src/components/views/LiveView.tsx:294:                  <TableHead className="text-xs text-right">Availability (%)</TableHead>
+   209→/home/z/my-project/src/components/views/LiveView.tsx:295:                  <TableHead className="text-xs text-right">Power (kW)</TableHead>
+   210→/home/z/my-project/src/components/views/InterferenceView.tsx:540:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">Site</TableHead>
+   211→/home/z/my-project/src/components/views/InterferenceView.tsx:541:                    <TableHead>Tech</TableHead>
+   212→/home/z/my-project/src/components/views/InterferenceView.tsx:542:                    <TableHead>Type</TableHead>
+   213→/home/z/my-project/src/components/views/InterferenceView.tsx:543:                    <TableHead>Severity</TableHead>
+   214→/home/z/my-project/src/components/views/InterferenceView.tsx:544:                    <TableHead>Status</TableHead>
+   215→/home/z/my-project/src/components/views/InterferenceView.tsx:545:                    <TableHead>Source Cell</TableHead>
+   216→/home/z/my-project/src/components/views/InterferenceView.tsx:546:                    <TableHead>Conflicting Cell</TableHead>
+   217→/home/z/my-project/src/components/views/InterferenceView.tsx:547:                    <TableHead>Frequency</TableHead>
+   218→/home/z/my-project/src/components/views/InterferenceView.tsx:548:                    <TableHead>PCI</TableHead>
+   219→/home/z/my-project/src/components/views/InterferenceView.tsx:549:                    <TableHead className="text-right">Impact</TableHead>
+   220→/home/z/my-project/src/components/views/InterferenceView.tsx:550:                    <TableHead>Affected KPIs</TableHead>
+   221→/home/z/my-project/src/components/views/InterferenceView.tsx:551:                    <TableHead className="min-w-[160px]">Recommendation</TableHead>
+   222→/home/z/my-project/src/components/views/InterferenceView.tsx:552:                    <TableHead>Created</TableHead>
+   223→/home/z/my-project/src/components/views/AuditView.tsx:465:                      <TableHead className="whitespace-nowrap text-xs">Timestamp</TableHead>
+   224→/home/z/my-project/src/components/views/AuditView.tsx:466:                      <TableHead className="whitespace-nowrap text-xs">Entity Type</TableHead>
+   225→/home/z/my-project/src/components/views/AuditView.tsx:467:                      <TableHead className="whitespace-nowrap text-xs">Entity Name</TableHead>
+   226→/home/z/my-project/src/components/views/AuditView.tsx:468:                      <TableHead className="whitespace-nowrap text-xs">Action</TableHead>
+   227→/home/z/my-project/src/components/views/AuditView.tsx:469:                      <TableHead className="whitespace-nowrap text-xs">Field</TableHead>
+   228→/home/z/my-project/src/components/views/AuditView.tsx:470:                      <TableHead className="whitespace-nowrap text-xs">Previous → New</TableHead>
+   229→/home/z/my-project/src/components/views/AuditView.tsx:471:                      <TableHead className="whitespace-nowrap text-xs">Requested By</TableHead>
+   230→/home/z/my-project/src/components/views/AuditView.tsx:472:                      <TableHead className="whitespace-nowrap text-xs">Approved By</TableHead>
+   231→/home/z/my-project/src/components/views/AuditView.tsx:473:                      <TableHead className="whitespace-nowrap text-xs">Impact</TableHead>
+   232→/home/z/my-project/src/components/views/AuditView.tsx:474:                      <TableHead className="whitespace-nowrap text-xs">Tech</TableHead>
+   233→/home/z/my-project/src/components/views/SimulationsView.tsx:540:                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
+   234→/home/z/my-project/src/components/views/SimulationsView.tsx:541:                    <TableHead>Category</TableHead>
+   235→/home/z/my-project/src/components/views/SimulationsView.tsx:542:                    <TableHead>Tech</TableHead>
+   236→/home/z/my-project/src/components/views/SimulationsView.tsx:543:                    <TableHead>Site</TableHead>
+   237→/home/z/my-project/src/components/views/SimulationsView.tsx:544:                    <TableHead>Region</TableHead>
+   238→/home/z/my-project/src/components/views/SimulationsView.tsx:545:                    <TableHead className="text-right">Impact Score</TableHead>
+   239→/home/z/my-project/src/components/views/SimulationsView.tsx:546:                    <TableHead className="text-right">Confidence</TableHead>
+   240→/home/z/my-project/src/components/views/SimulationsView.tsx:547:                    <TableHead>Status</TableHead>
+   241→/home/z/my-project/src/components/views/SimulationsView.tsx:548:                    <TableHead>KPI Change</TableHead>
+   242→/home/z/my-project/src/components/views/SimulationsView.tsx:549:                    <TableHead>Recommendation</TableHead>
+   243→/home/z/my-project/src/components/views/LoadBalancingView.tsx:468:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   244→/home/z/my-project/src/components/views/LoadBalancingView.tsx:469:                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
+   245→/home/z/my-project/src/components/views/LoadBalancingView.tsx:470:                    <TableHead>Tech</TableHead>
+   246→/home/z/my-project/src/components/views/LoadBalancingView.tsx:471:                    <TableHead>Region</TableHead>
+   247→/home/z/my-project/src/components/views/LoadBalancingView.tsx:472:                    <TableHead className="text-right">PRB DL %</TableHead>
+   248→/home/z/my-project/src/components/views/LoadBalancingView.tsx:473:                    <TableHead className="text-right">PRB UL %</TableHead>
+   249→/home/z/my-project/src/components/views/LoadBalancingView.tsx:474:                    <TableHead className="text-right">Users</TableHead>
+   250→/home/z/my-project/src/components/views/LoadBalancingView.tsx:475:                    <TableHead className="text-right">User Load %</TableHead>
+   251→/home/z/my-project/src/components/views/LoadBalancingView.tsx:476:                    <TableHead className="text-right">DL Mbps</TableHead>
+   252→/home/z/my-project/src/components/views/LoadBalancingView.tsx:477:                    <TableHead className="text-right">UL Mbps</TableHead>
+   253→/home/z/my-project/src/components/views/LoadBalancingView.tsx:478:                    <TableHead className="text-right">Balance</TableHead>
+   254→/home/z/my-project/src/components/views/LoadBalancingView.tsx:479:                    <TableHead>Congestion</TableHead>
+   255→/home/z/my-project/src/components/views/LoadBalancingView.tsx:480:                    <TableHead>Recommendation</TableHead>
+   256→/home/z/my-project/src/components/views/CoverageView.tsx:156:                    <TableHead className="text-xs">Site</TableHead>
+   257→/home/z/my-project/src/components/views/CoverageView.tsx:157:                    <TableHead className="text-xs">Code</TableHead>
+   258→/home/z/my-project/src/components/views/CoverageView.tsx:158:                    <TableHead className="text-xs">Technology</TableHead>
+   259→/home/z/my-project/src/components/views/CoverageView.tsx:159:                    <TableHead className="text-xs">Region</TableHead>
+   260→/home/z/my-project/src/components/views/CoverageView.tsx:160:                    <TableHead className="text-xs">Status</TableHead>
+   261→/home/z/my-project/src/components/views/CoverageView.tsx:161:                    <TableHead className="text-xs text-right">Signal</TableHead>
+   262→/home/z/my-project/src/components/views/CoverageView.tsx:162:                    <TableHead className="text-xs text-right">Throughput</TableHead>
+   263→/home/z/my-project/src/components/views/CoverageView.tsx:163:                    <TableHead className="text-xs text-right">Users</TableHead>
+   264→/home/z/my-project/src/components/views/PlaybooksView.tsx:457:                  <TableHead className="min-w-[180px]">Name</TableHead>
+   265→/home/z/my-project/src/components/views/PlaybooksView.tsx:458:                  <TableHead>Category</TableHead>
+   266→/home/z/my-project/src/components/views/PlaybooksView.tsx:459:                  <TableHead>Tech</TableHead>
+   267→/home/z/my-project/src/components/views/PlaybooksView.tsx:460:                  <TableHead>Severity</TableHead>
+   268→/home/z/my-project/src/components/views/PlaybooksView.tsx:461:                  <TableHead className="text-right">Steps</TableHead>
+   269→/home/z/my-project/src/components/views/PlaybooksView.tsx:462:                  <TableHead className="text-right">Success Rate</TableHead>
+   270→/home/z/my-project/src/components/views/PlaybooksView.tsx:463:                  <TableHead className="text-right">Usage</TableHead>
+   271→/home/z/my-project/src/components/views/PlaybooksView.tsx:464:                  <TableHead>Tags</TableHead>
+   272→/home/z/my-project/src/components/views/TrendsView.tsx:505:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   273→/home/z/my-project/src/components/views/TrendsView.tsx:506:                    <TableHead>Tech</TableHead>
+   274→/home/z/my-project/src/components/views/TrendsView.tsx:507:                    <TableHead>Metric</TableHead>
+   275→/home/z/my-project/src/components/views/TrendsView.tsx:508:                    <TableHead>Horizon</TableHead>
+   276→/home/z/my-project/src/components/views/TrendsView.tsx:509:                    <TableHead>Direction</TableHead>
+   277→/home/z/my-project/src/components/views/TrendsView.tsx:510:                    <TableHead className="text-right">Confidence</TableHead>
+   278→/home/z/my-project/src/components/views/TrendsView.tsx:511:                    <TableHead>Trend</TableHead>
+   279→/home/z/my-project/src/components/views/TrendsView.tsx:512:                    <TableHead>Recommendation</TableHead>
+   280→/home/z/my-project/src/components/views/TrendsView.tsx:513:                    <TableHead>Region</TableHead>
+   281→/home/z/my-project/src/components/views/ChangesView.tsx:510:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[180px]">Title</TableHead>
+   282→/home/z/my-project/src/components/views/ChangesView.tsx:511:                    <TableHead>Tech</TableHead>
+   283→/home/z/my-project/src/components/views/ChangesView.tsx:512:                    <TableHead>Category</TableHead>
+   284→/home/z/my-project/src/components/views/ChangesView.tsx:513:                    <TableHead>Site</TableHead>
+   285→/home/z/my-project/src/components/views/ChangesView.tsx:514:                    <TableHead>Parameter</TableHead>
+   286→/home/z/my-project/src/components/views/ChangesView.tsx:515:                    <TableHead>Previous → Proposed</TableHead>
+   287→/home/z/my-project/src/components/views/ChangesView.tsx:516:                    <TableHead>Risk</TableHead>
+   288→/home/z/my-project/src/components/views/ChangesView.tsx:517:                    <TableHead>Status</TableHead>
+   289→/home/z/my-project/src/components/views/ChangesView.tsx:518:                    <TableHead>Requested By</TableHead>
+   290→/home/z/my-project/src/components/views/ChangesView.tsx:519:                    <TableHead>Implemented</TableHead>
+   291→/home/z/my-project/src/components/views/ChangesView.tsx:520:                    <TableHead>Rollback Reason</TableHead>
+   292→/home/z/my-project/src/components/views/ChangesView.tsx:521:                    <TableHead>Created</TableHead>
+   293→/home/z/my-project/src/components/views/MonitoringView.tsx:195:                    <TableHead className="text-xs">Site</TableHead>
+   294→/home/z/my-project/src/components/views/MonitoringView.tsx:196:                    <TableHead className="text-xs">Status</TableHead>
+   295→/home/z/my-project/src/components/views/MonitoringView.tsx:197:                    <TableHead className="text-xs">DL (Mbps)</TableHead>
+   296→/home/z/my-project/src/components/views/MonitoringView.tsx:198:                    <TableHead className="text-xs">UL (Mbps)</TableHead>
+   297→/home/z/my-project/src/components/views/MonitoringView.tsx:199:                    <TableHead className="text-xs">Latency (ms)</TableHead>
+   298→/home/z/my-project/src/components/views/MonitoringView.tsx:200:                    <TableHead className="text-xs">Availability</TableHead>
+   299→/home/z/my-project/src/components/views/MonitoringView.tsx:201:                    <TableHead className="text-xs">Users</TableHead>
+   300→/home/z/my-project/src/components/views/MonitoringView.tsx:202:                    <TableHead className="text-xs">Drop Rate</TableHead>
+   301→
+   302→[Showing results with pagination = limit: 300]

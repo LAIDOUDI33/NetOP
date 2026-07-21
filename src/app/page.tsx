@@ -18,8 +18,10 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare,
+  Languages,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
+import { useT } from '@/lib/i18n';
 
 import DashboardView from '@/components/views/DashboardView';
 import MonitoringView from '@/components/views/MonitoringView';
@@ -69,106 +71,106 @@ const AuditView = lazy(() => import('@/components/views/AuditView'));
 const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
 const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
 
-const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
+const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
-  { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, group: 'Operations' },
-  { view: 'monitoring', label: 'Monitoring', icon: Activity, group: 'Operations' },
-  { view: 'son', label: 'SON Automation', icon: Cpu, group: 'Operations' },
-  { view: 'onboarding', label: 'Site Onboarding', icon: PlusCircle, group: 'Operations' },
-  { view: 'live', label: 'Live Dashboard', icon: Activity, group: 'Operations' },
-  { view: 'incidents', label: 'Incidents', icon: AlertTriangle, group: 'Operations' },
-  { view: 'outages', label: 'Outages', icon: PowerOff, group: 'Operations' },
-  { view: 'spectrum', label: 'Spectrum Analysis', icon: RadioTower, group: 'Operations' },
+  { view: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard, group: 'Operations' },
+  { view: 'monitoring', labelKey: 'nav.monitoring', icon: Activity, group: 'Operations' },
+  { view: 'son', labelKey: 'nav.son', icon: Cpu, group: 'Operations' },
+  { view: 'onboarding', labelKey: 'nav.onboarding', icon: PlusCircle, group: 'Operations' },
+  { view: 'live', labelKey: 'nav.live', icon: Activity, group: 'Operations' },
+  { view: 'incidents', labelKey: 'nav.incidents', icon: AlertTriangle, group: 'Operations' },
+  { view: 'outages', labelKey: 'nav.outages', icon: PowerOff, group: 'Operations' },
+  { view: 'spectrum', labelKey: 'nav.spectrum', icon: RadioTower, group: 'Operations' },
   // Analytics
-  { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'Analytics' },
-  { view: 'alerts', label: 'Alerts', icon: Bell, group: 'Analytics' },
-  { view: 'coverage', label: 'Coverage Map', icon: MapPin, group: 'Analytics' },
-  { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'Analytics' },
-  { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
-  { view: 'capacity', label: 'Capacity Planning', icon: TrendingUp, group: 'Analytics' },
-  { view: 'handover', label: 'Handover Analysis', icon: ArrowSwap, group: 'Analytics' },
-  { view: 'load', label: 'Load Balancing', icon: Scale, group: 'Analytics' },
-  { view: 'interference', label: 'Interference', icon: Radio, group: 'Analytics' },
-  { view: 'coverage-holes', label: 'Coverage Holes', icon: MapPinOff, group: 'Analytics' },
-  { view: 'vendor-compare', label: 'Vendor Compare', icon: GitCompare, group: 'Analytics' },
-  { view: 'services', label: 'Service Quality', icon: Globe, group: 'Analytics' },
+  { view: 'kpi', labelKey: 'nav.kpi', icon: BarChart3, group: 'Analytics' },
+  { view: 'alerts', labelKey: 'nav.alerts', icon: Bell, group: 'Analytics' },
+  { view: 'coverage', labelKey: 'nav.coverage', icon: MapPin, group: 'Analytics' },
+  { view: 'correlation', labelKey: 'nav.correlation', icon: ArrowLeftRight, group: 'Analytics' },
+  { view: 'qoe', labelKey: 'nav.qoe', icon: HeartPulse, group: 'Analytics' },
+  { view: 'capacity', labelKey: 'nav.capacity', icon: TrendingUp, group: 'Analytics' },
+  { view: 'handover', labelKey: 'nav.handover', icon: ArrowSwap, group: 'Analytics' },
+  { view: 'load', labelKey: 'nav.load', icon: Scale, group: 'Analytics' },
+  { view: 'interference', labelKey: 'nav.interference', icon: Radio, group: 'Analytics' },
+  { view: 'coverage-holes', labelKey: 'nav.coverageHoles', icon: MapPinOff, group: 'Analytics' },
+  { view: 'vendor-compare', labelKey: 'nav.vendorCompare', icon: GitCompare, group: 'Analytics' },
+  { view: 'services', labelKey: 'nav.services', icon: Globe, group: 'Analytics' },
   // Intelligence
-  { view: 'slicing', label: 'Network Slicing', icon: Layers, group: 'Intelligence' },
-  { view: 'energy', label: 'Energy Management', icon: Zap, group: 'Intelligence' },
-  { view: 'faults', label: 'Fault Prediction', icon: Brain, group: 'Intelligence' },
-  { view: 'subscribers', label: 'Subscriber Analytics', icon: Users, group: 'Intelligence' },
-  { view: 'health', label: 'Health Score', icon: Heart, group: 'Intelligence' },
-  { view: 'benchmark', label: 'Benchmarking', icon: Target, group: 'Intelligence' },
-  { view: 'playbooks', label: 'Playbooks', icon: BookOpen, group: 'Intelligence' },
-  { view: 'assistant', label: 'AI Assistant', icon: MessageSquare, group: 'Intelligence' },
-  { view: 'npi', label: 'NPI Index', icon: Gauge, group: 'Intelligence' },
-  { view: 'trends', label: 'Trends', icon: TrendingUp, group: 'Intelligence' },
-  { view: 'simulations', label: 'Simulations', icon: FlaskConical, group: 'Intelligence' },
-  { view: 'roi', label: 'ROI Dashboard', icon: DollarSign, group: 'Intelligence' },
-  { view: 'evolution', label: 'Evolution Plan', icon: ArrowSwap, group: 'Intelligence' },
-  { view: 'audit', label: 'Audit Trail', icon: FileSearch, group: 'Intelligence' },
-  { view: 'executive', label: 'Executive', icon: Crown, group: 'Intelligence' },
+  { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
+  { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
+  { view: 'faults', labelKey: 'nav.faults', icon: Brain, group: 'Intelligence' },
+  { view: 'subscribers', labelKey: 'nav.subscribers', icon: Users, group: 'Intelligence' },
+  { view: 'health', labelKey: 'nav.health', icon: Heart, group: 'Intelligence' },
+  { view: 'benchmark', labelKey: 'nav.benchmark', icon: Target, group: 'Intelligence' },
+  { view: 'playbooks', labelKey: 'nav.playbooks', icon: BookOpen, group: 'Intelligence' },
+  { view: 'assistant', labelKey: 'nav.assistant', icon: MessageSquare, group: 'Intelligence' },
+  { view: 'npi', labelKey: 'nav.npi', icon: Gauge, group: 'Intelligence' },
+  { view: 'trends', labelKey: 'nav.trends', icon: TrendingUp, group: 'Intelligence' },
+  { view: 'simulations', labelKey: 'nav.simulations', icon: FlaskConical, group: 'Intelligence' },
+  { view: 'roi', labelKey: 'nav.roi', icon: DollarSign, group: 'Intelligence' },
+  { view: 'evolution', labelKey: 'nav.evolution', icon: ArrowSwap, group: 'Intelligence' },
+  { view: 'audit', labelKey: 'nav.audit', icon: FileSearch, group: 'Intelligence' },
+  { view: 'executive', labelKey: 'nav.executive', icon: Crown, group: 'Intelligence' },
   // AI Engine
-  { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'AI Engine' },
-  { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'AI Engine' },
-  { view: 'anomaly', label: 'Anomaly Detection', icon: Brain, group: 'AI Engine' },
+  { view: 'optimizer', labelKey: 'nav.optimizer', icon: Sparkles, group: 'AI Engine' },
+  { view: 'rca', labelKey: 'nav.rca', icon: Search, group: 'AI Engine' },
+  { view: 'anomaly', labelKey: 'nav.anomaly', icon: Brain, group: 'AI Engine' },
   // Automation
-  { view: 'policies', label: 'Automation Policies', icon: Shield, group: 'Automation' },
-  { view: 'changes', label: 'Change Mgmt', icon: GitBranch, group: 'Automation' },
-  { view: 'vendors', label: 'Vendor Hub', icon: Plug, group: 'Automation' },
+  { view: 'policies', labelKey: 'nav.policies', icon: Shield, group: 'Automation' },
+  { view: 'changes', labelKey: 'nav.changes', icon: GitBranch, group: 'Automation' },
+  { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
   // System
-  { view: 'reports', label: 'Reports', icon: FileText, group: 'System' },
-  { view: 'sla', label: 'SLA Dashboard', icon: Shield, group: 'System' },
-  { view: 'config', label: 'Config Templates', icon: Settings2, group: 'System' },
-  { view: 'settings', label: 'Parameters', icon: Settings, group: 'System' },
+  { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
+  { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
+  { view: 'config', labelKey: 'nav.config', icon: Settings2, group: 'System' },
+  { view: 'settings', labelKey: 'nav.settings', icon: Settings, group: 'System' },
 ];
 
-const VIEW_TITLES: Record<ViewType, string> = {
-  dashboard: 'Dashboard',
-  monitoring: 'Real-Time Monitoring',
-  son: 'SON Automation',
-  onboarding: 'Site Onboarding',
-  kpi: 'KPI Analytics',
-  alerts: 'Alert Management',
-  optimizer: 'AI Network Optimizer',
-  rca: 'Root Cause Analysis',
-  coverage: 'Coverage Analysis',
-  reports: 'Reports & Analytics',
-  settings: 'Network Parameters',
-  sla: 'SLA Compliance',
-  anomaly: 'Anomaly Detection',
-  correlation: 'Cross-Tech Correlation',
-  policies: 'Automation Policies',
-  vendors: 'Vendor Management',
-  qoe: 'Customer Experience',
-  capacity: 'Capacity Planning',
-  slicing: 'Network Slicing',
-  energy: 'Energy Management',
-  faults: 'AI Fault Prediction',
-  subscribers: 'Subscriber Analytics',
-  incidents: 'Incident Management',
-  config: 'Config Templates',
-  live: 'Real-Time Dashboard',
-  health: 'Health Score',
-  benchmark: 'Benchmarking',
-  handover: 'Handover Analysis',
-  load: 'Load Balancing',
-  interference: 'Interference',
-  'coverage-holes': 'Coverage Holes',
-  changes: 'Change Management',
-  outages: 'Outage Management',
-  playbooks: 'Playbooks',
-  assistant: 'AI Assistant',
-  simulations: 'Network Simulations',
-  trends: 'Trend Forecasts',
-  roi: 'ROI Dashboard',
-  spectrum: 'Spectrum Analysis',
-  evolution: 'Technology Evolution',
-  npi: 'NPI Index',
-  services: 'Service Quality',
-  audit: 'Audit Trail',
-  executive: 'Executive Summary',
-  'vendor-compare': 'Vendor Comparison',
+const VIEW_TITLE_KEYS: Record<ViewType, string> = {
+  dashboard: 'title.dashboard',
+  monitoring: 'title.monitoring',
+  son: 'title.son',
+  onboarding: 'title.onboarding',
+  kpi: 'title.kpi',
+  alerts: 'title.alerts',
+  optimizer: 'title.optimizer',
+  rca: 'title.rca',
+  coverage: 'title.coverage',
+  reports: 'title.reports',
+  settings: 'title.settings',
+  sla: 'title.sla',
+  anomaly: 'title.anomaly',
+  correlation: 'title.correlation',
+  policies: 'title.policies',
+  vendors: 'title.vendors',
+  qoe: 'title.qoe',
+  capacity: 'title.capacity',
+  slicing: 'title.slicing',
+  energy: 'title.energy',
+  faults: 'title.faults',
+  subscribers: 'title.subscribers',
+  incidents: 'title.incidents',
+  config: 'title.config',
+  live: 'title.live',
+  health: 'title.health',
+  benchmark: 'title.benchmark',
+  handover: 'title.handover',
+  load: 'title.load',
+  interference: 'title.interference',
+  'coverage-holes': 'title.coverageHoles',
+  changes: 'title.changes',
+  outages: 'title.outages',
+  playbooks: 'title.playbooks',
+  assistant: 'title.assistant',
+  simulations: 'title.simulations',
+  trends: 'title.trends',
+  roi: 'title.roi',
+  spectrum: 'title.spectrum',
+  evolution: 'title.evolution',
+  npi: 'title.npi',
+  services: 'title.services',
+  audit: 'title.audit',
+  executive: 'title.executive',
+  'vendor-compare': 'title.vendorCompare',
 };
 
 function ViewFallback() {
@@ -193,6 +195,7 @@ function ViewFallback() {
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const t = useT();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -200,27 +203,56 @@ function ThemeToggle() {
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+            <span className="sr-only">{t('app.toggleTheme')}</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent><p>Toggle theme</p></TooltipContent>
+        <TooltipContent><p>{t('app.toggleTheme')}</p></TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 }
 
+function LocaleToggle() {
+  const { locale, setLocale } = useAppStore();
+  const t = useT();
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(locale === 'en' ? 'fr' : 'en')}>
+            <Languages className="h-4 w-4" />
+            <span className="sr-only">{locale === 'en' ? t('lang.fr') : t('lang.en')}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent><p>{locale === 'en' ? t('lang.fr') : t('lang.en')}</p></TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+const NAV_GROUP_KEYS: Record<string, string> = {
+  'Operations': 'nav.group.operations',
+  'Analytics': 'nav.group.analytics',
+  'Intelligence': 'nav.group.intelligence',
+  'AI Engine': 'nav.group.aiEngine',
+  'Automation': 'nav.group.automation',
+  'System': 'nav.group.system',
+};
+
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
   const { currentView, setCurrentView } = useAppStore();
+  const t = useT();
   const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
 
   const renderGroup = (items: typeof NAV_ITEMS, label: string) => {
     if (items.length === 0) return null;
     return (
       <div className="space-y-0.5">
-        {!collapsed && <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>}
+        {!collapsed && <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t(NAV_GROUP_KEYS[label] ?? label)}</p>}
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.view;
+          const label = t(item.labelKey);
           return (
             <TooltipProvider key={item.view} delayDuration={0}>
               <Tooltip>
@@ -233,10 +265,10 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span>{item.label}</span>}
+                    {!collapsed && <span>{label}</span>}
                   </button>
                 </TooltipTrigger>
-                {collapsed && <TooltipContent side="right"><p>{item.label}</p></TooltipContent>}
+                {collapsed && <TooltipContent side="right"><p>{label}</p></TooltipContent>}
               </Tooltip>
             </TooltipProvider>
           );
@@ -246,7 +278,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
   };
 
   return (
-    <nav className="flex flex-col gap-3 px-2 py-4" role="navigation" aria-label="Main navigation">
+    <nav className="flex flex-col gap-3 px-2 py-4" role="navigation" aria-label={t('app.mainNav')}>
       {groups.map(g => {
         const items = NAV_ITEMS.filter(n => n.group === g);
         return items.length > 0 ? <div key={g}>{renderGroup(items, g)}</div> : null;
@@ -319,6 +351,8 @@ export default function Home() {
   const { currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
+  const t = useT();
+
   const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
 
   return (
@@ -334,21 +368,22 @@ export default function Home() {
                 <Button variant="ghost" size="icon" className="h-8 w-8"><Menu className="h-5 w-5" /></Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 bg-slate-50 dark:bg-slate-900">
-                <SheetTitle className="sr-only">Navigation</SheetTitle>
+                <SheetTitle className="sr-only">{t('app.navigation')}</SheetTitle>
                 <div className="flex items-center gap-2 px-4 py-3 border-b">
                   <Radio className="h-5 w-5 text-primary" />
-                  <span className="font-bold text-sm">NetOptima</span>
+                  <span className="font-bold text-sm">{t('app.brand')}</span>
                 </div>
                 <SidebarNav collapsed={false} onNavigate={handleNavigate} />
               </SheetContent>
             </Sheet>
             <div className="flex items-center gap-2">
               <Radio className="h-5 w-5 text-primary" />
-              <span className="font-bold">NetOptima</span>
+              <span className="font-bold">{t('app.brand')}</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <NotificationCenter />
+            <LocaleToggle />
             <ThemeToggle />
           </div>
         </div>
@@ -356,16 +391,16 @@ export default function Home() {
 
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-r transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label="Sidebar">
+        <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-r transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
           <div className={`flex items-center gap-2 px-4 h-14 border-b shrink-0 ${sidebarOpen ? '' : 'justify-center px-2'}`}>
             <Radio className="h-5 w-5 text-primary shrink-0" />
-            {sidebarOpen && <span className="font-bold text-sm">NetOptima</span>}
+            {sidebarOpen && <span className="font-bold text-sm">{t('app.brand')}</span>}
           </div>
           <ScrollArea className="flex-1">
             <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate} />
           </ScrollArea>
           <div className="border-t p-2 shrink-0">
-            <Button variant="ghost" size="icon" className="w-full h-8" onClick={toggleSidebar} aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}>
+            <Button variant="ghost" size="icon" className="w-full h-8" onClick={toggleSidebar} aria-label={sidebarOpen ? t('app.collapseSidebar') : t('app.expandSidebar')}>
               <ChevronLeft className={`h-4 w-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`} />
             </Button>
           </div>
@@ -375,11 +410,12 @@ export default function Home() {
         <main className="flex-1 flex flex-col min-w-0">
           <header className="hidden lg:flex items-center justify-between h-14 px-6 border-b shrink-0">
             <div>
-              <h1 className="text-lg font-bold leading-tight">{VIEW_TITLES[currentView]}</h1>
-              <p className="text-xs text-muted-foreground">Mobile Network Optimization Platform</p>
+              <h1 className="text-lg font-bold leading-tight">{t(VIEW_TITLE_KEYS[currentView])}</h1>
+              <p className="text-xs text-muted-foreground">{t('app.tagline')}</p>
             </div>
             <div className="flex items-center gap-2">
               <NotificationCenter />
+              <LocaleToggle />
               <ThemeToggle />
             </div>
           </header>
@@ -388,9 +424,7 @@ export default function Home() {
             <ViewRenderer />
           </div>
 
-          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background">
-            © 2025 NetOptima · 2G · 3G · 4G · 5G Network Optimization · <kbd className="px-1.5 py-0.5 rounded border bg-muted text-[10px] font-mono">⌘K</kbd>
-          </footer>
+          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background" dangerouslySetInnerHTML={{ __html: t('app.footer') }} />
         </main>
       </div>
     </div>

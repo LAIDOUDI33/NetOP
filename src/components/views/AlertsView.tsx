@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/types';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -41,6 +42,7 @@ interface AlertsResponse {
 }
 
 export default function AlertsView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [severityFilter, setSeverityFilter] = useState('all');
   const [techFilter, setTechFilter] = useState('all');
@@ -63,10 +65,10 @@ export default function AlertsView() {
       }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
-      toast.success('Action completed');
+      toast.success(t('toast.actionCompleted'));
     },
     onError: () => {
-      toast.error('Action failed');
+      toast.error(t('toast.actionFailed'));
     },
   });
 
@@ -96,7 +98,7 @@ export default function AlertsView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Unresolved</p>
+                <p className="text-sm text-muted-foreground">{t('alert.totalUnresolved')}</p>
                 <p className="text-2xl font-bold">{data.stats.total}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-slate-400" />
@@ -107,7 +109,7 @@ export default function AlertsView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-red-600">Critical</p>
+                <p className="text-sm text-red-600">{t('status.critical')}</p>
                 <p className="text-2xl font-bold text-red-600">{data.stats.critical}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-500" />
@@ -118,7 +120,7 @@ export default function AlertsView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-amber-600">Warning</p>
+                <p className="text-sm text-amber-600">{t('status.warning')}</p>
                 <p className="text-2xl font-bold text-amber-600">{data.stats.warning}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-amber-500" />
@@ -129,7 +131,7 @@ export default function AlertsView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-cyan-600">Info</p>
+                <p className="text-sm text-cyan-600">{t('status.info')}</p>
                 <p className="text-2xl font-bold text-cyan-600">{data.stats.info}</p>
               </div>
               <Info className="h-8 w-8 text-cyan-500" />
@@ -142,21 +144,21 @@ export default function AlertsView() {
       <div className="flex flex-wrap gap-4 items-center">
         <Select value={severityFilter} onValueChange={setSeverityFilter}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Severity" />
+            <SelectValue placeholder={t('filter.severity')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Severities</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-            <SelectItem value="warning">Warning</SelectItem>
-            <SelectItem value="info">Info</SelectItem>
+            <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
+            <SelectItem value="critical">{t('status.critical')}</SelectItem>
+            <SelectItem value="warning">{t('status.warning')}</SelectItem>
+            <SelectItem value="info">{t('status.info')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={techFilter} onValueChange={setTechFilter}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             <SelectItem value="2G">2G</SelectItem>
             <SelectItem value="3G">3G</SelectItem>
             <SelectItem value="4G">4G</SelectItem>
@@ -165,14 +167,14 @@ export default function AlertsView() {
         </Select>
         <div className="flex items-center gap-2">
           <Switch checked={showResolved} onCheckedChange={setShowResolved} />
-          <span className="text-sm text-muted-foreground">Show Resolved</span>
+          <span className="text-sm text-muted-foreground">{t('alert.showResolved')}</span>
         </div>
       </div>
 
       {/* Alerts Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Alerts ({data.alerts.length})</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('alert.result', { n: data.alerts.length })}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">
@@ -180,21 +182,21 @@ export default function AlertsView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Severity</TableHead>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Technology</TableHead>
-                    <TableHead className="text-xs">Metric</TableHead>
-                    <TableHead className="text-xs">Value vs Threshold</TableHead>
-                    <TableHead className="text-xs">Message</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs text-right">Actions</TableHead>
+                    <TableHead className="text-xs">{t('th.severity')}</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                    <TableHead className="text-xs">{t('th.metric')}</TableHead>
+                    <TableHead className="text-xs">{t('alert.valueVsThreshold')}</TableHead>
+                    <TableHead className="text-xs">{t('th.message')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.alerts.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">
-                        No alerts found
+                        {t('alert.noMatch')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -210,7 +212,7 @@ export default function AlertsView() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-xs font-medium">
-                            {alert.siteName || alert.siteCode || 'Unknown'}
+                            {alert.siteName || alert.siteCode || t('status.unknown')}
                           </TableCell>
                           <TableCell>
                             <Badge
@@ -230,15 +232,15 @@ export default function AlertsView() {
                           <TableCell>
                             {alert.resolvedAt ? (
                               <Badge variant="outline" className="text-xs gap-1 text-emerald-600">
-                                <CheckCircle className="h-3 w-3" /> Resolved
+                                <CheckCircle className="h-3 w-3" /> {t('status.resolved')}
                               </Badge>
                             ) : alert.acknowledged ? (
                               <Badge variant="secondary" className="text-xs gap-1">
-                                <Eye className="h-3 w-3" /> Ack'd
+                                <Eye className="h-3 w-3" /> {t('status.ackd')}
                               </Badge>
                             ) : (
                               <Badge className="text-xs gap-1">
-                                <EyeOff className="h-3 w-3" /> New
+                                <EyeOff className="h-3 w-3" /> {t('status.new')}
                               </Badge>
                             )}
                           </TableCell>
@@ -270,7 +272,7 @@ export default function AlertsView() {
       {/* Alert Rules */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Alert Rules</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('alert.alertRules')}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-72">
@@ -278,13 +280,13 @@ export default function AlertsView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Rule Name</TableHead>
-                    <TableHead className="text-xs">Technology</TableHead>
-                    <TableHead className="text-xs">Metric</TableHead>
-                    <TableHead className="text-xs">Condition</TableHead>
-                    <TableHead className="text-xs">Threshold</TableHead>
-                    <TableHead className="text-xs">Severity</TableHead>
-                    <TableHead className="text-xs text-center">Enabled</TableHead>
+                    <TableHead className="text-xs">{t('th.ruleName')}</TableHead>
+                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                    <TableHead className="text-xs">{t('th.metric')}</TableHead>
+                    <TableHead className="text-xs">{t('th.condition')}</TableHead>
+                    <TableHead className="text-xs">{t('th.threshold')}</TableHead>
+                    <TableHead className="text-xs">{t('th.severity')}</TableHead>
+                    <TableHead className="text-xs text-center">{t('th.enabled')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

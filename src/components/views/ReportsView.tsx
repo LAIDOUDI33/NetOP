@@ -18,6 +18,7 @@ import {
   Clock, CheckCircle, XCircle,
 } from 'lucide-react';
 import { TECH_COLORS } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology, SonModuleItem, PolicyItem } from '@/types';
 
 // ==================== CONSTANTS ====================
@@ -171,6 +172,7 @@ function TableSkeleton() {
 // ==================== KPI REPORT TAB ====================
 
 function KpiReportTab() {
+  const t = useT();
   const [metric, setMetric] = useState('downloadThroughput');
 
   const { data, isLoading } = useQuery<KpiResponse>({
@@ -260,7 +262,7 @@ function KpiReportTab() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            {METRICS.find(m => m.value === metric)?.label} — All Technologies
+            {t('rpt.allTechTrend', { metric: METRICS.find(m => m.value === metric)?.label || metric })}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -294,18 +296,18 @@ function KpiReportTab() {
 
       {/* Summary Statistics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-        <StatCard icon={ArrowDownRight} label="Minimum" value={summaryStats.min} />
-        <StatCard icon={ArrowUpRight} label="Maximum" value={summaryStats.max} />
-        <StatCard icon={TrendingUp} label="Average" value={summaryStats.avg} />
-        <StatCard icon={TrendingDown} label="Std Dev" value={summaryStats.stddev} />
-        <StatCard icon={AlertTriangle} label="Breach Count" value={summaryStats.breaches} variant={summaryStats.breaches > 0 ? 'warning' : 'default'} />
+        <StatCard icon={ArrowDownRight} label={t('rpt.minimum')} value={summaryStats.min} />
+        <StatCard icon={ArrowUpRight} label={t('rpt.maximum')} value={summaryStats.max} />
+        <StatCard icon={TrendingUp} label={t('rpt.average')} value={summaryStats.avg} />
+        <StatCard icon={TrendingDown} label={t('rpt.stdDev')} value={summaryStats.stddev} />
+        <StatCard icon={AlertTriangle} label={t('rpt.breachCount')} value={summaryStats.breaches} variant={summaryStats.breaches > 0 ? 'warning' : 'default'} />
       </div>
 
       {/* Site Performance Ranking */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Site Performance Ranking — {METRICS.find(m => m.value === metric)?.label}
+            {t('rpt.siteRanking', { metric: METRICS.find(m => m.value === metric)?.label || metric })}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -315,10 +317,10 @@ function KpiReportTab() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs w-12">#</TableHead>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Technology</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs text-right">Value</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.value')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -370,6 +372,7 @@ function KpiReportTab() {
 // ==================== SON ACTIVITY TAB ====================
 
 function SonActivityTab() {
+  const t = useT();
   const { data, isLoading } = useQuery<SonResponse>({
     queryKey: ['son-report'],
     queryFn: () => fetch('/api/son').then(r => r.json()),
@@ -428,7 +431,7 @@ function SonActivityTab() {
       <Card>
         <CardContent className="p-12 text-center text-muted-foreground">
           <Cpu className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No SON modules found.</p>
+          <p className="text-sm">{t('rpt.noSonModules')}</p>
         </CardContent>
       </Card>
     );
@@ -438,10 +441,10 @@ function SonActivityTab() {
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Cpu} label="Total Modules" value={summaryCards.totalModules} />
-        <StatCard icon={Activity} label="Actions (24h)" value={summaryCards.actions24h} />
-        <StatCard icon={CheckCircle} label="Success Rate" value={`${summaryCards.successRate}%`} />
-        <StatCard icon={TrendingUp} label="Avg Impact" value={summaryCards.avgImpact} />
+        <StatCard icon={Cpu} label={t('rpt.totalModules')} value={summaryCards.totalModules} />
+        <StatCard icon={Activity} label={t('rpt.actions24h')} value={summaryCards.actions24h} />
+        <StatCard icon={CheckCircle} label={t('rpt.successRate')} value={`${summaryCards.successRate}%`} />
+        <StatCard icon={TrendingUp} label={t('rpt.avgImpact')} value={summaryCards.avgImpact} />
       </div>
 
       <Separator />
@@ -449,7 +452,7 @@ function SonActivityTab() {
       {/* Recent Actions Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Recent SON Actions</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('rpt.recentSonActions')}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">
@@ -457,21 +460,21 @@ function SonActivityTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Time</TableHead>
-                    <TableHead className="text-xs">Module</TableHead>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Action Type</TableHead>
-                    <TableHead className="text-xs">Parameter</TableHead>
-                    <TableHead className="text-xs">Before → After</TableHead>
-                    <TableHead className="text-xs text-right">Impact</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">{t('rpt.time')}</TableHead>
+                    <TableHead className="text-xs">{t('rpt.module')}</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('rpt.actionType')}</TableHead>
+                    <TableHead className="text-xs">{t('th.parameter')}</TableHead>
+                    <TableHead className="text-xs">{t('rpt.beforeAfter')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('rpt.impact')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {allActions.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center text-muted-foreground text-xs py-8">
-                        No actions recorded yet.
+                        {t('rpt.noActions')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -502,16 +505,16 @@ function SonActivityTab() {
                         </TableCell>
                         <TableCell className="text-xs">
                           {action.status === 'applied' && (
-                            <Badge variant="default" className="text-xs gap-1"><CheckCircle className="h-3 w-3" />Applied</Badge>
+                            <Badge variant="default" className="text-xs gap-1"><CheckCircle className="h-3 w-3" />{t('status.applied')}</Badge>
                           )}
                           {action.status === 'pending' && (
-                            <Badge variant="secondary" className="text-xs gap-1"><Clock className="h-3 w-3" />Pending</Badge>
+                            <Badge variant="secondary" className="text-xs gap-1"><Clock className="h-3 w-3" />{t('status.pending')}</Badge>
                           )}
                           {action.status === 'rolled_back' && (
-                            <Badge variant="outline" className="text-xs gap-1">Rolled Back</Badge>
+                            <Badge variant="outline" className="text-xs gap-1">{t('status.rolledBack')}</Badge>
                           )}
                           {action.status === 'failed' && (
-                            <Badge variant="destructive" className="text-xs gap-1"><XCircle className="h-3 w-3" />Failed</Badge>
+                            <Badge variant="destructive" className="text-xs gap-1"><XCircle className="h-3 w-3" />{t('status.failed')}</Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -530,6 +533,7 @@ function SonActivityTab() {
 // ==================== POLICY REPORT TAB ====================
 
 function PolicyReportTab() {
+  const t = useT();
   const { data, isLoading } = useQuery<PolicyResponse>({
     queryKey: ['policy-report'],
     queryFn: () => fetch('/api/policies').then(r => r.json()),
@@ -564,7 +568,7 @@ function PolicyReportTab() {
       <Card>
         <CardContent className="p-12 text-center text-muted-foreground">
           <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">No policies found.</p>
+          <p className="text-sm">{t('rpt.noPolicies')}</p>
         </CardContent>
       </Card>
     );
@@ -574,10 +578,10 @@ function PolicyReportTab() {
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Shield} label="Total Policies" value={summaryCards.totalPolicies} />
-        <StatCard icon={Activity} label="Active Policies" value={summaryCards.activePolicies} />
-        <StatCard icon={Cpu} label="Total Executions" value={summaryCards.totalExecutions} />
-        <StatCard icon={TrendingUp} label="Avg Success Rate" value={`${summaryCards.avgSuccessRate}%`} />
+        <StatCard icon={Shield} label={t('rpt.totalPolicies')} value={summaryCards.totalPolicies} />
+        <StatCard icon={Activity} label={t('rpt.activePolicies')} value={summaryCards.activePolicies} />
+        <StatCard icon={Cpu} label={t('rpt.totalExecutions')} value={summaryCards.totalExecutions} />
+        <StatCard icon={TrendingUp} label={t('rpt.avgSuccessRate')} value={`${summaryCards.avgSuccessRate}%`} />
       </div>
 
       <Separator />
@@ -585,7 +589,7 @@ function PolicyReportTab() {
       {/* Policies Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Policy Execution Summary</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('rpt.policyExecSummary')}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">
@@ -593,15 +597,15 @@ function PolicyReportTab() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Name</TableHead>
-                    <TableHead className="text-xs">Tech</TableHead>
-                    <TableHead className="text-xs">Trigger</TableHead>
-                    <TableHead className="text-xs">Scope</TableHead>
+                    <TableHead className="text-xs">{t('th.name')}</TableHead>
+                    <TableHead className="text-xs">{t('th.tech')}</TableHead>
+                    <TableHead className="text-xs">{t('th.trigger')}</TableHead>
+                    <TableHead className="text-xs">{t('rpt.scope')}</TableHead>
                     <TableHead className="text-xs text-center">Priority</TableHead>
                     <TableHead className="text-xs text-center">Enabled</TableHead>
-                    <TableHead className="text-xs text-right">Total Runs</TableHead>
-                    <TableHead className="text-xs text-right">Success Rate</TableHead>
-                    <TableHead className="text-xs">Last Run</TableHead>
+                    <TableHead className="text-xs text-right">{t('rpt.totalRuns')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('rpt.successRate')}</TableHead>
+                    <TableHead className="text-xs">{t('rpt.lastRun')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -658,6 +662,7 @@ function PolicyReportTab() {
 // ==================== MAIN COMPONENT ====================
 
 export default function ReportsView() {
+  const t = useT();
   const [activeTab, setActiveTab] = useState('kpi');
 
   const handleExportPdf = () => {
@@ -693,21 +698,21 @@ export default function ReportsView() {
               Reports
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Generate and export network performance reports
+              {t('rpt.subtitle')}
             </p>
           </div>
           <Button onClick={handleExportPdf} className="no-print" variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
-            Export PDF
+            {t('rpt.exportPdf')}
           </Button>
         </div>
 
         {/* Print-only header */}
         <div className="print-only hidden">
           <div className="border-b-2 border-primary pb-3 mb-4">
-            <h1 className="text-2xl font-bold">NetOptima Network Report</h1>
+            <h1 className="text-2xl font-bold">{t('rpt.printTitle')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Generated: {reportTimestamp}
+              {t('rpt.generated')} {reportTimestamp}
             </p>
           </div>
         </div>
@@ -717,15 +722,15 @@ export default function ReportsView() {
           <TabsList className="grid w-full grid-cols-3 sm:w-[400px]">
             <TabsTrigger value="kpi" className="text-xs sm:text-sm">
               <TrendingUp className="h-4 w-4 mr-1.5 hidden sm:inline-block" />
-              KPI Report
+              {t('rpt.kpiReport')}
             </TabsTrigger>
             <TabsTrigger value="son" className="text-xs sm:text-sm">
               <Cpu className="h-4 w-4 mr-1.5 hidden sm:inline-block" />
-              SON Activity
+              {t('rpt.sonActivity')}
             </TabsTrigger>
             <TabsTrigger value="policy" className="text-xs sm:text-sm">
               <Shield className="h-4 w-4 mr-1.5 hidden sm:inline-block" />
-              Policy Report
+              {t('rpt.policyReport')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -738,8 +743,8 @@ export default function ReportsView() {
         {/* Print-only footer */}
         <div className="print-only hidden">
           <div className="border-t-2 border-primary pt-3 mt-8 text-xs text-muted-foreground flex justify-between">
-            <span>NetOptima Network Optimization Platform</span>
-            <span>Confidential</span>
+            <span>{t('rpt.printPlatform')}</span>
+            <span>{t('rpt.confidential')}</span>
           </div>
         </div>
       </div>

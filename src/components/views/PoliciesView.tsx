@@ -50,6 +50,7 @@ import type {
   Technology,
 } from '@/types';
 import { useAppStore } from '@/store/app';
+import { useT } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 // ──────────────────────────────────────────────
@@ -78,11 +79,12 @@ const STATUS_CONFIG: Record<PolicyExecutionStatus, { label: string; color: strin
   rolled_back: { label: 'Rolled Back', color: 'text-slate-600', bgClass: 'bg-slate-500/10 border-slate-500/20 text-slate-700 dark:text-slate-300', icon: RotateCcw },
 };
 
-const SCOPE_LABELS: Record<PolicyScope, string> = {
-  all: 'All Sites',
-  region: 'Region',
-  site: 'Site',
-  cluster: 'Cluster',
+// SCOPE_LABELS moved to component-level to support i18n
+const SCOPE_KEYS: Record<PolicyScope, string> = {
+  all: 'pol.allSites',
+  region: 'pol.region',
+  site: 'son.site',
+  cluster: 'pol.cluster',
 };
 
 // ──────────────────────────────────────────────
@@ -156,20 +158,37 @@ function StatCard({
   );
 }
 
+const TRIGGER_LABEL_KEYS: Record<PolicyTriggerType, string> = {
+  kpi_breach: 'pol.kpiBreach',
+  anomaly_detected: 'pol.anomaly',
+  schedule: 'pol.schedule',
+  manual: 'pol.manual',
+};
+
+const STATUS_LABEL_KEYS: Record<PolicyExecutionStatus, string> = {
+  completed: 'status.completed',
+  running: 'status.running',
+  triggered: 'status.triggered',
+  failed: 'status.failed',
+  rolled_back: 'status.rolledBack',
+};
+
 function TriggerTypeBadge({ type }: { type: PolicyTriggerType }) {
+  const t = useT();
   const cfg = TRIGGER_CONFIG[type];
   const Icon = cfg.icon;
+  const label = t(TRIGGER_LABEL_KEYS[type] ?? 'pol.manual');
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge variant="outline" className={`${cfg.bgClass} gap-1 text-xs font-medium`}>
             <Icon className="h-3 w-3" />
-            {cfg.label}
+            {label}
           </Badge>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Trigger: {cfg.label}</p>
+          <p>{t('pol.triggerLabel', { name: label })}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -177,12 +196,13 @@ function TriggerTypeBadge({ type }: { type: PolicyTriggerType }) {
 }
 
 function StatusBadge({ status }: { status: PolicyExecutionStatus }) {
+  const t = useT();
   const cfg = STATUS_CONFIG[status];
   const Icon = cfg.icon;
   return (
     <Badge variant="outline" className={`${cfg.bgClass} gap-1 text-xs font-medium`}>
       <Icon className="h-3 w-3" />
-      {cfg.label}
+      {t(STATUS_LABEL_KEYS[status] ?? 'status.unknown')}
     </Badge>
   );
 }
@@ -198,6 +218,7 @@ function PolicyCard({
   onTrigger: (id: string) => void;
   isMutating: boolean;
 }) {
+  const t = useT();
   const [expandedSites, setExpandedSites] = useState(false);
 
   return (
@@ -234,7 +255,7 @@ function PolicyCard({
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{policy.enabled ? 'Disable policy' : 'Enable policy'}</p>
+                <p>{policy.enabled ? t('pol.disablePolicy') : t('pol.enablePolicy')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -246,7 +267,7 @@ function PolicyCard({
         <div className="flex flex-wrap items-center gap-2">
           <TriggerTypeBadge type={policy.triggerType} />
           <Badge variant="outline" className="text-xs">
-            {SCOPE_LABELS[policy.scope]}
+            {t(SCOPE_KEYS[policy.scope] ?? 'pol.allSites')}
             {policy.scopeValue ? `: ${policy.scopeValue}` : ''}
           </Badge>
           <Badge
@@ -368,15 +389,15 @@ function PolicyCard({
                 disabled={isMutating || !policy.enabled}
               >
                 <Play className="h-3.5 w-3.5" />
-                Trigger Now
+                {t('pol.triggerNow')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Trigger Policy: {policy.name}</DialogTitle>
+                <DialogTitle>{t('pol.triggerPolicy', { name: policy.name })}</DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                This will immediately execute the <strong>{policy.name}</strong> policy. Are you sure you want to proceed?
+                {t('pol.triggerConfirm', { name: policy.name })}
               </p>
               <DialogFooter>
                 <Button
@@ -390,7 +411,7 @@ function PolicyCard({
                     }
                   }}
                 >
-                  Cancel
+                  {t('pol.cancel')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -406,7 +427,7 @@ function PolicyCard({
                   className="gap-2"
                 >
                   <Zap className="h-4 w-4" />
-                  Execute
+                  {t('pol.execute')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -556,7 +577,7 @@ function ExecutionRow({ execution }: { execution: PolicyExecutionItem }) {
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="text-xs gap-1 bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20 cursor-default">
                   <RotateCcw className="h-3 w-3" />
-                  Rollback
+                  {t('status.rolledBack')}
                 </Badge>
               </TooltipTrigger>
               <TooltipContent className="max-w-[250px]">
@@ -761,7 +782,7 @@ export default function PoliciesView() {
               Automation Policies
             </h1>
             <p className="text-sm text-muted-foreground">
-              Closed-loop policy engine for automated network optimization
+              {t('pol.subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -797,28 +818,28 @@ export default function PoliciesView() {
         ) : (
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <StatCard
-              title="Total Policies"
+              title={t('pol.totalPolicies')}
               value={totalPolicies}
               icon={Shield}
               color="bg-slate-500/10 text-slate-600 dark:text-slate-400"
-              sub="Across all scopes"
+              sub={t('pol.acrossAllScopes')}
             />
             <StatCard
-              title="Active Policies"
+              title={t('pol.activePolicies')}
               value={activePolicies}
               icon={Play}
               color="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              sub={`${totalPolicies > 0 ? ((activePolicies / totalPolicies) * 100).toFixed(0) : 0}% enabled`}
+              sub={t('pol.enabled', { n: totalPolicies > 0 ? ((activePolicies / totalPolicies) * 100).toFixed(0) : 0 })}
             />
             <StatCard
-              title="Total Executions"
+              title={t('pol.totalExecutions')}
               value={totalExecutions}
               icon={Activity}
               color="bg-sky-500/10 text-sky-600 dark:text-sky-400"
-              sub="All time"
+              sub={t('pol.allTime')}
             />
             <StatCard
-              title="Avg Success Rate"
+              title={t('pol.avgSuccessRate')}
               value={`${avgSuccessRate}%`}
               icon={Target}
               color={
@@ -828,7 +849,7 @@ export default function PoliciesView() {
                     ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                     : 'bg-red-500/10 text-red-600 dark:text-red-400'
               }
-              sub="Across all policies"
+              sub={t('pol.acrossAllPol')}
             />
           </div>
         )}
@@ -838,7 +859,7 @@ export default function PoliciesView() {
           <TabsList>
             <TabsTrigger value="policies" className="gap-2">
               <Shield className="h-4 w-4" />
-              Policies
+              {t('pol.policies')}
               {!policiesLoading && (
                 <Badge variant="secondary" className="ml-1 text-[11px] px-1.5">
                   {filteredPolicies.length}
@@ -847,7 +868,7 @@ export default function PoliciesView() {
             </TabsTrigger>
             <TabsTrigger value="executions" className="gap-2">
               <Activity className="h-4 w-4" />
-              Execution History
+              {t('pol.executionHistory')}
               {!executionsLoading && (
                 <Badge variant="secondary" className="ml-1 text-[11px] px-1.5">
                   {filteredExecutions.length}
@@ -868,11 +889,11 @@ export default function PoliciesView() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                   <Shield className="h-12 w-12 text-muted-foreground/40 mb-4" />
-                  <p className="text-sm font-medium text-muted-foreground">No policies found</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('pol.noPolicies')}</p>
                   <p className="text-xs text-muted-foreground/70 mt-1">
                     {techFilter !== 'all'
-                      ? `No policies configured for ${techFilter} technology`
-                      : 'No automation policies have been created yet'}
+                      ? t('pol.noPoliciesTech', { tech: techFilter })
+                      : t('pol.noPoliciesYet')}
                   </p>
                 </CardContent>
               </Card>
@@ -902,11 +923,11 @@ export default function PoliciesView() {
                 ) : filteredExecutions.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Activity className="h-12 w-12 text-muted-foreground/40 mb-4" />
-                    <p className="text-sm font-medium text-muted-foreground">No executions found</p>
+                    <p className="text-sm font-medium text-muted-foreground">{t('pol.noExec')}</p>
                     <p className="text-xs text-muted-foreground/70 mt-1">
                       {techFilter !== 'all'
-                        ? `No execution records for ${techFilter} technology`
-                        : 'No policy executions have been recorded yet'}
+                        ? t('pol.noExecTech', { tech: techFilter })
+                        : t('pol.noExecYet')}
                     </p>
                   </div>
                 ) : (
@@ -914,16 +935,16 @@ export default function PoliciesView() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="text-xs">Time</TableHead>
-                          <TableHead className="text-xs">Policy Name</TableHead>
-                          <TableHead className="text-xs">Technology</TableHead>
-                          <TableHead className="text-xs">Trigger</TableHead>
-                          <TableHead className="text-xs">Status</TableHead>
-                          <TableHead className="text-xs">Sites Affected</TableHead>
-                          <TableHead className="text-xs">Actions Taken</TableHead>
-                          <TableHead className="text-xs">Duration</TableHead>
-                          <TableHead className="text-xs">KPI Impact</TableHead>
-                          <TableHead className="text-xs">Rollback</TableHead>
+                          <TableHead className="text-xs">{t('th.time')}</TableHead>
+                          <TableHead className="text-xs">{t('th.policyName')}</TableHead>
+                          <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                          <TableHead className="text-xs">{t('th.trigger')}</TableHead>
+                          <TableHead className="text-xs">{t('th.status')}</TableHead>
+                          <TableHead className="text-xs">{t('th.sitesAffected')}</TableHead>
+                          <TableHead className="text-xs">{t('th.actionsTaken')}</TableHead>
+                          <TableHead className="text-xs">{t('th.duration')}</TableHead>
+                          <TableHead className="text-xs">{t('pol.kpiImpact')}</TableHead>
+                          <TableHead className="text-xs">{t('th.rollback')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { DollarSign, Frown, CheckCircle2 } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -199,6 +200,14 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function RoiView() {
+  const t = useT();
+  const catLabel: Record<string, string> = {
+    energy_saving: t('roi.energySaving'),
+    capacity_deferred: t('roi.capacityDeferred'),
+    churn_reduction: t('roi.churnReduction'),
+    sla_improvement: t('roi.slaImprovement'),
+    outage_reduction: t('roi.outageReduction'),
+  };
   const [techFilter, setTechFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -222,7 +231,7 @@ export default function RoiView() {
   // Chart data: Savings by Category
   const savingsByCategoryData = summary?.byCategory
     ? Object.entries(summary.byCategory).map(([cat, info]) => ({
-        category: CATEGORY_LABELS[cat] ?? cat,
+        category: catLabel[cat] ?? cat,
         saving: info.totalSaving,
         fill: CATEGORY_COLORS[cat] ?? '#94A3B8',
       }))
@@ -232,7 +241,7 @@ export default function RoiView() {
   const roiByCategoryData = summary?.byCategory
     ? Object.entries(summary.byCategory)
         .map(([cat, info]) => ({
-          category: CATEGORY_LABELS[cat] ?? cat,
+          category: catLabel[cat] ?? cat,
           roi: info.avgRoi,
           fill: CATEGORY_COLORS[cat] ?? '#94A3B8',
         }))
@@ -264,8 +273,8 @@ export default function RoiView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load ROI data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'ROI' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -275,9 +284,9 @@ export default function RoiView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <DollarSign className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No ROI Data Available</p>
+        <p className="text-lg font-medium">{t('roi.noData')}</p>
         <p className="text-sm mt-1">
-          Financial impact records have not been created yet.
+          {t('roi.noDataYet')}
         </p>
       </div>
     );
@@ -290,10 +299,10 @@ export default function RoiView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <DollarSign className="h-6 w-6 text-emerald-500" />
-          ROI Dashboard
+          {t('roi.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Financial impact tracking and cost-benefit analysis of optimization actions
+          {t('roi.subtitle')}
         </p>
       </div>
 
@@ -304,7 +313,7 @@ export default function RoiView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-slate-500" />
-              Total Investment
+              {t('roi.totalInvestment')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -320,7 +329,7 @@ export default function RoiView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-emerald-500" />
-              Annual Savings
+              {t('roi.annualSaving')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -336,7 +345,7 @@ export default function RoiView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-cyan-500" />
-              Cumulative Savings
+              {t('roi.cumulativeSaving')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -352,7 +361,7 @@ export default function RoiView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-amber-500" />
-              Avg ROI
+              {t('roi.avgRoi')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -368,7 +377,7 @@ export default function RoiView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-rose-500" />
-              Avg Payback
+              {t('roi.avgPayback')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -401,7 +410,7 @@ export default function RoiView() {
         {/* Savings by Category */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Savings by Category</CardTitle>
+            <CardTitle className="text-base">{t('roi.byCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -423,7 +432,7 @@ export default function RoiView() {
                     tickFormatter={(v: number) => formatCurrency(v)}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="saving" name="Total Saving" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="saving" name={t('roi.saving')} radius={[4, 4, 0, 0]}>
                     {savingsByCategoryData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -437,7 +446,7 @@ export default function RoiView() {
         {/* ROI by Category */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">ROI by Category</CardTitle>
+            <CardTitle className="text-base">{t('roi.roiByCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -463,7 +472,7 @@ export default function RoiView() {
                     formatter={(value: number) => [`${formatNumber(value, 0)}%`, 'Avg ROI']}
                   />
                   <ReferenceLine y={100} stroke="#EF4444" strokeDasharray="6 4" label={{ value: '100%', position: 'right', fill: '#EF4444', fontSize: 11 }} />
-                  <Bar dataKey="roi" name="Avg ROI (%)" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="roi" name={t('roi.roiPct')} radius={[4, 4, 0, 0]}>
                     {roiByCategoryData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -478,14 +487,14 @@ export default function RoiView() {
       {/* Records Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">ROI Records</CardTitle>
+          <CardTitle className="text-base">{t('roi.records')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Tech" />
+                <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -494,24 +503,24 @@ export default function RoiView() {
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('filter.category')} />
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((cat) => (
                   <SelectItem key={cat} value={cat}>
-                    {cat === 'all' ? 'All Categories' : (CATEGORY_LABELS[cat] ?? cat)}
+                    {cat === 'all' ? t('filter.allCategories') : (catLabel[cat] ?? cat)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
+                    {s === 'all' ? t('filter.allStatus') : (s.charAt(0).toUpperCase() + s.slice(1))}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -521,7 +530,7 @@ export default function RoiView() {
         <CardContent>
           {records.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No records match the selected filters.
+              {t('roi.noRecordsMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
@@ -529,14 +538,14 @@ export default function RoiView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10">Title</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Tech</TableHead>
+                    <TableHead>{t('filter.category')}</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
                     <TableHead>Site</TableHead>
-                    <TableHead className="text-right">Investment</TableHead>
-                    <TableHead className="text-right">Annual Saving</TableHead>
-                    <TableHead className="text-right">Payback</TableHead>
-                    <TableHead className="text-right">ROI %</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">{t('roi.investment')}</TableHead>
+                    <TableHead className="text-right">{t('roi.saving')}</TableHead>
+                    <TableHead className="text-right">{t('roi.paybackMonths')}</TableHead>
+                    <TableHead className="text-right">{t('roi.roiPct')}</TableHead>
+                    <TableHead>{t('filter.status')}</TableHead>
                     <TableHead className="text-right">Cumulative</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -551,7 +560,7 @@ export default function RoiView() {
                           variant="outline"
                           className={categoryBadgeClass(rec.category)}
                         >
-                          {CATEGORY_LABELS[rec.category] ?? rec.category}
+                          {catLabel[rec.category] ?? rec.category}
                         </Badge>
                       </TableCell>
                       <TableCell>

@@ -145,11 +145,11 @@ export default function VendorsView() {
         body: JSON.stringify({ vendorId, action: 'sync' }),
       }).then((r) => r.json()),
     onSuccess: () => {
-      toast.success('Sync initiated successfully');
+      toast.success(t('toast.syncOk'));
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
     },
     onError: () => {
-      toast.error('Failed to initiate sync');
+      toast.error(t('toast.syncFailed'));
     },
   });
 
@@ -169,13 +169,13 @@ export default function VendorsView() {
     onSuccess: (_data, variables) => {
       toast.success(
         variables.enabled
-          ? 'Vendor connection enabled'
-          : 'Vendor connection disabled'
+          ? t('vnd.syncEnabled')
+          : t('vnd.syncDisabled')
       );
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
     },
     onError: () => {
-      toast.error('Failed to toggle vendor connection');
+      toast.error(t('toast.toggleFailed'));
     },
   });
 
@@ -188,11 +188,11 @@ export default function VendorsView() {
     0
   );
   const lastSyncStatus = (() => {
-    if (vendors.length === 0) return 'N/A';
+    if (vendors.length === 0) return t('status.na');
     const synced = vendors.filter((v) => v.stats.syncStatus === 'synced');
     const total = vendors.length;
-    if (synced.length === total) return 'All Synced';
-    return `${synced.length}/${total} Synced`;
+    if (synced.length === total) return t('vnd.allSynced');
+    return t('vnd.syncedOf', { n: synced.length, total });
   })();
 
   const isSyncing = syncMutation.isPending || toggleMutation.isPending;
@@ -241,7 +241,7 @@ export default function VendorsView() {
           Vendor Management
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Multi-Vendor Integration Hub
+          {t('vnd.subtitle')}
         </p>
       </div>
 
@@ -253,7 +253,7 @@ export default function VendorsView() {
               <Server className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Total Vendors</p>
+              <p className="text-sm text-muted-foreground">{t('vnd.totalVendors')}</p>
               <p className="text-2xl font-bold">{totalVendors}</p>
             </div>
           </CardContent>
@@ -295,7 +295,7 @@ export default function VendorsView() {
               <Activity className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Last Sync Status</p>
+              <p className="text-sm text-muted-foreground">{d}{t('vnd.lastSync')}</p>
               <p className="text-2xl font-bold">{lastSyncStatus}</p>
             </div>
           </CardContent>
@@ -311,7 +311,7 @@ export default function VendorsView() {
               No vendors configured
             </h3>
             <p className="text-sm text-muted-foreground/70 mt-1">
-              Add a vendor integration to get started.
+              {t('vnd.noVendorsMsg')}
             </p>
           </CardContent>
         </Card>
@@ -447,7 +447,7 @@ export default function VendorsView() {
 
                   {/* Last sync time */}
                   <p className="text-xs text-muted-foreground/70 mt-3">
-                    Last synced: {formatTimeAgo(vendor.lastSync)}
+                    {t("vnd.lastSynced", { time: formatTimeAgo(vendor.lastSync) })}
                   </p>
 
                   <Separator className="my-4" />
@@ -464,7 +464,7 @@ export default function VendorsView() {
                       <RefreshCw
                         className={`h-3.5 w-3.5 mr-1.5 ${syncingThis ? 'animate-spin' : ''}`}
                       />
-                      {syncingThis ? 'Syncing…' : 'Sync Now'}
+                      {syncingThis ? t('vnd.syncing') : t('btn.syncNow')}
                     </Button>
                     <Button
                       size="sm"
@@ -481,12 +481,12 @@ export default function VendorsView() {
                       {isActive ? (
                         <>
                           <Unplug className="h-3.5 w-3.5 mr-1.5" />
-                          Disconnect
+                          {t('btn.disconnect')}
                         </>
                       ) : (
                         <>
                           <Plug className="h-3.5 w-3.5 mr-1.5" />
-                          Connect
+                          {t('btn.connect')}
                         </>
                       )}
                     </Button>

@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Frown, ListOrdered, TrendingUp, BarChart3, Hash } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology, AlertSeverity } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -153,6 +154,7 @@ function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number })
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
 function ChartTooltipContent({ active, payload, label }: any) {
+  const t = useT();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
@@ -160,7 +162,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
       {payload.map((entry: any, idx: number) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
-          <span className="text-muted-foreground">Playbooks:</span>
+          <span className="text-muted-foreground">{t('view.playbooksColon')}</span>
           <span className="font-medium">{entry.value}</span>
         </div>
       ))}
@@ -171,6 +173,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Expanded Steps ───────────────────────────────────────────────────
 
 function PlaybookSteps({ steps }: { steps: PlaybookStep[] }) {
+  const t = useT();
   return (
     <tr>
       <td colSpan={8} className="p-0">
@@ -182,7 +185,7 @@ function PlaybookSteps({ steps }: { steps: PlaybookStep[] }) {
                 <div className="flex flex-col sm:flex-row sm:items-start gap-2">
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
-                      Step {step.stepNumber}
+                      {t('view.step', { n: step.stepNumber })}
                     </span>
                     <span className="font-medium text-sm">{step.title}</span>
                   </div>
@@ -192,7 +195,7 @@ function PlaybookSteps({ steps }: { steps: PlaybookStep[] }) {
                     </Badge>
                     {step.isBlocking && (
                       <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                        Blocking
+                        {t('view.blocking')}
                       </Badge>
                     )}
                   </div>
@@ -201,13 +204,13 @@ function PlaybookSteps({ steps }: { steps: PlaybookStep[] }) {
                 <div className="flex flex-col sm:flex-row gap-3 mt-1.5 text-xs">
                   {step.target && (
                     <span>
-                      <span className="text-muted-foreground">Target: </span>
+                      <span className="text-muted-foreground">{t('view.targetColon')} </span>
                       <span className="font-medium">{step.target}</span>
                     </span>
                   )}
                   {step.expectedOutcome && (
                     <span>
-                      <span className="text-muted-foreground">Expected: </span>
+                      <span className="text-muted-foreground">{t('view.expectedColon')} </span>
                       <span className="font-medium">{step.expectedOutcome}</span>
                     </span>
                   )}
@@ -224,6 +227,7 @@ function PlaybookSteps({ steps }: { steps: PlaybookStep[] }) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function PlaybooksView() {
+  const t = useT();
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [techFilter, setTechFilter] = useState<string>('4G');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -275,8 +279,8 @@ export default function PlaybooksView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load playbooks data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'playbooks' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -286,11 +290,11 @@ export default function PlaybooksView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <BookOpen className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Playbooks Available</p>
+        <p className="text-lg font-medium">{t('pb.noData')}</p>
         <p className="text-sm mt-1">
           {categoryFilter !== 'all' || techFilter !== 'all'
-            ? 'No playbooks match the selected filters.'
-            : 'Troubleshooting playbooks have not been configured yet.'}
+            ? t('pb.noMatchFilter')
+            : t('pb.noDataYet')}
         </p>
       </div>
     );
@@ -307,10 +311,10 @@ export default function PlaybooksView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-emerald-500" />
-          Troubleshooting Playbooks
+          {t('pb.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Diagnostic workflows and step-by-step resolution procedures
+          {t('pb.subtitle')}
         </p>
       </div>
 
@@ -321,14 +325,14 @@ export default function PlaybooksView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-emerald-500" />
-              Total Playbooks
+              {t('pb.totalPlaybooks')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Active troubleshooting workflows</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('pb.activeWorkflows')}</p>
           </CardContent>
         </Card>
 
@@ -337,14 +341,14 @@ export default function PlaybooksView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-amber-500" />
-              Avg Success Rate
+              {t('pb.avgSuccessRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className={`text-3xl font-bold ${successRateColor(summary?.avgSuccessRate ?? 0)}`}>
               {formatNumber(summary?.avgSuccessRate ?? 0, 1)}%
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all playbooks</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('pb.acrossAllPlaybooks')}</p>
           </CardContent>
         </Card>
 
@@ -353,14 +357,14 @@ export default function PlaybooksView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-cyan-500" />
-              Total Executions
+              {t('pb.totalExecutions')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {(summary?.totalUsage ?? 0).toLocaleString()}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">All-time playbook runs</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.allTimeRuns')}</p>
           </CardContent>
         </Card>
 
@@ -369,14 +373,14 @@ export default function PlaybooksView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Hash className="h-4 w-4 text-rose-500" />
-              Categories
+              {t('pb.categories')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
               {categoryCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Distinct playbook categories</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.distinctCategories')}</p>
           </CardContent>
         </Card>
       </div>
@@ -384,7 +388,7 @@ export default function PlaybooksView() {
       {/* Playbooks by Category Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Playbooks by Category</CardTitle>
+          <CardTitle className="text-base">{t('pb.byCategory')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
@@ -403,7 +407,7 @@ export default function PlaybooksView() {
                   allowDecimals={false}
                 />
                 <Tooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="count" name="Playbooks" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="count" name={t('pb.allPlaybooks')} radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, idx) => (
                     <Cell key={idx} fill={entry.fill} />
                   ))}
@@ -419,15 +423,15 @@ export default function PlaybooksView() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <ListOrdered className="h-4 w-4 text-emerald-500" />
-            All Playbooks
+            {t('pb.allPlaybooks')}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('filter.category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
                 {CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -437,10 +441,10 @@ export default function PlaybooksView() {
             </Select>
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Tech" />
+                <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -454,14 +458,14 @@ export default function PlaybooksView() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[180px]">Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Tech</TableHead>
+                  <TableHead className="min-w-[180px]">{t('pb.name')}</TableHead>
+                  <TableHead>{t('filter.category')}</TableHead>
+                  <TableHead>{t('filter.tech')}</TableHead>
                   <TableHead>Severity</TableHead>
-                  <TableHead className="text-right">Steps</TableHead>
-                  <TableHead className="text-right">Success Rate</TableHead>
-                  <TableHead className="text-right">Usage</TableHead>
-                  <TableHead>Tags</TableHead>
+                  <TableHead className="text-right">{t('pb.steps')}</TableHead>
+                  <TableHead className="text-right">{t('pb.avgSuccessRate')}</TableHead>
+                  <TableHead className="text-right">{t('pb.usage')}</TableHead>
+                  <TableHead>{t('pb.tags')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

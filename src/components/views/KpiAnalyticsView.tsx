@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useT } from '@/lib/i18n';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,17 +27,31 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   maintenance: 'outline',
 };
 
-const METRICS = [
-  { value: 'downloadThroughput', label: 'Download Throughput (Mbps)' },
-  { value: 'uploadThroughput', label: 'Upload Throughput (Mbps)' },
-  { value: 'latency', label: 'Latency (ms)' },
-  { value: 'availability', label: 'Availability (%)' },
-  { value: 'dropRate', label: 'Drop Rate (%)' },
-  { value: 'sinr', label: 'SINR (dB)' },
-  { value: 'handoverSuccessRate', label: 'Handover Success Rate (%)' },
-  { value: 'prbUtilization', label: 'PRB Utilization (%)' },
-  { value: 'activeUsers', label: 'Active Users' },
-];
+const METRIC_KEYS: Record<string, string> = {
+  downloadThroughput: 'metric.downloadThroughput',
+  uploadThroughput: 'metric.uploadThroughput',
+  latency: 'metric.latency',
+  availability: 'metric.availability',
+  dropRate: 'metric.dropRate',
+  sinr: 'metric.sinr',
+  handoverSuccessRate: 'metric.handoverSuccessRate',
+  prbUtilization: 'metric.prbUtilization',
+  activeUsers: 'metric.activeUsers',
+};
+
+const METRIC_UNITS: Record<string, string> = {
+  downloadThroughput: 'unit.mbps',
+  uploadThroughput: 'unit.mbps',
+  latency: 'unit.ms',
+  availability: 'unit.percent',
+  dropRate: 'unit.percent',
+  sinr: 'unit.db',
+  handoverSuccessRate: 'unit.percent',
+  prbUtilization: 'unit.percent',
+  activeUsers: '',
+};
+
+const METRIC_VALUES = ['downloadThroughput', 'uploadThroughput', 'latency', 'availability', 'dropRate', 'sinr', 'handoverSuccessRate', 'prbUtilization', 'activeUsers'] as const;
 
 const TECHNOLOGIES: (Technology | 'all')[] = ['all', '2G', '3G', '4G', '5G'];
 
@@ -52,6 +67,7 @@ function formatTimestamp(ts: string) {
 }
 
 export default function KpiAnalyticsView() {
+  const t = useT();
   const { selectedTechnology } = useAppStore();
   const [technology, setTechnology] = useState<Technology | 'all'>('all');
   const [metric, setMetric] = useState('downloadThroughput');
@@ -112,21 +128,21 @@ export default function KpiAnalyticsView() {
       <div className="flex flex-wrap gap-4 items-center">
         <Select value={technology} onValueChange={(v) => setTechnology(v as Technology | 'all')}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            {TECHNOLOGIES.map((t) => (
-              <SelectItem key={t} value={t}>{t === 'all' ? 'All Technologies' : t}</SelectItem>
+            {TECHNOLOGIES.map((tech) => (
+              <SelectItem key={tech} value={tech}>{tech === 'all' ? t('filter.allTech') : tech}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={metric} onValueChange={setMetric}>
           <SelectTrigger className="w-[240px]">
-            <SelectValue placeholder="Metric" />
+            <SelectValue placeholder={t('filter.metric')} />
           </SelectTrigger>
           <SelectContent>
-            {METRICS.map((m) => (
-              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+            {METRIC_VALUES.map((m) => (
+              <SelectItem key={m} value={m}>{t(METRIC_KEYS[m])}{METRIC_UNITS[m] ? ` (${t(METRIC_UNITS[m])})` : ''}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -136,7 +152,7 @@ export default function KpiAnalyticsView() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            {METRICS.find(m => m.value === metric)?.label} — Trend
+            {t('kpi.trend', { metric: t(METRIC_KEYS[metric]) + (METRIC_UNITS[metric] ? ` (${t(METRIC_UNITS[metric])})` : '') })}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -171,7 +187,7 @@ export default function KpiAnalyticsView() {
       {/* Site Comparison Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Site Comparison — {METRICS.find(m => m.value === metric)?.label}</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('kpi.siteComparison', { metric: t(METRIC_KEYS[metric]) + (METRIC_UNITS[metric] ? ` (${t(METRIC_UNITS[metric])})` : '') })}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">
@@ -180,10 +196,10 @@ export default function KpiAnalyticsView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs">#</TableHead>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Technology</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs text-right">Value</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.value')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

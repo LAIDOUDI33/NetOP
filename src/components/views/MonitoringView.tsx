@@ -11,6 +11,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Server, Signal, TrendingUp, Clock, Users } from 'lucide-react';
 import { useAppStore } from '@/store/app';
+import { useT } from '@/lib/i18n';
 import type { MonitoringData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -33,6 +34,7 @@ function formatTimestamp(ts: string) {
 }
 
 export default function MonitoringView() {
+  const t = useT();
   const { selectedTechnology, setSelectedTechnology } = useAppStore();
 
   const { data, isLoading } = useQuery<MonitoringData>({
@@ -104,7 +106,7 @@ export default function MonitoringView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Server className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Active Sites</p>
+              <p className="text-xs text-muted-foreground">{t('mon.activeSites')}</p>
             </div>
             <p className="text-xl font-bold mt-1">{data.summary.activeSites} <span className="text-sm text-muted-foreground font-normal">/ {data.summary.totalSites}</span></p>
           </CardContent>
@@ -113,34 +115,34 @@ export default function MonitoringView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Signal className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Avg Signal (SINR)</p>
+              <p className="text-xs text-muted-foreground">{t('mon.avgSignal')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgSinr?.toFixed(1) || 'N/A'} <span className="text-sm text-muted-foreground font-normal">dB</span></p>
+            <p className="text-xl font-bold mt-1">{data.summary.avgSinr?.toFixed(1) || 'N/A'} <span className="text-sm text-muted-foreground font-normal">{t('unit.db')}</span></p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Avg Throughput</p>
+              <p className="text-xs text-muted-foreground">{t('mon.avgThroughput')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgDownload.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">Mbps</span></p>
+            <p className="text-xl font-bold mt-1">{data.summary.avgDownload.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.mbps')}</span></p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Avg Latency</p>
+              <p className="text-xs text-muted-foreground">{t('mon.avgLatency')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgLatency.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">ms</span></p>
+            <p className="text-xl font-bold mt-1">{data.summary.avgLatency.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.ms')}</span></p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Total Users</p>
+              <p className="text-xs text-muted-foreground">{t('mon.totalUsers')}</p>
             </div>
             <p className="text-xl font-bold mt-1">{data.summary.totalUsers.toLocaleString()}</p>
           </CardContent>
@@ -150,7 +152,7 @@ export default function MonitoringView() {
       {/* Trend Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">{selectedTechnology} — KPI Trends</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('mon.kpiTrends', { tech: selectedTechnology })}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <div className="h-72">
@@ -184,7 +186,7 @@ export default function MonitoringView() {
       {/* Sites Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">{selectedTechnology} — Site Details</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('mon.siteDetails', { tech: selectedTechnology })}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">
@@ -192,15 +194,15 @@ export default function MonitoringView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs">DL (Mbps)</TableHead>
-                    <TableHead className="text-xs">UL (Mbps)</TableHead>
-                    <TableHead className="text-xs">Latency (ms)</TableHead>
-                    <TableHead className="text-xs">Availability</TableHead>
-                    <TableHead className="text-xs">Users</TableHead>
-                    <TableHead className="text-xs">Drop Rate</TableHead>
-                    <TableHead className="text-xs">SINR (dB)</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+                    <TableHead className="text-xs">{t('th.dl')}</TableHead>
+                    <TableHead className="text-xs">{t('th.ul')}</TableHead>
+                    <TableHead className="text-xs">{t('th.latency')}</TableHead>
+                    <TableHead className="text-xs">{t('th.availability')}</TableHead>
+                    <TableHead className="text-xs">{t('th.users')}</TableHead>
+                    <TableHead className="text-xs">{t('th.dropRate')}</TableHead>
+                    <TableHead className="text-xs">{t('th.sinr')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

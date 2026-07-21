@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ViewType, Technology } from '@/types';
+import type { Locale } from '@/lib/i18n';
 
 interface AppState {
   currentView: ViewType;
@@ -11,6 +12,8 @@ interface AppState {
   toggleSidebar: () => void;
   refreshKey: number;
   triggerRefresh: () => void;
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -23,4 +26,6 @@ export const useAppStore = create<AppState>((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   refreshKey: 0,
   triggerRefresh: () => set((s) => ({ refreshKey: s.refreshKey + 1 })),
+  locale: 'en',
+  setLocale: (locale) => set({ locale }),
 }));

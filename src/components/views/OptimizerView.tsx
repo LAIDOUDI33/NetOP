@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Send, RefreshCw, Sparkles, Activity, TrendingUp, Clock, Users, AlertTriangle } from 'lucide-react';
 import type { OptimizationItem, OptimizationStatus, Technology } from '@/types';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -43,6 +44,7 @@ interface OptimizerResponse {
 }
 
 export default function OptimizerView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState('');
   const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'ai'; content: string; timestamp: string }[]>([]);
@@ -77,7 +79,7 @@ export default function OptimizerView() {
       queryClient.invalidateQueries({ queryKey: ['optimizer'] });
     },
     onError: () => {
-      toast.error('Failed to get AI recommendation');
+      toast.error(t('opt.failedAi'));
     },
   });
 
@@ -103,7 +105,7 @@ export default function OptimizerView() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                AI Network Optimizer
+                {t('opt.aiNetworkOptimizer')}
               </CardTitle>
               <Button
                 size="sm"
@@ -150,7 +152,7 @@ export default function OptimizerView() {
                     </div>
                     {opt.impact && (
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">Impact:</span> {opt.impact}
+                        <span className="font-medium">{t('opt.impact')}</span> {opt.impact}
                       </p>
                     )}
                   </div>
@@ -182,7 +184,7 @@ export default function OptimizerView() {
             {postMutation.isPending && (
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg p-3 text-sm animate-pulse">
-                  Analyzing network conditions...
+                  {t('opt.analyzing')}
                 </div>
               </div>
             )}
@@ -195,7 +197,7 @@ export default function OptimizerView() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask for optimization advice, e.g., 'How can I improve 4G throughput in the downtown area?'"
+                placeholder={t('opt.placeholder')}
                 className="min-h-[60px] max-h-[120px] resize-none text-sm"
               />
               <Button
@@ -217,7 +219,7 @@ export default function OptimizerView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Activity className="h-4 w-4 text-emerald-500" />
-              Network Health
+              {t('opt.networkHealth')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
@@ -233,46 +235,46 @@ export default function OptimizerView() {
                     >
                       {h.technology}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{h.sites} sites</span>
+                    <span className="text-xs text-muted-foreground">{t('opt.sites', { n: h.sites })}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-1">
                       <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">DL:</span>
-                      <span className="font-medium">{h.avgThroughput} Mbps</span>
+                      <span className="text-muted-foreground">{t('opt.dl')}</span>
+                      <span className="font-medium">{h.avgThroughput} {t('unit.mbps')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">Latency:</span>
-                      <span className="font-medium">{h.avgLatency} ms</span>
+                      <span className="text-muted-foreground">{t('opt.latency')}</span>
+                      <span className="font-medium">{h.avgLatency} {t('unit.ms')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Activity className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">Avail:</span>
+                      <span className="text-muted-foreground">{t('opt.avail')}</span>
                       <span className="font-medium">{h.avgAvailability.toFixed(1)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">Drop:</span>
+                      <span className="text-muted-foreground">{t('opt.drop')}</span>
                       <span className="font-medium">{h.avgDropRate.toFixed(2)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">Users:</span>
+                      <span className="text-muted-foreground">{t('opt.users')}</span>
                       <span className="font-medium">{h.avgUsers}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">SINR:</span>
-                      <span className="font-medium">{h.avgSinr} dB</span>
+                      <span className="text-muted-foreground">{t('opt.sinr')}</span>
+                      <span className="font-medium">{h.avgSinr} {t('unit.db')}</span>
                     </div>
                   </div>
                   {(h.degradedSites > 0 || h.downSites > 0) && (
                     <div className="flex gap-2 text-[10px]">
                       {h.degradedSites > 0 && (
-                        <span className="text-amber-600">{h.degradedSites} degraded</span>
+                        <span className="text-amber-600">{t('opt.degraded', { n: h.degradedSites })}</span>
                       )}
                       {h.downSites > 0 && (
-                        <span className="text-red-600">{h.downSites} down</span>
+                        <span className="text-red-600">{t('opt.downCount', { n: h.downSites })}</span>
                       )}
                     </div>
                   )}

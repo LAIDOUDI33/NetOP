@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, PieChart, Pie, XAxis, YAxis, CartesianGrid,
@@ -155,6 +156,7 @@ function PieTooltipContent({ active, payload }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function EnergyView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [modeFilter, setModeFilter] = useState<string>('all');
 
@@ -243,8 +245,8 @@ export default function EnergyView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Zap className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load Energy data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'Energy' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -257,8 +259,8 @@ export default function EnergyView() {
         <p className="text-lg font-medium">No Energy Data Available</p>
         <p className="text-sm mt-1">
           {(techFilter !== 'all' || modeFilter !== 'all')
-            ? 'No sites match the selected filters.'
-            : 'Energy metrics have not been collected yet.'}
+            ? {t('empty.noMatchShort')}
+            : {t('view.noDataYet', { entity: 'Energy metrics' })}}
         </p>
       </div>
     );
@@ -374,7 +376,7 @@ export default function EnergyView() {
         {/* Power by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Power by Technology</CardTitle>
+            <CardTitle className="text-base">{e}{t('eng.powerByTech')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -402,7 +404,7 @@ export default function EnergyView() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  No data available
+                  {t('empty.noData')}
                 </div>
               )}
             </div>
@@ -412,7 +414,7 @@ export default function EnergyView() {
         {/* Energy Mode Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Energy Mode Distribution</CardTitle>
+            <CardTitle className="text-base">{e}{t('eng.modeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -456,7 +458,7 @@ export default function EnergyView() {
         {/* CO₂ Emission by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">CO₂ Emission by Technology</CardTitle>
+            <CardTitle className="text-base">{e}{t('eng.co2ByTech')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -495,14 +497,14 @@ export default function EnergyView() {
       {/* Full Energy Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Site Energy Details</CardTitle>
+          <CardTitle className="text-base">{e}{t('eng.siteDetails')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
                 {TECHNOLOGIES.map((tech) => (
                   <SelectItem key={tech} value={tech}>
                     {tech}
@@ -512,10 +514,10 @@ export default function EnergyView() {
             </Select>
             <Select value={modeFilter} onValueChange={setModeFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Mode" />
+                <SelectValue placeholder={t('filter.mode')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Modes</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allModes')}</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
                 <SelectItem value="energy_saving">Energy Saving</SelectItem>
                 <SelectItem value="sleep">Sleep</SelectItem>
@@ -534,14 +536,14 @@ export default function EnergyView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead>Tech</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
                     <TableHead className="text-right">Power (W)</TableHead>
                     <TableHead className="text-right">Energy (Wh)</TableHead>
                     <TableHead className="text-right">Users</TableHead>
                     <TableHead className="text-right">Load %</TableHead>
                     <TableHead className="text-right">Temp °C</TableHead>
-                    <TableHead>Mode</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
                     <TableHead className="text-right">CO₂ (g)</TableHead>
                     <TableHead>Sleep?</TableHead>
                   </TableRow>
@@ -588,9 +590,9 @@ export default function EnergyView() {
                       </TableCell>
                       <TableCell>
                         {m.sleepMode ? (
-                          <Badge variant="secondary">Yes</Badge>
+                          <Badge variant="secondary">{t('status.yes')}</Badge>
                         ) : (
-                          <Badge variant="outline">No</Badge>
+                          <Badge variant="outline">{t('status.no')}</Badge>
                         )}
                       </TableCell>
                     </TableRow>

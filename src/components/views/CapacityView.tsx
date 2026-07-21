@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
@@ -150,6 +151,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function CapacityView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [riskFilter, setRiskFilter] = useState<string>('all');
 
@@ -176,7 +178,7 @@ export default function CapacityView() {
         { name: 'Low', count: summary.byRisk.low ?? 0, fill: RISK_COLORS.low },
         { name: 'Medium', count: summary.byRisk.medium ?? 0, fill: RISK_COLORS.medium },
         { name: 'High', count: summary.byRisk.high ?? 0, fill: RISK_COLORS.high },
-        { name: 'Critical', count: summary.byRisk.critical ?? 0, fill: RISK_COLORS.critical },
+        { name: t('status.critical'), count: summary.byRisk.critical ?? 0, fill: RISK_COLORS.critical },
       ]
     : [];
 
@@ -227,8 +229,8 @@ export default function CapacityView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load capacity data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'capacity' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -238,11 +240,11 @@ export default function CapacityView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <BarChart3 className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Capacity Forecasts Available</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Capacity Forecasts' })}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all' || riskFilter !== 'all'
-            ? 'No forecasts match the selected filters.'
-            : 'Capacity forecasts have not been generated yet.'}
+            ? {t('empty.noMatchShort')}
+            : {t('view.noDataYet', { entity: 'Capacity forecasts' })}}
         </p>
       </div>
     );
@@ -266,10 +268,10 @@ export default function CapacityView() {
       <div className="flex flex-wrap items-center gap-3">
         <Select value={techFilter} onValueChange={setTechFilter}>
           <SelectTrigger className="w-36">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{l}{t('filter.allTech')}</SelectItem>
             {TECHNOLOGIES.map((t) => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
@@ -278,14 +280,14 @@ export default function CapacityView() {
 
         <Select value={riskFilter} onValueChange={setRiskFilter}>
           <SelectTrigger className="w-36">
-            <SelectValue placeholder="Risk Level" />
+            <SelectValue placeholder={t('filter.riskLevel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Risk Levels</SelectItem>
+            <SelectItem value="all">{l}{t('filter.allLevels')}</SelectItem>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
+            <SelectItem value="critical">{t('status.critical')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -362,7 +364,7 @@ export default function CapacityView() {
         {/* Risk Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Risk Distribution</CardTitle>
+            <CardTitle className="text-base">{e}{t('cap.riskDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -395,7 +397,7 @@ export default function CapacityView() {
         {/* Forecast by Technology Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Avg Forecast by Technology</CardTitle>
+            <CardTitle className="text-base">{e}{t('cap.avgForecast')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -413,7 +415,7 @@ export default function CapacityView() {
                   />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Legend />
-                  <Bar dataKey="avgForecast" name="Avg Forecast" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="avgForecast" name={t("cap.avgForecast")} radius={[4, 4, 0, 0]}>
                     {forecastByTechData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -428,23 +430,23 @@ export default function CapacityView() {
       {/* Full Forecast Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Forecast Details</CardTitle>
+          <CardTitle className="text-base">{e}{t('cap.forecastDetails')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                  <TableHead>Tech</TableHead>
-                  <TableHead>Region</TableHead>
-                  <TableHead>Metric</TableHead>
-                  <TableHead className="text-right">Current</TableHead>
-                  <TableHead className="text-right">Forecast</TableHead>
-                  <TableHead className="text-right">Growth%</TableHead>
-                  <TableHead>Risk</TableHead>
-                  <TableHead className="text-right">Confidence</TableHead>
-                  <TableHead>Recommendation</TableHead>
+                  <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                  <TableHead>{t('th.tech')}</TableHead>
+                  <TableHead>{t('th.region')}</TableHead>
+                  <TableHead>{t('th.metric')}</TableHead>
+                  <TableHead className="text-right">{t('th.current')}</TableHead>
+                  <TableHead className="text-right">{t('th.forecast')}</TableHead>
+                  <TableHead className="text-right">{t('th.change')}</TableHead>
+                  <TableHead>{t('filter.riskLevel')}</TableHead>
+                  <TableHead className="text-right">{t('th.confidence')}</TableHead>
+                  <TableHead>{t('th.description')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

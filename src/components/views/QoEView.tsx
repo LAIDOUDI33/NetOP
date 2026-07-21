@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -238,6 +239,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Timeline Dialog ──────────────────────────────────────────────────
 
 function TimelineDialog({
+  // t is used from parent scope via props
   siteId,
   siteName,
   open,
@@ -279,13 +281,13 @@ function TimelineDialog({
 
         {error && (
           <div className="text-center py-8 text-muted-foreground">
-            Failed to load timeline data.
+            {t('view.failedLoad', { entity: 'timeline' })}
           </div>
         )}
 
         {!isLoading && !error && timeline.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            No timeline data available for this site.
+            {t('qoe.noTimeline')}
           </div>
         )}
 
@@ -408,6 +410,7 @@ function TimelineDialog({
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function QoEView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [selectedSite, setSelectedSite] = useState<{ id: string; name: string } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -476,8 +479,8 @@ export default function QoEView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load QoE data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'QoE' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -487,7 +490,7 @@ export default function QoEView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Radio className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No QoE Data Available</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'QoE' })}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all'
             ? `No sites found for ${techFilter} technology.`
@@ -502,7 +505,7 @@ export default function QoEView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Customer Experience (QoE/KQI)</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.qoe')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Real-time subscriber quality tracking across all technologies
         </p>
@@ -591,7 +594,7 @@ export default function QoEView() {
       {/* MOS by Technology Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">MOS Score by Technology</CardTitle>
+          <CardTitle className="text-base">{e}{t('qoe.mosByTech')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
@@ -633,17 +636,17 @@ export default function QoEView() {
           <CardContent>
             {worstSites.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
-                No data available.
+                {t('empty.noData')}
               </p>
             ) : (
               <div className="max-h-96 overflow-y-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Site</TableHead>
-                      <TableHead>Tech</TableHead>
-                      <TableHead className="text-right">MOS</TableHead>
-                      <TableHead className="text-right">Satisfaction</TableHead>
+                      <TableHead>{t('th.site')}</TableHead>
+                      <TableHead>{t('th.tech')}</TableHead>
+                      <TableHead className="text-right">{t('svc.mos')}</TableHead>
+                      <TableHead className="text-right">{t('svc.satisfaction')}</TableHead>
                       <TableHead className="text-right">Complaints</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -692,7 +695,7 @@ export default function QoEView() {
         {/* Satisfaction by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Satisfaction Index by Technology</CardTitle>
+            <CardTitle className="text-base">{e}{t('qoe.satisfaction')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -728,13 +731,13 @@ export default function QoEView() {
       {/* Site QoE Details Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Site QoE Details</CardTitle>
+          <CardTitle className="text-base">{e}{t('qoe.details')}</CardTitle>
           <Select value={techFilter} onValueChange={setTechFilter}>
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="Technology" />
+              <SelectValue placeholder={t('filter.technology')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Tech</SelectItem>
+              <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
               <SelectItem value="2G">2G</SelectItem>
               <SelectItem value="3G">3G</SelectItem>
               <SelectItem value="4G">4G</SelectItem>
@@ -745,7 +748,7 @@ export default function QoEView() {
         <CardContent>
           {filteredSites.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No sites match the selected filter.
+              {t('empty.noMatchShort')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
@@ -753,18 +756,18 @@ export default function QoEView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
+                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
                     <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
                     <TableHead className="text-right">MOS</TableHead>
-                    <TableHead className="text-right">Data Rate</TableHead>
-                    <TableHead className="text-right">Call Setup</TableHead>
-                    <TableHead className="text-right">Page Load</TableHead>
-                    <TableHead className="text-right">Video Start</TableHead>
-                    <TableHead className="text-right">Latency</TableHead>
-                    <TableHead className="text-right">Jitter</TableHead>
+                    <TableHead className="text-right">{t('th.dataRate')}</TableHead>
+                    <TableHead className="text-right">{t('th.callSetup')}</TableHead>
+                    <TableHead className="text-right">{t('th.pageLoad')}</TableHead>
+                    <TableHead className="text-right">{t('th.videoStart')}</TableHead>
+                    <TableHead className="text-right">{t('th.latency')}</TableHead>
+                    <TableHead className="text-right">{t('svc.jitter')}</TableHead>
                     <TableHead className="text-right">Satisfaction</TableHead>
-                    <TableHead className="text-right">Subscribers</TableHead>
+                    <TableHead className="text-right">{t('th.users')}</TableHead>
                     <TableHead className="text-right">Complaints</TableHead>
                   </TableRow>
                 </TableHeader>

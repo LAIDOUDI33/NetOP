@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin, Signal, TrendingUp, Users, Wifi } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, getSignalQuality } from '@/lib/constants';
 import type { Technology, SiteStatus, CoverageData } from '@/types';
+import { useT } from '@/lib/i18n';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -54,6 +55,7 @@ const STATUS_RADIUS: Record<SiteStatus, number> = {
 };
 
 export default function CoverageMapView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('all');
   const [region, setRegion] = useState<string>('all');
   const { data, isLoading } = useQuery<CoverageData>({
@@ -83,7 +85,7 @@ export default function CoverageMapView() {
           Coverage Analysis
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Interactive geographic visualization of network site coverage across Nigeria
+          {t('cov.subtitle')}
         </p>
       </div>
 
@@ -92,23 +94,23 @@ export default function CoverageMapView() {
         <Select value={technology} onValueChange={setTechnology}>
           <SelectTrigger className="w-[180px]">
             <Wifi className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
-            <SelectItem value="2G">2G (GSM)</SelectItem>
-            <SelectItem value="3G">3G (UMTS)</SelectItem>
-            <SelectItem value="4G">4G (LTE)</SelectItem>
-            <SelectItem value="5G">5G (NR)</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
+            <SelectItem value="2G">{t('cov.gsm')}</SelectItem>
+            <SelectItem value="3G">{t('cov.umts')}</SelectItem>
+            <SelectItem value="4G">{t('cov.lte')}</SelectItem>
+            <SelectItem value="5G">{t('cov.nr')}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={region} onValueChange={setRegion}>
           <SelectTrigger className="w-[200px]">
             <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Region" />
+            <SelectValue placeholder={t('filter.region')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Regions</SelectItem>
+            <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
             {regions.map((r) => (
               <SelectItem key={r} value={r}>
                 {r}
@@ -118,7 +120,7 @@ export default function CoverageMapView() {
         </Select>
         {!isLoading && (
           <span className="text-sm text-muted-foreground ml-auto">
-            {sites.length} site{sites.length !== 1 ? 's' : ''} displayed
+            {t('cov.sitesDisplayed', { n: sites.length })}
           </span>
         )}
       </div>
@@ -138,8 +140,8 @@ export default function CoverageMapView() {
                 <div className="h-full flex items-center justify-center bg-muted/30">
                   <div className="text-center space-y-2">
                     <MapPin className="h-10 w-10 text-muted-foreground mx-auto" />
-                    <p className="text-muted-foreground font-medium">No sites match the selected filters</p>
-                    <p className="text-sm text-muted-foreground">Try adjusting the technology or region filter</p>
+                    <p className="text-muted-foreground font-medium">{t('cov.noSitesMatch')}</p>
+                    <p className="text-sm text-muted-foreground">{t('cov.tryAdjust')}</p>
                   </div>
                 </div>
               ) : (
@@ -194,23 +196,23 @@ export default function CoverageMapView() {
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                             <div className="flex items-center gap-1">
                               <Signal className="h-3 w-3 text-gray-400" />
-                              <span>Signal:</span>
-                              <span className="font-mono font-medium">{site.avgSignal.toFixed(1)} dBm</span>
+                              <span>{t('cov.signal')}</span>
+                              <span className="font-mono font-medium">{site.avgSignal.toFixed(1)} {t('unit.dbm')}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <TrendingUp className="h-3 w-3 text-gray-400" />
-                              <span>Throughput:</span>
-                              <span className="font-mono font-medium">{site.avgThroughput.toFixed(1)} Mbps</span>
+                              <span>{t('cov.throughput')}</span>
+                              <span className="font-mono font-medium">{site.avgThroughput.toFixed(1)} {t('unit.mbps')}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="h-3 w-3 text-gray-400" />
-                              <span>Users:</span>
+                              <span>{t('cov.users')}</span>
                               <span className="font-mono font-medium">{site.avgUsers}</span>
                             </div>
                           </div>
                           <div className="text-xs text-gray-500 border-t pt-1 mt-1">
-                            <div>Region: {site.region}</div>
-                            <div>Vendor: {site.vendor}</div>
+                            <div>{t('cov.region')} {site.region}</div>
+                            <div>{t('cov.vendorLabel')} {site.vendor}</div>
                           </div>
                         </div>
                       </Popup>
@@ -226,7 +228,7 @@ export default function CoverageMapView() {
       {/* Map Legend */}
       {!isLoading && sites.length > 0 && (
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Technology:</span>
+          <span className="font-medium text-foreground">{t('cov.technology')}</span>
           {(Object.entries(TECH_COLORS) as [Technology, string][]).map(([tech, color]) => (
             <span key={tech} className="flex items-center gap-1.5">
               <span
@@ -236,18 +238,18 @@ export default function CoverageMapView() {
               {tech}: {techCounts[tech] ?? 0}
             </span>
           ))}
-          <span className="ml-4 font-medium text-foreground">Status:</span>
+          <span className="ml-4 font-medium text-foreground">{t('cov.statusLabel')}</span>
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full border-2 border-emerald-500" />
-            Active
+            {t('status.active')}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full border-2 border-amber-500" />
-            Degraded
+            {t('status.degraded')}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full border-2 border-red-500" />
-            Down
+            {t('status.down')}
           </span>
         </div>
       )}
@@ -256,7 +258,7 @@ export default function CoverageMapView() {
       {!isLoading && sites.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">Technology Distribution</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('cov.techDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -294,7 +296,7 @@ export default function CoverageMapView() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold">
-            Region Statistics
+            {t('cov.regionStats')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -309,11 +311,11 @@ export default function CoverageMapView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Region</TableHead>
-                    <TableHead className="text-right">Total Sites</TableHead>
-                    <TableHead className="text-right">Avg Availability</TableHead>
-                    <TableHead className="text-right">Avg Signal</TableHead>
-                    <TableHead>Tech Distribution</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
+                    <TableHead className="text-right">{t('cov.totalSites')}</TableHead>
+                    <TableHead className="text-right">{t('cov.avgAvailability')}</TableHead>
+                    <TableHead className="text-right">{t('cov.avgSignal')}</TableHead>
+                    <TableHead>{t('cov.techDistCol')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -359,7 +361,7 @@ export default function CoverageMapView() {
             </ScrollArea>
           ) : (
             <div className="p-8 text-center text-muted-foreground">
-              <p>No region data available</p>
+              <p>{t('cov.noRegionData')}</p>
             </div>
           )}
         </CardContent>

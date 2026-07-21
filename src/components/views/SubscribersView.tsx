@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import type { Technology } from '@/types';
 
@@ -175,6 +176,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ──────────────────────────────────────────────────
 
 export default function SubscribersView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('all');
 
   const { data, isLoading, isError } = useQuery<SubscribersResponse>({
@@ -258,7 +260,7 @@ export default function SubscribersView() {
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Users className="h-12 w-12 mb-4" />
         <p className="text-lg font-medium">Failed to load subscriber data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -271,8 +273,8 @@ export default function SubscribersView() {
         <p className="text-lg font-medium">No Subscriber Data Available</p>
         <p className="text-sm mt-1">
           {technology !== 'all'
-            ? `No segments found for ${technology} technology.`
-            : 'Subscriber segments have not been created yet.'}
+            ? t('sub.noSegForTech', { technology })
+            : t('view.noDataConfigured', { entity: 'Subscriber segments' })}
         </p>
       </div>
     );
@@ -296,10 +298,10 @@ export default function SubscribersView() {
         {/* Technology Filter */}
         <Select value={technology} onValueChange={setTechnology}>
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             {TECHNOLOGIES.map((tech) => (
               <SelectItem key={tech} value={tech}>{tech}</SelectItem>
             ))}
@@ -423,7 +425,7 @@ export default function SubscribersView() {
         {/* Top Services Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Top Services</CardTitle>
+            <CardTitle className="text-base">{t('sub.topServices')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -457,7 +459,7 @@ export default function SubscribersView() {
         {/* ARPU by Segment (Horizontal) */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">ARPU by Segment</CardTitle>
+            <CardTitle className="text-base">{t('sub.arpuBySeg')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -504,7 +506,7 @@ export default function SubscribersView() {
         {/* Churn Risk by Segment */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Churn Risk by Segment</CardTitle>
+            <CardTitle className="text-base">{t('sub.churnBySeg')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -563,23 +565,23 @@ export default function SubscribersView() {
       {/* Full Segment Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Subscriber Segments</CardTitle>
+          <CardTitle className="text-base">{t('sub.segments')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[140px]">Segment Name</TableHead>
-                  <TableHead>Tech</TableHead>
-                  <TableHead className="text-right">Subscribers</TableHead>
+                  <TableHead className="min-w-[140px]">{t('th.segmentName')}</TableHead>
+                  <TableHead>{t('th.tech')}</TableHead>
+                  <TableHead className="text-right">{t('th.users')}</TableHead>
                   <TableHead className="text-right">Avg Data (GB)</TableHead>
                   <TableHead className="text-right">Voice (min)</TableHead>
                   <TableHead className="text-right">ARPU ($)</TableHead>
-                  <TableHead className="text-center">Churn Risk</TableHead>
+                  <TableHead className="text-center">{t('th.churnRisk')}</TableHead>
                   <TableHead className="text-right">Satisfaction</TableHead>
-                  <TableHead>Peak Hour</TableHead>
-                  <TableHead className="min-w-[180px]">Top Services</TableHead>
+                  <TableHead>{t('th.peakHour')}</TableHead>
+                  <TableHead className="min-w-[180px]">{t('th.topServices')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

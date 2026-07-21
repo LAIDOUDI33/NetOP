@@ -34,6 +34,7 @@ import {
 import { Settings2, FileText, Tags, Star, Layers, Clock, Copy } from 'lucide-react';
 import { TECH_BG_CLASSES } from '@/lib/constants';
 import type { Technology } from '@/types';
+import { useT } from '@/lib/i18n';
 
 interface TemplateParam {
   value: string | number;
@@ -72,6 +73,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export default function ConfigView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [vendorFilter, setVendorFilter] = useState<string>('all');
@@ -162,7 +164,7 @@ export default function ConfigView() {
           </div>
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Configuration Templates</h2>
-            <p className="text-sm text-muted-foreground">Network parameter templates and bulk configuration management</p>
+            <p className="text-sm text-muted-foreground">{t('cfg.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -172,7 +174,7 @@ export default function ConfigView() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Total Templates</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('cfg.totalTemplates')}</p>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </div>
             <p className="text-2xl font-bold mt-1">{summary.total}</p>
@@ -181,7 +183,7 @@ export default function ConfigView() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Categories</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('th.category')}</p>
               <Tags className="h-4 w-4 text-muted-foreground" />
             </div>
             <p className="text-2xl font-bold mt-1">{Object.keys(summary.byCategory).length}</p>
@@ -190,7 +192,7 @@ export default function ConfigView() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Default Templates</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('cfg.defaultTemplates')}</p>
               <Star className="h-4 w-4 text-amber-500" />
             </div>
             <p className="text-2xl font-bold mt-1">{defaultCount}</p>
@@ -199,7 +201,7 @@ export default function ConfigView() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('cfg.totalApplications')}</p>
               <Copy className="h-4 w-4 text-muted-foreground" />
             </div>
             <p className="text-2xl font-bold mt-1">{summary.totalApplications.toLocaleString()}</p>
@@ -212,7 +214,7 @@ export default function ConfigView() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
             <Layers className="h-4 w-4" />
-            Category Distribution
+            {t('th.category')} Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -245,10 +247,10 @@ export default function ConfigView() {
       <div className="flex flex-wrap items-center gap-3">
         <Select value={techFilter} onValueChange={setTechFilter}>
           <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Tech</SelectItem>
+            <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
             <SelectItem value="2G">2G</SelectItem>
             <SelectItem value="3G">3G</SelectItem>
             <SelectItem value="4G">4G</SelectItem>
@@ -257,10 +259,10 @@ export default function ConfigView() {
         </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-[160px] h-9">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('filter.category')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
             {categories.map(c => (
               <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>
             ))}
@@ -268,10 +270,10 @@ export default function ConfigView() {
         </Select>
         <Select value={vendorFilter} onValueChange={setVendorFilter}>
           <SelectTrigger className="w-[160px] h-9">
-            <SelectValue placeholder="Vendor" />
+            <SelectValue placeholder={"Vendor" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Vendors</SelectItem>
+            <SelectItem value="all">{t('filter.allVendors')}</SelectItem>
             {vendors.map(v => (
               <SelectItem key={v} value={v}>{v}</SelectItem>
             ))}
@@ -372,8 +374,8 @@ export default function ConfigView() {
       {templates.length === 0 && !isLoading && (
         <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
           <Settings2 className="h-12 w-12 mb-3 opacity-40" />
-          <p className="text-sm font-medium">No templates found</p>
-          <p className="text-xs mt-1">Try adjusting your filters</p>
+          <p className="text-sm font-medium">{t('cfg.noTemplates')}</p>
+          <p className="text-xs mt-1">{t('empty.tryFilters')}</p>
         </div>
       )}
     </div>

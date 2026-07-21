@@ -18,6 +18,7 @@ import {
   TooltipTrigger as ShTooltipTrigger,
 } from '@/components/ui/tooltip';
 import { ShieldCheck, AlertTriangle, Target, TrendingUp } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import { TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber } from '@/lib/constants';
 import type { Technology, AlertSeverity } from '@/types';
 
@@ -63,6 +64,7 @@ interface SLATrendPoint {
 
 // ─── Circular Progress Component ──────────────────────────────────────
 function CircularProgress({ value, size = 180 }: { value: number; size?: number }) {
+  const t = useT();
   const strokeWidth = 12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -97,7 +99,7 @@ function CircularProgress({ value, size = 180 }: { value: number; size?: number 
         <span className="text-4xl font-bold" style={{ color }}>
           {value.toFixed(1)}%
         </span>
-        <span className="text-xs text-muted-foreground mt-1">Compliance</span>
+        <span className="text-xs text-muted-foreground mt-1">{t('sla.compliance')}</span>
       </div>
     </div>
   );
@@ -127,7 +129,8 @@ function SLALoadingSkeleton() {
 
 // ─── Main Component ───────────────────────────────────────────────────
 export default function SLADashboardView() {
-  const { data, isLoading } = useQuery<SLAResponse>({
+  const t = useT();
+  const { data, isLoading } = useQuery<SLAResponse}>(
     queryKey: ['sla'],
     queryFn: () => fetch('/api/sla').then(r => r.json()),
     refetchInterval: 60000,
@@ -142,7 +145,7 @@ export default function SLADashboardView() {
     const base = summary.complianceRate - 5 + (i / 29) * 8;
     const jitter = (Math.sin(i * 0.7) * 1.5) + (Math.cos(i * 1.3) * 0.8);
     return {
-      date: `Day ${i + 1}`,
+      date: `Day ${i + 1}`, // kept as-is for chart axis; i18n via tickFormatter if needed
       compliance: Number(Math.min(100, Math.max(70, base + jitter)).toFixed(1)),
     };
   });
@@ -169,24 +172,21 @@ export default function SLADashboardView() {
         <CardContent className="p-6 flex flex-col items-center gap-3">
           <div className="flex items-center gap-2 text-muted-foreground">
             <ShieldCheck className="h-5 w-5" />
-            <span className="text-sm font-medium uppercase tracking-wider">Overall SLA Score</span>
+            <span className="text-sm font-medium uppercase tracking-wider">{t('sla.overallScore')}</span>
           </div>
           <CircularProgress value={summary.complianceRate} />
           <div className="text-center space-y-1">
             <p className="text-lg font-semibold">
-              <span className="text-emerald-600 dark:text-emerald-400">{summary.compliant}</span>
-              <span className="text-muted-foreground"> of </span>
-              <span>{summary.total}</span>
-              <span className="text-muted-foreground"> targets met</span>
+              {t('sla.targetsMet', { n: summary.compliant, m: summary.total })}
             </p>
             <p className="text-sm text-muted-foreground">
               {summary.breached > 0 ? (
                 <span className="text-red-500 flex items-center justify-center gap-1">
                   <AlertTriangle className="h-3.5 w-3.5" />
-                  {summary.breached} active breach{summary.breached > 1 ? 'es' : ''}
+                  {t('sla.activeBreaches', { n: summary.breached })}
                 </span>
               ) : (
-                <span className="text-emerald-600">All targets within SLA</span>
+                <span className="text-emerald-600">{t('sla.allTargetsOk')}</span>
               )}
             </p>
           </div>
@@ -199,7 +199,7 @@ export default function SLADashboardView() {
           <Card key={tech}>
             <CardHeader className="pb-2 pt-4 px-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold">{tech} SLA</CardTitle>
+                <CardTitle className="text-sm font-semibold">{t('sla.techSla', { tech })}</CardTitle>
                 <Badge className={TECH_BG_CLASSES[tech]}>{tech}</Badge>
               </div>
             </CardHeader>
@@ -210,12 +210,12 @@ export default function SLADashboardView() {
                     {rate.toFixed(1)}%
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {compliant}/{tt.length} targets
+                    {t('sla.targets', { compliant, total: tt.length })}
                   </p>
                 </div>
                 {breached > 0 && (
                   <Badge variant="destructive" className="text-xs">
-                    {breached} breach{breached > 1 ? 'es' : ''}
+                    {t('sla.breaches', { n: breached })}
                   </Badge>
                 )}
               </div>
@@ -237,7 +237,7 @@ export default function SLADashboardView() {
                   </div>
                 ))}
                 {tt.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-2">No targets defined</p>
+                  <p className="text-xs text-muted-foreground text-center py-2">{t('sla.noTargets')}</p>
                 )}
               </div>
             </CardContent>
@@ -250,7 +250,7 @@ export default function SLADashboardView() {
         <CardHeader className="pb-2 px-4 pt-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">SLA Compliance Trend (30 Days)</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('sla.trend')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-4">
@@ -271,14 +271,14 @@ export default function SLADashboardView() {
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
                   labelStyle={{ fontWeight: 600 }}
-                  formatter={(value: number) => [`${value}%`, 'Compliance']}
+                  formatter={(value: number) => [`${value}%`, t('sla.compliance')]}
                 />
                 <ReferenceLine
                   y={95}
                   stroke="#10B981"
                   strokeDasharray="6 4"
                   strokeWidth={1.5}
-                  label={{ value: 'Target 95%', position: 'insideTopRight', fill: '#10B981', fontSize: 11 }}
+                  label={{ value: t('sla.targetLine'), position: 'insideTopRight', fill: '#10B981', fontSize: 11 }}
                 />
                 <Line
                   type="monotone"
@@ -300,10 +300,10 @@ export default function SLADashboardView() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-red-500" />
-              <CardTitle className="text-base font-semibold">Breach Details</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('sla.breachDetails')}</CardTitle>
             </div>
             <Badge variant="destructive" className="font-semibold">
-              {breaches.length} breach{breaches.length !== 1 ? 'es' : ''}
+              {t('sla.breaches', { n: breaches.length })}
             </Badge>
           </div>
         </CardHeader>
@@ -311,20 +311,20 @@ export default function SLADashboardView() {
           {breaches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
               <ShieldCheck className="h-10 w-10 mb-2 text-emerald-500" />
-              <p className="text-sm font-medium">No SLA breaches detected</p>
-              <p className="text-xs">All targets are within acceptable thresholds</p>
+              <p className="text-sm font-medium">{t('sla.noBreaches')}</p>
+              <p className="text-xs">{t('sla.allWithinThreshold')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Technology</TableHead>
-                    <TableHead>Metric</TableHead>
-                    <TableHead className="text-right">Target</TableHead>
-                    <TableHead className="text-right">Actual</TableHead>
-                    <TableHead className="text-right">Breach %</TableHead>
-                    <TableHead className="w-[100px]">Severity</TableHead>
+                    <TableHead className="w-[100px]">{t('th.technology')}</TableHead>
+                    <TableHead>{t('th.metric')}</TableHead>
+                    <TableHead className="text-right">{t('th.target')}</TableHead>
+                    <TableHead className="text-right">{t('th.actual')}</TableHead>
+                    <TableHead className="text-right">{t('th.breach')}</TableHead>
+                    <TableHead className="w-[100px]">{t('th.severity')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -342,7 +342,7 @@ export default function SLADashboardView() {
                             <ShTooltipTrigger className="cursor-help text-emerald-600 dark:text-emerald-400">
                               {formatNumber(breach.targetValue)} {METRIC_UNITS[breach.metric] || ''}
                             </ShTooltipTrigger>
-                            <ShTooltipContent>Target value</ShTooltipContent>
+                            <ShTooltipContent>{t('sla.targetValue')}</ShTooltipContent>
                           </ShTooltip>
                         </ShTooltipProvider>
                       </TableCell>
@@ -352,7 +352,7 @@ export default function SLADashboardView() {
                             <ShTooltipTrigger className="cursor-help text-red-600 dark:text-red-400 font-semibold">
                               {formatNumber(breach.actualValue)} {METRIC_UNITS[breach.metric] || ''}
                             </ShTooltipTrigger>
-                            <ShTooltipContent>Actual value</ShTooltipContent>
+                            <ShTooltipContent>{t('sla.actualValue')}</ShTooltipContent>
                           </ShTooltip>
                         </ShTooltipProvider>
                       </TableCell>

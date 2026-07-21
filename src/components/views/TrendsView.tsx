@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Frown, ArrowUp, ArrowRight, ArrowDown } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -205,6 +206,12 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function TrendsView() {
+  const t = useT();
+  const dirLabel: Record<string, string> = {
+    improving: t('trd.improving'),
+    stable: t('trd.stable'),
+    degrading: t('trd.degrading'),
+  };
   const [techFilter, setTechFilter] = useState<string>('all');
   const [metricFilter, setMetricFilter] = useState<string>('all');
   const [regionFilter, setRegionFilter] = useState<string>('all');
@@ -231,9 +238,9 @@ export default function TrendsView() {
 
   // Pie chart data: Trend Direction
   const directionPieData = [
-    { name: 'Improving', value: improvingCount, fill: DIRECTION_PIE_COLORS.improving },
-    { name: 'Stable', value: stableCount, fill: DIRECTION_PIE_COLORS.stable },
-    { name: 'Degrading', value: degradingCount, fill: DIRECTION_PIE_COLORS.degrading },
+    { name: t('trd.improving'), value: improvingCount, fill: DIRECTION_PIE_COLORS.improving },
+    { name: t('trd.stable'), value: stableCount, fill: DIRECTION_PIE_COLORS.stable },
+    { name: t('trd.degrading'), value: degradingCount, fill: DIRECTION_PIE_COLORS.degrading },
   ].filter((d) => d.value > 0);
 
   // Bar chart data: Forecast by Horizon
@@ -266,8 +273,8 @@ export default function TrendsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load trend data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'trend' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -277,9 +284,9 @@ export default function TrendsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <TrendingUp className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Trend Data Available</p>
+        <p className="text-lg font-medium">{t('trd.noData')}</p>
         <p className="text-sm mt-1">
-          Forecasting data has not been generated yet.
+          {t('view.noForecastYet')}
         </p>
       </div>
     );
@@ -292,10 +299,10 @@ export default function TrendsView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-emerald-500" />
-          Trend Forecasting
+          {t('trd.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Long-term KPI predictions with confidence intervals
+          {t('trd.subtitle')}
         </p>
       </div>
 
@@ -306,14 +313,14 @@ export default function TrendsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-cyan-500" />
-              Total Forecasts
+              {t('trd.totalForecasts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Active predictions</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.activePredictions')}</p>
           </CardContent>
         </Card>
 
@@ -322,14 +329,14 @@ export default function TrendsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ArrowUp className="h-4 w-4 text-emerald-500" />
-              Improving
+              {t('trd.improving')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               {improvingCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Upward trend</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.upwardTrend')}</p>
           </CardContent>
         </Card>
 
@@ -338,14 +345,14 @@ export default function TrendsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ArrowRight className="h-4 w-4 text-amber-500" />
-              Stable
+              {t('trd.stable')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
               {stableCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">No significant change</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.noSignificantChange')}</p>
           </CardContent>
         </Card>
 
@@ -354,14 +361,14 @@ export default function TrendsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ArrowDown className="h-4 w-4 text-red-500" />
-              Degrading
+              {t('trd.degrading')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold text-red-600 dark:text-red-400">
               {degradingCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.needsAttention')}</p>
           </CardContent>
         </Card>
       </div>
@@ -371,14 +378,15 @@ export default function TrendsView() {
         {/* Trend Direction Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Trend Direction Distribution</CardTitle>
+            <CardTitle className="text-base">{t('trd.dirDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               {directionPieData.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  No data available.
+                  {t('trd.noDataAvailable')}
                 </div>
+              )
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -418,7 +426,7 @@ export default function TrendsView() {
         {/* Forecast by Horizon Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Forecasts by Horizon</CardTitle>
+            <CardTitle className="text-base">{t('trd.byHorizon')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -436,7 +444,7 @@ export default function TrendsView() {
                     allowDecimals={false}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Forecasts" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t('trd.forecasts')} radius={[4, 4, 0, 0]}>
                     {horizonBarData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -451,14 +459,14 @@ export default function TrendsView() {
       {/* Trends Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Forecast Details</CardTitle>
+          <CardTitle className="text-base">{t('trd.details')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Tech" />
+                <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -467,22 +475,22 @@ export default function TrendsView() {
             </Select>
             <Select value={metricFilter} onValueChange={setMetricFilter}>
               <SelectTrigger className="w-44">
-                <SelectValue placeholder="Metric" />
+                <SelectValue placeholder={t('filter.metric')} />
               </SelectTrigger>
               <SelectContent>
                 {METRIC_OPTIONS.map((m) => (
                   <SelectItem key={m.value} value={m.value}>
-                    {m.label}
+                    {m.value === 'all' ? t('trd.allMetrics') : m.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder={t('filter.region')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
+                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
                 <SelectItem value="Lagos">Lagos</SelectItem>
                 <SelectItem value="Abuja">Abuja</SelectItem>
                 <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
@@ -495,7 +503,7 @@ export default function TrendsView() {
         <CardContent>
           {trends.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No forecasts match the selected filters.
+              {t('trd.noMatchFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
@@ -503,14 +511,14 @@ export default function TrendsView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Metric</TableHead>
-                    <TableHead>Horizon</TableHead>
-                    <TableHead>Direction</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
+                    <TableHead>{t('filter.metric')}</TableHead>
+                    <TableHead>{t('trd.horizon')}</TableHead>
+                    <TableHead>{t('trd.direction')}</TableHead>
                     <TableHead className="text-right">Confidence</TableHead>
-                    <TableHead>Trend</TableHead>
+                    <TableHead>{t('trd.trend')}</TableHead>
                     <TableHead>Recommendation</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead>{t('filter.region')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -549,7 +557,7 @@ export default function TrendsView() {
                             {dirConfig ? (
                               <span className="flex items-center gap-1">
                                 <DirectionArrow direction={trend.trendDirection} />
-                                {dirConfig.label}
+                                {dirLabel[trend.trendDirection] ?? trend.trendDirection}
                               </span>
                             ) : (
                               trend.trendDirection

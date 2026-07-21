@@ -53,6 +53,7 @@ import {
 import { useAppStore } from '@/store/app';
 import { TECH_COLORS } from '@/lib/constants';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 import type {
   Technology,
   SonModuleMode,
@@ -177,6 +178,7 @@ const NEIGHBOR_STATUS_BADGE: Record<
 // ─── Component ───────────────────────────────────────────────────────
 
 export default function SonView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const selectedTechnology = useAppStore((s) => s.selectedTechnology);
   const [modeFilter, setModeFilter] = useState<SonModuleMode | 'ALL'>('ALL');
@@ -236,16 +238,16 @@ export default function SonView() {
     onSuccess: (_data, variables) => {
       const actionLabel =
         variables.action === 'toggle'
-          ? 'toggled'
+          ? t('son.toggled')
           : variables.action === 'execute'
-          ? 'executed'
-          : 'rolled back';
-      toast.success(`Module ${actionLabel} successfully`);
+          ? t('son.executed')
+          : t('son.rolledBack');
+      toast.success(t('son.moduleToggled', { action: actionLabel }));
       queryClient.invalidateQueries({ queryKey: ['son-modules'] });
       queryClient.invalidateQueries({ queryKey: ['son-actions'] });
     },
     onError: (error: any) => {
-      toast.error(error.error || `Failed to ${error.action} module`);
+      toast.error(error.error || t('son.failedToAction', { action: error.action || variables.action }));
     },
   });
 
@@ -260,12 +262,12 @@ export default function SonView() {
         return r.json();
       }),
     onSuccess: () => {
-      toast.success('Action rolled back successfully');
+      toast.success(t('son.actionRolledBack'));
       queryClient.invalidateQueries({ queryKey: ['son-actions'] });
       queryClient.invalidateQueries({ queryKey: ['son-modules'] });
     },
     onError: (error: any) => {
-      toast.error(error.error || 'Failed to rollback action');
+      toast.error(error.error || t('son.failedToRollback'));
     },
   });
 
@@ -310,7 +312,7 @@ export default function SonView() {
       { moduleId, action: 'execute' },
       {
         onSuccess: () => {
-          toast.success(`"${displayName}" executed successfully`);
+          toast.success(t('son.moduleExecuted', { name: displayName }));
           queryClient.invalidateQueries({ queryKey: ['son-modules'] });
           queryClient.invalidateQueries({ queryKey: ['son-actions'] });
         },
@@ -326,7 +328,7 @@ export default function SonView() {
     queryClient.invalidateQueries({ queryKey: ['son-modules'] });
     queryClient.invalidateQueries({ queryKey: ['son-actions'] });
     queryClient.invalidateQueries({ queryKey: ['son-neighbors'] });
-    toast.success('Data refreshed');
+    toast.success(t('toast.dataRefreshed'));
   };
 
   const formatTime = (ts: string) => {
@@ -354,10 +356,10 @@ export default function SonView() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              SON Automation
+              {t('title.sonAutomation', { defaultValue: 'SON Automation' })}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Self-Organizing Network module management &amp; action history
+              {t('son.subtitle')}
             </p>
           </div>
         </div>
@@ -395,7 +397,7 @@ export default function SonView() {
               {MODE_OPTIONS.map((m) => (
                 <SelectItem key={m} value={m}>
                   {m === 'ALL'
-                    ? 'All Modes'
+                    ? t('filter.allModes')
                     : MODE_BADGE_CONFIG[m as SonModuleMode].label}
                 </SelectItem>
               ))}
@@ -416,7 +418,7 @@ export default function SonView() {
       {/* ─── Stats Cards ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="Total Modules"
+          title={t('son.totalModules')}
           value={stats.totalModules}
           icon={<Layers className="h-5 w-5" />}
           iconColor="text-slate-500"
@@ -424,16 +426,16 @@ export default function SonView() {
           loading={modulesLoading}
         />
         <StatsCard
-          title="Active Modules"
+          title={t('son.activeModules')}
           value={stats.activeModules}
-          subtitle={`of ${stats.totalModules} total`}
+          subtitle={t('son.ofTotal', { n: stats.totalModules })}
           icon={<Zap className="h-5 w-5" />}
           iconColor="text-emerald-500"
           iconBg="bg-emerald-500/10"
           loading={modulesLoading}
         />
         <StatsCard
-          title="Total Actions"
+          title={t('son.totalActions')}
           value={stats.totalActions}
           icon={<Activity className="h-5 w-5" />}
           iconColor="text-amber-500"
@@ -441,7 +443,7 @@ export default function SonView() {
           loading={actionsLoading}
         />
         <StatsCard
-          title="Avg Impact Score"
+          title={t('son.avgImpact')}
           value={stats.avgImpact}
           isDecimal
           icon={<Gauge className="h-5 w-5" />}
@@ -453,7 +455,7 @@ export default function SonView() {
 
       {/* ─── Module Cards Grid ────────────────────────────────────── */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Modules</h2>
+        <h2 className="text-lg font-semibold mb-4">{t('son.modules')}</h2>
         {modulesLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -465,7 +467,7 @@ export default function SonView() {
             <CardContent className="flex flex-col items-center justify-center text-center gap-2">
               <Cpu className="h-10 w-10 text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
-                No SON modules found for the selected filters.
+                {t('son.noModules')}
               </p>
             </CardContent>
           </Card>
@@ -489,7 +491,7 @@ export default function SonView() {
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="actions" className="flex items-center gap-2">
             <ArrowRightLeft className="h-3.5 w-3.5" />
-            Action History
+            {t('son.actionHistory')}
             {!actionsLoading && actions.length > 0 && (
               <Badge
                 variant="secondary"
@@ -501,7 +503,7 @@ export default function SonView() {
           </TabsTrigger>
           <TabsTrigger value="neighbors" className="flex items-center gap-2">
             <Network className="h-3.5 w-3.5" />
-            Neighbor Relations
+            {t('son.neighborRelations')}
             {!neighborsLoading && neighbors.length > 0 && (
               <Badge
                 variant="secondary"
@@ -519,7 +521,7 @@ export default function SonView() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Activity className="h-4 w-4 text-muted-foreground" />
-                Recent Actions
+                {t('son.recentActions')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -531,23 +533,23 @@ export default function SonView() {
                 </div>
               ) : actions.length === 0 ? (
                 <div className="py-12 text-center text-sm text-muted-foreground">
-                  No actions recorded yet.
+                  {t('son.noActions')}
                 </div>
               ) : (
                 <ScrollArea className="max-h-96">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-[150px] text-xs">Time</TableHead>
-                        <TableHead className="text-xs">Module</TableHead>
-                        <TableHead className="text-xs">Site</TableHead>
-                        <TableHead className="text-xs">Action Type</TableHead>
-                        <TableHead className="text-xs">Parameter</TableHead>
-                        <TableHead className="text-xs">Change</TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
-                        <TableHead className="text-xs text-right">Impact</TableHead>
+                        <TableHead className="w-[150px] text-xs">{t('son.time')}</TableHead>
+                        <TableHead className="text-xs">{t('son.module')}</TableHead>
+                        <TableHead className="text-xs">{t('son.site')}</TableHead>
+                        <TableHead className="text-xs">{t('son.actionType')}</TableHead>
+                        <TableHead className="text-xs">{t('son.parameter')}</TableHead>
+                        <TableHead className="text-xs">{t('son.change')}</TableHead>
+                        <TableHead className="text-xs">{t('th.status')}</TableHead>
+                        <TableHead className="text-xs text-right">{t('son.impact')}</TableHead>
                         <TableHead className="text-xs text-right w-[80px]">
-                          Rollback
+                          {t('th.rollback')}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -669,7 +671,7 @@ export default function SonView() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Network className="h-4 w-4 text-muted-foreground" />
-                Neighbor Relations
+                {t('son.neighborRelations')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -681,26 +683,26 @@ export default function SonView() {
                 </div>
               ) : neighbors.length === 0 ? (
                 <div className="py-12 text-center text-sm text-muted-foreground">
-                  No neighbor relations found.
+                  {t('son.noNeighbors')}
                 </div>
               ) : (
                 <ScrollArea className="max-h-96">
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-xs">Serving Cell</TableHead>
-                        <TableHead className="text-xs">Neighbor Cell</TableHead>
-                        <TableHead className="text-xs">Technology</TableHead>
+                        <TableHead className="text-xs">{t('son.servingCell')}</TableHead>
+                        <TableHead className="text-xs">{t('son.neighborCell')}</TableHead>
+                        <TableHead className="text-xs">{t('th.technology')}</TableHead>
                         <TableHead className="text-xs">
-                          Relation Type
+                          {t('son.relationType')}
                         </TableHead>
-                        <TableHead className="text-xs">HO Type</TableHead>
+                        <TableHead className="text-xs">{t('son.hoType')}</TableHead>
                         <TableHead className="text-xs text-right">
-                          HO Success Rate
+                          {t('son.hoSuccessRate')}
                         </TableHead>
-                        <TableHead className="text-xs">Status</TableHead>
+                        <TableHead className="text-xs">{t('th.status')}</TableHead>
                         <TableHead className="text-xs text-right">
-                          Last Updated
+                          {t('son.lastUpdated')}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -881,6 +883,7 @@ interface ModuleCardProps {
 }
 
 function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps) {
+  const t = useT();
   const modeCfg = MODE_BADGE_CONFIG[module.mode];
   const successRate = module.stats?.successRate;
   const totalActions = module.stats?.totalActions ?? module.actionCount ?? 0;
@@ -948,7 +951,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
           <div className="text-center">
             <p className="text-lg font-bold">{totalActions}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Actions
+              {t('son.actions')}
             </p>
           </div>
           <div className="text-center">
@@ -958,13 +961,13 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
                 : '—'}
             </p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Success
+              {t('son.success')}
             </p>
           </div>
           <div className="text-center">
             <p className="text-lg font-bold text-red-500">{failCount}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Failed
+              {t('son.failed')}
             </p>
           </div>
         </div>
@@ -975,7 +978,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
             <Separator />
             <div className="space-y-1.5">
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                Recent Actions
+                {t('son.recentActions')}
               </p>
               {module.recentActions.slice(0, 3).map((action) => {
                 const statusCfg = ACTION_STATUS_BADGE[action.status];
@@ -1012,7 +1015,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
           onClick={() => onExecute(module.id, module.displayName)}
         >
           <Play className="h-3 w-3 mr-1.5" />
-          Execute Module
+          {t('son.executeModule')}
         </Button>
       </CardContent>
     </Card>

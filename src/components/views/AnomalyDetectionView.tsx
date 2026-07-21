@@ -25,6 +25,7 @@ import {
 import {
   Brain, AlertTriangle, Search, CheckCircle, XCircle, Activity,
 } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import {
   TECH_COLORS, TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber,
 } from '@/lib/constants';
@@ -97,6 +98,7 @@ function AnomalyLoadingSkeleton() {
 
 // ─── Main Component ───────────────────────────────────────────────────
 export default function AnomalyDetectionView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
@@ -156,7 +158,7 @@ export default function AnomalyDetectionView() {
     fill: SEVERITY_SCATTER_COLORS[a.severity] ?? '#06B6D4',
     technology: a.technology,
     severity: a.severity,
-    site: a.siteName || a.siteCode || 'Unknown',
+    site: a.siteName || a.siteCode || t('anomaly.unknown'),
     metric: a.metric,
     description: a.description,
   }));
@@ -184,6 +186,19 @@ export default function AnomalyDetectionView() {
 
   const METRIC_CHART_COLORS = ['#10B981', '#06B6D4', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#F97316', '#14B8A6'];
 
+  const severityLabels: Record<string, string> = {
+    critical: t('status.critical'),
+    major: t('status.major'),
+    minor: t('status.minor'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    detected: t('status.detected'),
+    investigating: t('status.investigating'),
+    resolved: t('status.resolved'),
+    false_positive: t('status.falsePositive'),
+  };
+
   return (
     <div className="space-y-6">
       {/* ── Stat Cards ─────────────────────────────────────────────── */}
@@ -192,7 +207,7 @@ export default function AnomalyDetectionView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Detected</p>
+                <p className="text-sm text-muted-foreground">{t('anomaly.totalDetected')}</p>
                 <p className="text-2xl font-bold">{summaryCounts.total}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-slate-500/10 flex items-center justify-center">
@@ -206,7 +221,7 @@ export default function AnomalyDetectionView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active (Detected / Investigating)</p>
+                <p className="text-sm text-muted-foreground">{t('anomaly.active')}</p>
                 <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{summaryCounts.active}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
@@ -220,7 +235,7 @@ export default function AnomalyDetectionView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Resolved</p>
+                <p className="text-sm text-muted-foreground">{t('anomaly.resolved')}</p>
                 <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{summaryCounts.resolved}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -234,7 +249,7 @@ export default function AnomalyDetectionView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">False Positives</p>
+                <p className="text-sm text-muted-foreground">{t('anomaly.falsePositives')}</p>
                 <p className="text-2xl font-bold text-slate-500">{summaryCounts.falsePositive}</p>
               </div>
               <div className="h-10 w-10 rounded-lg bg-slate-500/10 flex items-center justify-center">
@@ -251,44 +266,44 @@ export default function AnomalyDetectionView() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Activity className="h-4 w-4" />
-              Filters:
+              {t('anomaly.filters')}
             </div>
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Technologies</SelectItem>
-                {TECHNOLOGIES.map(t => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTech')}</SelectItem>
+                {TECHNOLOGIES.map(tech => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Severity" />
+                <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Severities</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="major">Major</SelectItem>
-                <SelectItem value="minor">Minor</SelectItem>
+                <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
+                <SelectItem value="critical">{t('status.critical')}</SelectItem>
+                <SelectItem value="major">{t('status.major')}</SelectItem>
+                <SelectItem value="minor">{t('status.minor')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="detected">Detected</SelectItem>
-                <SelectItem value="investigating">Investigating</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="false_positive">False Positive</SelectItem>
+                <SelectItem value="all">{t('filter.allStatuses')}</SelectItem>
+                <SelectItem value="detected">{t('status.detected')}</SelectItem>
+                <SelectItem value="investigating">{t('status.investigating')}</SelectItem>
+                <SelectItem value="resolved">{t('status.resolved')}</SelectItem>
+                <SelectItem value="false_positive">{t('status.falsePositive')}</SelectItem>
               </SelectContent>
             </Select>
             <Badge variant="outline" className="ml-auto">
-              {anomalies.length} result{anomalies.length !== 1 ? 's' : ''}
+              {t('anomaly.results', { n: anomalies.length })}
             </Badge>
           </div>
         </CardContent>
@@ -299,8 +314,8 @@ export default function AnomalyDetectionView() {
         <CardHeader className="pb-2 px-4 pt-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <CardTitle className="text-base font-semibold">Anomaly Timeline</CardTitle>
-            <Badge variant="outline" className="text-xs ml-auto">Z-Score threshold: 2.5</Badge>
+            <CardTitle className="text-base font-semibold">{t('anomaly.timeline')}</CardTitle>
+            <Badge variant="outline" className="text-xs ml-auto">{t('anomaly.zScoreThreshold')}</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-4">
@@ -342,12 +357,7 @@ export default function AnomalyDetectionView() {
                 <Legend
                   wrapperStyle={{ fontSize: '12px' }}
                   formatter={(value: string) => {
-                    const labels: Record<string, string> = {
-                      critical: 'Critical',
-                      major: 'Major',
-                      minor: 'Minor',
-                    };
-                    return labels[value] ?? value;
+                    return severityLabels[value] ?? value;
                   }}
                 />
                 <ReferenceLine
@@ -355,7 +365,7 @@ export default function AnomalyDetectionView() {
                   stroke="#EF4444"
                   strokeDasharray="6 4"
                   strokeWidth={1.5}
-                  label={{ value: 'Threshold', position: 'insideTopRight', fill: '#EF4444', fontSize: 11 }}
+                  label={{ value: t('anomaly.threshold'), position: 'insideTopRight', fill: '#EF4444', fontSize: 11 }}
                 />
                 {criticalData.length > 0 && (
                   <Scatter name="critical" data={criticalData} fill={SEVERITY_SCATTER_COLORS.critical} />
@@ -375,27 +385,27 @@ export default function AnomalyDetectionView() {
       {/* ── Anomaly Table ──────────────────────────────────────────── */}
       <Card>
         <CardHeader className="pb-2 px-4 pt-4">
-          <CardTitle className="text-base font-semibold">Anomaly Details</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('anomaly.details')}</CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           {anomalies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
               <Brain className="h-10 w-10 mb-2" />
-              <p className="text-sm font-medium">No anomalies match current filters</p>
-              <p className="text-xs">Try adjusting the filter criteria</p>
+              <p className="text-sm font-medium">{t('anomaly.noMatch')}</p>
+              <p className="text-xs">{t('anomaly.tryAdjust')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Severity</TableHead>
-                    <TableHead>Site</TableHead>
-                    <TableHead className="w-[80px]">Tech</TableHead>
-                    <TableHead>Metric</TableHead>
-                    <TableHead className="w-[90px] text-right">Z-Score</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
-                    <TableHead className="w-[160px]">Status</TableHead>
+                    <TableHead className="w-[100px]">{t('th.severity')}</TableHead>
+                    <TableHead>{t('th.site')}</TableHead>
+                    <TableHead className="w-[80px]">{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.metric')}</TableHead>
+                    <TableHead className="w-[90px] text-right">{t('th.zScore')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('th.description')}</TableHead>
+                    <TableHead className="w-[160px]">{t('th.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -406,7 +416,7 @@ export default function AnomalyDetectionView() {
                           {anomaly.severity}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium">{anomaly.siteName || anomaly.siteCode || 'Unknown'}</TableCell>
+                      <TableCell className="font-medium">{anomaly.siteName || anomaly.siteCode || t('anomaly.unknown')}</TableCell>
                       <TableCell>
                         <Badge className={TECH_BG_CLASSES[anomaly.technology]}>
                           {anomaly.technology}
@@ -449,25 +459,25 @@ export default function AnomalyDetectionView() {
                             <SelectItem value="detected">
                               <span className="flex items-center gap-1.5">
                                 <AlertTriangle className="h-3 w-3 text-red-500" />
-                                Detected
+                                {t('status.detected')}
                               </span>
                             </SelectItem>
                             <SelectItem value="investigating">
                               <span className="flex items-center gap-1.5">
                                 <Search className="h-3 w-3 text-amber-500" />
-                                Investigating
+                                {t('status.investigating')}
                               </span>
                             </SelectItem>
                             <SelectItem value="resolved">
                               <span className="flex items-center gap-1.5">
                                 <CheckCircle className="h-3 w-3 text-emerald-500" />
-                                Resolved
+                                {t('status.resolved')}
                               </span>
                             </SelectItem>
                             <SelectItem value="false_positive">
                               <span className="flex items-center gap-1.5">
                                 <XCircle className="h-3 w-3 text-slate-400" />
-                                False Positive
+                                {t('status.falsePositive')}
                               </span>
                             </SelectItem>
                           </SelectContent>
@@ -486,7 +496,7 @@ export default function AnomalyDetectionView() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-base font-semibold">Anomalies by Technology</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('anomaly.byTech')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-64">
@@ -498,7 +508,7 @@ export default function AnomalyDetectionView() {
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
                   />
-                  <Bar dataKey="count" name="Anomalies" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t('anomaly.anomalies')} radius={[4, 4, 0, 0]}>
                     {byTech.map((entry) => (
                       <Cell key={entry.technology} fill={entry.fill} />
                     ))}
@@ -511,7 +521,7 @@ export default function AnomalyDetectionView() {
 
         <Card>
           <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-base font-semibold">Anomalies by Metric</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('anomaly.byMetric')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-64">
@@ -532,7 +542,7 @@ export default function AnomalyDetectionView() {
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
                   />
-                  <Bar dataKey="count" name="Anomalies" radius={[0, 4, 4, 0]}>
+                  <Bar dataKey="count" name={t('anomaly.anomalies')} radius={[0, 4, 4, 0]}>
                     {byMetric.map((_, index) => (
                       <Cell key={`metric-${index}`} fill={METRIC_CHART_COLORS[index % METRIC_CHART_COLORS.length]} />
                     ))}

@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioTower, Frown, Radio, DollarSign, Repeat2, Signal } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -191,6 +192,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function SpectrumView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [bandFilter, setBandFilter] = useState<string>('all');
   const [regionFilter, setRegionFilter] = useState<string>('all');
@@ -270,8 +272,8 @@ export default function SpectrumView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load spectrum data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'spectrum' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -281,9 +283,9 @@ export default function SpectrumView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <RadioTower className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Spectrum Data Available</p>
+        <p className="text-lg font-medium">{t('spc.noData')}</p>
         <p className="text-sm mt-1">
-          Spectrum allocation data has not been collected yet.
+          {t('spc.noDataYet')}
         </p>
       </div>
     );
@@ -296,10 +298,10 @@ export default function SpectrumView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <RadioTower className="h-6 w-6 text-cyan-500" />
-          Spectrum Analysis
+          {t('spc.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Frequency band utilization, interference analysis, and refarming opportunities
+          {t('spc.subtitle')}
         </p>
       </div>
 
@@ -310,7 +312,7 @@ export default function SpectrumView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Radio className="h-4 w-4 text-cyan-500" />
-              Total Bands
+              {t('spc.totalBlocks')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -326,7 +328,7 @@ export default function SpectrumView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Signal className="h-4 w-4 text-emerald-500" />
-              Total Bandwidth
+              {t('spc.totalBandwidth')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -342,7 +344,7 @@ export default function SpectrumView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <RadioTower className="h-4 w-4 text-amber-500" />
-              Avg Utilization
+              {t('spc.avgUtilization')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -364,7 +366,7 @@ export default function SpectrumView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Repeat2 className="h-4 w-4 text-amber-500" />
-              Refarm Candidates
+              {t('spc.refarmCandidates')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -380,7 +382,7 @@ export default function SpectrumView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-emerald-500" />
-              Total Refarm Saving
+              {t('spc.refarmSaving')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -397,7 +399,7 @@ export default function SpectrumView() {
         {/* Band Utilization Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Band Utilization</CardTitle>
+            <CardTitle className="text-base">{t('spc.bandUtil')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -442,7 +444,7 @@ export default function SpectrumView() {
         {/* Spectrum by Technology Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Spectrum by Technology</CardTitle>
+            <CardTitle className="text-base">{t('spc.spectrumByTech')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -489,25 +491,25 @@ export default function SpectrumView() {
       {/* Spectrum Blocks Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Spectrum Blocks</CardTitle>
+          <CardTitle className="text-base">{t('spc.spectrumBlocks')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={bandFilter} onValueChange={setBandFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Band" />
+                <SelectValue placeholder={t('filter.band')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Bands</SelectItem>
+                <SelectItem value="all">{t('filter.allBands')}</SelectItem>
                 {BANDS.filter((b) => b !== 'all').map((b) => (
                   <SelectItem key={b} value={b}>{b} MHz</SelectItem>
                 ))}
@@ -515,10 +517,10 @@ export default function SpectrumView() {
             </Select>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder={t('filter.region')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
+                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
                 {regions.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
@@ -526,10 +528,10 @@ export default function SpectrumView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="degraded">Degraded</SelectItem>
                 <SelectItem value="down">Down</SelectItem>
@@ -542,24 +544,24 @@ export default function SpectrumView() {
         <CardContent>
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No spectrum blocks match the selected filters.
+              {t('spc.noMatchFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Band</TableHead>
-                    <TableHead className="text-right">Bandwidth</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('filter.band')}</TableHead>
+                    <TableHead className="text-right">{t('spc.bandwidthMhz')}</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
+                    <TableHead>{t('filter.region')}</TableHead>
                     <TableHead className="text-right">Channels</TableHead>
-                    <TableHead className="text-right">Utilization</TableHead>
-                    <TableHead className="text-right">Avg Interference</TableHead>
-                    <TableHead className="text-right">Avg RSRP</TableHead>
-                    <TableHead className="text-center">Refarm?</TableHead>
+                    <TableHead className="text-right">{t('spc.utilizationPct')}</TableHead>
+                    <TableHead className="text-right">{t('spc.avgInterference')}</TableHead>
+                    <TableHead className="text-right">{t('spc.avgRsrp')}</TableHead>
+                    <TableHead className="text-center">{t('spc.refarm')}</TableHead>
                     <TableHead className="text-right">Potential Saving</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('filter.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -605,11 +607,11 @@ export default function SpectrumView() {
                       <TableCell className="text-center">
                         {block.refarmCandidate ? (
                           <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
-                            Yes
+                            {t('spc.yes')}
                           </Badge>
                         ) : (
                           <Badge variant="outline">
-                            No
+                            {t('spc.no')}
                           </Badge>
                         )}
                       </TableCell>

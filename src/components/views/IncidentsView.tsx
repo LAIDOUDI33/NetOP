@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
@@ -215,6 +216,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
 // ─── Main Component ───────────────────────────────────────────────────
 
 export default function IncidentsView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('all');
   const [severity, setSeverity] = useState<string>('all');
   const [status, setStatus] = useState<string>('all');
@@ -288,8 +290,8 @@ export default function IncidentsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <AlertTriangle className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load incidents data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: "incidents" })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -382,7 +384,7 @@ export default function IncidentsView() {
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {formatNumber(summary?.avgMTTR ?? 0, 1)}
             </span>
-            <span className="text-sm text-muted-foreground ml-1">min</span>
+            <span className="text-sm text-muted-foreground ml-1">{t('unit.ms')}</span>
           </CardContent>
         </Card>
 
@@ -404,7 +406,7 @@ export default function IncidentsView() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Status Distribution Bar Chart */}
+        {/* t('inc.statusDist') Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Status Distribution</CardTitle>
@@ -436,7 +438,7 @@ export default function IncidentsView() {
           </CardContent>
         </Card>
 
-        {/* Category Distribution Pie Chart (Donut) */}
+        {/* t('inc.catDist') Pie Chart (Donut) */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Category Distribution</CardTitle>
@@ -475,7 +477,7 @@ export default function IncidentsView() {
           </CardContent>
         </Card>
 
-        {/* Severity by Category Stacked Bar Chart */}
+        {/* t('inc.sevByCat') Stacked Bar Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Severity by Category</CardTitle>
@@ -521,10 +523,10 @@ export default function IncidentsView() {
       <div className="flex flex-wrap gap-3">
         <Select value={technology} onValueChange={setTechnology}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             {TECHNOLOGIES.map((t) => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
@@ -533,36 +535,36 @@ export default function IncidentsView() {
 
         <Select value={severity} onValueChange={setSeverity}>
           <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Severity" />
+            <SelectValue placeholder={t('filter.severity')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Severities</SelectItem>
+            <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
+            <SelectItem value="critical">{t('status.critical')}</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('filter.status')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="open">Open</SelectItem>
-            <SelectItem value="investigating">Investigating</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
+            <SelectItem value="all">{t('filter.allStatuses')}</SelectItem>
+            <SelectItem value="open">{t('status.open')}</SelectItem>
+            <SelectItem value="investigating">{t('status.investigating')}</SelectItem>
+            <SelectItem value="resolved">{t('status.resolved')}</SelectItem>
             <SelectItem value="closed">Closed</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('filter.category')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
             <SelectItem value="network">Network</SelectItem>
             <SelectItem value="hardware">Hardware</SelectItem>
             <SelectItem value="software">Software</SelectItem>
@@ -578,7 +580,7 @@ export default function IncidentsView() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-500" />
-            All Incidents
+            t('inc.allIncidents')
             <Badge variant="secondary" className="ml-2">{incidents.length}</Badge>
           </CardTitle>
         </CardHeader>
@@ -605,7 +607,7 @@ export default function IncidentsView() {
                 {incidents.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                      No incidents found matching the current filters.
+                      t('inc.noMatch')
                     </TableCell>
                   </TableRow>
                 )}
@@ -676,7 +678,7 @@ export default function IncidentsView() {
                       {inc.slaBreach ? (
                         <Badge variant="destructive">BREACH</Badge>
                       ) : (
-                        <Badge variant="outline">OK</Badge>
+                        <Badge variant="outline">{t('view.none')}</Badge>
                       )}
                     </TableCell>
 

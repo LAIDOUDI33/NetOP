@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { FlaskConical, Frown, Zap, Target, TrendingUp } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -193,6 +194,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function SimulationsView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -275,8 +277,8 @@ export default function SimulationsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load simulation data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'simulation' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -286,9 +288,9 @@ export default function SimulationsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <FlaskConical className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Simulation Data Available</p>
+        <p className="text-lg font-medium">{t('sim.noData')}</p>
         <p className="text-sm mt-1">
-          Run a what-if scenario to see simulated impact analysis.
+          {t('view.noSimRun')}
         </p>
       </div>
     );
@@ -301,10 +303,10 @@ export default function SimulationsView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <FlaskConical className="h-6 w-6 text-emerald-500" />
-          What-If Simulator
+          {t('sim.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Scenario-based network simulation and impact analysis
+          {t('sim.subtitle')}
         </p>
       </div>
 
@@ -315,14 +317,14 @@ export default function SimulationsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-cyan-500" />
-              Total Scenarios
+              {t('sim.totalScenarios')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all categories</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.acrossAllCategories')}</p>
           </CardContent>
         </Card>
 
@@ -331,7 +333,7 @@ export default function SimulationsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
-              Avg Impact Score
+              {t('sim.avgImpact')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -344,7 +346,7 @@ export default function SimulationsView() {
                 style={{ width: `${Math.min(summary?.avgImpact ?? 0, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Scale: 0 – 100</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.scale0100')}</p>
           </CardContent>
         </Card>
 
@@ -353,7 +355,7 @@ export default function SimulationsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-amber-500" />
-              Avg Confidence
+              {t('sim.avgConfidence')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -366,7 +368,7 @@ export default function SimulationsView() {
                 style={{ width: `${Math.min(summary?.avgConfidence ?? 0, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Simulation reliability</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.simulationReliability')}</p>
           </CardContent>
         </Card>
 
@@ -375,7 +377,7 @@ export default function SimulationsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-red-500" />
-              High Impact
+              {t('sim.highImpact')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -383,7 +385,7 @@ export default function SimulationsView() {
               {highImpactCount}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              Scenarios with impact ≥ 70
+              {t('view.highImpactGte70')}
             </p>
           </CardContent>
         </Card>
@@ -394,7 +396,7 @@ export default function SimulationsView() {
         {/* Category Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Category Distribution</CardTitle>
+            <CardTitle className="text-base">{t('sim.catDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -411,7 +413,7 @@ export default function SimulationsView() {
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Scenarios" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t('sim.scenarios')} radius={[4, 4, 0, 0]}>
                     {categoryData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -425,7 +427,7 @@ export default function SimulationsView() {
         {/* Impact vs Confidence Scatter Plot */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Impact vs Confidence by Category</CardTitle>
+            <CardTitle className="text-base">{t('sim.impactConf')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -439,7 +441,7 @@ export default function SimulationsView() {
                     domain={[0, 100]}
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    label={{ value: 'Impact', position: 'insideBottom', offset: -2, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
+                    label={{ value: t('sim.avgImpact'), position: 'insideBottom', offset: -2, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
                   />
                   <YAxis
                     type="number"
@@ -448,7 +450,7 @@ export default function SimulationsView() {
                     domain={[0, 100]}
                     className="text-xs"
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    label={{ value: 'Confidence', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
+                    label={{ value: t('sim.avgConfidence'), angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
                   />
                   <ZAxis range={[60, 180]} />
                   <Tooltip
@@ -487,25 +489,25 @@ export default function SimulationsView() {
       {/* Simulations Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Simulation Results</CardTitle>
+          <CardTitle className="text-base">{t('sim.results')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={t('filter.category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
                 {CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -515,12 +517,12 @@ export default function SimulationsView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
+                    {s === 'all' ? t('filter.allStatus') : (s.charAt(0).toUpperCase() + s.slice(1))}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -530,22 +532,22 @@ export default function SimulationsView() {
         <CardContent>
           {simulations.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No simulations match the selected filters.
+              {t('sim.noMatchFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Site</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead className="text-right">Impact Score</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>KPI Change</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('pb.name')}</TableHead>
+                    <TableHead>{t('filter.category')}</TableHead>
+                    <TableHead>{t('filter.tech')}</TableHead>
+                    <TableHead>{t('sim.site')}</TableHead>
+                    <TableHead>{t('sim.region')}</TableHead>
+                    <TableHead className="text-right">{t('sim.avgImpact')}</TableHead>
+                    <TableHead className="text-right">{t('sim.avgConfidence')}</TableHead>
+                    <TableHead>{t('filter.status')}</TableHead>
+                    <TableHead>{t('sim.kpiChange')}</TableHead>
                     <TableHead>Recommendation</TableHead>
                   </TableRow>
                 </TableHeader>

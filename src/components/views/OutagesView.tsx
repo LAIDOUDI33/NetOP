@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
@@ -216,6 +217,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function OutagesView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -273,8 +275,8 @@ export default function OutagesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load outage data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'outages' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -284,9 +286,9 @@ export default function OutagesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <PowerOff className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Outage Data Available</p>
+        <p className="text-lg font-medium">{t('out.noData')}</p>
         <p className="text-sm mt-1">
-          No outages match the selected filters.
+          {t('out.noOutagesMatch')}
         </p>
       </div>
     );
@@ -297,9 +299,9 @@ export default function OutagesView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Outage Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.outages')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Cell outage detection, compensation, and recovery tracking
+          {t('out.subtitle')}
         </p>
       </div>
 
@@ -404,7 +406,7 @@ export default function OutagesView() {
         {/* Status Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Outage Status Distribution</CardTitle>
+            <CardTitle className="text-base">{e}{t('out.statusDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -422,7 +424,7 @@ export default function OutagesView() {
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" name="Outages" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="count" name={t("out.outages")} radius={[4, 4, 0, 0]}>
                     {statusBarData.map((entry, idx) => (
                       <Cell key={idx} fill={entry.fill} />
                     ))}
@@ -436,7 +438,7 @@ export default function OutagesView() {
         {/* Outage Type Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Outage Type Distribution</CardTitle>
+            <CardTitle className="text-base">{e}{t('out.typeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -476,14 +478,14 @@ export default function OutagesView() {
       {/* Full Outages Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-          <CardTitle className="text-base">All Outages</CardTitle>
+          <CardTitle className="text-base">{e}{t('out.allOutages')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Tech" />
+                <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
                 {TECHNOLOGIES.map((t) => (
                   <SelectItem key={t} value={t}>{t}</SelectItem>
                 ))}
@@ -491,10 +493,10 @@ export default function OutagesView() {
             </Select>
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Severity" />
+                <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Severity</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allSeveritiesShort')}</SelectItem>
                 {SEVERITIES.map((s) => (
                   <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
                 ))}
@@ -502,10 +504,10 @@ export default function OutagesView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allStatus')}</SelectItem>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
                 ))}
@@ -523,18 +525,18 @@ export default function OutagesView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Started</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Affected Users</TableHead>
-                    <TableHead>Compensation</TableHead>
-                    <TableHead>Root Cause</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead>Resolved</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.type')}</TableHead>
+                    <TableHead>{t('th.severity')}</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
+                    <TableHead>{t('out.started')}</TableHead>
+                    <TableHead>{t('th.duration')}</TableHead>
+                    <TableHead className="text-right">{t}{t('out.affectedUsers')}</TableHead>
+                    <TableHead>{t('out.compensation')}</TableHead>
+                    <TableHead>{t('out.rootCauseCol')}</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
+                    <TableHead>{t('out.resolvedCol')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -584,7 +586,7 @@ export default function OutagesView() {
                             Active
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-xs">None</span>
+                          <span className="text-muted-foreground text-xs">{t('view.none')}</span>
                         )}
                       </TableCell>
                       <TableCell className="text-xs max-w-[150px] truncate">

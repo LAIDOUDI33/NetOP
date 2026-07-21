@@ -1,4 +1,3 @@
-// Command Palette for NetOptima
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -34,25 +33,27 @@ import {
   Search,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
+import { useT } from '@/lib/i18n';
 
-const NAV_COMMANDS: { view: ViewType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { view: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { view: 'monitoring', label: 'Real-Time Monitoring', icon: Activity },
-  { view: 'kpi', label: 'KPI Analytics', icon: BarChart3 },
-  { view: 'alerts', label: 'Alert Management', icon: Bell },
-  { view: 'optimizer', label: 'AI Network Optimizer', icon: Sparkles },
-  { view: 'coverage', label: 'Coverage Analysis', icon: MapPin },
-  { view: 'reports', label: 'Reports & Analytics', icon: FileText },
-  { view: 'settings', label: 'Network Parameters', icon: Settings },
-  { view: 'sla', label: 'SLA Dashboard', icon: Shield },
-  { view: 'anomaly', label: 'Anomaly Detection', icon: Brain },
-  { view: 'correlation', label: 'Correlation Analysis', icon: ArrowLeftRight },
-  { view: 'rca', label: 'Root Cause Analysis', icon: Search },
+const NAV_COMMANDS: { view: ViewType; labelKey: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { view: 'dashboard', labelKey: 'title.dashboard', icon: LayoutDashboard },
+  { view: 'monitoring', labelKey: 'title.monitoring', icon: Activity },
+  { view: 'kpi', labelKey: 'title.kpi', icon: BarChart3 },
+  { view: 'alerts', labelKey: 'title.alerts', icon: Bell },
+  { view: 'optimizer', labelKey: 'title.optimizer', icon: Sparkles },
+  { view: 'coverage', labelKey: 'title.coverage', icon: MapPin },
+  { view: 'reports', labelKey: 'title.reports', icon: FileText },
+  { view: 'settings', labelKey: 'title.settings', icon: Settings },
+  { view: 'sla', labelKey: 'title.sla', icon: Shield },
+  { view: 'anomaly', labelKey: 'title.anomaly', icon: Brain },
+  { view: 'correlation', labelKey: 'title.correlation', icon: ArrowLeftRight },
+  { view: 'rca', labelKey: 'title.rca', icon: Search },
 ];
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const { setCurrentView } = useAppStore();
+  const t = useT();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -73,75 +74,76 @@ export function CommandPalette() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogHeader className="sr-only">
-        <DialogTitle>Command Palette</DialogTitle>
-        <DialogDescription>Search for views and actions</DialogDescription>
+        <DialogTitle>{t('cmd.title')}</DialogTitle>
+        <DialogDescription>{t('cmd.description')}</DialogDescription>
       </DialogHeader>
       <DialogContent className="sm:max-w-[500px] p-0 gap-0 overflow-hidden">
         <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          <CommandInput placeholder="Search views, actions..." />
+          <CommandInput placeholder={t('cmd.placeholder')} />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup heading="Navigation">
+            <CommandEmpty>{t('cmd.noResults')}</CommandEmpty>
+            <CommandGroup heading={t('cmd.navigation')}>
               {NAV_COMMANDS.map((cmd) => {
                 const Icon = cmd.icon;
+                const label = t(cmd.labelKey);
                 return (
                   <CommandItem
                     key={cmd.view}
-                    value={cmd.label}
+                    value={label}
                     onSelect={() => handleSelect(cmd.view)}
                   >
                     <Icon className="mr-2 h-4 w-4" />
-                    {cmd.label}
+                    {label}
                   </CommandItem>
                 );
               })}
             </CommandGroup>
-            <CommandGroup heading="Quick Actions">
+            <CommandGroup heading={t('cmd.quickActions')}>
               <CommandItem
-                value="View Critical Alerts"
+                value={t('cmd.viewCriticalAlerts')}
                 onSelect={() => {
                   setCurrentView('alerts');
                   setOpen(false);
                 }}
               >
                 <AlertTriangle className="mr-2 h-4 w-4" />
-                View Critical Alerts
+                {t('cmd.viewCriticalAlerts')}
               </CommandItem>
               <CommandItem
-                value="Open AI Optimizer"
+                value={t('cmd.openOptimizer')}
                 onSelect={() => {
                   setCurrentView('optimizer');
                   setOpen(false);
                 }}
               >
                 <Sparkles className="mr-2 h-4 w-4" />
-                Open AI Optimizer
+                {t('cmd.openOptimizer')}
               </CommandItem>
               <CommandItem
-                value="Check 4G Health"
+                value={t('cmd.check4gHealth')}
                 onSelect={() => {
                   setCurrentView('monitoring');
                   setOpen(false);
                 }}
               >
                 <Activity className="mr-2 h-4 w-4" />
-                Check 4G Health
+                {t('cmd.check4gHealth')}
               </CommandItem>
               <CommandItem
-                value="Check 5G Health"
+                value={t('cmd.check5gHealth')}
                 onSelect={() => {
                   setCurrentView('monitoring');
                   setOpen(false);
                 }}
               >
                 <Activity className="mr-2 h-4 w-4" />
-                Check 5G Health
+                {t('cmd.check5gHealth')}
               </CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>
         <div className="border-t px-4 py-2 text-xs text-muted-foreground text-center">
-          NetOptima · Press ESC to close
+          {t('cmd.pressEsc')}
         </div>
       </DialogContent>
     </Dialog>

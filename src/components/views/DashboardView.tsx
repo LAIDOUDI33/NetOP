@@ -12,6 +12,7 @@ import {
   Server, Users, TrendingUp, Activity,
   AlertTriangle, WifiOff, CheckCircle,
 } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 import type { DashboardData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -40,6 +41,7 @@ function formatTimestamp(ts: string) {
 }
 
 export default function DashboardView() {
+  const t = useT();
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ['dashboard'],
     queryFn: () => fetch('/api/dashboard').then(r => r.json()),
@@ -91,7 +93,7 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Sites</p>
+                <p className="text-sm text-muted-foreground">{t('dash.totalSites')}</p>
                 <p className="text-2xl font-bold">{data.totalSites}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs text-emerald-600 flex items-center gap-0.5">
@@ -114,9 +116,9 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Users</p>
+                <p className="text-sm text-muted-foreground">{t('dash.activeUsers')}</p>
                 <p className="text-2xl font-bold">{data.totalActiveUsers.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">Across all technologies</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('dash.acrossAllTech')}</p>
               </div>
               <Users className="h-8 w-8 text-emerald-500" />
             </div>
@@ -127,14 +129,14 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg Throughput</p>
+                <p className="text-sm text-muted-foreground">{t('dash.avgThroughput')}</p>
                 <p className="text-2xl font-bold">
                   <span className="text-emerald-600">{data.avgThroughput.download.toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> / </span>
                   <span className="text-cyan-600">{data.avgThroughput.upload.toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> Mbps</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">DL / UL Average</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('dash.dlUlAvg')}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-cyan-500" />
             </div>
@@ -145,11 +147,11 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Network Health</p>
+                <p className="text-sm text-muted-foreground">{t('dash.networkHealth')}</p>
                 <p className={`text-2xl font-bold ${healthPercent >= 95 ? 'text-emerald-600' : healthPercent >= 85 ? 'text-amber-600' : 'text-red-600'}`}>
                   {healthPercent}%
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{data.activeAlerts} active alerts</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('dash.activeAlerts', { n: data.activeAlerts })}</p>
               </div>
               <Activity className="h-8 w-8 text-amber-500" />
             </div>
@@ -162,7 +164,7 @@ export default function DashboardView() {
         {/* Technology Health */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Technology Health Comparison</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('dash.techHealthComp')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-72">
@@ -176,9 +178,9 @@ export default function DashboardView() {
                     labelStyle={{ fontWeight: 600 }}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  <Bar dataKey="availability" fill="#10B981" name="Availability" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="throughput" fill="#06B6D4" name="Throughput (÷10)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="latency" fill="#F59E0B" name="Latency (÷5)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="availability" fill="#10B981" name={t('dash.availability')} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="throughput" fill="#06B6D4" name={t('dash.throughputDiv10')} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="latency" fill="#F59E0B" name={t('dash.latencyDiv5')} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -188,7 +190,7 @@ export default function DashboardView() {
         {/* KPI Trends */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">KPI Trends</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('dash.kpiTrends')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-72">
@@ -217,27 +219,27 @@ export default function DashboardView() {
         {/* Recent Alerts Summary */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Recent Alerts</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('dash.recentAlerts')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Alerts</span>
+                <span className="text-sm text-muted-foreground">{t('dash.totalAlerts')}</span>
                 <Badge variant="outline" className="font-semibold">{data.recentAlerts}</Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Active Alerts</span>
+                <span className="text-sm text-muted-foreground">{t('dash.activeAlertsLabel')}</span>
                 <Badge variant="destructive" className="font-semibold">{data.activeAlerts}</Badge>
               </div>
               <div className="flex gap-2 mt-3">
                 <div className="flex-1 bg-red-500/10 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-red-600">Critical</p>
+                  <p className="text-lg font-bold text-red-600">{t('status.critical')}</p>
                 </div>
                 <div className="flex-1 bg-amber-500/10 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-amber-600">Warning</p>
+                  <p className="text-lg font-bold text-amber-600">{t('status.warning')}</p>
                 </div>
                 <div className="flex-1 bg-cyan-500/10 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-cyan-600">Info</p>
+                  <p className="text-lg font-bold text-cyan-600">{t('status.info')}</p>
                 </div>
               </div>
             </div>
@@ -247,7 +249,7 @@ export default function DashboardView() {
         {/* Technology Distribution */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Technology Distribution</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('dash.techDistribution')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-52">
@@ -279,7 +281,7 @@ export default function DashboardView() {
         {/* Avg Latency & Tech Health Summary */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Technology Summary</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('dash.techSummary')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-3">
@@ -293,8 +295,8 @@ export default function DashboardView() {
                   </Badge>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{h.sites} sites ({h.activeSites} active)</span>
-                      <span className="font-medium">{h.users} users</span>
+                      <span className="text-muted-foreground">{t('dash.sitesActive', { tech: h.technology, n: h.activeSites })}</span>
+                      <span className="font-medium">{h.users} {t('unit.users')}</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-1.5 mt-1">
                       <div

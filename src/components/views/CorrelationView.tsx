@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useT } from '@/lib/i18n';
 import {
   PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -95,7 +96,8 @@ function getCorrelationColor(score: number): string {
 
 // ─── Main Component ───────────────────────────────────────────────────
 export default function CorrelationView() {
-  const dashboardQuery = useQuery<DashboardData>({
+  const t = useT();
+  const dashboardQuery = useQuery<DashboardData[]>({
     queryKey: ['dashboard'],
     queryFn: () => fetch('/api/dashboard').then(r => r.json()),
     refetchInterval: 60000,
@@ -257,11 +259,9 @@ export default function CorrelationView() {
               <Network className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-sm mb-1">Cross-Technology Correlation Analysis</h3>
+              <h3 className="font-semibold text-sm mb-1">{t('corr.crossTech')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Analyze traffic distribution and performance correlation across 2G/3G/4G/5G technologies.
-                This view helps identify imbalances between technology layers, optimize capacity allocation,
-                and ensure consistent quality of service across the entire network stack.
+                {t('corr.crossTechDesc')}
               </p>
             </div>
           </div>
@@ -275,9 +275,9 @@ export default function CorrelationView() {
           <CardHeader className="pb-2 px-4 pt-4">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Traffic Distribution</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('corr.trafficDist')}</CardTitle>
             </div>
-            <CardDescription className="text-xs">Active users by technology</CardDescription>
+            <CardDescription className="text-xs">{t('corr.activeUsersDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-72">
@@ -303,7 +303,7 @@ export default function CorrelationView() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
-                    formatter={(value: number, name: string) => [value.toLocaleString(), `${name} Users`]}
+                    formatter={(value: number, name: string) => [value.toLocaleString(), t('corr.users', { name })]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -316,9 +316,9 @@ export default function CorrelationView() {
           <CardHeader className="pb-2 px-4 pt-4">
             <div className="flex items-center gap-2">
               <GitBranch className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base font-semibold">Technology Comparison</CardTitle>
+              <CardTitle className="text-base font-semibold">{t('corr.techComp')}</CardTitle>
             </div>
-            <CardDescription className="text-xs">Normalized KPI comparison across technologies</CardDescription>
+            <CardDescription className="text-xs">{t('corr.normalizedKpi')}</CardDescription>
           </CardHeader>
           <CardContent className="p-4">
             <div className="h-72">
@@ -354,12 +354,10 @@ export default function CorrelationView() {
         <CardHeader className="pb-2 px-4 pt-4">
           <div className="flex items-center gap-2">
             <Network className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">Performance Correlation Matrix</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('corr.matrix')}</CardTitle>
           </div>
           <CardDescription className="text-xs">
-            Balance score between technology pairs. <span className="text-emerald-600 font-medium">Green</span> = balanced,{' '}
-            <span className="text-amber-600 font-medium">Amber</span> = imbalance,{' '}
-            <span className="text-red-600 font-medium">Red</span> = severe imbalance
+            {t('corr.matrixDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4">
@@ -394,7 +392,7 @@ export default function CorrelationView() {
                                 <span className="text-xs font-bold text-muted-foreground">—</span>
                               </div>
                             </ShTooltipTrigger>
-                            <ShTooltipContent>Same technology</ShTooltipContent>
+                            <ShTooltipContent>{t('corr.sameTech')}</ShTooltipContent>
                           </ShTooltip>
                         </ShTooltipProvider>
                       );
@@ -414,14 +412,14 @@ export default function CorrelationView() {
                               className={`h-16 rounded-lg border flex flex-col items-center justify-center gap-0.5 cursor-help transition-colors hover:opacity-80 ${colorClass}`}
                             >
                               <span className="text-lg font-bold leading-none">{score.toFixed(0)}</span>
-                              <span className="text-[9px] opacity-70">balance</span>
+                              <span className="text-[9px] opacity-70">{t('corr.balance')}</span>
                             </div>
                           </ShTooltipTrigger>
                           <ShTooltipContent>
                             <div className="text-xs space-y-1">
                               <p className="font-semibold">{rowTech} ↔ {colTech}</p>
-                              <p>Correlation Score: {score}/100</p>
-                              <p>{score >= 85 ? 'Well balanced' : score >= 70 ? 'Minor imbalance detected' : 'Significant performance gap'}</p>
+                              <p>{t('corr.correlationScore', { n: score })}</p>
+                              <p>{score >= 85 ? t('corr.wellBalanced') : score >= 70 ? t('corr.minorImbalance') : t('corr.significantGap')}</p>
                             </div>
                           </ShTooltipContent>
                         </ShTooltip>
@@ -440,16 +438,16 @@ export default function CorrelationView() {
         <CardHeader className="pb-2 px-4 pt-4">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base font-semibold">Vendor Performance Comparison</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('corr.vendorComp')}</CardTitle>
           </div>
-          <CardDescription className="text-xs">Average KPI scores by equipment vendor (normalized to 0–100)</CardDescription>
+          <CardDescription className="text-xs">{t('corr.vendorDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="p-4">
           {vendorData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
               <Building2 className="h-10 w-10 mb-2" />
-              <p className="text-sm font-medium">No vendor data available</p>
-              <p className="text-xs">Vendor data will appear once monitoring data is loaded for each technology</p>
+              <p className="text-sm font-medium">{t('corr.noVendorData')}</p>
+              <p className="text-xs">{t('corr.vendorDataMsg')}</p>
             </div>
           ) : (
             <div className="h-72">

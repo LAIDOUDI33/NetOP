@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Save, RefreshCw } from 'lucide-react';
 import type { NetworkParameterItem, Technology } from '@/types';
 import { toast } from 'sonner';
+import { useT } from '@/lib/i18n';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -28,6 +29,7 @@ interface ParamsResponse {
 }
 
 export default function SettingsView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [technology, setTechnology] = useState<Technology>('4G');
   const [category, setCategory] = useState('all');
@@ -73,12 +75,12 @@ export default function SettingsView() {
       return results;
     },
     onSuccess: () => {
-      toast.success('Parameters saved successfully');
+      toast.success(t('toast.saved'));
       queryClient.invalidateQueries({ queryKey: ['parameters'] });
       setEditedValues({});
     },
     onError: () => {
-      toast.error('Failed to save parameters');
+      toast.error(t('toast.saveFailed'));
     },
   });
 
@@ -116,7 +118,7 @@ export default function SettingsView() {
             className="h-8 text-xs"
             onClick={() => setCategory(cat)}
           >
-            {cat === 'all' ? 'All Categories' : cat}
+            {cat === 'all' ? t('set.allCategories') : t(`set.${cat.toLowerCase()}` as any)}
           </Button>
         ))}
       </div>
@@ -126,7 +128,9 @@ export default function SettingsView() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-semibold">
-              {technology} Parameters {category !== 'all' ? `— ${category}` : ''}
+              {category !== 'all'
+                ? t('set.paramsFor', { tech: technology, category: t(`set.${category.toLowerCase()}` as any) })
+                : t('set.params', { tech: technology })}
             </CardTitle>
             <div className="flex gap-2">
               <Button
@@ -163,12 +167,12 @@ export default function SettingsView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs">Parameter</TableHead>
-                      <TableHead className="text-xs">Current Value</TableHead>
-                      <TableHead className="text-xs">Min</TableHead>
-                      <TableHead className="text-xs">Max</TableHead>
-                      <TableHead className="text-xs">Unit</TableHead>
-                      <TableHead className="text-xs">Description</TableHead>
+                      <TableHead className="text-xs">{t('th.parameter')}</TableHead>
+                      <TableHead className="text-xs">{t('th.currentValue')}</TableHead>
+                      <TableHead className="text-xs">{t('th.min')}</TableHead>
+                      <TableHead className="text-xs">{t('th.max')}</TableHead>
+                      <TableHead className="text-xs">{t('th.unit')}</TableHead>
+                      <TableHead className="text-xs">{t('th.description')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

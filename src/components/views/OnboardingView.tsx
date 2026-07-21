@@ -45,6 +45,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 
 import type { SiteOnboardingItem, OnboardingStatus } from '@/types';
+import { useT } from '@/lib/i18n';
 
 // ──────────────────────────── Constants ────────────────────────────
 
@@ -79,11 +80,11 @@ const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'Samsung', 'ZTE'] as const;
 // ──────────────────────────── Zod Schema ────────────────────────────
 
 const onboardingFormSchema = z.object({
-  siteName: z.string().min(1, 'Site name is required'),
-  siteCode: z.string().min(1, 'Site code is required'),
-  technology: z.string().min(1, 'Technology is required'),
-  region: z.string().min(1, 'Region is required'),
-  vendor: z.string().min(1, 'Vendor is required'),
+  siteName: z.string().min(1, 'required'),
+  siteCode: z.string().min(1, 'required'),
+  technology: z.string().min(1, 'required'),
+  region: z.string().min(1, 'required'),
+  vendor: z.string().min(1, ''),
   latitude: z.coerce.number().min(-90).max(90).default(0),
   longitude: z.coerce.number().min(-180).max(180).default(0),
   altitude: z.coerce.number().default(0),
@@ -236,6 +237,7 @@ function TableSkeleton() {
 // ──────────────────────────── Main Component ────────────────────────────
 
 export default function OnboardingView() {
+  const t = useT();
   const queryClient = useQueryClient();
 
   // ── Data fetching ──
@@ -271,11 +273,11 @@ export default function OnboardingView() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-      toast.success('Site onboarding initiated successfully');
+      toast.success(t('toast.onboardOk'));
       form.reset();
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Failed to create onboarding');
+      toast.error(err.message || t('onb.failedToCreate'));
     },
   });
 
@@ -293,10 +295,10 @@ export default function OnboardingView() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-      toast.success('Pipeline advanced to next stage');
+      toast.success(t('toast.pipelineAdvanced'));
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Failed to advance pipeline');
+      toast.error(err.message || t('onb.failedToAdvance'));
     },
   });
 
@@ -314,10 +316,10 @@ export default function OnboardingView() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['onboarding'] });
-      toast.success('Site onboarding retry initiated');
+      toast.success(t('toast.onboardRetry'));
     },
     onError: (err: Error) => {
-      toast.error(err.message || 'Failed to retry onboarding');
+      toast.error(err.message || t('onb.failedToRetry'));
     },
   });
 
@@ -370,9 +372,9 @@ export default function OnboardingView() {
     <div className="space-y-6">
       {/* ── Header ── */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Site Onboarding</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('title.onboarding')}</h1>
         <p className="text-sm text-muted-foreground">
-          Plug &amp; Play Zero-Touch Provisioning
+          {t('onb.subtitle')}
         </p>
       </div>
 
@@ -380,28 +382,28 @@ export default function OnboardingView() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           icon={Server}
-          label="Total Sites"
+          label={t('onb.totalSites')}
           value={totalSites}
           color="text-slate-700 dark:text-slate-300"
           bgColor="bg-slate-100 dark:bg-slate-800"
         />
         <StatCard
           icon={Radio}
-          label="In Progress"
+          label={t('onb.inProgress')}
           value={inProgress}
           color="text-blue-600 dark:text-blue-400"
           bgColor="bg-blue-100 dark:bg-blue-900/40"
         />
         <StatCard
           icon={CheckCircle}
-          label="Completed"
+          label={t('onb.completed')}
           value={completed}
           color="text-emerald-600 dark:text-emerald-400"
           bgColor="bg-emerald-100 dark:bg-emerald-900/40"
         />
         <StatCard
           icon={XCircle}
-          label="Failed"
+          label={t('onb.failed')}
           value={failed}
           color="text-red-600 dark:text-red-400"
           bgColor="bg-red-100 dark:bg-red-900/40"
@@ -415,7 +417,7 @@ export default function OnboardingView() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Plus className="h-4 w-4 text-emerald-600" />
-              New Site
+              {t('onb.newSite')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -423,17 +425,17 @@ export default function OnboardingView() {
               {/* Site Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="siteName" className="text-xs font-medium">
-                  Site Name
+                  {t('onb.siteName')}
                 </Label>
                 <Input
                   id="siteName"
-                  placeholder="e.g. Metro Tower Alpha"
+                  placeholder={t('onb.siteNamePh')}
                   className="h-8 text-sm"
                   {...form.register('siteName')}
                 />
                 {form.formState.errors.siteName && (
                   <p className="text-[11px] text-red-500">
-                    {form.formState.errors.siteName.message}
+                    {t('onb.siteNameReq')}
                   </p>
                 )}
               </div>
@@ -441,17 +443,17 @@ export default function OnboardingView() {
               {/* Site Code */}
               <div className="space-y-1.5">
                 <Label htmlFor="siteCode" className="text-xs font-medium">
-                  Site Code
+                  {t('onb.siteCode')}
                 </Label>
                 <Input
                   id="siteCode"
-                  placeholder="e.g. MTA-001"
+                  placeholder={t('onb.siteCodePh')}
                   className="h-8 text-sm"
                   {...form.register('siteCode')}
                 />
                 {form.formState.errors.siteCode && (
                   <p className="text-[11px] text-red-500">
-                    {form.formState.errors.siteCode.message}
+                    {t('onb.siteCodeReq')}
                   </p>
                 )}
               </div>
@@ -461,7 +463,7 @@ export default function OnboardingView() {
               {/* Technology & Region row */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Technology</Label>
+                  <Label className="text-xs font-medium">{t('filter.technology')}</Label>
                   <Controller
                     name="technology"
                     control={form.control}

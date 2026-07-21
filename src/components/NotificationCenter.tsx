@@ -6,26 +6,14 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store/app';
+import { useT, timeAgo } from '@/lib/i18n';
 import type { AlertItem } from '@/types';
 import { TECH_BG_CLASSES } from '@/lib/constants';
-
-function timeAgo(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMs / 3600000);
-  const diffDay = Math.floor(diffMs / 86400000);
-
-  if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  return `${diffDay}d ago`;
-}
 
 export function NotificationCenter() {
   const queryClient = useQueryClient();
   const { setCurrentView } = useAppStore();
+  const t = useT();
 
   const { data, isLoading } = useQuery<{ alerts: AlertItem[]; stats: { critical: number } }>({
     queryKey: ['alerts', 'critical-notifications'],
@@ -65,7 +53,7 @@ export function NotificationCenter() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Notifications">
+        <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={t('notif.title')}>
           <Bell className={`h-4 w-4 ${criticalCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`} />
           {criticalCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white animate-pulse">
@@ -77,7 +65,7 @@ export function NotificationCenter() {
       <PopoverContent align="end" className="w-96 p-0">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h3 className="text-sm font-semibold">Notifications</h3>
+          <h3 className="text-sm font-semibold">{t('notif.title')}</h3>
           {recentAlerts.length > 0 && (
             <Button
               variant="ghost"
@@ -87,7 +75,7 @@ export function NotificationCenter() {
               disabled={markAllRead.isPending}
             >
               <CheckCircle2 className="mr-1 h-3 w-3" />
-              Mark All Read
+              {t('notif.markAllRead')}
             </Button>
           )}
         </div>
@@ -101,7 +89,7 @@ export function NotificationCenter() {
           ) : recentAlerts.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
               <CheckCircle2 className="h-8 w-8" />
-              <p className="text-sm">No new alerts</p>
+              <p className="text-sm">{t('notif.noNewAlerts')}</p>
             </div>
           ) : (
             <ul className="divide-y">
@@ -130,7 +118,7 @@ export function NotificationCenter() {
                           {alert.technology}
                         </Badge>
                         <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                          {timeAgo(alert.createdAt)}
+                          {timeAgo(alert.createdAt, t)}
                         </span>
                       </div>
                     </div>

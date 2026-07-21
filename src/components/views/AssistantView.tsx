@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Send, Bot, User, Sparkles } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -16,23 +17,24 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const SUGGESTION_CHIPS = [
-  "What's causing high drop rate?",
-  'Analyze 4G coverage issues',
-  'Show sites with low RSRP',
-  'Handover failure root causes',
-  'Energy optimization tips',
+const SUGGESTION_KEYS = [
+  'ai.suggestion1',
+  'ai.suggestion2',
+  'ai.suggestion3',
+  'ai.suggestion4',
+  'ai.suggestion5',
 ];
 
 // ─── Thinking Dots ─────────────────────────────────────────────────────
 
 function ThinkingDots() {
+  const t = useT();
   return (
     <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
       <span className="animate-bounce [animation-delay:0ms] inline-block w-1.5 h-1.5 rounded-full bg-current" />
       <span className="animate-bounce [animation-delay:150ms] inline-block w-1.5 h-1.5 rounded-full bg-current" />
       <span className="animate-bounce [animation-delay:300ms] inline-block w-1.5 h-1.5 rounded-full bg-current" />
-      <span className="ml-1">Thinking</span>
+      <span className="ml-1">{t('ai.thinking')}</span>
     </span>
   );
 }
@@ -40,6 +42,8 @@ function ThinkingDots() {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function AssistantView() {
+  const t = useT();
+  const suggestions = SUGGESTION_KEYS.map((k) => t(k));
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -98,7 +102,7 @@ export default function AssistantView() {
     } catch {
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request. Please try again.',
+        content: t('ai.errorMsg'),
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -128,10 +132,10 @@ export default function AssistantView() {
       <div className="shrink-0 mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-emerald-500" />
-          AI Network Assistant
+          {t('ai.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Ask questions about your network, get diagnostic help, and optimization recommendations
+          {t('ai.subtitle')}
         </p>
       </div>
 
@@ -145,12 +149,12 @@ export default function AssistantView() {
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
                 <Sparkles className="h-8 w-8 text-emerald-500" />
               </div>
-              <h3 className="text-lg font-semibold mb-1">Welcome to NetOptima AI</h3>
+              <h3 className="text-lg font-semibold mb-1">{t('ai.welcome')}</h3>
               <p className="text-sm text-muted-foreground max-w-md mb-6">
-                I can help you diagnose network issues, analyze performance metrics, and provide optimization recommendations. Ask me anything about your network.
+                {t('ai.intro')}
               </p>
               <div className="flex flex-wrap justify-center gap-2 max-w-lg">
-                {SUGGESTION_CHIPS.map((chip) => (
+                {suggestions.map((chip) => (
                   <Button
                     key={chip}
                     variant="outline"
@@ -230,7 +234,7 @@ export default function AssistantView() {
         {messages.length > 0 && !isLoading && (
           <div className="px-4 pt-2 border-t">
             <div className="flex flex-wrap gap-1.5">
-              {SUGGESTION_CHIPS.map((chip) => (
+              {suggestions.map((chip) => (
                 <Badge
                   key={chip}
                   variant="secondary"
@@ -252,7 +256,7 @@ export default function AssistantView() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about your network..."
+              placeholder={t('ai.placeholder')}
               disabled={isLoading}
               rows={1}
               className="min-h-[40px] max-h-[120px] resize-none"
@@ -264,7 +268,7 @@ export default function AssistantView() {
               className="shrink-0 h-10 w-10"
             >
               <Send className="h-4 w-4" />
-              <span className="sr-only">Send message</span>
+              <span className="sr-only">{t('btn.send')}</span>
             </Button>
           </div>
         </div>

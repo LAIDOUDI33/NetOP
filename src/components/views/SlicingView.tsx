@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/lib/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
@@ -215,6 +216,7 @@ function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number })
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function SlicingView() {
+  const t = useT();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sliceTypeFilter, setSliceTypeFilter] = useState<string>('all');
 
@@ -273,8 +275,8 @@ export default function SlicingView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <ServerOff className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load slicing data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'slicing' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -284,11 +286,11 @@ export default function SlicingView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Layers className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Network Slices Found</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Network Slices' })}</p>
         <p className="text-sm mt-1">
           {statusFilter !== 'all' || sliceTypeFilter !== 'all'
-            ? 'No slices match the selected filters. Try adjusting your criteria.'
-            : 'No network slices have been configured yet.'}
+            ? {t('sli.noMatch')}
+            : {t('sli.noSlices')}}
         </p>
       </div>
     );
@@ -529,7 +531,7 @@ export default function SlicingView() {
       {/* Slice Load BarChart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Slice Load Distribution</CardTitle>
+          <CardTitle className="text-base">{e}{t('sli.sliceLoadDist')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-72">
@@ -603,25 +605,25 @@ export default function SlicingView() {
       {/* Full Slices Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-          <CardTitle className="text-base">All Network Slices</CardTitle>
+          <CardTitle className="text-base">{e}{t('sli.allSlices')}</CardTitle>
           <div className="flex items-center gap-3">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allStatus')}</SelectItem>
+                <SelectItem value="active">{t('status.active')}</SelectItem>
                 <SelectItem value="suspended">Suspended</SelectItem>
                 <SelectItem value="deactivated">Deactivated</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sliceTypeFilter} onValueChange={setSliceTypeFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Slice Type" />
+                <SelectValue placeholder={t('filter.sliceType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">{l}{t('filter.allTypes')}</SelectItem>
                 <SelectItem value="eMBB">eMBB</SelectItem>
                 <SelectItem value="URLLC">URLLC</SelectItem>
                 <SelectItem value="mMTC">mMTC</SelectItem>
@@ -632,25 +634,25 @@ export default function SlicingView() {
         <CardContent>
           {slices.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No slices match the selected filters.
+              {t('sli.noMatch')}
             </p>
           ) : (
             <ScrollArea className="max-h-96">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">Name</TableHead>
-                    <TableHead className="min-w-[80px]">Type</TableHead>
-                    <TableHead className="min-w-[120px]">Site</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.name')}</TableHead>
+                    <TableHead className="min-w-[80px]">{t('th.type')}</TableHead>
+                    <TableHead className="min-w-[120px]">{t('th.site')}</TableHead>
                     <TableHead className="min-w-[80px]">SST/SD</TableHead>
-                    <TableHead className="text-right min-w-[80px]">Max BW</TableHead>
+                    <TableHead className="text-right min-w-[80px]">{t('th.bandwidth')}</TableHead>
                     <TableHead className="text-right min-w-[100px]">Guaranteed BW</TableHead>
-                    <TableHead className="min-w-[70px]">Priority</TableHead>
-                    <TableHead className="text-right min-w-[80px]">Latency Target</TableHead>
-                    <TableHead className="min-w-[140px]">Current Load</TableHead>
-                    <TableHead className="text-right min-w-[60px]">Users</TableHead>
-                    <TableHead className="text-right min-w-[90px]">Throughput</TableHead>
-                    <TableHead className="min-w-[90px]">Status</TableHead>
+                    <TableHead className="min-w-[70px]">{t('th.priority')}</TableHead>
+                    <TableHead className="text-right min-w-[80px]">{t('th.latencyTarget')}</TableHead>
+                    <TableHead className="min-w-[140px]">{t('th.currentLoad')}</TableHead>
+                    <TableHead className="text-right min-w-[60px]">{t('th.users')}</TableHead>
+                    <TableHead className="text-right min-w-[90px]">{t('th.dlThroughput')}</TableHead>
+                    <TableHead className="min-w-[90px]">{t('th.status')}</TableHead>
                     <TableHead className="min-w-[70px]">QCI/5QI</TableHead>
                   </TableRow>
                 </TableHeader>

@@ -1,0 +1,1020 @@
+     1→'use client';
+     2→
+     3→import { useState, useMemo } from 'react';
+     4→import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+     5→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Button } from '@/components/ui/button';
+     8→import { Switch } from '@/components/ui/switch';
+     9→import { Skeleton } from '@/components/ui/skeleton';
+    10→import { ScrollArea } from '@/components/ui/scroll-area';
+    11→import { Separator } from '@/components/ui/separator';
+    12→import {
+    13→  Select,
+    14→  SelectContent,
+    15→  SelectItem,
+    16→  SelectTrigger,
+    17→  SelectValue,
+    18→} from '@/components/ui/select';
+    19→import {
+    20→  Table,
+    21→  TableHeader,
+    22→  TableBody,
+    23→  TableRow,
+    24→  TableHead,
+    25→  TableCell,
+    26→} from '@/components/ui/table';
+    27→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    28→import {
+    29→  Cpu,
+    30→  Zap,
+    31→  Activity,
+    32→  ArrowRightLeft,
+    33→  RotateCcw,
+    34→  Play,
+    35→  Filter,
+    36→  RefreshCw,
+    37→  CheckCircle2,
+    38→  XCircle,
+    39→  Clock,
+    40→  AlertTriangle,
+    41→  ArrowRight,
+    42→  ArrowLeftRight,
+    43→  Radio,
+    44→  Settings2,
+    45→  ShieldCheck,
+    46→  Gauge,
+    47→  TrendingUp,
+    48→  Layers,
+    49→  Network,
+    50→  Wifi,
+    51→  ZapOff,
+    52→} from 'lucide-react';
+    53→import { useAppStore } from '@/store/app';
+    54→import { TECH_COLORS } from '@/lib/constants';
+    55→import { toast } from 'sonner';
+    56→import type {
+    57→  Technology,
+    58→  SonModuleMode,
+    59→  SonActionStatus,
+    60→  SonActionType,
+    61→  SonModuleItem,
+    62→  SonActionItem,
+    63→  NeighborRelationItem,
+    64→  NeighborRelationType,
+    65→  NeighborHoType,
+    66→  NeighborStatus,
+    67→} from '@/types';
+    68→
+    69→// ─── Constants ───────────────────────────────────────────────────────
+    70→
+    71→const TECH_OPTIONS: Array<Technology | 'ALL'> = ['ALL', '2G', '3G', '4G', '5G'];
+    72→
+    73→const MODE_OPTIONS: Array<SonModuleMode | 'ALL'> = [
+    74→  'ALL',
+    75→  'open-loop',
+    76→  'semi-automated',
+    77→  'closed-loop',
+    78→];
+    79→
+    80→const MODE_BADGE_CONFIG: Record<
+    81→  SonModuleMode,
+    82→  { label: string; className: string }
+    83→> = {
+    84→  'open-loop': {
+    85→    label: 'Open Loop',
+    86→    className:
+    87→      'border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:bg-blue-950/40',
+    88→  },
+    89→  'semi-automated': {
+    90→    label: 'Semi-Automated',
+    91→    className:
+    92→      'border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:bg-amber-950/40',
+    93→  },
+    94→  'closed-loop': {
+    95→    label: 'Closed Loop',
+    96→    className:
+    97→      'border-emerald-300 text-emerald-700 bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:bg-emerald-950/40',
+    98→  },
+    99→};
+   100→
+   101→const ACTION_STATUS_BADGE: Record<
+   102→  SonActionStatus,
+   103→  { label: string; className: string }
+   104→> = {
+   105→  pending: {
+   106→    label: 'Pending',
+   107→    className:
+   108→      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+   109→  },
+   110→  applied: {
+   111→    label: 'Applied',
+   112→    className:
+   113→      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   114→  },
+   115→  failed: {
+   116→    label: 'Failed',
+   117→    className:
+   118→      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   119→  },
+   120→  rolled_back: {
+   121→    label: 'Rolled Back',
+   122→    className:
+   123→      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+   124→  },
+   125→};
+   126→
+   127→const ACTION_TYPE_LABEL: Record<SonActionType, string> = {
+   128→  add_neighbor: 'Add Neighbor',
+   129→  remove_neighbor: 'Remove Neighbor',
+   130→  modify_pci: 'Modify PCI',
+   131→  adjust_tilt: 'Adjust Tilt',
+   132→  adjust_power: 'Adjust Power',
+   133→  compensate_outage: 'Compensate Outage',
+   134→  correct_config: 'Correct Config',
+   135→};
+   136→
+   137→const ACTION_TYPE_ICON: Record<SonActionType, React.ReactNode> = {
+   138→  add_neighbor: <Network className="h-3.5 w-3.5" />,
+   139→  remove_neighbor: <XCircle className="h-3.5 w-3.5" />,
+   140→  modify_pci: <Settings2 className="h-3.5 w-3.5" />,
+   141→  adjust_tilt: <Radio className="h-3.5 w-3.5" />,
+   142→  adjust_power: <Zap className="h-3.5 w-3.5" />,
+   143→  compensate_outage: <ShieldCheck className="h-3.5 w-3.5" />,
+   144→  correct_config: <Settings2 className="h-3.5 w-3.5" />,
+   145→};
+   146→
+   147→const RELATION_TYPE_LABEL: Record<NeighborRelationType, string> = {
+   148→  intra_freq: 'Intra-Freq',
+   149→  inter_freq: 'Inter-Freq',
+   150→  inter_tech: 'Inter-Tech',
+   151→};
+   152→
+   153→const HO_TYPE_LABEL: Record<NeighborHoType, string> = {
+   154→  manual: 'Manual',
+   155→  anr_auto: 'ANR Auto',
+   156→  pnp_auto: 'PNP Auto',
+   157→};
+   158→
+   159→const NEIGHBOR_STATUS_BADGE: Record<
+   160→  NeighborStatus,
+   161→  { className: string }
+   162→> = {
+   163→  active: {
+   164→    className:
+   165→      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   166→  },
+   167→  removed: {
+   168→    className:
+   169→      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+   170→  },
+   171→  blacklisted: {
+   172→    className:
+   173→      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   174→  },
+   175→};
+   176→
+   177→// ─── Component ───────────────────────────────────────────────────────
+   178→
+   179→export default function SonView() {
+   180→  const queryClient = useQueryClient();
+   181→  const selectedTechnology = useAppStore((s) => s.selectedTechnology);
+   182→  const [modeFilter, setModeFilter] = useState<SonModuleMode | 'ALL'>('ALL');
+   183→  const [activeTab, setActiveTab] = useState('actions');
+   184→
+   185→  const techParam =
+   186→    selectedTechnology === 'ALL' ? undefined : selectedTechnology;
+   187→
+   188→  // ─── Queries ──────────────────────────────────────────────────────
+   189→  // Note: SON modules use compound technology (e.g. "4G,5G"), so we
+   190→  // fetch all modules without technology filter.
+   191→
+   192→  const {
+   193→    data: modulesData,
+   194→    isLoading: modulesLoading,
+   195→  } = useQuery<{ modules: SonModuleItem[] }>({
+   196→    queryKey: ['son-modules'],
+   197→    queryFn: () => fetch('/api/son').then((r) => r.json()),
+   198→    refetchInterval: 15000,
+   199→  });
+   200→
+   201→  const {
+   202→    data: actionsData,
+   203→    isLoading: actionsLoading,
+   204→  } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
+   205→    queryKey: ['son-actions'],
+   206→    queryFn: () =>
+   207→      fetch('/api/son/actions?limit=50').then((r) => r.json()),
+   208→    refetchInterval: 15000,
+   209→  });
+   210→
+   211→  const {
+   212→    data: neighborsData,
+   213→    isLoading: neighborsLoading,
+   214→  } = useQuery<{ neighbors: NeighborRelationItem[] }>({
+   215→    queryKey: ['son-neighbors'],
+   216→    queryFn: () =>
+   217→      fetch('/api/son/neighbors').then((r) => r.json()),
+   218→    refetchInterval: 15000,
+   219→  });
+   220→
+   221→  // ─── Mutations ────────────────────────────────────────────────────
+   222→
+   223→  const moduleMutation = useMutation({
+   224→    mutationFn: (body: {
+   225→      moduleId: string;
+   226→      action: 'toggle' | 'execute' | 'rollback';
+   227→    }) =>
+   228→      fetch('/api/son', {
+   229→        method: 'PATCH',
+   230→        headers: { 'Content-Type': 'application/json' },
+   231→        body: JSON.stringify(body),
+   232→      }).then((r) => {
+   233→        if (!r.ok) return r.json().then((e) => Promise.reject(e));
+   234→        return r.json();
+   235→      }),
+   236→    onSuccess: (_data, variables) => {
+   237→      const actionLabel =
+   238→        variables.action === 'toggle'
+   239→          ? 'toggled'
+   240→          : variables.action === 'execute'
+   241→          ? 'executed'
+   242→          : 'rolled back';
+   243→      toast.success(`Module ${actionLabel} successfully`);
+   244→      queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   245→      queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   246→    },
+   247→    onError: (error: any) => {
+   248→      toast.error(error.error || `Failed to ${error.action} module`);
+   249→    },
+   250→  });
+   251→
+   252→  const rollbackActionMutation = useMutation({
+   253→    mutationFn: (actionId: string) =>
+   254→      fetch('/api/son/actions', {
+   255→        method: 'PATCH',
+   256→        headers: { 'Content-Type': 'application/json' },
+   257→        body: JSON.stringify({ actionId, action: 'rollback' }),
+   258→      }).then((r) => {
+   259→        if (!r.ok) return r.json().then((e) => Promise.reject(e));
+   260→        return r.json();
+   261→      }),
+   262→    onSuccess: () => {
+   263→      toast.success('Action rolled back successfully');
+   264→      queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   265→      queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   266→    },
+   267→    onError: (error: any) => {
+   268→      toast.error(error.error || 'Failed to rollback action');
+   269→    },
+   270→  });
+   271→
+   272→  // ─── Derived Data ─────────────────────────────────────────────────
+   273→
+   274→  const modules = modulesData?.modules ?? [];
+   275→
+   276→  const filteredModules = useMemo(() => {
+   277→    if (modeFilter === 'ALL') return modules;
+   278→    return modules.filter((m) => m.mode === modeFilter);
+   279→  }, [modules, modeFilter]);
+   280→
+   281→  const stats = useMemo(() => {
+   282→    const totalModules = modules.length;
+   283→    const activeModules = modules.filter((m) => m.enabled).length;
+   284→    const totalActions = modules.reduce(
+   285→      (sum, m) => sum + (m.actionCount ?? 0),
+   286→      0
+   287→    );
+   288→    const allImpactScores = (actionsData?.actions ?? [])
+   289→      .map((a) => a.impactScore)
+   290→      .filter((s): s is number => s !== null && s !== undefined);
+   291→    const avgImpact =
+   292→      allImpactScores.length > 0
+   293→        ? allImpactScores.reduce((a, b) => a + b, 0) / allImpactScores.length
+   294→        : 0;
+   295→
+   296→    return { totalModules, activeModules, totalActions, avgImpact };
+   297→  }, [modules, actionsData]);
+   298→
+   299→  const actions = actionsData?.actions ?? [];
+   300→  const neighbors = neighborsData?.neighbors ?? [];
+   301→
+   302→  // ─── Handlers ─────────────────────────────────────────────────────
+   303→
+   304→  const handleToggleModule = (moduleId: string) => {
+   305→    moduleMutation.mutate({ moduleId, action: 'toggle' });
+   306→  };
+   307→
+   308→  const handleExecuteModule = (moduleId: string, displayName: string) => {
+   309→    moduleMutation.mutate(
+   310→      { moduleId, action: 'execute' },
+   311→      {
+   312→        onSuccess: () => {
+   313→          toast.success(`"${displayName}" executed successfully`);
+   314→          queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   315→          queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   316→        },
+   317→      }
+   318→    );
+   319→  };
+   320→
+   321→  const handleRollbackAction = (actionId: string) => {
+   322→    rollbackActionMutation.mutate(actionId);
+   323→  };
+   324→
+   325→  const handleRefresh = () => {
+   326→    queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   327→    queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   328→    queryClient.invalidateQueries({ queryKey: ['son-neighbors'] });
+   329→    toast.success('Data refreshed');
+   330→  };
+   331→
+   332→  const formatTime = (ts: string) => {
+   333→    try {
+   334→      return new Date(ts).toLocaleString(undefined, {
+   335→        month: 'short',
+   336→        day: 'numeric',
+   337→        hour: '2-digit',
+   338→        minute: '2-digit',
+   339→      });
+   340→    } catch {
+   341→      return ts;
+   342→    }
+   343→  };
+   344→
+   345→  // ─── Render ───────────────────────────────────────────────────────
+   346→
+   347→  return (
+   348→    <div className="space-y-6">
+   349→      {/* ─── Header ───────────────────────────────────────────────── */}
+   350→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   351→        <div className="flex items-center gap-3">
+   352→          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10">
+   353→            <Cpu className="h-5 w-5 text-primary" />
+   354→          </div>
+   355→          <div>
+   356→            <h1 className="text-2xl font-bold tracking-tight">
+   357→              SON Automation
+   358→            </h1>
+   359→            <p className="text-sm text-muted-foreground">
+   360→              Self-Organizing Network module management &amp; action history
+   361→            </p>
+   362→          </div>
+   363→        </div>
+   364→        <div className="flex items-center gap-3">
+   365→          <div className="flex items-center gap-2">
+   366→            <Filter className="h-4 w-4 text-muted-foreground" />
+   367→            <Select
+   368→              value={selectedTechnology}
+   369→              onValueChange={(v) =>
+   370→                useAppStore.getState().setSelectedTechnology(v as Technology)
+   371→              }
+   372→            >
+   373→              <SelectTrigger size="sm" className="w-[90px]">
+   374→                <SelectValue />
+   375→              </SelectTrigger>
+   376→              <SelectContent>
+   377→                {TECH_OPTIONS.map((t) => (
+   378→                  <SelectItem key={t} value={t}>
+   379→                    {t}
+   380→                  </SelectItem>
+   381→                ))}
+   382→              </SelectContent>
+   383→            </Select>
+   384→          </div>
+   385→          <Select
+   386→            value={modeFilter}
+   387→            onValueChange={(v) =>
+   388→              setModeFilter(v as SonModuleMode | 'ALL')
+   389→            }
+   390→          >
+   391→            <SelectTrigger size="sm" className="w-[170px]">
+   392→              <SelectValue placeholder="Mode" />
+   393→            </SelectTrigger>
+   394→            <SelectContent>
+   395→              {MODE_OPTIONS.map((m) => (
+   396→                <SelectItem key={m} value={m}>
+   397→                  {m === 'ALL'
+   398→                    ? 'All Modes'
+   399→                    : MODE_BADGE_CONFIG[m as SonModuleMode].label}
+   400→                </SelectItem>
+   401→              ))}
+   402→            </SelectContent>
+   403→          </Select>
+   404→          <Button
+   405→            variant="outline"
+   406→            size="sm"
+   407→            onClick={handleRefresh}
+   408→            className="h-8"
+   409→          >
+   410→            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+   411→            Refresh
+   412→          </Button>
+   413→        </div>
+   414→      </div>
+   415→
+   416→      {/* ─── Stats Cards ─────────────────────────────────────────── */}
+   417→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   418→        <StatsCard
+   419→          title="Total Modules"
+   420→          value={stats.totalModules}
+   421→          icon={<Layers className="h-5 w-5" />}
+   422→          iconColor="text-slate-500"
+   423→          iconBg="bg-slate-500/10"
+   424→          loading={modulesLoading}
+   425→        />
+   426→        <StatsCard
+   427→          title="Active Modules"
+   428→          value={stats.activeModules}
+   429→          subtitle={`of ${stats.totalModules} total`}
+   430→          icon={<Zap className="h-5 w-5" />}
+   431→          iconColor="text-emerald-500"
+   432→          iconBg="bg-emerald-500/10"
+   433→          loading={modulesLoading}
+   434→        />
+   435→        <StatsCard
+   436→          title="Total Actions"
+   437→          value={stats.totalActions}
+   438→          icon={<Activity className="h-5 w-5" />}
+   439→          iconColor="text-amber-500"
+   440→          iconBg="bg-amber-500/10"
+   441→          loading={actionsLoading}
+   442→        />
+   443→        <StatsCard
+   444→          title="Avg Impact Score"
+   445→          value={stats.avgImpact}
+   446→          isDecimal
+   447→          icon={<Gauge className="h-5 w-5" />}
+   448→          iconColor="text-cyan-500"
+   449→          iconBg="bg-cyan-500/10"
+   450→          loading={actionsLoading}
+   451→        />
+   452→      </div>
+   453→
+   454→      {/* ─── Module Cards Grid ────────────────────────────────────── */}
+   455→      <div>
+   456→        <h2 className="text-lg font-semibold mb-4">Modules</h2>
+   457→        {modulesLoading ? (
+   458→          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   459→            {Array.from({ length: 6 }).map((_, i) => (
+   460→              <Skeleton key={i} className="h-72 rounded-xl" />
+   461→            ))}
+   462→          </div>
+   463→        ) : filteredModules.length === 0 ? (
+   464→          <Card className="py-16">
+   465→            <CardContent className="flex flex-col items-center justify-center text-center gap-2">
+   466→              <Cpu className="h-10 w-10 text-muted-foreground/50" />
+   467→              <p className="text-sm text-muted-foreground">
+   468→                No SON modules found for the selected filters.
+   469→              </p>
+   470→            </CardContent>
+   471→          </Card>
+   472→        ) : (
+   473→          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   474→            {filteredModules.map((mod) => (
+   475→              <ModuleCard
+   476→                key={mod.id}
+   477→                module={mod}
+   478→                onToggle={handleToggleModule}
+   479→                onExecute={handleExecuteModule}
+   480→                isMutating={moduleMutation.isPending}
+   481→              />
+   482→            ))}
+   483→          </div>
+   484→        )}
+   485→      </div>
+   486→
+   487→      {/* ─── Tabs: Actions & Neighbors ────────────────────────────── */}
+   488→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   489→        <TabsList className="grid w-full grid-cols-2 max-w-md">
+   490→          <TabsTrigger value="actions" className="flex items-center gap-2">
+   491→            <ArrowRightLeft className="h-3.5 w-3.5" />
+   492→            Action History
+   493→            {!actionsLoading && actions.length > 0 && (
+   494→              <Badge
+   495→                variant="secondary"
+   496→                className="ml-1 h-5 px-1.5 text-[10px] font-mono"
+   497→              >
+   498→                {actions.length}
+   499→              </Badge>
+   500→            )}
+   501→          </TabsTrigger>
+   502→          <TabsTrigger value="neighbors" className="flex items-center gap-2">
+   503→            <Network className="h-3.5 w-3.5" />
+   504→            Neighbor Relations
+   505→            {!neighborsLoading && neighbors.length > 0 && (
+   506→              <Badge
+   507→                variant="secondary"
+   508→                className="ml-1 h-5 px-1.5 text-[10px] font-mono"
+   509→              >
+   510→                {neighbors.length}
+   511→              </Badge>
+   512→            )}
+   513→          </TabsTrigger>
+   514→        </TabsList>
+   515→
+   516→        {/* ── Action History Tab ──────────────────────────────────── */}
+   517→        <TabsContent value="actions" className="mt-4">
+   518→          <Card>
+   519→            <CardHeader className="pb-3">
+   520→              <CardTitle className="text-base font-semibold flex items-center gap-2">
+   521→                <Activity className="h-4 w-4 text-muted-foreground" />
+   522→                Recent Actions
+   523→              </CardTitle>
+   524→            </CardHeader>
+   525→            <CardContent className="p-0">
+   526→              {actionsLoading ? (
+   527→                <div className="p-6 space-y-3">
+   528→                  {Array.from({ length: 5 }).map((_, i) => (
+   529→                    <Skeleton key={i} className="h-12 w-full" />
+   530→                  ))}
+   531→                </div>
+   532→              ) : actions.length === 0 ? (
+   533→                <div className="py-12 text-center text-sm text-muted-foreground">
+   534→                  No actions recorded yet.
+   535→                </div>
+   536→              ) : (
+   537→                <ScrollArea className="max-h-96">
+   538→                  <Table>
+   539→                    <TableHeader>
+   540→                      <TableRow className="hover:bg-transparent">
+   541→                        <TableHead className="w-[150px] text-xs">Time</TableHead>
+   542→                        <TableHead className="text-xs">Module</TableHead>
+   543→                        <TableHead className="text-xs">Site</TableHead>
+   544→                        <TableHead className="text-xs">Action Type</TableHead>
+   545→                        <TableHead className="text-xs">Parameter</TableHead>
+   546→                        <TableHead className="text-xs">Change</TableHead>
+   547→                        <TableHead className="text-xs">Status</TableHead>
+   548→                        <TableHead className="text-xs text-right">Impact</TableHead>
+   549→                        <TableHead className="text-xs text-right w-[80px]">
+   550→                          Rollback
+   551→                        </TableHead>
+   552→                      </TableRow>
+   553→                    </TableHeader>
+   554→                    <TableBody>
+   555→                      {actions.map((action) => {
+   556→                        const statusCfg =
+   557→                          ACTION_STATUS_BADGE[action.status];
+   558→                        return (
+   559→                          <TableRow key={action.id}>
+   560→                            <TableCell className="text-xs text-muted-foreground py-3">
+   561→                              {formatTime(action.createdAt)}
+   562→                            </TableCell>
+   563→                            <TableCell className="py-3">
+   564→                              <div className="text-xs font-medium">
+   565→                                {action.moduleDisplayName ||
+   566→                                  action.moduleName}
+   567→                              </div>
+   568→                              <Badge
+   569→                                className="text-[9px] px-1 py-0 mt-0.5"
+   570→                                style={{
+   571→                                  backgroundColor: TECH_COLORS[action.technology as Technology],
+   572→                                  color: '#fff',
+   573→                                }}
+   574→                              >
+   575→                                {action.technology}
+   576→                              </Badge>
+   577→                            </TableCell>
+   578→                            <TableCell className="text-xs py-3">
+   579→                              <div className="font-medium">
+   580→                                {action.siteName || '—'}
+   581→                              </div>
+   582→                              {action.siteCode && (
+   583→                                <div className="text-[10px] text-muted-foreground">
+   584→                                  {action.siteCode}
+   585→                                </div>
+   586→                              )}
+   587→                            </TableCell>
+   588→                            <TableCell className="py-3">
+   589→                              <div className="flex items-center gap-1.5 text-xs">
+   590→                                {ACTION_TYPE_ICON[action.actionType]}
+   591→                                <span>
+   592→                                  {ACTION_TYPE_LABEL[action.actionType]}
+   593→                                </span>
+   594→                              </div>
+   595→                            </TableCell>
+   596→                            <TableCell className="text-xs font-mono py-3">
+   597→                              {action.parameter}
+   598→                            </TableCell>
+   599→                            <TableCell className="text-xs py-3">
+   600→                              <div className="flex items-center gap-1.5">
+   601→                                <span className="text-red-600 dark:text-red-400 line-through">
+   602→                                  {action.previousValue}
+   603→                                </span>
+   604→                                <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+   605→                                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+   606→                                  {action.newValue}
+   607→                                </span>
+   608→                              </div>
+   609→                            </TableCell>
+   610→                            <TableCell className="py-3">
+   611→                              <Badge
+   612→                                className={`text-[10px] px-1.5 py-0 ${statusCfg.className}`}
+   613→                              >
+   614→                                {statusCfg.label}
+   615→                              </Badge>
+   616→                            </TableCell>
+   617→                            <TableCell className="text-xs text-right py-3">
+   618→                              {action.impactScore !== null &&
+   619→                              action.impactScore !== undefined ? (
+   620→                                <span
+   621→                                  className={
+   622→                                    action.impactScore >= 0.7
+   623→                                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+   624→                                      : action.impactScore >= 0.4
+   625→                                      ? 'text-amber-600 dark:text-amber-400'
+   626→                                      : 'text-red-600 dark:text-red-400'
+   627→                                  }
+   628→                                >
+   629→                                  {(action.impactScore * 100).toFixed(0)}%
+   630→                                </span>
+   631→                              ) : (
+   632→                                <span className="text-muted-foreground">
+   633→                                  —
+   634→                                </span>
+   635→                              )}
+   636→                            </TableCell>
+   637→                            <TableCell className="text-right py-3">
+   638→                              {action.status === 'applied' && (
+   639→                                <Button
+   640→                                  size="sm"
+   641→                                  variant="ghost"
+   642→                                  className="h-7 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30"
+   643→                                  onClick={() =>
+   644→                                    handleRollbackAction(action.id)
+   645→                                  }
+   646→                                  disabled={
+   647→                                    rollbackActionMutation.isPending
+   648→                                  }
+   649→                                >
+   650→                                  <RotateCcw className="h-3 w-3 mr-1" />
+   651→                                  Rollback
+   652→                                </Button>
+   653→                              )}
+   654→                            </TableCell>
+   655→                          </TableRow>
+   656→                        );
+   657→                      })}
+   658→                    </TableBody>
+   659→                  </Table>
+   660→                </ScrollArea>
+   661→              )}
+   662→            </CardContent>
+   663→          </Card>
+   664→        </TabsContent>
+   665→
+   666→        {/* ── Neighbor Relations Tab ──────────────────────────────── */}
+   667→        <TabsContent value="neighbors" className="mt-4">
+   668→          <Card>
+   669→            <CardHeader className="pb-3">
+   670→              <CardTitle className="text-base font-semibold flex items-center gap-2">
+   671→                <Network className="h-4 w-4 text-muted-foreground" />
+   672→                Neighbor Relations
+   673→              </CardTitle>
+   674→            </CardHeader>
+   675→            <CardContent className="p-0">
+   676→              {neighborsLoading ? (
+   677→                <div className="p-6 space-y-3">
+   678→                  {Array.from({ length: 5 }).map((_, i) => (
+   679→                    <Skeleton key={i} className="h-12 w-full" />
+   680→                  ))}
+   681→                </div>
+   682→              ) : neighbors.length === 0 ? (
+   683→                <div className="py-12 text-center text-sm text-muted-foreground">
+   684→                  No neighbor relations found.
+   685→                </div>
+   686→              ) : (
+   687→                <ScrollArea className="max-h-96">
+   688→                  <Table>
+   689→                    <TableHeader>
+   690→                      <TableRow className="hover:bg-transparent">
+   691→                        <TableHead className="text-xs">Serving Cell</TableHead>
+   692→                        <TableHead className="text-xs">Neighbor Cell</TableHead>
+   693→                        <TableHead className="text-xs">Technology</TableHead>
+   694→                        <TableHead className="text-xs">
+   695→                          Relation Type
+   696→                        </TableHead>
+   697→                        <TableHead className="text-xs">HO Type</TableHead>
+   698→                        <TableHead className="text-xs text-right">
+   699→                          HO Success Rate
+   700→                        </TableHead>
+   701→                        <TableHead className="text-xs">Status</TableHead>
+   702→                        <TableHead className="text-xs text-right">
+   703→                          Last Updated
+   704→                        </TableHead>
+   705→                      </TableRow>
+   706→                    </TableHeader>
+   707→                    <TableBody>
+   708→                      {neighbors.map((nbr) => {
+   709→                        const statusCfg = NEIGHBOR_STATUS_BADGE[nbr.status];
+   710→                        return (
+   711→                          <TableRow key={nbr.id}>
+   712→                            <TableCell className="py-3">
+   713→                              <div className="flex items-center gap-2">
+   714→                                <div
+   715→                                  className="h-2 w-2 rounded-full shrink-0"
+   716→                                  style={{
+   717→                                    backgroundColor:
+   718→                                      TECH_COLORS[
+   719→                                        nbr.servingCell.technology as Technology
+   720→                                      ] ?? '#94A3B8',
+   721→                                  }}
+   722→                                />
+   723→                                <div>
+   724→                                  <div className="text-xs font-medium">
+   725→                                    {nbr.servingCell.name}
+   726→                                  </div>
+   727→                                  <div className="text-[10px] text-muted-foreground">
+   728→                                    {nbr.servingCell.code} &middot;{' '}
+   729→                                    {nbr.servingCell.region}
+   730→                                  </div>
+   731→                                </div>
+   732→                              </div>
+   733→                            </TableCell>
+   734→                            <TableCell className="py-3">
+   735→                              <div className="flex items-center gap-2">
+   736→                                <ArrowRightLeft className="h-3 w-3 text-muted-foreground shrink-0" />
+   737→                                <div>
+   738→                                  <div className="text-xs font-medium">
+   739→                                    {nbr.neighborCellName}
+   740→                                  </div>
+   741→                                  <div className="text-[10px] text-muted-foreground">
+   742→                                    {nbr.neighborCellCode}
+   743→                                  </div>
+   744→                                </div>
+   745→                              </div>
+   746→                            </TableCell>
+   747→                            <TableCell className="py-3">
+   748→                              <Badge
+   749→                                className="text-[9px] px-1.5 py-0"
+   750→                                style={{
+   751→                                  backgroundColor:
+   752→                                    TECH_COLORS[nbr.technology as Technology],
+   753→                                  color: '#fff',
+   754→                                }}
+   755→                              >
+   756→                                {nbr.technology}
+   757→                              </Badge>
+   758→                            </TableCell>
+   759→                            <TableCell className="text-xs py-3">
+   760→                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+   761→                                {RELATION_TYPE_LABEL[nbr.relationType]}
+   762→                              </Badge>
+   763→                            </TableCell>
+   764→                            <TableCell className="text-xs py-3">
+   765→                              <span className="text-muted-foreground">
+   766→                                {HO_TYPE_LABEL[nbr.hoType]}
+   767→                              </span>
+   768→                            </TableCell>
+   769→                            <TableCell className="text-xs text-right py-3">
+   770→                              {nbr.hoSuccessRate !== null &&
+   771→                              nbr.hoSuccessRate !== undefined ? (
+   772→                                <span
+   773→                                  className={
+   774→                                    nbr.hoSuccessRate >= 95
+   775→                                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+   776→                                      : nbr.hoSuccessRate >= 85
+   777→                                      ? 'text-amber-600 dark:text-amber-400'
+   778→                                      : 'text-red-600 dark:text-red-400'
+   779→                                  }
+   780→                                >
+   781→                                  {nbr.hoSuccessRate.toFixed(1)}%
+   782→                                </span>
+   783→                              ) : (
+   784→                                <span className="text-muted-foreground">
+   785→                                  —
+   786→                                </span>
+   787→                              )}
+   788→                            </TableCell>
+   789→                            <TableCell className="py-3">
+   790→                              <Badge
+   791→                                className={`text-[10px] px-1.5 py-0 capitalize ${statusCfg.className}`}
+   792→                              >
+   793→                                {nbr.status}
+   794→                              </Badge>
+   795→                            </TableCell>
+   796→                            <TableCell className="text-xs text-muted-foreground text-right py-3">
+   797→                              {formatTime(nbr.lastUpdated)}
+   798→                            </TableCell>
+   799→                          </TableRow>
+   800→                        );
+   801→                      })}
+   802→                    </TableBody>
+   803→                  </Table>
+   804→                </ScrollArea>
+   805→              )}
+   806→            </CardContent>
+   807→          </Card>
+   808→        </TabsContent>
+   809→      </Tabs>
+   810→    </div>
+   811→  );
+   812→}
+   813→
+   814→// ─── Sub-Components ──────────────────────────────────────────────────
+   815→
+   816→interface StatsCardProps {
+   817→  title: string;
+   818→  value: number;
+   819→  subtitle?: string;
+   820→  icon: React.ReactNode;
+   821→  iconColor: string;
+   822→  iconBg: string;
+   823→  isDecimal?: boolean;
+   824→  loading?: boolean;
+   825→}
+   826→
+   827→function StatsCard({
+   828→  title,
+   829→  value,
+   830→  subtitle,
+   831→  icon,
+   832→  iconColor,
+   833→  iconBg,
+   834→  isDecimal = false,
+   835→  loading = false,
+   836→}: StatsCardProps) {
+   837→  return (
+   838→    <Card className="relative overflow-hidden">
+   839→      <CardContent className="p-4">
+   840→        <div className="flex items-center justify-between">
+   841→          <div className="space-y-1">
+   842→            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+   843→              {title}
+   844→            </p>
+   845→            {loading ? (
+   846→              <Skeleton className="h-8 w-20" />
+   847→            ) : (
+   848→              <>
+   849→                <p className="text-2xl font-bold tracking-tight">
+   850→                  {isDecimal ? value.toFixed(1) : value.toLocaleString()}
+   851→                  {isDecimal && (
+   852→                    <span className="text-sm font-normal text-muted-foreground ml-1">
+   853→                      %
+   854→                    </span>
+   855→                  )}
+   856→                </p>
+   857→                {subtitle && (
+   858→                  <p className="text-xs text-muted-foreground">{subtitle}</p>
+   859→                )}
+   860→              </>
+   861→            )}
+   862→          </div>
+   863→          <div
+   864→            className={`flex items-center justify-center h-10 w-10 rounded-lg ${iconBg} ${iconColor}`}
+   865→          >
+   866→            {icon}
+   867→          </div>
+   868→        </div>
+   869→      </CardContent>
+   870→    </Card>
+   871→  );
+   872→}
+   873→
+   874→// ─────────────────────────────────────────────────────────────────────
+   875→
+   876→interface ModuleCardProps {
+   877→  module: SonModuleItem;
+   878→  onToggle: (moduleId: string) => void;
+   879→  onExecute: (moduleId: string, displayName: string) => void;
+   880→  isMutating: boolean;
+   881→}
+   882→
+   883→function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps) {
+   884→  const modeCfg = MODE_BADGE_CONFIG[module.mode];
+   885→  const successRate = module.stats?.successRate;
+   886→  const totalActions = module.stats?.totalActions ?? module.actionCount ?? 0;
+   887→  const failCount = module.stats?.failCount ?? 0;
+   888→
+   889→  return (
+   890→    <Card
+   891→      className={`relative overflow-hidden transition-all hover:shadow-md ${
+   892→        !module.enabled ? 'opacity-70' : ''
+   893→      }`}
+   894→    >
+   895→      {/* Top accent bar */}
+   896→      <div
+   897→        className="absolute top-0 left-0 right-0 h-1"
+   898→        style={{
+   899→          backgroundColor: TECH_COLORS[module.technology as Technology],
+   900→        }}
+   901→      />
+   902→      <CardHeader className="pb-3 pt-4">
+   903→        <div className="flex items-start justify-between gap-2">
+   904→          <div className="flex-1 min-w-0">
+   905→            <div className="flex items-center gap-2 flex-wrap">
+   906→              <CardTitle className="text-sm font-semibold truncate">
+   907→                {module.displayName}
+   908→              </CardTitle>
+   909→              <Badge
+   910→                className="text-[9px] px-1.5 py-0 shrink-0"
+   911→                style={{
+   912→                  backgroundColor: TECH_COLORS[module.technology as Technology],
+   913→                  color: '#fff',
+   914→                }}
+   915→              >
+   916→                {module.technology}
+   917→              </Badge>
+   918→            </div>
+   919→            <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+   920→              {module.name}
+   921→            </p>
+   922→          </div>
+   923→          <div className="flex items-center gap-2 shrink-0">
+   924→            <Badge
+   925→              variant="outline"
+   926→              className={`text-[10px] px-1.5 py-0 ${modeCfg.className}`}
+   927→            >
+   928→              {modeCfg.label}
+   929→            </Badge>
+   930→            <Switch
+   931→              checked={module.enabled}
+   932→              onCheckedChange={() => onToggle(module.id)}
+   933→              disabled={isMutating}
+   934→              aria-label={`Toggle ${module.displayName}`}
+   935→            />
+   936→          </div>
+   937→        </div>
+   938→        {module.description && (
+   939→          <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+   940→            {module.description}
+   941→          </p>
+   942→        )}
+   943→      </CardHeader>
+   944→      <Separator />
+   945→      <CardContent className="p-4 space-y-3">
+   946→        {/* Stats Row */}
+   947→        <div className="grid grid-cols-3 gap-2">
+   948→          <div className="text-center">
+   949→            <p className="text-lg font-bold">{totalActions}</p>
+   950→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   951→              Actions
+   952→            </p>
+   953→          </div>
+   954→          <div className="text-center">
+   955→            <p className="text-lg font-bold">
+   956→              {successRate !== undefined
+   957→                ? `${successRate.toFixed(0)}%`
+   958→                : '—'}
+   959→            </p>
+   960→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   961→              Success
+   962→            </p>
+   963→          </div>
+   964→          <div className="text-center">
+   965→            <p className="text-lg font-bold text-red-500">{failCount}</p>
+   966→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   967→              Failed
+   968→            </p>
+   969→          </div>
+   970→        </div>
+   971→
+   972→        {/* Recent Actions */}
+   973→        {module.recentActions && module.recentActions.length > 0 && (
+   974→          <>
+   975→            <Separator />
+   976→            <div className="space-y-1.5">
+   977→              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+   978→                Recent Actions
+   979→              </p>
+   980→              {module.recentActions.slice(0, 3).map((action) => {
+   981→                const statusCfg = ACTION_STATUS_BADGE[action.status];
+   982→                return (
+   983→                  <div
+   984→                    key={action.id}
+   985→                    className="flex items-center justify-between gap-2 py-1"
+   986→                  >
+   987→                    <div className="flex items-center gap-1.5 min-w-0">
+   988→                      {ACTION_TYPE_ICON[action.actionType]}
+   989→                      <span className="text-[11px] truncate">
+   990→                        {action.siteName
+   991→                          ? `${ACTION_TYPE_LABEL[action.actionType]} on ${action.siteName}`
+   992→                          : ACTION_TYPE_LABEL[action.actionType]}
+   993→                      </span>
+   994→                    </div>
+   995→                    <Badge
+   996→                      className={`text-[9px] px-1 py-0 shrink-0 ${statusCfg.className}`}
+   997→                    >
+   998→                      {statusCfg.label}
+   999→                    </Badge>
+  1000→                  </div>
+  1001→                );
+  1002→              })}
+  1003→            </div>
+  1004→          </>
+  1005→        )}
+  1006→
+  1007→        {/* Execute Button */}
+  1008→        <Button
+  1009→          size="sm"
+  1010→          className="w-full h-8 text-xs"
+  1011→          disabled={!module.enabled || isMutating}
+  1012→          onClick={() => onExecute(module.id, module.displayName)}
+  1013→        >
+  1014→          <Play className="h-3 w-3 mr-1.5" />
+  1015→          Execute Module
+  1016→        </Button>
+  1017→      </CardContent>
+  1018→    </Card>
+  1019→  );
+  1020→}
