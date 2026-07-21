@@ -16,7 +16,8 @@ import {
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
   Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
-  Heart, Target, ArrowRightLeft, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
+  Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
+  FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 
@@ -57,6 +58,16 @@ const ChangesView = lazy(() => import('@/components/views/ChangesView'));
 const OutagesView = lazy(() => import('@/components/views/OutagesView'));
 const PlaybooksView = lazy(() => import('@/components/views/PlaybooksView'));
 const AssistantView = lazy(() => import('@/components/views/AssistantView'));
+const SimulationsView = lazy(() => import('@/components/views/SimulationsView'));
+const TrendsView = lazy(() => import('@/components/views/TrendsView'));
+const RoiView = lazy(() => import('@/components/views/RoiView'));
+const SpectrumView = lazy(() => import('@/components/views/SpectrumView'));
+const EvolutionView = lazy(() => import('@/components/views/EvolutionView'));
+const NpiView = lazy(() => import('@/components/views/NpiView'));
+const ServicesView = lazy(() => import('@/components/views/ServicesView'));
+const AuditView = lazy(() => import('@/components/views/AuditView'));
+const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
+const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
 
 const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -67,6 +78,7 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'live', label: 'Live Dashboard', icon: Activity, group: 'Operations' },
   { view: 'incidents', label: 'Incidents', icon: AlertTriangle, group: 'Operations' },
   { view: 'outages', label: 'Outages', icon: PowerOff, group: 'Operations' },
+  { view: 'spectrum', label: 'Spectrum Analysis', icon: RadioTower, group: 'Operations' },
   // Analytics
   { view: 'kpi', label: 'KPI Analytics', icon: BarChart3, group: 'Analytics' },
   { view: 'alerts', label: 'Alerts', icon: Bell, group: 'Analytics' },
@@ -74,10 +86,12 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'correlation', label: 'Correlation', icon: ArrowLeftRight, group: 'Analytics' },
   { view: 'qoe', label: 'QoE / KQI', icon: HeartPulse, group: 'Analytics' },
   { view: 'capacity', label: 'Capacity Planning', icon: TrendingUp, group: 'Analytics' },
-  { view: 'handover', label: 'Handover Analysis', icon: ArrowRightLeft, group: 'Analytics' },
+  { view: 'handover', label: 'Handover Analysis', icon: ArrowSwap, group: 'Analytics' },
   { view: 'load', label: 'Load Balancing', icon: Scale, group: 'Analytics' },
   { view: 'interference', label: 'Interference', icon: Radio, group: 'Analytics' },
   { view: 'coverage-holes', label: 'Coverage Holes', icon: MapPinOff, group: 'Analytics' },
+  { view: 'vendor-compare', label: 'Vendor Compare', icon: GitCompare, group: 'Analytics' },
+  { view: 'services', label: 'Service Quality', icon: Globe, group: 'Analytics' },
   // Intelligence
   { view: 'slicing', label: 'Network Slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', label: 'Energy Management', icon: Zap, group: 'Intelligence' },
@@ -87,6 +101,13 @@ const NAV_ITEMS: { view: ViewType; label: string; icon: typeof LayoutDashboard; 
   { view: 'benchmark', label: 'Benchmarking', icon: Target, group: 'Intelligence' },
   { view: 'playbooks', label: 'Playbooks', icon: BookOpen, group: 'Intelligence' },
   { view: 'assistant', label: 'AI Assistant', icon: MessageSquare, group: 'Intelligence' },
+  { view: 'npi', label: 'NPI Index', icon: Gauge, group: 'Intelligence' },
+  { view: 'trends', label: 'Trends', icon: TrendingUp, group: 'Intelligence' },
+  { view: 'simulations', label: 'Simulations', icon: FlaskConical, group: 'Intelligence' },
+  { view: 'roi', label: 'ROI Dashboard', icon: DollarSign, group: 'Intelligence' },
+  { view: 'evolution', label: 'Evolution Plan', icon: ArrowSwap, group: 'Intelligence' },
+  { view: 'audit', label: 'Audit Trail', icon: FileSearch, group: 'Intelligence' },
+  { view: 'executive', label: 'Executive', icon: Crown, group: 'Intelligence' },
   // AI Engine
   { view: 'optimizer', label: 'AI Optimizer', icon: Sparkles, group: 'AI Engine' },
   { view: 'rca', label: 'Root Cause Analysis', icon: Search, group: 'AI Engine' },
@@ -138,6 +159,16 @@ const VIEW_TITLES: Record<ViewType, string> = {
   outages: 'Outage Management',
   playbooks: 'Playbooks',
   assistant: 'AI Assistant',
+  simulations: 'Network Simulations',
+  trends: 'Trend Forecasts',
+  roi: 'ROI Dashboard',
+  spectrum: 'Spectrum Analysis',
+  evolution: 'Technology Evolution',
+  npi: 'NPI Index',
+  services: 'Service Quality',
+  audit: 'Audit Trail',
+  executive: 'Executive Summary',
+  'vendor-compare': 'Vendor Comparison',
 };
 
 function ViewFallback() {
@@ -267,6 +298,16 @@ function ViewRenderer() {
           {currentView === 'outages' && <OutagesView />}
           {currentView === 'playbooks' && <PlaybooksView />}
           {currentView === 'assistant' && <AssistantView />}
+          {currentView === 'simulations' && <SimulationsView />}
+          {currentView === 'trends' && <TrendsView />}
+          {currentView === 'roi' && <RoiView />}
+          {currentView === 'spectrum' && <SpectrumView />}
+          {currentView === 'evolution' && <EvolutionView />}
+          {currentView === 'npi' && <NpiView />}
+          {currentView === 'services' && <ServicesView />}
+          {currentView === 'audit' && <AuditView />}
+          {currentView === 'executive' && <ExecutiveView />}
+          {currentView === 'vendor-compare' && <VendorCompareView />}
         </Suspense>
       </motion.div>
     </AnimatePresence>

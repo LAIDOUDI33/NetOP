@@ -40,6 +40,9 @@ model NetworkSite {
   cellLoads      CellLoad[]
   interferenceEvents InterferenceEvent[]
   outages        OutageEvent[]
+  simulations    SimulationScenario[]
+  trendForecasts  TrendForecast[]
+  npiRecords     NpiRecord[]
 }
 
 model KpiMetric {
@@ -784,4 +787,197 @@ model PlaybookStep {
   expectedOutcome String?
   isBlocking      Boolean  @default(true)
   createdAt       DateTime @default(now())
+}
+
+// ========== PHASE D: STRATEGIC INTELLIGENCE & DIFFERENTIATION ==========
+
+model SimulationScenario {
+  id              String   @id @default(cuid())
+  name            String
+  description     String   @default("")
+  technology      String
+  region          String   @default("ALL")
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  category        String   // capacity, coverage, interference, migration, energy
+  parameters      String   @default("{}") // JSON: what-if input params
+  baselineKpis    String   @default("{}") // JSON: before-simulation KPIs
+  simulatedKpis   String   @default("{}") // JSON: predicted KPIs after change
+  impactScore     Float   @default(0)
+  recommendation  String   @default("")
+  confidence      Float   @default(0.8)
+  status          String   @default("completed") // draft, running, completed, failed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([technology])
+  @@index([category])
+  @@index([status])
+}
+
+model TrendForecast {
+  id              String   @id @default(cuid())
+  siteId          String?
+  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  technology      String
+  region          String
+  metric          String   // rsrp, throughput, latency, users, prbUtilization
+  forecastPoints  String   @default("[]") // JSON: [{date, predicted, lower, upper}]
+  horizon         String   @default("30d") // 7d, 14d, 30d, 90d
+  trendDirection  String   @default("stable") // improving, stable, degrading
+  confidence      Float   @default(0.8)
+  recommendation  String   @default("")
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([metric])
+  @@index([region])
+}
+
+model RoiRecord {
+  id              String   @id @default(cuid())
+  title           String
+  category        String   // energy_saving, capacity_deferred, churn_reduction, sla_improvement, outage_reduction
+  technology      String   @default("ALL")
+  siteId          String?
+  siteName        String?
+  investmentCost  Float
+  annualSaving    Float
+  paybackMonths   Int
+  roiPercentage   Float
+  status          String   @default("projected") // projected, in_progress, realized, failed
+  kpiImpact       String   @default("{}") // JSON: before/after
+  period          String   @default("monthly")
+  periodValue     Float   @default(0)
+  cumulativeSaving Float   @default(0)
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([technology])
+}
+
+model SpectrumBlock {
+  id              String   @id @default(cuid())
+  band            String   // 700, 800, 900, 1800, 2100, 2300, 2600, 3500
+  bandwidth       Float   // MHz
+  technology      String
+  region          String
+  channelCount    Int
+  utilizedChannels Int
+  utilizationPct  Float
+  avgInterference Float
+  avgRsrp         Float
+  refarmCandidate Boolean @default(false)
+  refarmTargetTech String?
+  refarmPotentialSaving Float?
+  status          String   @default("active") // active, planned_refarm, refarmed, decommissioned
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([technology])
+  @@index([region])
+  @@index([band])
+}
+
+model EvolutionPlan {
+  id              String   @id @default(cuid())
+  name            String
+  sourceTech      String
+  targetTech      String
+  region          String
+  siteCount       Int
+  sitesCompleted  Int     @default(0)
+  estimatedCost   Float
+  spentBudget     Float   @default(0)
+  startDate       DateTime?
+  targetDate      DateTime?
+  status          String   @default("planned") // planned, in_progress, completed, delayed, cancelled
+  spectrumGain    String   @default("[]") // JSON: freed bands
+  capacityGain    String   @default("{}") // JSON: before/after capacity
+  riskLevel       String   @default("medium")
+  notes           String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([sourceTech])
+  @@index([targetTech])
+  @@index([region])
+  @@index([status])
+}
+
+model NpiRecord {
+  id              String      @id @default(cuid())
+  siteId          String
+  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  technology      String
+  region          String
+  overallNpi      Float      // 0-100
+  coverageNpi    Float
+  capacityNpi    Float
+  qualityNpi     Float
+  reliabilityNpi Float
+  costEfficiencyNpi Float
+  rank            Int        // 1=best
+  totalSites     Int
+  timestamp       DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+
+  @@index([siteId])
+  @@index([technology])
+  @@index([region])
+  @@index([timestamp])
+}
+
+model ServiceOrchestration {
+  id              String   @id @default(cuid())
+  serviceName     String
+  serviceType     String   // voip, video_streaming, web_browsing, iot_mqtt, gaming, video_call
+  technology      String
+  region          String
+  mosScore        Float
+  latencyMs       Float
+  jitterMs        Float
+  packetLoss      Float
+  throughputMbps  Float
+  availabilityPct  Float
+  userSatisfaction Float
+  activeSessions  Int
+  kpiViolations   Int     @default(0)
+  slaCompliant    Boolean @default(true)
+  issues          String   @default("[]") // JSON
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([serviceType])
+  @@index([technology])
+  @@index([region])
+  @@index([timestamp])
+}
+
+model AuditTrail {
+  id              String   @id @default(cuid())
+  entityType      String
+  entityId        String?
+  entityName      String?
+  action          String   // create, update, delete, approve, reject, implement, rollback
+  field           String?
+  previousValue   String?
+  newValue        String?
+  technology      String?
+  category        String   // parameter, config, site, policy, incident, son
+  requestedBy     String   @default("system")
+  approvedBy      String?
+  impact          String   @default("")
+  createdAt       DateTime @default(now())
+
+  @@index([entityType])
+  @@index([action])
+  @@index([technology])
+  @@index([category])
+  @@index([createdAt])
 }

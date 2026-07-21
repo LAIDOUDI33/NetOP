@@ -75,6 +75,26 @@ function genKpi(siteId: string, tech: string, timestamp: Date) {
 
 async function main() {
   console.log('Clearing existing data...');
+  // Clear Phase D tables first (FKs to NetworkSite or standalone)
+  await db.auditTrail.deleteMany();
+  await db.serviceOrchestration.deleteMany();
+  await db.npiRecord.deleteMany();
+  await db.evolutionPlan.deleteMany();
+  await db.spectrumBlock.deleteMany();
+  await db.roiRecord.deleteMany();
+  await db.trendForecast.deleteMany();
+  await db.simulationScenario.deleteMany();
+  // Clear Phase C tables
+  await db.playbookStep.deleteMany();
+  await db.playbook.deleteMany();
+  await db.outageEvent.deleteMany();
+  await db.changeRequest.deleteMany();
+  await db.coverageHole.deleteMany();
+  await db.interferenceEvent.deleteMany();
+  await db.cellLoad.deleteMany();
+  await db.handoverKpi.deleteMany();
+  await db.benchmarkRecord.deleteMany();
+  await db.healthScore.deleteMany();
   // Clear Phase B tables first (FKs to NetworkSite)
   await db.incident.deleteMany();
   await db.faultPrediction.deleteMany();
@@ -2523,8 +2543,283 @@ async function main() {
   }
   console.log(`  Playbooks: ${playbookCount}, PlaybookSteps: ${stepCount}`);
 
+  // ------------------------------------------------------------------
+  // PHASE D: STRATEGIC INTELLIGENCE & DIFFERENTIATION
+  // ------------------------------------------------------------------
+
+  // 10. SimulationScenario (15 records)
+  console.log('Seeding SimulationScenarios...');
+  const phaseDSites = await db.networkSite.findMany();
+  const simCategories = ['capacity', 'coverage', 'interference', 'migration', 'energy'];
+  const simTechs = ['2G', '3G', '4G', '5G'];
+  const simStatuses = ['draft', 'running', 'completed', 'failed'];
+  const simulationData: any[] = [];
+  for (let i = 0; i < 15; i++) {
+    const tech = pick(simTechs);
+    const cat = pick(simCategories);
+    const site = pick(phaseDSites);
+    const status = i < 10 ? 'completed' : i < 12 ? 'running' : i < 14 ? 'draft' : 'failed';
+    simulationData.push({
+      name: `${cat.charAt(0).toUpperCase() + cat.slice(1)} Sim ${i + 1}: ${pick(regions).split(' ')[0]}`,
+      description: `What-if analysis for ${cat} optimization on ${tech} in ${pick(regions)}`,
+      technology: tech,
+      region: pick(regions),
+      siteId: Math.random() > 0.3 ? site.id : null,
+      category: cat,
+      parameters: JSON.stringify({ scenarioType: cat, affectedCells: randInt(1, 20), duration: `${randInt(1, 30)}d` }),
+      baselineKpis: JSON.stringify({ rsrp: rand(-100, -70), throughput: rand(10, 200), latency: rand(5, 80), availability: rand(98, 99.9) }),
+      simulatedKpis: JSON.stringify({ rsrp: rand(-95, -65), throughput: rand(15, 250), latency: rand(3, 60), availability: rand(98.5, 99.99) }),
+      impactScore: Number(rand(2, 35).toFixed(1)),
+      recommendation: `Apply ${cat} optimization with estimated ${rand(5, 25).toFixed(0)}% improvement`,
+      confidence: Number(rand(0.6, 0.95).toFixed(2)),
+      status,
+      createdAt: subHours(now, randInt(1, 720)),
+    });
+  }
+  await db.simulationScenario.createMany({ data: simulationData });
+  console.log(`  SimulationScenarios: ${simulationData.length}`);
+
+  // 11. TrendForecast (40 records)
+  console.log('Seeding TrendForecasts...');
+  const trendMetrics = ['rsrp', 'throughput', 'latency', 'users', 'prbUtilization'];
+  const trendHorizons = ['7d', '14d', '30d', '90d'];
+  const trendDirections = ['improving', 'stable', 'degrading'];
+  const trendData: any[] = [];
+  for (let i = 0; i < 40; i++) {
+    const tech = pick(simTechs);
+    const metric = pick(trendMetrics);
+    const horizon = pick(trendHorizons);
+    const site = pick(phaseDSites);
+    const direction = pick(trendDirections);
+    const days = parseInt(horizon);
+    const points = [];
+    const baseVal = rand(20, 100);
+    for (let d = 0; d < days; d++) {
+      const drift = direction === 'improving' ? rand(0.1, 0.5) : direction === 'degrading' ? rand(-0.5, -0.1) : rand(-0.1, 0.1);
+      const predicted = baseVal + drift * d;
+      points.push({
+        date: new Date(Date.now() + d * 86400000).toISOString().split('T')[0],
+        predicted: Number(predicted.toFixed(2)),
+        lower: Number((predicted - rand(2, 8)).toFixed(2)),
+        upper: Number((predicted + rand(2, 8)).toFixed(2)),
+      });
+    }
+    trendData.push({
+      siteId: Math.random() > 0.2 ? phaseDSites[randInt(0, phaseDSites.length - 1)].id : null,
+      technology: tech,
+      region: pick(regions),
+      metric,
+      forecastPoints: JSON.stringify(points),
+      horizon,
+      trendDirection: direction,
+      confidence: Number(rand(0.7, 0.95).toFixed(2)),
+      recommendation: direction === 'degrading' ? `Monitor ${metric} for potential SLA breach` : 'Trend within acceptable bounds',
+      createdAt: subHours(now, randInt(1, 48)),
+    });
+  }
+  await db.trendForecast.createMany({ data: trendData });
+  console.log(`  TrendForecasts: ${trendData.length}`);
+
+  // 12. RoiRecord (20 records)
+  console.log('Seeding RoiRecords...');
+  const roiCategories = ['energy_saving', 'capacity_deferred', 'churn_reduction', 'sla_improvement', 'outage_reduction'];
+  const roiStatuses = ['projected', 'in_progress', 'realized', 'failed'];
+  const roiData: any[] = [];
+  for (let i = 0; i < 20; i++) {
+    const cat = pick(roiCategories);
+    const tech = pick(simTechs);
+    const status = i < 8 ? 'realized' : i < 14 ? 'in_progress' : i < 18 ? 'projected' : 'failed';
+    const invest = rand(50000, 2000000);
+    const annual = rand(10000, 500000);
+    const payback = Math.round((invest / annual) * 12);
+    roiData.push({
+      title: `${cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${tech} ${pick(regions).split(' ')[0]}`,
+      category: cat,
+      technology: tech,
+      siteId: Math.random() > 0.5 ? pick(phaseDSites).id : null,
+      siteName: Math.random() > 0.5 ? pick(phaseDSites).name : null,
+      investmentCost: Number(invest.toFixed(0)),
+      annualSaving: Number(annual.toFixed(0)),
+      paybackMonths: payback,
+      roiPercentage: Number(((annual / invest) * 100).toFixed(1)),
+      status,
+      kpiImpact: JSON.stringify({ before: rand(50, 80), after: rand(75, 98) }),
+      period: pick(['monthly', 'quarterly', 'yearly']),
+      periodValue: Number(rand(5000, 100000).toFixed(0)),
+      cumulativeSaving: status === 'realized' ? Number(rand(50000, 500000).toFixed(0)) : 0,
+      notes: status === 'realized' ? 'Savings verified and confirmed' : 'Awaiting final validation',
+      createdAt: subHours(now, randInt(24, 2160)),
+    });
+  }
+  await db.roiRecord.createMany({ data: roiData });
+  console.log(`  RoiRecords: ${roiData.length}`);
+
+  // 13. SpectrumBlock (16 records)
+  console.log('Seeding SpectrumBlocks...');
+  const specBands = ['700', '800', '900', '1800', '2100', '2300', '2600', '3500'];
+  const specTechs = [
+    { band: '700', tech: '4G', bw: 10 }, { band: '700', tech: '5G', bw: 10 },
+    { band: '800', tech: '4G', bw: 10 }, { band: '800', tech: '5G', bw: 10 },
+    { band: '900', tech: '2G', bw: 6 }, { band: '900', tech: '3G', bw: 5 },
+    { band: '1800', tech: '2G', bw: 10 }, { band: '1800', tech: '4G', bw: 20 },
+    { band: '2100', tech: '3G', bw: 15 }, { band: '2100', tech: '4G', bw: 20 },
+    { band: '2300', tech: '4G', bw: 20 }, { band: '2300', tech: '5G', bw: 40 },
+    { band: '2600', tech: '4G', bw: 20 }, { band: '2600', tech: '5G', bw: 80 },
+    { band: '3500', tech: '5G', bw: 100 }, { band: '3500', tech: '5G', bw: 80 },
+  ];
+  const spectrumData: any[] = [];
+  for (const st of specTechs) {
+    const channelCount = Math.round(st.bw / (st.tech === '2G' ? 0.2 : st.tech === '3G' ? 5 : 20));
+    const utilized = randInt(Math.floor(channelCount * 0.3), channelCount);
+    const isRefarmCandidate = st.tech === '2G' || st.tech === '3G';
+    spectrumData.push({
+      band: st.band,
+      bandwidth: st.bw,
+      technology: st.tech,
+      region: pick(regions),
+      channelCount,
+      utilizedChannels: utilized,
+      utilizationPct: Number(((utilized / channelCount) * 100).toFixed(1)),
+      avgInterference: Number(rand(-115, -95).toFixed(1)),
+      avgRsrp: Number(rand(-100, -70).toFixed(1)),
+      refarmCandidate: isRefarmCandidate ? Math.random() > 0.5 : false,
+      refarmTargetTech: isRefarmCandidate ? (st.tech === '2G' ? '4G' : '5G') : null,
+      refarmPotentialSaving: isRefarmCandidate ? Number(rand(100000, 800000).toFixed(0)) : null,
+      status: Math.random() > 0.1 ? 'active' : isRefarmCandidate ? 'planned_refarm' : 'active',
+    });
+  }
+  await db.spectrumBlock.createMany({ data: spectrumData });
+  console.log(`  SpectrumBlocks: ${spectrumData.length}`);
+
+  // 14. EvolutionPlan (8 records)
+  console.log('Seeding EvolutionPlans...');
+  const evoPlans = [
+    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Lagos', region: 'Lagos Mainland', sites: 4, completed: 2, cost: 2400000, spent: 1200000, status: 'in_progress', risk: 'medium' },
+    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Abuja', region: 'Abuja Central', sites: 2, completed: 0, cost: 800000, spent: 0, status: 'planned', risk: 'low' },
+    { src: '3G', tgt: '4G', name: '3G WCDMA to 4G - Port Harcourt', region: 'Port Harcourt', sites: 3, completed: 1, cost: 1800000, spent: 600000, status: 'in_progress', risk: 'medium' },
+    { src: '3G', tgt: '4G', name: '3G Sunset Plan - Kano', region: 'Kano Metro', sites: 2, completed: 0, cost: 600000, spent: 0, status: 'planned', risk: 'high' },
+    { src: '4G', tgt: '5G', name: '5G NR Overlay - Lagos Core', region: 'Lagos Island', sites: 4, completed: 3, cost: 5000000, spent: 3750000, status: 'in_progress', risk: 'low' },
+    { src: '4G', tgt: '5G', name: '5G NR Expansion - Abuja', region: 'Abuja Central', sites: 3, completed: 2, cost: 3750000, spent: 2500000, status: 'in_progress', risk: 'medium' },
+    { src: '2G', tgt: '5G', name: 'Direct 2G to 5G Leapfrog - Ibadan', region: 'Ibadan', sites: 2, completed: 0, cost: 1500000, spent: 0, status: 'planned', risk: 'high' },
+    { src: '3G', tgt: '5G', name: '3G to 5G Direct Migration - Benin', region: 'Benin City', sites: 2, completed: 0, cost: 1200000, spent: 0, status: 'planned', risk: 'high' },
+  ];
+  const evolutionData: any[] = [];
+  for (const ep of evoPlans) {
+    evolutionData.push({
+      name: ep.name,
+      sourceTech: ep.src,
+      targetTech: ep.tgt,
+      region: ep.region,
+      siteCount: ep.sites,
+      sitesCompleted: ep.completed,
+      estimatedCost: ep.cost,
+      spentBudget: ep.spent,
+      startDate: ep.status !== 'planned' ? subHours(now, randInt(168, 2160)) : null,
+      targetDate: new Date(Date.now() + randInt(30, 365) * 86400000),
+      status: ep.status,
+      spectrumGain: JSON.stringify(ep.src === '2G' ? ['900MHz'] : ep.src === '3G' ? ['2100MHz'] : []),
+      capacityGain: JSON.stringify({ before: rand(50, 150), after: rand(300, 1200) }),
+      riskLevel: ep.risk,
+      notes: `${ep.sitesCompleted}/${ep.sites} sites completed`,
+    });
+  }
+  await db.evolutionPlan.createMany({ data: evolutionData });
+  console.log(`  EvolutionPlans: ${evolutionData.length}`);
+
+  // 15. NpiRecord (34 records - 1 per site)
+  console.log('Seeding NpiRecords...');
+  const npiData: any[] = [];
+  const npiScores: number[] = [];
+  for (let i = 0; i < phaseDSites.length; i++) {
+    const site = phaseDSites[i];
+    const overall = rand(40, 95);
+    npiScores.push(overall);
+    npiData.push({
+      siteId: site.id,
+      technology: site.technology,
+      region: site.region,
+      overallNpi: Number(overall.toFixed(1)),
+      coverageNpi: Number(rand(30, 98).toFixed(1)),
+      capacityNpi: Number(rand(25, 95).toFixed(1)),
+      qualityNpi: Number(rand(35, 96).toFixed(1)),
+      reliabilityNpi: Number(rand(40, 99).toFixed(1)),
+      costEfficiencyNpi: Number(rand(30, 90).toFixed(1)),
+      rank: 0, // will update below
+      totalSites: phaseDSites.length,
+    });
+  }
+  // Sort by overallNpi descending to assign ranks
+  const sorted = [...npiData].sort((a, b) => b.overallNpi - a.overallNpi);
+  sorted.forEach((r, i) => { r.rank = i + 1; });
+  await db.npiRecord.createMany({ data: npiData });
+  console.log(`  NpiRecords: ${npiData.length}`);
+
+  // 16. ServiceOrchestration (30 records)
+  console.log('Seeding ServiceOrchestrations...');
+  const svcTypes = ['voip', 'video_streaming', 'web_browsing', 'iot_mqtt', 'gaming', 'video_call'];
+  const svcNames: Record<string, string> = { voip: 'VoIP Service', video_streaming: 'Video Streaming', web_browsing: 'Web Browsing', iot_mqtt: 'IoT MQTT', gaming: 'Cloud Gaming', video_call: 'Video Call' };
+  const serviceData: any[] = [];
+  for (let i = 0; i < 30; i++) {
+    const svcType = pick(svcTypes);
+    const tech = pick(['4G', '5G']);
+    const region = pick(regions);
+    const mos = svcType === 'gaming' ? rand(2.5, 4.8) : svcType === 'voip' ? rand(3.2, 4.9) : svcType === 'video_call' ? rand(2.8, 4.7) : rand(3.0, 4.5);
+    const issues: string[] = [];
+    if (mos < 3.5) issues.push('High latency impacting user experience');
+    if (Math.random() > 0.8) issues.push('Packet loss spike detected');
+    if (Math.random() > 0.85) issues.push('Jitter exceeds threshold');
+    serviceData.push({
+      serviceName: svcNames[svcType],
+      serviceType: svcType,
+      technology: tech,
+      region,
+      mosScore: Number(mos.toFixed(2)),
+      latencyMs: Number((svcType === 'gaming' ? rand(8, 45) : svcType === 'iot_mqtt' ? rand(15, 80) : rand(10, 120)).toFixed(1)),
+      jitterMs: Number(rand(0.5, 25).toFixed(1)),
+      packetLoss: Number(rand(0, 3).toFixed(2)),
+      throughputMbps: Number((svcType === 'video_streaming' ? rand(5, 50) : svcType === 'gaming' ? rand(2, 30) : rand(0.5, 20)).toFixed(2)),
+      availabilityPct: Number(rand(98, 99.99).toFixed(2)),
+      userSatisfaction: Number(rand(60, 98).toFixed(1)),
+      activeSessions: randInt(50, 5000),
+      kpiViolations: issues.length,
+      slaCompliant: issues.length === 0,
+      issues: JSON.stringify(issues),
+    });
+  }
+  await db.serviceOrchestration.createMany({ data: serviceData });
+  console.log(`  ServiceOrchestrations: ${serviceData.length}`);
+
+  // 17. AuditTrail (40 records)
+  console.log('Seeding AuditTrails...');
+  const entityTypes = ['NetworkSite', 'NetworkParameter', 'SonAction', 'Policy', 'Incident', 'ChangeRequest', 'Playbook', 'EvolutionPlan'];
+  const trailActions = ['create', 'update', 'delete', 'approve', 'reject', 'implement', 'rollback'];
+  const auditCategories = ['parameter', 'config', 'site', 'policy', 'incident', 'son'];
+  const auditData: any[] = [];
+  for (let i = 0; i < 40; i++) {
+    const eType = pick(entityTypes);
+    const action = pick(trailActions);
+    const cat = pick(auditCategories);
+    auditData.push({
+      entityType: eType,
+      entityId: pick(phaseDSites).id,
+      entityName: `${eType}-${randInt(100, 999)}`,
+      action,
+      field: Math.random() > 0.4 ? pick(['status', 'power', 'tilt', 'pci', 'bandwidth', 'priority', 'threshold', 'technology']) : null,
+      previousValue: Math.random() > 0.3 ? String(rand(-10, 50)) : null,
+      newValue: Math.random() > 0.3 ? String(rand(-10, 50)) : null,
+      technology: Math.random() > 0.2 ? pick(simTechs) : null,
+      category: cat,
+      requestedBy: pick(['system', 'admin', 'noc_engineer_1', 'noc_engineer_2', 'auto_son']),
+      approvedBy: (action === 'approve' || action === 'reject') ? pick(['admin', 'senior_engineer']) : null,
+      impact: Math.random() > 0.5 ? `${rand(1, 30).toFixed(0)}% KPI improvement expected` : '',
+      createdAt: subHours(now, randInt(1, 720)),
+    });
+  }
+  await db.auditTrail.createMany({ data: auditData });
+  console.log(`  AuditTrails: ${auditData.length}`);
+
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());
