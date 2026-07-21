@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -160,6 +161,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function LoadBalancingView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [congestionFilter, setCongestionFilter] = useState<string>('all');
 
@@ -239,8 +241,8 @@ export default function LoadBalancingView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load load balancing data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('lb.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -250,11 +252,11 @@ export default function LoadBalancingView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Scale className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Load Balancing Data Available</p>
+        <p className="text-lg font-medium">{t('lb.noData')}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all' || congestionFilter !== 'all'
-            ? 'No cells match the selected filters.'
-            : 'Load metrics have not been collected yet.'}
+            ? t('lb.noMatchFilter')
+            : t('lb.noDataYet')}
         </p>
       </div>
     );
@@ -265,9 +267,9 @@ export default function LoadBalancingView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Load Balancing</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('lb.title')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Cell load distribution and traffic equalization analysis
+          {t('lb.subtitle')}
         </p>
       </div>
 
@@ -278,14 +280,14 @@ export default function LoadBalancingView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Scale className="h-4 w-4 text-emerald-500" />
-              Total Cells
+              {t('lb.totalCells')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Cells analyzed</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('lb.cellsAnalyzed')}</p>
           </CardContent>
         </Card>
 
@@ -293,7 +295,7 @@ export default function LoadBalancingView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg PRB DL
+              {t('lb.avgPrbDl')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -313,14 +315,14 @@ export default function LoadBalancingView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg User Load
+              {t('lb.avgUserLoad')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className={`text-3xl font-bold ${prbColor(summary?.avgUserLoad ?? 0)}`}>
               {formatNumber(summary?.avgUserLoad ?? 0, 1)}%
             </span>
-            <p className="text-xs text-muted-foreground mt-1">User capacity utilization</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('lb.userCapacityUtil')}</p>
           </CardContent>
         </Card>
 
@@ -328,7 +330,7 @@ export default function LoadBalancingView() {
         <Card className="border-red-500/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Congested Sites
+              {t('lb.congestedSites')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -343,14 +345,14 @@ export default function LoadBalancingView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Active Users
+              {t('lb.totalActiveUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {formatK(summary?.totalUsers ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all cells</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('lb.acrossAllCells')}</p>
           </CardContent>
         </Card>
       </div>
@@ -360,7 +362,7 @@ export default function LoadBalancingView() {
         {/* Congestion Distribution BarChart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Congestion Distribution</CardTitle>
+            <CardTitle className="text-base">{t('lb.congestionDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -391,7 +393,7 @@ export default function LoadBalancingView() {
         {/* Load by Region BarChart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Avg PRB DL by Region</CardTitle>
+            <CardTitle className="text-base">{t('lb.avgPrbDl')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -427,14 +429,14 @@ export default function LoadBalancingView() {
       {/* Full Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Cell Load Details</CardTitle>
+          <CardTitle className="text-base">{t('lb.cellDetails')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -443,14 +445,14 @@ export default function LoadBalancingView() {
             </Select>
             <Select value={congestionFilter} onValueChange={setCongestionFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Congestion" />
+                <SelectValue placeholder={t('th.riskLevel')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="all">{t('lb.allLevels')}</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
-                <SelectItem value="congested">Congested</SelectItem>
+                <SelectItem value="congested">{t('lb.congested')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -458,26 +460,26 @@ export default function LoadBalancingView() {
         <CardContent>
           {loads.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No cells match the selected filters.
+              {t('lb.noMatchFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead className="text-right">PRB DL %</TableHead>
-                    <TableHead className="text-right">PRB UL %</TableHead>
-                    <TableHead className="text-right">Users</TableHead>
-                    <TableHead className="text-right">User Load %</TableHead>
-                    <TableHead className="text-right">DL Mbps</TableHead>
-                    <TableHead className="text-right">UL Mbps</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
-                    <TableHead>Congestion</TableHead>
-                    <TableHead>Recommendation</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.siteCode')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
+                    <TableHead className="text-right">{t('lb.prbDl')}</TableHead>
+                    <TableHead className="text-right">{t('lb.prbUl')}</TableHead>
+                    <TableHead className="text-right">{t('th.users')}</TableHead>
+                    <TableHead className="text-right">{t('lb.userLoadPct')}</TableHead>
+                    <TableHead className="text-right">{t('lb.dlMbps')}</TableHead>
+                    <TableHead className="text-right">{t('lb.ulMbps')}</TableHead>
+                    <TableHead className="text-right">{t('lb.balance')}</TableHead>
+                    <TableHead>{t('lb.congestion')}</TableHead>
+                    <TableHead>{t('lb.recommendation')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

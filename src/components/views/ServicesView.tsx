@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -66,12 +67,12 @@ interface ServicesResponse {
 // ─── Service Type Styling ──────────────────────────────────────────────
 
 const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
-  voip: 'VoIP',
-  video_streaming: 'Video Streaming',
-  web_browsing: 'Web Browsing',
-  iot_mqtt: 'IoT MQTT',
-  gaming: 'Gaming',
-  video_call: 'Video Call',
+  voip: 'svc.voip',
+  video_streaming: 'svc.videoStreaming',
+  web_browsing: 'svc.webBrowsing',
+  iot_mqtt: 'svc.iotMqtt',
+  gaming: 'svc.gaming',
+  video_call: 'svc.videoCall',
 };
 
 const SERVICE_TYPE_COLORS: Record<ServiceType, string> = {
@@ -93,12 +94,12 @@ const SERVICE_TYPE_BG_CLASSES: Record<ServiceType, string> = {
 };
 
 const SERVICE_TYPE_OPTIONS: { value: ServiceType; label: string }[] = [
-  { value: 'voip', label: 'VoIP' },
-  { value: 'video_streaming', label: 'Video Streaming' },
-  { value: 'web_browsing', label: 'Web Browsing' },
-  { value: 'iot_mqtt', label: 'IoT MQTT' },
-  { value: 'gaming', label: 'Gaming' },
-  { value: 'video_call', label: 'Video Call' },
+  { value: 'voip', label: 'svc.voip' },
+  { value: 'video_streaming', label: 'svc.videoStreaming' },
+  { value: 'web_browsing', label: 'svc.webBrowsing' },
+  { value: 'iot_mqtt', label: 'svc.iotMqtt' },
+  { value: 'gaming', label: 'svc.gaming' },
+  { value: 'video_call', label: 'svc.videoCall' },
 ];
 
 // ─── Helper Functions ──────────────────────────────────────────────────
@@ -207,6 +208,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function ServicesView() {
+  const t = useT();
   const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('all');
   const [techFilter, setTechFilter] = useState<string>('all');
   const [regionFilter, setRegionFilter] = useState<string>('all');
@@ -231,7 +233,7 @@ export default function ServicesView() {
   const mosByServiceTypeData = summary?.byServiceType
     ? Object.entries(summary.byServiceType)
         .map(([type, avgMos]) => ({
-          type: SERVICE_TYPE_LABELS[type as ServiceType] ?? type,
+          type: t(SERVICE_TYPE_LABELS[type as ServiceType] ?? type),
           mos: avgMos,
           fill: SERVICE_TYPE_COLORS[type as ServiceType] ?? '#94A3B8',
         }))
@@ -242,8 +244,8 @@ export default function ServicesView() {
   const slaRate = summary?.slaComplianceRate ?? 0;
   const nonCompliantRate = Number((100 - slaRate).toFixed(1));
   const slaPieData = [
-    { name: 'Compliant', value: Number(slaRate.toFixed(1)), fill: '#10B981' },
-    { name: 'Non-Compliant', value: nonCompliantRate, fill: '#EF4444' },
+    { name: t('svc.slaCompliant'), value: Number(slaRate.toFixed(1)), fill: '#10B981' },
+    { name: t('svc.nonCompliant'), value: nonCompliantRate, fill: '#EF4444' },
   ];
 
   // ─── Render: Loading State ──────────────────────────────────────────
@@ -269,8 +271,8 @@ export default function ServicesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Globe className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load Services data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('svc.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -280,11 +282,11 @@ export default function ServicesView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Globe className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Services Data Available</p>
+        <p className="text-lg font-medium">{t('svc.noData')}</p>
         <p className="text-sm mt-1">
           {serviceTypeFilter !== 'all' || techFilter !== 'all' || regionFilter !== 'all'
-            ? 'No services match the selected filters.'
-            : 'Service quality data has not been collected yet.'}
+            ? t('svc.noMatchFilter')
+            : t('svc.noDataYet')}
         </p>
       </div>
     );
@@ -297,10 +299,10 @@ export default function ServicesView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Globe className="h-6 w-6" />
-          Service Quality Monitoring
+          {t('svc.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          End-to-end service experience and SLA compliance tracking
+          {t('svc.subtitle')}
         </p>
       </div>
 
@@ -311,7 +313,7 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-cyan-500" />
-              Total Services
+              {t('svc.totalServices')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -329,7 +331,7 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-emerald-500" />
-              Avg MOS
+              {t('svc.avgMos')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -351,7 +353,7 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              SLA Compliance
+              {t('svc.complianceRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -411,7 +413,7 @@ export default function ServicesView() {
           <CardContent>
             <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
               {formatNumber(summary?.avgThroughput ?? 0, 1)}
-              <span className="text-base font-normal ml-1">Mbps</span>
+              <span className="text-base font-normal ml-1">{t('unit.mbps')}</span>
             </span>
             <p className="text-xs text-muted-foreground mt-1">Average download</p>
           </CardContent>
@@ -423,11 +425,11 @@ export default function ServicesView() {
         {/* MOS by Service Type */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">MOS by Service Type</CardTitle>
+            <CardTitle className="text-base">{t('svc.mosByType')}</CardTitle>
           </CardHeader>
           <CardContent>
             {mosByServiceTypeData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('empty.noData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -459,7 +461,7 @@ export default function ServicesView() {
         {/* SLA Compliance PieChart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">SLA Compliance Distribution</CardTitle>
+            <CardTitle className="text-base">{t('svc.slaDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -491,27 +493,27 @@ export default function ServicesView() {
       {/* Services Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Service Details</CardTitle>
+          <CardTitle className="text-base">{t('svc.details')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={serviceTypeFilter} onValueChange={setServiceTypeFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Service Type" />
+                <SelectValue placeholder={t('svc.serviceType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">{t('filter.allTypes')}</SelectItem>
                 {SERVICE_TYPE_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
+                    {t(opt.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTech')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -520,10 +522,10 @@ export default function ServicesView() {
             </Select>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder={t('filter.region')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
+                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
                 <SelectItem value="Lagos">Lagos</SelectItem>
                 <SelectItem value="Abuja">Abuja</SelectItem>
                 <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
@@ -536,25 +538,25 @@ export default function ServicesView() {
         <CardContent>
           {services.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No services match the selected filters.
+              {t('svc.noMatchFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Service</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead className="text-right">MOS</TableHead>
-                    <TableHead className="text-right">Latency</TableHead>
-                    <TableHead className="text-right">Jitter</TableHead>
-                    <TableHead className="text-right">Pkt Loss</TableHead>
-                    <TableHead className="text-right">Throughput</TableHead>
-                    <TableHead className="text-right">Sessions</TableHead>
-                    <TableHead>SLA</TableHead>
-                    <TableHead className="text-right">Violations</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.name')}</TableHead>
+                    <TableHead>{t('th.type')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
+                    <TableHead className="text-right">{t('svc.mos')}</TableHead>
+                    <TableHead className="text-right">{t('th.latency')}</TableHead>
+                    <TableHead className="text-right">{t('svc.jitter')}</TableHead>
+                    <TableHead className="text-right">{t('svc.pktLoss')}</TableHead>
+                    <TableHead className="text-right">{t('th.throughput')}</TableHead>
+                    <TableHead className="text-right">{t('th.users')}</TableHead>
+                    <TableHead>{t('th.sla')}</TableHead>
+                    <TableHead className="text-right">{t('th.impactScore')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -568,7 +570,7 @@ export default function ServicesView() {
                           variant="outline"
                           className={SERVICE_TYPE_BG_CLASSES[svc.serviceType]}
                         >
-                          {SERVICE_TYPE_LABELS[svc.serviceType]}
+                          {t(SERVICE_TYPE_LABELS[svc.serviceType])}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -584,16 +586,16 @@ export default function ServicesView() {
                         {svc.mosScore != null ? formatNumber(svc.mosScore) : '—'}
                       </TableCell>
                       <TableCell className="text-right text-xs">
-                        {svc.latencyMs != null ? `${formatNumber(svc.latencyMs, 1)} ms` : '—'}
+                        {svc.latencyMs != null ? `${formatNumber(svc.latencyMs, 1)} ${t('unit.ms')}` : '—'}
                       </TableCell>
                       <TableCell className="text-right text-xs">
-                        {svc.jitterMs != null ? `${formatNumber(svc.jitterMs, 1)} ms` : '—'}
+                        {svc.jitterMs != null ? `${formatNumber(svc.jitterMs, 1)} ${t('unit.ms')}` : '—'}
                       </TableCell>
                       <TableCell className="text-right text-xs">
                         {svc.packetLoss != null ? `${formatNumber(svc.packetLoss, 2)}%` : '—'}
                       </TableCell>
                       <TableCell className="text-right text-xs">
-                        {svc.throughputMbps != null ? `${formatNumber(svc.throughputMbps, 1)} Mbps` : '—'}
+                        {svc.throughputMbps != null ? `${formatNumber(svc.throughputMbps, 1)} ${t('unit.mbps')}` : '—'}
                       </TableCell>
                       <TableCell className="text-right text-xs">
                         {svc.activeSessions.toLocaleString()}
@@ -603,7 +605,7 @@ export default function ServicesView() {
                           variant={svc.slaCompliant ? 'default' : 'destructive'}
                           className={svc.slaCompliant ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' : ''}
                         >
-                          {svc.slaCompliant ? 'Compliant' : 'Non-Compliant'}
+                          {svc.slaCompliant ? t('svc.slaCompliant') : t('svc.nonCompliant')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -185,6 +186,7 @@ function formatTimestamp(ts: string): string {
 // ─── Main Component ───────────────────────────────────────────────────
 
 export default function AuditView() {
+  const t = useT();
   const [entityType, setEntityType] = useState<string>('all');
   const [action, setAction] = useState<string>('all');
   const [category, setCategory] = useState<string>('all');
@@ -242,10 +244,10 @@ export default function AuditView() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <FileSearch className="h-6 w-6 text-emerald-500" />
-            Audit Trail
+            {t('aud.title')}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Complete change history with parameter diff tracking
+            {t('aud.subtitle')}
           </p>
         </div>
       </div>
@@ -254,46 +256,46 @@ export default function AuditView() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Select value={entityType} onValueChange={setEntityType}>
           <SelectTrigger className="h-9">
-            <SelectValue placeholder="Entity Type" />
+            <SelectValue placeholder={t('filter.entityType')} />
           </SelectTrigger>
           <SelectContent>
             {ENTITY_TYPE_OPTIONS.map((opt) => (
               <SelectItem key={opt} value={opt}>
-                {opt === 'all' ? 'All Entity Types' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                {opt === 'all' ? t('aud.allEntityTypes') : opt.charAt(0).toUpperCase() + opt.slice(1)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={action} onValueChange={setAction}>
           <SelectTrigger className="h-9">
-            <SelectValue placeholder="Action" />
+            <SelectValue placeholder={t('filter.action')} />
           </SelectTrigger>
           <SelectContent>
             {ACTION_OPTIONS.map((opt) => (
               <SelectItem key={opt} value={opt}>
-                {opt === 'all' ? 'All Actions' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                {opt === 'all' ? t('aud.allActions') : opt.charAt(0).toUpperCase() + opt.slice(1)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger className="h-9">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('filter.category')} />
           </SelectTrigger>
           <SelectContent>
             {CATEGORY_OPTIONS.map((opt) => (
               <SelectItem key={opt} value={opt}>
-                {opt === 'all' ? 'All Categories' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+                {opt === 'all' ? t('filter.allCategories') : opt.charAt(0).toUpperCase() + opt.slice(1)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={technology} onValueChange={setTechnology}>
           <SelectTrigger className="h-9">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             {TECHNOLOGIES.map((t) => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
@@ -310,7 +312,7 @@ export default function AuditView() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                Total Entries
+                {t('aud.totalEntries')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -321,7 +323,7 @@ export default function AuditView() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Today&apos;s Changes
+                {t('aud.todayEntries')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -332,7 +334,7 @@ export default function AuditView() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Unique Actors
+                {t('aud.topEntities')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -343,7 +345,7 @@ export default function AuditView() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Tag className="h-4 w-4" />
-                Categories
+                {t('aud.byCategory')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -366,7 +368,7 @@ export default function AuditView() {
           {/* Actions Bar Chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Actions by Type</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('aud.byType')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -399,7 +401,7 @@ export default function AuditView() {
           {/* Categories Pie Chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Entries by Category</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('aud.byCategory')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -440,7 +442,7 @@ export default function AuditView() {
       {error && (
         <Card>
           <CardContent className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-            Failed to load audit data.
+            {t('empty.noData')}
           </CardContent>
         </Card>
       )}
@@ -449,13 +451,13 @@ export default function AuditView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Audit Entries ({trails.length})
+              {t('aud.entries')} ({trails.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {trails.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground text-sm">
-                No audit entries found for the selected filters.
+                {t('aud.noMatch')}
               </div>
             ) : (
               <div className="max-h-[480px] overflow-y-auto">

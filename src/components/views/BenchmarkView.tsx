@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -163,6 +164,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ───────────────────────────────────────────────────
 
 export default function BenchmarkView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [metricFilter, setMetricFilter] = useState<string>('all');
@@ -183,12 +185,20 @@ export default function BenchmarkView() {
   const benchmarks = data?.benchmarks ?? [];
   const summary = data?.summary;
 
+  // Status label mapping
+  const statusLabels: Record<string, string> = {
+    exceeding: 'Exceeding',
+    on_track: t('status.onTrack'),
+    below_target: t('status.belowTarget'),
+    critical: t('status.critical'),
+  };
+
   // Status distribution chart data
   const statusOrder = ['exceeding', 'on_track', 'below_target', 'critical'];
   const statusChartData = statusOrder
     .filter((s) => (summary?.byStatus?.[s] ?? 0) > 0)
     .map((s) => ({
-      status: s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      status: statusLabels[s] ?? s,
       count: summary?.byStatus?.[s] ?? 0,
       fill: STATUS_COLORS[s],
     }));
@@ -240,8 +250,8 @@ export default function BenchmarkView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load benchmark data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'Benchmark' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -251,9 +261,9 @@ export default function BenchmarkView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Radio className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Benchmark Data Available</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Benchmark' })}</p>
         <p className="text-sm mt-1">
-          Benchmark comparisons have not been computed yet.
+          {t('empty.notYet', { entity: 'Benchmark comparisons' })}
         </p>
       </div>
     );
@@ -266,10 +276,10 @@ export default function BenchmarkView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Target className="h-6 w-6 text-amber-500" />
-          Performance Benchmarking
+          {t('title.benchmark')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Compare site performance against industry benchmarks and internal targets
+          {t('bm.subtitle')}
         </p>
       </div>
 
@@ -280,14 +290,14 @@ export default function BenchmarkView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Radio className="h-4 w-4 text-cyan-500" />
-              Total Benchmarks
+              {t('bm.totalBenchmarks')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {totalBenchmarks}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Metric-site comparisons</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('bm.metricComparisons')}</p>
           </CardContent>
         </Card>
 
@@ -353,11 +363,11 @@ export default function BenchmarkView() {
         {/* Status Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status Distribution</CardTitle>
+            <CardTitle className="text-base">{t('bm.statusDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             {statusChartData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No status data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('empty.noData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -389,11 +399,11 @@ export default function BenchmarkView() {
         {/* Metric Gap Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Average Gap by Metric</CardTitle>
+            <CardTitle className="text-base">{t('bm.avgGap')}</CardTitle>
           </CardHeader>
           <CardContent>
             {metricGapData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No metric gap data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('empty.noData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -431,14 +441,14 @@ export default function BenchmarkView() {
       {/* Full Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Benchmark Details</CardTitle>
+          <CardTitle className="text-base">{t('bm.details')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -447,22 +457,22 @@ export default function BenchmarkView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 <SelectItem value="exceeding">Exceeding</SelectItem>
-                <SelectItem value="on_track">On Track</SelectItem>
-                <SelectItem value="below_target">Below Target</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="on_track">{t('status.onTrack')}</SelectItem>
+                <SelectItem value="below_target">{t('status.belowTarget')}</SelectItem>
+                <SelectItem value="critical">{t('status.critical')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={metricFilter} onValueChange={setMetricFilter}>
               <SelectTrigger className="w-44">
-                <SelectValue placeholder="Metric" />
+                <SelectValue placeholder={t('filter.metric')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Metrics</SelectItem>
+                <SelectItem value="all">{t('filter.allMetrics')}</SelectItem>
                 {BENCHMARK_METRICS.map((m) => (
                   <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                 ))}
@@ -473,23 +483,23 @@ export default function BenchmarkView() {
         <CardContent>
           {benchmarks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No benchmarks match the selected filters.
+              {t('view.noDataForFilter', { entity: 'benchmarks' })}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Metric</TableHead>
-                    <TableHead className="text-right">Actual</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.metric')}</TableHead>
+                    <TableHead className="text-right">{t('th.actual')}</TableHead>
                     <TableHead className="text-right">Benchmark</TableHead>
-                    <TableHead className="text-right">Target</TableHead>
+                    <TableHead className="text-right">{t('th.target')}</TableHead>
                     <TableHead className="text-right">Percentile</TableHead>
                     <TableHead className="text-right">Gap</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -526,7 +536,7 @@ export default function BenchmarkView() {
                           variant={STATUS_VARIANT[item.status] ?? 'outline'}
                           className={STATUS_BG[item.status] ?? ''}
                         >
-                          {item.status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                          {statusLabels[item.status] ?? item.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">{item.region}</TableCell>

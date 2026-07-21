@@ -386,7 +386,6 @@ export default function TrendsView() {
                 <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
                   {t('trd.noDataAvailable')}
                 </div>
-              )
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>

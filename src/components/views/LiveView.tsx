@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,6 +116,7 @@ interface IncidentSummary {
 }
 
 export default function LiveView() {
+  const t = useT();
   const { data, isLoading } = useQuery<{
     overview: LiveOverview;
     byTech: ByTech[];
@@ -211,7 +213,7 @@ export default function LiveView() {
       trend: (overview?.avgAvailability ?? 0) >= 99 ? 'up' : (overview?.avgAvailability ?? 0) >= 97 ? 'neutral' as const : 'down' as const,
     },
     {
-      label: 'Power',
+      label: t('live.power'),
       value: `${((overview?.totalPowerW ?? 0) / 1000).toFixed(1)} kW`,
       icon: Zap,
       color: 'text-amber-600 dark:text-amber-400',
@@ -238,7 +240,7 @@ export default function LiveView() {
           </div>
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Real-Time Dashboard</h2>
-            <p className="text-sm text-muted-foreground">Live network monitoring and streaming metrics</p>
+            <p className="text-sm text-muted-foreground">{t('live.subtitle')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 dark:text-emerald-400">
@@ -279,20 +281,20 @@ export default function LiveView() {
       {/* Per-Technology Stats Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Per-Technology Statistics</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('live.perTechStats')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-xs">Technology</TableHead>
-                  <TableHead className="text-xs text-right">Sites</TableHead>
-                  <TableHead className="text-xs text-right">Users</TableHead>
-                  <TableHead className="text-xs text-right">DL (Mbps)</TableHead>
-                  <TableHead className="text-xs text-right">UL (Mbps)</TableHead>
-                  <TableHead className="text-xs text-right">Availability (%)</TableHead>
-                  <TableHead className="text-xs text-right">Power (kW)</TableHead>
+                  <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('th.site')}</TableHead>
+                  <TableHead className="text-xs text-right">{t('th.users')}</TableHead>
+                  <TableHead className="text-xs text-right">DL ({t('unit.mbps')})</TableHead>
+                  <TableHead className="text-xs text-right">UL ({t('unit.mbps')})</TableHead>
+                  <TableHead className="text-xs text-right">{t('th.availability')} (%)</TableHead>
+                  <TableHead className="text-xs text-right">{t('live.power')} ({t('unit.kw')})</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -323,7 +325,7 @@ export default function LiveView() {
         {/* Top 5 Loaded Sites */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Top 5 Loaded Sites</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('live.top5Loaded')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-72">
@@ -412,16 +414,16 @@ export default function LiveView() {
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Power</p>
-                <p className="text-lg font-bold mt-0.5">{energy?.totalPowerKw.toFixed(1) ?? '0'}<span className="text-xs font-normal text-muted-foreground ml-0.5">kW</span></p>
+                <p className="text-xs text-muted-foreground">{t('live.power')}</p>
+                <p className="text-lg font-bold mt-0.5">{energy?.totalPowerKw.toFixed(1) ?? '0'}<span className="text-xs font-normal text-muted-foreground ml-0.5">{t('unit.kw')}</span></p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">CO₂ Emission</p>
+                <p className="text-xs text-muted-foreground">{t('live.co2')}</p>
                 <p className="text-lg font-bold mt-0.5">{energy?.totalCO2kg.toFixed(1) ?? '0'}<span className="text-xs font-normal text-muted-foreground ml-0.5">kg</span></p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Sleep Mode</p>
-                <p className="text-lg font-bold mt-0.5">{energy?.sitesInSleep ?? 0}<span className="text-xs font-normal text-muted-foreground ml-0.5">sites</span></p>
+                <p className="text-xs text-muted-foreground">{t('live.sleepMode')}</p>
+                <p className="text-lg font-bold mt-0.5">{energy?.sitesInSleep ?? 0}<span className="text-xs font-normal text-muted-foreground ml-0.5">{t('unit.sites')}</span></p>
               </div>
             </div>
           </CardContent>
@@ -438,7 +440,7 @@ export default function LiveView() {
           <CardContent>
             <div className="grid grid-cols-4 gap-3">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Open</p>
+                <p className="text-xs text-muted-foreground">{t('status.open')}</p>
                 <p className="text-lg font-bold mt-0.5 text-red-600 dark:text-red-400">{incidents?.open ?? 0}</p>
               </div>
               <div className="text-center">
@@ -446,11 +448,11 @@ export default function LiveView() {
                 <p className="text-lg font-bold mt-0.5 text-amber-600 dark:text-amber-400">{incidents?.investigating ?? 0}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Today Resolved</p>
+                <p className="text-xs text-muted-foreground">{t('live.todayResolved')}</p>
                 <p className="text-lg font-bold mt-0.5 text-emerald-600 dark:text-emerald-400">{incidents?.todayResolved ?? 0}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">SLA Breaches</p>
+                <p className="text-xs text-muted-foreground">{t('live.slaBreaches')}</p>
                 <p className="text-lg font-bold mt-0.5 text-red-600 dark:text-red-400">{incidents?.slaBreaches ?? 0}</p>
               </div>
             </div>

@@ -130,7 +130,7 @@ function SLALoadingSkeleton() {
 // ─── Main Component ───────────────────────────────────────────────────
 export default function SLADashboardView() {
   const t = useT();
-  const { data, isLoading } = useQuery<SLAResponse}>(
+  const { data, isLoading } = useQuery<SLAResponse>({
     queryKey: ['sla'],
     queryFn: () => fetch('/api/sla').then(r => r.json()),
     refetchInterval: 60000,

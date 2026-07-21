@@ -256,11 +256,11 @@ export default function EnergyView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Battery className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Energy Data Available</p>
+        <p className="text-lg font-medium">{t('empty.noEnergyData')}</p>
         <p className="text-sm mt-1">
           {(techFilter !== 'all' || modeFilter !== 'all')
-            ? {t('empty.noMatchShort')}
-            : {t('view.noDataYet', { entity: 'Energy metrics' })}}
+            ? t('empty.noMatchShort')
+            : t('view.noDataYet', { entity: 'Energy metrics' })}
         </p>
       </div>
     );

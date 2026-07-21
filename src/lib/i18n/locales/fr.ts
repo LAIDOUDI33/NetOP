@@ -269,6 +269,7 @@ const fr: Record<string, string> = {
   'empty.noAlerts': 'Aucune alerte trouvée',
   'empty.noUnresolved': 'Aucune alerte non résolue',
   'empty.notYet': 'Aucun {entity} n\'a encore été créé',
+  'empty.noEnergyData': 'Aucune donnée énergétique disponible',
 
   // ========== COMMON TOAST MESSAGES ==========
   'toast.actionCompleted': 'Action terminée',
@@ -677,6 +678,7 @@ const fr: Record<string, string> = {
   'cfg.defaultTemplates': 'Modèles par Défaut',
   'cfg.totalApplications': 'Total Applications',
   'cfg.noTemplates': 'Aucun modèle trouvé',
+  'cfg.vendor': 'Fournisseur',
 
   // ========== VIEW-SPECIFIC: Onboarding ==========
   'onb.addNewSite': 'Ajouter un Nouveau Site',
@@ -1376,6 +1378,11 @@ const fr: Record<string, string> = {
   'exec.cost': 'Coût',
   'exec.revenue': 'Revenus',
   'exec.sla': 'SLA',
+  'exec.avgMos': 'MOS Moyen',
+  'exec.slaBreaches': 'Violations SLA',
+  'exec.mosExcellent': 'Qualité vocale excellente',
+  'exec.mosAcceptable': 'Qualité acceptable',
+  'exec.mosPoor': 'Mauvaise expérience',
 
   // ========== VIEW-SPECIFIC: Vendor Compare ==========
   'vc.title': 'Comparaison Fournisseurs',

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,13 +100,13 @@ const MATRIX_TECHS: Technology[] = ['2G', '3G', '4G', '5G'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatTimeAgo(dateStr?: string): string {
-  if (!dateStr) return 'Never';
+function formatTimeAgo(dateStr?: string, t?: (key: string) => string): string {
+  if (!dateStr) return t ? t('vnd.never') : 'Never';
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'Just now';
+  if (diffMin < 1) return t ? t('vnd.justNow') : 'Just now';
   if (diffMin < 60) return `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr}h ago`;
@@ -127,6 +128,7 @@ interface VendorsResponse {
 }
 
 export default function VendorsView() {
+  const t = useT();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery<VendorsResponse>({
@@ -266,7 +268,7 @@ export default function VendorsView() {
             </div>
             <div className="min-w-0">
               <p className="text-sm text-muted-foreground">
-                Active Connections
+                {t('vnd.activeConnections')}
               </p>
               <p className="text-2xl font-bold">{activeConnections}</p>
             </div>
@@ -280,7 +282,7 @@ export default function VendorsView() {
             </div>
             <div className="min-w-0">
               <p className="text-sm text-muted-foreground">
-                Total Sites Managed
+                {t('vnd.totalSitesManaged')}
               </p>
               <p className="text-2xl font-bold">
                 {totalSitesManaged.toLocaleString()}
@@ -295,7 +297,7 @@ export default function VendorsView() {
               <Activity className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">{d}{t('vnd.lastSync')}</p>
+              <p className="text-sm text-muted-foreground">{t('vnd.lastSync')}</p>
               <p className="text-2xl font-bold">{lastSyncStatus}</p>
             </div>
           </CardContent>
@@ -308,7 +310,7 @@ export default function VendorsView() {
           <CardContent className="p-12 text-center">
             <Server className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
             <h3 className="text-lg font-medium text-muted-foreground">
-              No vendors configured
+              {t('vnd.noVendors')}
             </h3>
             <p className="text-sm text-muted-foreground/70 mt-1">
               {t('vnd.noVendorsMsg')}
@@ -413,7 +415,7 @@ export default function VendorsView() {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <p className="text-xs text-muted-foreground">
-                        Sites Managed
+                        {t('vnd.sitesManaged')}
                       </p>
                       <p className="text-sm font-semibold">
                         {vendor.stats.sitesManaged ?? 0}
@@ -421,7 +423,7 @@ export default function VendorsView() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">
-                        Last Actions
+                        {t('vnd.lastActions')}
                       </p>
                       <p className="text-sm font-semibold">
                         {vendor.stats.lastActionCount ?? 0}
@@ -429,7 +431,7 @@ export default function VendorsView() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">
-                        Sync Status
+                        {t('vnd.syncStatus')}
                       </p>
                       <p
                         className={`text-sm font-medium capitalize ${
@@ -440,14 +442,14 @@ export default function VendorsView() {
                               : 'text-muted-foreground'
                         }`}
                       >
-                        {vendor.stats.syncStatus ?? 'N/A'}
+                        {vendor.stats.syncStatus ?? t('status.na')}
                       </p>
                     </div>
                   </div>
 
                   {/* Last sync time */}
                   <p className="text-xs text-muted-foreground/70 mt-3">
-                    {t("vnd.lastSynced", { time: formatTimeAgo(vendor.lastSync) })}
+                    {t("vnd.lastSynced", { time: formatTimeAgo(vendor.lastSync, t) })}
                   </p>
 
                   <Separator className="my-4" />
@@ -504,7 +506,7 @@ export default function VendorsView() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Globe className="h-4 w-4 text-muted-foreground" />
-              Technology Coverage Matrix
+              {t('vnd.techCoverage')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 pb-2">
@@ -513,7 +515,7 @@ export default function VendorsView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[180px] sticky left-0 bg-background z-10">
-                      Vendor
+                      {t('th.vendor')}
                     </TableHead>
                     {MATRIX_TECHS.map((tech) => (
                       <TableHead

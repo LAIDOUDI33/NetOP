@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState, useRef, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -38,36 +39,36 @@ interface QuickIssue {
 
 const QUICK_ISSUES: QuickIssue[] = [
   {
-    category: 'Coverage Issues',
+    category: 'rca.coverageIssues',
     icon: <Wifi className="h-4 w-4 text-cyan-500" />,
     items: [
-      { label: 'Coverage Hole', description: 'Users reporting no service or very weak signal in a specific area that should have coverage. Signal strength drops below -110 dBm intermittently during peak hours.' },
-      { label: 'Pilot Pollution', description: 'Multiple cells with strong pilot signals causing poor SINR. Handover failures increased and users experience degraded throughput.' },
-      { label: 'Cell Edge Degradaion', description: 'Throughput drops significantly at cell edges. Users moving between cells experience frequent service degradation.' },
+      { label: 'rca.covHole', description: 'rca.covHoleDesc' },
+      { label: 'rca.pilotPollution', description: 'rca.pilotPollutionDesc' },
+      { label: 'rca.cellEdge', description: 'rca.cellEdgeDesc' },
     ],
   },
   {
-    category: 'Capacity Issues',
+    category: 'rca.capacityIssues',
     icon: <Users className="h-4 w-4 text-amber-500" />,
     items: [
-      { label: 'PRB Exhaustion', description: 'PRB utilization consistently above 90% during peak hours. Users experiencing low throughput and high latency despite good signal conditions.' },
-      { label: 'RAN Congestion', description: 'High call setup failure rate during busy hours. Multiple RRC connection rejections and E-RAB setup failures observed.' },
+      { label: 'rca.prbExhaustion', description: 'rca.prbExhaustionDesc' },
+      { label: 'rca.ranCongestion', description: 'rca.ranCongestionDesc' },
     ],
   },
   {
-    category: 'Handover Issues',
+    category: 'rca.handoverIssues',
     icon: <ArrowRightLeft className="h-4 w-4 text-emerald-500" />,
     items: [
-      { label: 'HO Failure Spike', description: 'Sudden increase in handover failure rate from 98% to below 90%. Affected users report call drops during mobility.' },
-      { label: 'Ping-Pong HO', description: 'Frequent handovers back and forth between two neighboring cells causing radio link failures and degraded user experience.' },
+      { label: 'rca.hoFailSpike', description: 'rca.hoFailSpikeDesc' },
+      { label: 'rca.pingPong', description: 'rca.pingPongDesc' },
     ],
   },
   {
-    category: 'Interference Issues',
+    category: 'rca.interferenceIssues',
     icon: <Zap className="h-4 w-4 text-red-500" />,
     items: [
-      { label: 'Uplink Interference', description: 'High RSSI on uplink with low SINR. Throughput severely degraded despite good downlink signal quality.' },
-      { label: 'External Interference', description: 'Sudden increase in noise floor across multiple cells in the same area. Pattern suggests external source rather than network configuration.' },
+      { label: 'rca.ulInterference', description: 'rca.ulInterferenceDesc' },
+      { label: 'rca.extInterference', description: 'rca.extInterferenceDesc' },
     ],
   },
 ];
@@ -88,6 +89,7 @@ interface AnalysisRecord {
 /*  Main Component                                                      */
 /* ------------------------------------------------------------------ */
 export default function RootCauseAnalysisView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('4G');
   const [siteCode, setSiteCode] = useState<string>('');
   const [symptoms, setSymptoms] = useState<string>('');
@@ -180,7 +182,7 @@ Provide analysis in this format:
             {/* Row: Tech + Site */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Technology</Label>
+                <Label className="text-xs font-medium">{t('filter.technology')}</Label>
                 <Select value={technology} onValueChange={v => { setTechnology(v); setSiteCode(''); }}>
                   <SelectTrigger className="h-9">
                     <SelectValue placeholder="Select technology" />
@@ -194,7 +196,7 @@ Provide analysis in this format:
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Site</Label>
+                <Label className="text-xs font-medium">{t('rca.site')}</Label>
                 {sitesLoading ? (
                   <Skeleton className="h-9 w-full" />
                 ) : (
@@ -216,11 +218,11 @@ Provide analysis in this format:
 
             {/* Symptom description */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Symptom Description</Label>
+              <Label className="text-xs font-medium">{t('rca.symptomDesc')}</Label>
               <Textarea
                 value={symptoms}
                 onChange={e => setSymptoms(e.target.value)}
-                placeholder="Describe the network issue you are experiencing..."
+                placeholder={t('rca.placeholder')}
                 rows={5}
                 className="text-sm resize-none"
               />
@@ -235,12 +237,12 @@ Provide analysis in this format:
               {analyzeMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Analyzing...
+                  {t('btn.analyzing')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
-                  Analyze Root Cause
+                  {t('btn.analyze')}
                 </>
               )}
             </Button>
@@ -253,7 +255,7 @@ Provide analysis in this format:
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
-                AI Analysis Result
+                {t('rca.aiResult')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -272,7 +274,7 @@ Provide analysis in this format:
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center gap-3">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <span className="text-sm font-medium">AI is analyzing the network issue...</span>
+                <span className="text-sm font-medium">{t('rca.analyzing')}</span>
               </div>
               <div className="space-y-2">
                 <Skeleton className="h-4 w-full" />
@@ -291,7 +293,7 @@ Provide analysis in this format:
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <History className="h-4 w-4 text-muted-foreground" />
-                Analysis History
+                {t('rca.analysisHistory')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
@@ -311,7 +313,7 @@ Provide analysis in this format:
                           >
                             {record.technology}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">{record.site || 'All Sites'}</span>
+                          <span className="text-xs text-muted-foreground">{record.site || t('rca.allSites')}</span>
                           <span className="text-[10px] text-muted-foreground ml-auto">{record.timestamp}</span>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2">{record.symptom}</p>
@@ -332,7 +334,7 @@ Provide analysis in this format:
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Quick Diagnostics
+              {t('rca.quickDiag')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
@@ -343,7 +345,7 @@ Provide analysis in this format:
                     <div className="flex items-center gap-2 mb-2">
                       {category.icon}
                       <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {category.category}
+                        {t(category.category)}
                       </h4>
                     </div>
                     <div className="space-y-1.5 ml-6">
@@ -355,10 +357,10 @@ Provide analysis in this format:
                         >
                           <div className="flex items-center gap-1.5 font-medium text-foreground group-hover:text-primary transition-colors">
                             <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            {item.label}
+                            {t(item.label)}
                           </div>
                           <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 ml-4">
-                            {item.description}
+                            {t(item.description)}
                           </p>
                         </button>
                       ))}

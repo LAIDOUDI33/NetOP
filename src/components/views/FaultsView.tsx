@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -220,6 +221,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function FaultsView() {
+  const t = useT();
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [componentFilter, setComponentFilter] = useState<string>('all');
@@ -287,8 +289,8 @@ export default function FaultsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load fault predictions</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('flt.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -313,7 +315,7 @@ export default function FaultsView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Brain className="h-6 w-6 text-amber-500" />
-          AI Fault Prediction
+          {t('flt.predictions')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Predictive maintenance and failure forecasting
@@ -411,7 +413,7 @@ export default function FaultsView() {
         {/* 1. Severity Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Severity Distribution</CardTitle>
+            <CardTitle className="text-base">{t('flt.sevDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -444,7 +446,7 @@ export default function FaultsView() {
         {/* 2. Component Risk Heatmap Grid */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Component Risk Heatmap</CardTitle>
+            <CardTitle className="text-base">{t('flt.componentHeatmap')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -504,29 +506,29 @@ export default function FaultsView() {
       {/* Full Predictions Table */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <CardTitle className="text-base">Fault Predictions</CardTitle>
+          <CardTitle className="text-base">{t('flt.predictions')}</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
             {/* Severity Filter */}
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Severity" />
+                <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Severity</SelectItem>
+                <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="critical">{t('status.critical')}</SelectItem>
               </SelectContent>
             </Select>
 
             {/* Status Filter */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatuses')}</SelectItem>
                 <SelectItem value="predicted">Predicted</SelectItem>
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="mitigated">Mitigated</SelectItem>
@@ -537,10 +539,10 @@ export default function FaultsView() {
             {/* Component Filter */}
             <Select value={componentFilter} onValueChange={setComponentFilter}>
               <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Component" />
+                <SelectValue placeholder={t('filter.component')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Components</SelectItem>
+                <SelectItem value="all">{t('filter.allComponents')}</SelectItem>
                 {COMPONENTS.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
@@ -551,24 +553,24 @@ export default function FaultsView() {
         <CardContent>
           {predictions.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No fault predictions match the selected filters.
+              {t('empty.noMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Component</TableHead>
-                    <TableHead>Fault Type</TableHead>
-                    <TableHead className="text-right">Probability</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.component')}</TableHead>
+                    <TableHead>{t('th.type')}</TableHead>
+                    <TableHead className="text-right">{t('th.probability')}</TableHead>
                     <TableHead>Severity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
+                    <TableHead className="text-right">{t('th.confidence')}</TableHead>
                     <TableHead>Time to Fail</TableHead>
-                    <TableHead>Action</TableHead>
-                    <TableHead className="sticky right-0 bg-background z-10">Created</TableHead>
+                    <TableHead>{t('th.action')}</TableHead>
+                    <TableHead className="sticky right-0 bg-background z-10">{t('th.createdAt')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

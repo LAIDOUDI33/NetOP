@@ -269,6 +269,7 @@ const en: Record<string, string> = {
   'empty.noAlerts': 'No alerts found',
   'empty.noUnresolved': 'No unresolved alerts',
   'empty.notYet': 'No {entity} have been created yet',
+  'empty.noEnergyData': 'No Energy Data Available',
 
   // ========== COMMON TOAST MESSAGES ==========
   'toast.actionCompleted': 'Action completed',
@@ -677,6 +678,7 @@ const en: Record<string, string> = {
   'cfg.defaultTemplates': 'Default Templates',
   'cfg.totalApplications': 'Total Applications',
   'cfg.noTemplates': 'No templates found',
+  'cfg.vendor': 'Vendor',
 
   // ========== VIEW-SPECIFIC: Onboarding ==========
   'onb.addNewSite': 'Add New Site',
@@ -1376,6 +1378,11 @@ const en: Record<string, string> = {
   'exec.cost': 'Cost',
   'exec.revenue': 'Revenue',
   'exec.sla': 'SLA',
+  'exec.avgMos': 'Avg MOS',
+  'exec.slaBreaches': 'SLA Breaches',
+  'exec.mosExcellent': 'Excellent voice quality',
+  'exec.mosAcceptable': 'Acceptable quality',
+  'exec.mosPoor': 'Poor experience',
 
   // ========== VIEW-SPECIFIC: Vendor Compare ==========
   'vc.title': 'Vendor Comparison',

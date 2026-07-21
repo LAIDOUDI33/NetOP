@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -195,6 +196,7 @@ function TableSkeleton() {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function NpiView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('4G');
   const [region, setRegion] = useState<string>('Lagos');
 
@@ -231,9 +233,9 @@ export default function NpiView() {
               <Gauge className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Network Performance Index</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('npi.title')}</h1>
               <p className="text-sm text-muted-foreground">
-                Composite NPI score with multi-dimensional drill-down
+                {t('npi.subtitle')}
               </p>
             </div>
           </div>
@@ -242,7 +244,7 @@ export default function NpiView() {
           <div className="flex items-center gap-3">
             <Select value={technology} onValueChange={setTechnology}>
               <SelectTrigger className="w-[130px]">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
                 {TECHNOLOGIES.map((t) => (
@@ -254,7 +256,7 @@ export default function NpiView() {
             </Select>
             <Select value={region} onValueChange={setRegion}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder={t('filter.region')} />
               </SelectTrigger>
               <SelectContent>
                 {regions.length > 0
@@ -292,7 +294,7 @@ export default function NpiView() {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
             <p className="text-sm text-muted-foreground">
-              Failed to load NPI data.
+              {t('empty.noDataFor', { entity: 'NPI' })}
             </p>
           </CardContent>
         </Card>
@@ -307,7 +309,7 @@ export default function NpiView() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Sites
+                  {t('npi.totalSites')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -319,7 +321,7 @@ export default function NpiView() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Avg NPI
+                  {t('npi.avgScore')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -353,7 +355,7 @@ export default function NpiView() {
                     </Badge>
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No data</p>
+                  <p className="text-sm text-muted-foreground">{t('empty.noData')}</p>
                 )}
               </CardContent>
             </Card>
@@ -376,7 +378,7 @@ export default function NpiView() {
                     </Badge>
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No data</p>
+                  <p className="text-sm text-muted-foreground">{t('empty.noData')}</p>
                 )}
               </CardContent>
             </Card>
@@ -387,7 +389,7 @@ export default function NpiView() {
             {/* NPI Distribution Bar Chart */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">NPI Distribution</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('npi.dist')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {distributionBuckets.some((b) => b.count > 0) ? (
@@ -416,7 +418,7 @@ export default function NpiView() {
                   </div>
                 ) : (
                   <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
-                    No distribution data available
+                    {t('npi.noDistData')}
                   </div>
                 )}
               </CardContent>
@@ -425,7 +427,7 @@ export default function NpiView() {
             {/* Dimension Averages Bar Chart */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Dimension Averages</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('npi.dimAvg')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {dimensionAverages.length > 0 ? (
@@ -457,7 +459,7 @@ export default function NpiView() {
                   </div>
                 ) : (
                   <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">
-                    No dimension data available
+                    {t('npi.noDimData')}
                   </div>
                 )}
               </CardContent>
@@ -470,7 +472,7 @@ export default function NpiView() {
               <CardTitle className="text-sm font-medium">
                 Site NPI Details
                 <span className="text-muted-foreground font-normal ml-2">
-                  ({npis.length} sites)
+                  ({npis.length} {t('unit.sites')})
                 </span>
               </CardTitle>
             </CardHeader>
@@ -481,15 +483,15 @@ export default function NpiView() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-16">Rank</TableHead>
-                        <TableHead>Site</TableHead>
-                        <TableHead className="w-20">Tech</TableHead>
-                        <TableHead className="w-48">Overall NPI</TableHead>
-                        <TableHead className="w-20 text-right">Coverage</TableHead>
-                        <TableHead className="w-20 text-right">Capacity</TableHead>
-                        <TableHead className="w-20 text-right">Quality</TableHead>
-                        <TableHead className="w-24 text-right">Reliability</TableHead>
-                        <TableHead className="w-24 text-right">Cost Eff.</TableHead>
-                        <TableHead className="w-28">Region</TableHead>
+                        <TableHead>{t('th.site')}</TableHead>
+                        <TableHead className="w-20">{t('th.tech')}</TableHead>
+                        <TableHead className="w-48">{t('npi.overallScore')}</TableHead>
+                        <TableHead className="w-20 text-right">{t('npi.coverage')}</TableHead>
+                        <TableHead className="w-20 text-right">{t('npi.capacity')}</TableHead>
+                        <TableHead className="w-20 text-right">{t('npi.quality')}</TableHead>
+                        <TableHead className="w-24 text-right">{t('npi.reliability')}</TableHead>
+                        <TableHead className="w-24 text-right">{t('npi.costEfficiency')}</TableHead>
+                        <TableHead className="w-28">{t('th.region')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -564,7 +566,7 @@ export default function NpiView() {
                 </div>
               ) : (
                 <div className="py-8 text-center text-sm text-muted-foreground">
-                  No NPI data available for the selected filters.
+                  {t('npi.noMatch')}
                 </div>
               )}
             </CardContent>

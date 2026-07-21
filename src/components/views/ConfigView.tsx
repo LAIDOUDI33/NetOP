@@ -270,7 +270,7 @@ export default function ConfigView() {
         </Select>
         <Select value={vendorFilter} onValueChange={setVendorFilter}>
           <SelectTrigger className="w-[160px] h-9">
-            <SelectValue placeholder={"Vendor" />
+            <SelectValue placeholder={t('cfg.vendor')} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allVendors')}</SelectItem>

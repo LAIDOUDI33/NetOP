@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -226,6 +227,19 @@ function PieTooltipContent({ active, payload }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function InterferenceView() {
+  const t = useT();
+  const typeLabels: Record<string, string> = {
+    pci_conflict: t('intf.pciConflict'),
+    co_channel: t('intf.coChannel'),
+    adjacent_channel: t('intf.adjacentChannel'),
+    external: t('intf.external'),
+    inter_modulation: t('intf.interModulation'),
+  };
+  const statusTextMap: Record<string, string> = {
+    active: t('status.active'),
+    resolved: t('status.resolved'),
+    pending: t('status.pending'),
+  };
   const [techFilter, setTechFilter] = useState<string>('all');
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -257,7 +271,7 @@ export default function InterferenceView() {
 
   const typeChartData = summary?.byType
     ? Object.entries(summary.byType).map(([key, value]) => ({
-        name: TYPE_LABELS[key] ?? key,
+        name: typeLabels[key] ?? key,
         value,
         fill: TYPE_COLORS_MAP[key] ?? '#94A3B8',
       }))
@@ -293,8 +307,8 @@ export default function InterferenceView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load interference data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('intf.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -304,9 +318,9 @@ export default function InterferenceView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Radio className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Interference Events</p>
+        <p className="text-lg font-medium">{t('intf.noEvents')}</p>
         <p className="text-sm mt-1">
-          No interference events match the current filters.
+          {t('intf.noMatch')}
         </p>
       </div>
     );
@@ -319,10 +333,10 @@ export default function InterferenceView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Radio className="h-6 w-6 text-amber-500" />
-          Interference Management
+          {t('intf.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          PCI conflict detection and co-channel interference analysis
+          {t('intf.subtitle')}
         </p>
       </div>
 
@@ -333,14 +347,13 @@ export default function InterferenceView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-cyan-500" />
-              Total Events
+              {t('intf.totalEvents')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Detected interference events</p>
           </CardContent>
         </Card>
 
@@ -349,7 +362,7 @@ export default function InterferenceView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
-              High / Critical
+              {t('intf.highCritical')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -365,7 +378,7 @@ export default function InterferenceView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-amber-500" />
-              Avg Impact Score
+              {t('intf.avgImpactScore')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -387,7 +400,7 @@ export default function InterferenceView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Active Detections
+              {t('intf.activeDetections')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -403,7 +416,7 @@ export default function InterferenceView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Resolved
+              {t('intf.resolved')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -420,7 +433,7 @@ export default function InterferenceView() {
         {/* Severity Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Events by Severity</CardTitle>
+            <CardTitle className="text-base">{t('intf.eventsBySev')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -451,7 +464,7 @@ export default function InterferenceView() {
         {/* Type Distribution Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Interference Type Distribution</CardTitle>
+            <CardTitle className="text-base">{t('intf.typeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -492,36 +505,36 @@ export default function InterferenceView() {
       {/* Full Events Table */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <CardTitle className="text-base">Interference Events</CardTitle>
+          <CardTitle className="text-base">{t('intf.events')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Severity" />
+                <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
                 {SEVERITY_OPTIONS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  <SelectItem key={s.value} value={s.value}>{s.value === 'all' ? t('filter.allSeverities') : s.value === 'critical' ? t('status.critical') : s.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder={t('filter.type')} />
               </SelectTrigger>
               <SelectContent>
-                {TYPE_OPTIONS.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                {TYPE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.value === 'all' ? t('filter.allTypes') : (typeLabels[opt.value] ?? opt.label)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -530,26 +543,26 @@ export default function InterferenceView() {
         <CardContent>
           {events.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No events match the selected filters.
+              {t('intf.noEventsFilter')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Severity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Source Cell</TableHead>
-                    <TableHead>Conflicting Cell</TableHead>
-                    <TableHead>Frequency</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.type')}</TableHead>
+                    <TableHead>{t('th.riskLevel')}</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
+                    <TableHead>{t('th.servingCell')}</TableHead>
+                    <TableHead>{t('th.conflictingCell')}</TableHead>
+                    <TableHead>{t('th.frequency')}</TableHead>
                     <TableHead>PCI</TableHead>
-                    <TableHead className="text-right">Impact</TableHead>
-                    <TableHead>Affected KPIs</TableHead>
-                    <TableHead className="min-w-[160px]">Recommendation</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">{t('th.impactScore')}</TableHead>
+                    <TableHead>{t('intf.affectedKpis')}</TableHead>
+                    <TableHead className="min-w-[160px]">{t('th.description')}</TableHead>
+                    <TableHead>{t('th.createdAt')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -571,7 +584,7 @@ export default function InterferenceView() {
                             color: TYPE_COLORS_MAP[evt.interferenceType] ?? '#94A3B8',
                           }}
                         >
-                          {TYPE_LABELS[evt.interferenceType] ?? evt.interferenceType}
+                          {typeLabels[evt.interferenceType] ?? evt.interferenceType}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -583,7 +596,7 @@ export default function InterferenceView() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={STATUS_VARIANT[evt.status] ?? 'outline'}>
-                          {STATUS_TEXT[evt.status] ?? evt.status}
+                          {statusTextMap[evt.status] ?? STATUS_TEXT[evt.status] ?? evt.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs max-w-[100px] truncate" title={evt.sourceCellName}>

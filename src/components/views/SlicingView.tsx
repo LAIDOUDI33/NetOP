@@ -289,8 +289,8 @@ export default function SlicingView() {
         <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Network Slices' })}</p>
         <p className="text-sm mt-1">
           {statusFilter !== 'all' || sliceTypeFilter !== 'all'
-            ? {t('sli.noMatch')}
-            : {t('sli.noSlices')}}
+            ? t('sli.noMatch')
+            : t('sli.noSlices')}
         </p>
       </div>
     );

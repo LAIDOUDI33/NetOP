@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -184,6 +185,7 @@ function PieTooltipContent({ active, payload }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function HandoverView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -244,8 +246,8 @@ export default function HandoverView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load handover data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('ho.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -258,8 +260,8 @@ export default function HandoverView() {
         <p className="text-lg font-medium">No Handover Data Available</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all' || statusFilter !== 'all'
-            ? 'No handover pairs match the selected filters.'
-            : 'Handover metrics have not been collected yet.'}
+            ? t('ho.noMatch')
+            : t('empty.notYet')}
         </p>
       </div>
     );
@@ -270,7 +272,7 @@ export default function HandoverView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Handover Optimization</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('ho.subtitle')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Neighbor-level handover KPI analysis and optimization
         </p>
@@ -380,7 +382,7 @@ export default function HandoverView() {
         {/* HO Success Rate Distribution BarChart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">HO Success Rate Distribution</CardTitle>
+            <CardTitle className="text-base">{t('ho.successRateDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -411,7 +413,7 @@ export default function HandoverView() {
         {/* Relation Type PieChart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Relation Type Distribution</CardTitle>
+            <CardTitle className="text-base">{t('ho.relationTypeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -451,14 +453,14 @@ export default function HandoverView() {
       {/* Full Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Handover Pair Details</CardTitle>
+          <CardTitle className="text-base">{t('ho.pairDetails')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -467,13 +469,13 @@ export default function HandoverView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatuses')}</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
-                <SelectItem value="degraded">Degraded</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
+                <SelectItem value="degraded">{t('status.degraded')}</SelectItem>
+                <SelectItem value="critical">{t('status.critical')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -481,7 +483,7 @@ export default function HandoverView() {
         <CardContent>
           {handovers.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No handover pairs match the selected filters.
+              {t('ho.noMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
@@ -489,21 +491,21 @@ export default function HandoverView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10">Serving Cell</TableHead>
-                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
+                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
                     <TableHead className="sticky left-[200px] bg-background z-10">Neighbor</TableHead>
-                    <TableHead className="sticky left-[340px] bg-background z-10">Code</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead className="sticky left-[340px] bg-background z-10">{t('th.code')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.type')}</TableHead>
                     <TableHead className="text-right">Attempts</TableHead>
                     <TableHead className="text-right">Success</TableHead>
                     <TableHead className="text-right">Failures</TableHead>
-                    <TableHead className="text-right">Success %</TableHead>
+                    <TableHead className="text-right">{t('th.hoSuccessRate')}</TableHead>
                     <TableHead className="text-right">Prep ms</TableHead>
                     <TableHead className="text-right">Exec ms</TableHead>
                     <TableHead className="text-right">Ping-Pong</TableHead>
                     <TableHead>Early/Late</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Action</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
+                    <TableHead>{t('th.action')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

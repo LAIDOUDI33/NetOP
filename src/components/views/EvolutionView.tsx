@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -197,6 +198,7 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function EvolutionView() {
+  const t = useT();
   const [sourceTechFilter, setSourceTechFilter] = useState<string>('all');
   const [targetTechFilter, setTargetTechFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -272,8 +274,8 @@ export default function EvolutionView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <ArrowRightLeft className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load Evolution data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'Evolution' })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -283,11 +285,11 @@ export default function EvolutionView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <ArrowRightLeft className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Evolution Plans Found</p>
+        <p className="text-lg font-medium">{t('evo.noPlans')}</p>
         <p className="text-sm mt-1">
           {sourceTechFilter !== 'all' || targetTechFilter !== 'all' || statusFilter !== 'all'
-            ? 'No plans match the selected filters.'
-            : 'Technology migration plans have not been created yet.'}
+            ? t('evo.noMatch')
+            : t('evo.noDataYet')}
         </p>
       </div>
     );
@@ -300,10 +302,10 @@ export default function EvolutionView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <ArrowRightLeft className="h-6 w-6" />
-          Network Evolution
+          {t('evo.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Technology migration planning and refarming progress tracking
+          {t('evo.subtitle')}
         </p>
       </div>
 
@@ -314,7 +316,7 @@ export default function EvolutionView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Layers className="h-4 w-4 text-slate-500" />
-              Total Plans
+              {t('evo.totalPlans')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -337,7 +339,7 @@ export default function EvolutionView() {
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {(summary?.totalSites ?? 0).toLocaleString()}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all plans</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('view.acrossAll', { entity: 'plans' })}</p>
           </CardContent>
         </Card>
 
@@ -360,7 +362,7 @@ export default function EvolutionView() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {summary?.totalCompleted ?? 0} / {summary?.totalSites ?? 0} sites
+              {summary?.totalCompleted ?? 0} / {summary?.totalSites ?? 0} {t('unit.sites')}
             </p>
           </CardContent>
         </Card>
@@ -407,11 +409,11 @@ export default function EvolutionView() {
         {/* Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status Distribution</CardTitle>
+            <CardTitle className="text-base">{t('evo.statusDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             {statusChartData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('empty.noData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -443,11 +445,11 @@ export default function EvolutionView() {
         {/* Migration Paths */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Migration Paths</CardTitle>
+            <CardTitle className="text-base">{t('evo.migrationPaths')}</CardTitle>
           </CardHeader>
           <CardContent>
             {migrationPathData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('empty.noData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -488,14 +490,14 @@ export default function EvolutionView() {
       {/* Plans Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Migration Plans</CardTitle>
+          <CardTitle className="text-base">{t('evo.plans')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={sourceTechFilter} onValueChange={setSourceTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Source Tech" />
+                <SelectValue placeholder={t('evo.sourceTech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Source</SelectItem>
+                <SelectItem value="all">{t('filter.allSource')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -504,10 +506,10 @@ export default function EvolutionView() {
             </Select>
             <Select value={targetTechFilter} onValueChange={setTargetTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Target Tech" />
+                <SelectValue placeholder={t('evo.targetTech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Target</SelectItem>
+                <SelectItem value="all">{t('filter.allTarget')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -516,13 +518,13 @@ export default function EvolutionView() {
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 <SelectItem value="planned">Planned</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="in_progress">{t('status.inProgress')}</SelectItem>
+                <SelectItem value="completed">{t('status.completed')}</SelectItem>
                 <SelectItem value="delayed">Delayed</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
@@ -532,23 +534,23 @@ export default function EvolutionView() {
         <CardContent>
           {plans.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No plans match the selected filters.
+              {t('evo.noMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.name')}</TableHead>
                     <TableHead>Migration</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
                     <TableHead className="text-right">Progress</TableHead>
                     <TableHead className="text-right">Budget</TableHead>
                     <TableHead className="text-right">Cost %</TableHead>
                     <TableHead>Risk</TableHead>
-                    <TableHead>Start</TableHead>
-                    <TableHead>Target</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t('th.startTime')}</TableHead>
+                    <TableHead>{t('th.target')}</TableHead>
+                    <TableHead>{t('th.status')}</TableHead>
                     <TableHead>Notes</TableHead>
                   </TableRow>
                 </TableHeader>

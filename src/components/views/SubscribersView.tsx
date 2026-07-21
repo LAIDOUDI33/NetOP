@@ -259,7 +259,7 @@ export default function SubscribersView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Users className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load subscriber data</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('sub.title') })}</p>
         <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );

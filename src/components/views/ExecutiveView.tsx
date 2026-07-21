@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -155,6 +156,7 @@ function GaugeCardsSkeleton() {
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function ExecutiveView() {
+  const t = useT();
   const { data, isLoading, error } = useQuery<ExecutiveData>({
     queryKey: ['executive'],
     queryFn: () => fetch('/api/executive').then((r) => r.json()),
@@ -201,9 +203,9 @@ export default function ExecutiveView() {
             <Crown className="h-5 w-5 text-amber-500" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Executive Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t('exec.title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Strategic network performance overview for leadership
+              {t('exec.subtitle')}
             </p>
           </div>
         </div>
@@ -229,7 +231,7 @@ export default function ExecutiveView() {
           <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
             <XCircle className="h-8 w-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Failed to load executive dashboard data.
+              {t('empty.noDataFor', { entity: t('exec.title') })}
             </p>
           </CardContent>
         </Card>
@@ -244,7 +246,7 @@ export default function ExecutiveView() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Total Sites
+                  {t('exec.totalSites')}
                 </p>
                 <p className="text-2xl font-bold mt-1">{formatCompact(d.totalSites)}</p>
                 <div className="h-1 w-full bg-muted rounded-full mt-2">
@@ -257,7 +259,7 @@ export default function ExecutiveView() {
             <Card className={d.activeAlerts > 0 ? 'border-red-500/30' : ''}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Active Alerts
+                  {t('exec.openAlerts')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${d.activeAlerts > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
                   {formatCompact(d.activeAlerts)}
@@ -275,7 +277,7 @@ export default function ExecutiveView() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Avg Health Score
+                  {t('exec.networkHealth')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${healthColor(d.avgHealth)}`}>
                   {formatNumber(d.avgHealth, 1)}%
@@ -293,7 +295,7 @@ export default function ExecutiveView() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Avg MOS
+                  {t('exec.avgMos')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${mosColor(d.avgMos)}`}>
                   {formatNumber(d.avgMos, 2)}
@@ -311,7 +313,7 @@ export default function ExecutiveView() {
             <Card className={d.openIncidents > 0 ? 'border-amber-500/30' : ''}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Active Incidents
+                  {t('exec.incidentsOpen')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${d.openIncidents > 0 ? 'text-amber-600 dark:text-amber-400' : ''}`}>
                   {formatCompact(d.openIncidents)}
@@ -329,7 +331,7 @@ export default function ExecutiveView() {
             <Card className={d.activeOutages > 0 ? 'border-red-500/30' : ''}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Active Outages
+                  {t('exec.outages')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${d.activeOutages > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
                   {formatCompact(d.activeOutages)}
@@ -347,11 +349,11 @@ export default function ExecutiveView() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  Energy
+                  {t('exec.energy')}
                 </p>
                 <p className="text-2xl font-bold mt-1">
                   {formatCompact(d.totalEnergyKw)}
-                  <span className="text-sm font-normal text-muted-foreground ml-1">kW</span>
+                  <span className="text-sm font-normal text-muted-foreground ml-1">{t('unit.kw')}</span>
                 </p>
                 <div className="h-1 w-full bg-muted rounded-full mt-2">
                   <div className="h-1 rounded-full bg-cyan-500" style={{ width: '60%' }} />
@@ -363,7 +365,7 @@ export default function ExecutiveView() {
             <Card className={d.slaBreachCount > 0 ? 'border-red-500/30' : ''}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  SLA Breaches
+                  {t('exec.slaBreaches')}
                 </p>
                 <p className={`text-2xl font-bold mt-1 ${d.slaBreachCount > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
                   {formatCompact(d.slaBreachCount)}
@@ -383,7 +385,7 @@ export default function ExecutiveView() {
             {/* Sites by Technology Pie */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Sites by Technology</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('exec.sitesByTech')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-56">
@@ -422,7 +424,7 @@ export default function ExecutiveView() {
             {/* Sites by Status Pie */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Sites by Status</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('exec.sitesByStatus')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-56">
@@ -519,7 +521,7 @@ export default function ExecutiveView() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-emerald-500" />
-                  ROI Savings
+                  {t('exec.costSavings')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -530,7 +532,7 @@ export default function ExecutiveView() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Cost Avoidance</span>
+                    <span>{t('exec.costAvoidance')}</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">Savings</span>
                   </div>
                   <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
@@ -551,7 +553,7 @@ export default function ExecutiveView() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <Zap className="h-4 w-4 text-amber-500" />
-                  Energy Consumption
+                  {t('exec.energyEfficiency')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -559,12 +561,12 @@ export default function ExecutiveView() {
                   <span className="text-3xl font-bold">
                     {formatCompact(d.totalEnergyKw)}
                   </span>
-                  <span className="text-sm text-muted-foreground">kW</span>
+                  <span className="text-sm text-muted-foreground">{t('unit.kw')}</span>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Current Draw</span>
-                    <span className="font-medium">{d.totalEnergyKw.toLocaleString()} kW</span>
+                    <span>{t('exec.currentDraw')}</span>
+                    <span className="font-medium">{d.totalEnergyKw.toLocaleString()} {t('unit.kw')}</span>
                   </div>
                   <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
                     <div
@@ -603,7 +605,7 @@ export default function ExecutiveView() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {d.avgMos >= 4 ? 'Excellent voice quality' : d.avgMos >= 3 ? 'Acceptable quality' : 'Poor experience'}
+                    {d.avgMos >= 4 ? t('exec.mosExcellent') : d.avgMos >= 3 ? t('exec.mosAcceptable') : t('exec.mosPoor')}
                   </p>
                 </div>
               </CardContent>

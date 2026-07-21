@@ -243,8 +243,8 @@ export default function CapacityView() {
         <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Capacity Forecasts' })}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all' || riskFilter !== 'all'
-            ? {t('empty.noMatchShort')}
-            : {t('view.noDataYet', { entity: 'Capacity forecasts' })}}
+            ? t('empty.noMatchShort')
+            : t('view.noDataYet', { entity: 'Capacity forecasts' })}
         </p>
       </div>
     );

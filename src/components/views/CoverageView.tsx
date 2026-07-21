@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -31,13 +32,14 @@ function getSignalColor(signal: number) {
   return 'text-red-600 dark:text-red-400';
 }
 
-function getSignalLabel(signal: number) {
-  if (signal >= -80) return 'Good';
-  if (signal >= -95) return 'Fair';
-  return 'Poor';
+function getSignalLabelKey(signal: number): string {
+  if (signal >= -80) return 'good';
+  if (signal >= -95) return 'fair';
+  return 'poor';
 }
 
 export default function CoverageView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('all');
   const [region, setRegion] = useState<string>('all');
 
@@ -65,16 +67,23 @@ export default function CoverageView() {
     );
   }
 
+  const statusLabels: Record<string, string> = {
+    active: t('status.active'),
+    degraded: t('status.degraded'),
+    down: t('status.down'),
+    maintenance: t('status.maintenance'),
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-center">
         <Select value={technology} onValueChange={setTechnology}>
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Technology" />
+            <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Technologies</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             <SelectItem value="2G">2G</SelectItem>
             <SelectItem value="3G">3G</SelectItem>
             <SelectItem value="4G">4G</SelectItem>
@@ -83,10 +92,10 @@ export default function CoverageView() {
         </Select>
         <Select value={region} onValueChange={setRegion}>
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Region" />
+            <SelectValue placeholder={t('filter.region')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Regions</SelectItem>
+            <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
             {regions.map(r => (
               <SelectItem key={r} value={r}>{r}</SelectItem>
             ))}
@@ -153,14 +162,14 @@ export default function CoverageView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Site</TableHead>
-                    <TableHead className="text-xs">Code</TableHead>
-                    <TableHead className="text-xs">Technology</TableHead>
-                    <TableHead className="text-xs">Region</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+                    <TableHead className="text-xs">{t('th.code')}</TableHead>
+                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+                    <TableHead className="text-xs">{t('th.region')}</TableHead>
+                    <TableHead className="text-xs">{t('th.status')}</TableHead>
                     <TableHead className="text-xs text-right">Signal</TableHead>
                     <TableHead className="text-xs text-right">Throughput</TableHead>
-                    <TableHead className="text-xs text-right">Users</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.users')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -179,18 +188,18 @@ export default function CoverageView() {
                       <TableCell className="text-xs">{site.region}</TableCell>
                       <TableCell>
                         <Badge variant={STATUS_VARIANT[site.status]} className="text-xs">
-                          {site.status}
+                          {statusLabels[site.status] ?? site.status}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-right">
                         <span className={`font-medium ${getSignalColor(site.avgSignal)}`}>
-                          {site.avgSignal.toFixed(1)} dBm
+                          {site.avgSignal.toFixed(1)} {t('unit.dbm')}
                         </span>
                         <span className={`text-[10px] ml-1 ${getSignalColor(site.avgSignal)}`}>
-                          ({getSignalLabel(site.avgSignal)})
+                          ({t('signal.' + getSignalLabelKey(site.avgSignal))})
                         </span>
                       </TableCell>
-                      <TableCell className="text-xs text-right">{site.avgThroughput.toFixed(1)} Mbps</TableCell>
+                      <TableCell className="text-xs text-right">{site.avgThroughput.toFixed(1)} {t('unit.mbps')}</TableCell>
                       <TableCell className="text-xs text-right">{Math.round(site.avgUsers)}</TableCell>
                     </TableRow>
                   ))}

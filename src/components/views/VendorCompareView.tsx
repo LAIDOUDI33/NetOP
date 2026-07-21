@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -62,14 +63,14 @@ interface MatrixRow {
 }
 
 const MATRIX_ROWS: MatrixRow[] = [
-  { key: 'rsrp', label: 'RSRP', field: 'avgRsrp', unit: 'dBm', higherBetter: true, decimals: 1, icon: <Signal className="h-3.5 w-3.5" /> },
-  { key: 'dl', label: 'DL Throughput', field: 'avgDownloadThroughput', unit: 'Mbps', higherBetter: true, decimals: 2, icon: <ArrowDownToLine className="h-3.5 w-3.5" /> },
-  { key: 'ul', label: 'UL Throughput', field: 'avgUploadThroughput', unit: 'Mbps', higherBetter: true, decimals: 2, icon: <ArrowUpFromLine className="h-3.5 w-3.5" /> },
-  { key: 'latency', label: 'Latency', field: 'avgLatency', unit: 'ms', higherBetter: false, decimals: 1, icon: <Timer className="h-3.5 w-3.5" /> },
-  { key: 'availability', label: 'Availability', field: 'avgAvailability', unit: '%', higherBetter: true, decimals: 2, icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-  { key: 'ho', label: 'HO Success Rate', field: 'avgHandoverSuccessRate', unit: '%', higherBetter: true, decimals: 2, icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
-  { key: 'drop', label: 'Drop Rate', field: 'avgDropRate', unit: '%', higherBetter: false, decimals: 2, icon: <TrendingDown className="h-3.5 w-3.5" /> },
-  { key: 'sites', label: 'Site Count', field: 'siteCount', unit: '', higherBetter: true, decimals: 0, icon: <Building2 className="h-3.5 w-3.5" /> },
+  { key: 'rsrp', label: 'vc.rsrp', field: 'avgRsrp', unit: 'unit.dbm', higherBetter: true, decimals: 1, icon: <Signal className="h-3.5 w-3.5" /> },
+  { key: 'dl', label: 'vc.dl', field: 'avgDownloadThroughput', unit: 'unit.mbps', higherBetter: true, decimals: 2, icon: <ArrowDownToLine className="h-3.5 w-3.5" /> },
+  { key: 'ul', label: 'vc.ul', field: 'avgUploadThroughput', unit: 'unit.mbps', higherBetter: true, decimals: 2, icon: <ArrowUpFromLine className="h-3.5 w-3.5" /> },
+  { key: 'latency', label: 'vc.latency', field: 'avgLatency', unit: 'unit.ms', higherBetter: false, decimals: 1, icon: <Timer className="h-3.5 w-3.5" /> },
+  { key: 'availability', label: 'vc.availability', field: 'avgAvailability', unit: 'unit.percent', higherBetter: true, decimals: 2, icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+  { key: 'ho', label: 'vc.hoRate', field: 'avgHandoverSuccessRate', unit: 'unit.percent', higherBetter: true, decimals: 2, icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
+  { key: 'drop', label: 'vc.dropRate', field: 'avgDropRate', unit: 'unit.percent', higherBetter: false, decimals: 2, icon: <TrendingDown className="h-3.5 w-3.5" /> },
+  { key: 'sites', label: 'vc.siteCount', field: 'siteCount', unit: '', higherBetter: true, decimals: 0, icon: <Building2 className="h-3.5 w-3.5" /> },
 ];
 
 // ─── Vendor Color Palette (when multiple vendors) ─────────────────────
@@ -152,6 +153,7 @@ function findBestVendorIdx(comparisons: VendorComparison[], field: keyof VendorC
 // ─── Main Component ───────────────────────────────────────────────────
 
 export default function VendorCompareView() {
+  const t = useT();
   const [technology, setTechnology] = useState<string>('4G');
 
   const { data, isLoading, error } = useQuery<VendorCompareResponse>({
@@ -224,53 +226,53 @@ export default function VendorCompareView() {
   // KPI card definitions
   const kpiCards = [
     {
-      label: 'Best RSRP',
+      label: 'vc.bestRsrp',
       value: summary?.bestRsrp?.value,
       vendor: summary?.bestRsrp?.vendor,
-      unit: 'dBm',
+      unit: 'unit.dbm',
       decimals: 1,
     },
     {
-      label: 'Best DL Throughput',
+      label: 'vc.bestDl',
       value: summary?.bestThroughput?.value,
       vendor: summary?.bestThroughput?.vendor,
-      unit: 'Mbps',
+      unit: 'unit.mbps',
       decimals: 2,
     },
     {
-      label: 'Best UL Throughput',
+      label: 'vc.bestUl',
       value: null,
       vendor: null,
-      unit: 'Mbps',
+      unit: 'unit.mbps',
       decimals: 2,
       computed: true,
     },
     {
-      label: 'Best Latency',
+      label: 'vc.bestLatency',
       value: summary?.bestLatency?.value,
       vendor: summary?.bestLatency?.vendor,
-      unit: 'ms',
+      unit: 'unit.ms',
       decimals: 1,
     },
     {
-      label: 'Best Availability',
+      label: 'vc.bestAvail',
       value: summary?.bestAvailability?.value,
       vendor: summary?.bestAvailability?.vendor,
-      unit: '%',
+      unit: 'unit.percent',
       decimals: 2,
     },
     {
-      label: 'Best HO Rate',
+      label: 'vc.bestHo',
       value: summary?.bestHoRate?.value,
       vendor: summary?.bestHoRate?.vendor,
-      unit: '%',
+      unit: 'unit.percent',
       decimals: 2,
     },
     {
-      label: 'Lowest Drop Rate',
+      label: 'vc.lowestDrop',
       value: summary?.bestLowestDropRate?.value,
       vendor: summary?.bestLowestDropRate?.vendor,
-      unit: '%',
+      unit: 'unit.percent',
       decimals: 2,
     },
   ];
@@ -292,10 +294,10 @@ export default function VendorCompareView() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             <GitCompare className="h-6 w-6 text-emerald-500" />
-            Vendor Comparison
+            {t('vc.title')}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Cross-vendor KPI benchmarking — Ericsson vs Huawei vs Nokia vs Samsung vs ZTE
+            {t('vc.subtitle')}
           </p>
         </div>
 
@@ -329,13 +331,13 @@ export default function VendorCompareView() {
               <Card key={idx}>
                 <CardHeader className="pb-1">
                   <CardTitle className="text-[11px] font-medium text-muted-foreground leading-tight">
-                    {kpi.label}
+                    {t(kpi.label)}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg font-bold">
                     {displayValue != null
-                      ? `${formatNumber(displayValue, kpi.decimals)}${kpi.unit ? ` ${kpi.unit}` : ''}`
+                      ? `${formatNumber(displayValue, kpi.decimals)}${kpi.unit ? ` ${t(kpi.unit)}` : ''}`
                       : '—'}
                   </div>
                   {displayVendor && (
@@ -368,7 +370,7 @@ export default function VendorCompareView() {
       {error && (
         <Card>
           <CardContent className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-            Failed to load vendor comparison data.
+            {t('empty.noData')}
           </CardContent>
         </Card>
       )}
@@ -376,7 +378,7 @@ export default function VendorCompareView() {
       {!isLoading && !error && comparisons.length === 0 && (
         <Card>
           <CardContent className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-            No vendor data available for {technology}.
+            {t('vc.noData', { technology })}
           </CardContent>
         </Card>
       )}
@@ -385,7 +387,7 @@ export default function VendorCompareView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              KPI Comparison Matrix
+              {t('vc.matrix')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -394,14 +396,14 @@ export default function VendorCompareView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="text-xs whitespace-nowrap min-w-[160px]">
-                      KPI
+                      {t('th.metric')}
                     </TableHead>
                     {comparisons.map((c) => (
                       <TableHead key={c.vendor} className="text-xs whitespace-nowrap text-center">
                         <div className="flex flex-col items-center gap-1">
                           <span className="font-semibold">{c.vendor}</span>
                           <span className="text-[10px] text-muted-foreground font-normal">
-                            {c.siteCount} sites
+                            {c.siteCount} {t('unit.sites')}
                           </span>
                         </div>
                       </TableHead>
@@ -416,9 +418,9 @@ export default function VendorCompareView() {
                         <TableCell className="text-xs font-medium whitespace-nowrap">
                           <div className="flex items-center gap-1.5 text-muted-foreground">
                             {row.icon}
-                            {row.label}
+                            {t(row.label)}
                             {row.unit && (
-                              <span className="text-[10px]">({row.unit})</span>
+                              <span className="text-[10px]">({t(row.unit)})</span>
                             )}
                           </div>
                         </TableCell>
@@ -435,7 +437,7 @@ export default function VendorCompareView() {
                               }`}
                             >
                               {formatNumber(val, row.decimals)}
-                              {row.unit ? ` ${row.unit}` : ''}
+                              {row.unit ? ` ${t(row.unit)}` : ''}
                             </TableCell>
                           );
                         })}
@@ -456,7 +458,7 @@ export default function VendorCompareView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
-              Average Throughput by Vendor
+              {t('vc.comparison')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -474,7 +476,7 @@ export default function VendorCompareView() {
                     tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
                     tickLine={false}
                     axisLine={false}
-                    label={{ value: 'Mbps', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
+                    label={{ value: t('unit.mbps'), angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
                   />
                   <Tooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="download" name="Download" fill="#10B981" radius={[4, 4, 0, 0]} />

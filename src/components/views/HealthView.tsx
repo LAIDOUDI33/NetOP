@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -193,6 +194,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, n
 // ─── Main Component ───────────────────────────────────────────────────
 
 export default function HealthView() {
+  const t = useT();
   const [techFilter, setTechFilter] = useState<string>('all');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [regionFilter, setRegionFilter] = useState<string>('all');
@@ -275,8 +277,8 @@ export default function HealthView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">Failed to load health data</p>
-        <p className="text-sm mt-1">Please try again later.</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('helth.title') })}</p>
+        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
   }
@@ -301,7 +303,7 @@ export default function HealthView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Heart className="h-6 w-6 text-red-500" />
-          Network Health Score
+          {t('exec.networkHealth')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Composite health index across coverage, capacity, quality, reliability, and experience
@@ -315,7 +317,7 @@ export default function HealthView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Radio className="h-4 w-4 text-cyan-500" />
-              Total Sites
+              {t('exec.totalSites')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -331,7 +333,7 @@ export default function HealthView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Heart className="h-4 w-4 text-red-500" />
-              Avg Health Score
+              {t('exec.networkHealth')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -404,11 +406,11 @@ export default function HealthView() {
         {/* Grade Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Grade Distribution</CardTitle>
+            <CardTitle className="text-base">{t('helth.gradeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             {gradeChartData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No grade data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -440,11 +442,11 @@ export default function HealthView() {
         {/* Trend Distribution Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Trend Distribution</CardTitle>
+            <CardTitle className="text-base">{t('helth.trendDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             {trendPieData.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">No trend data available.</p>
+              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
             ) : (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -476,11 +478,11 @@ export default function HealthView() {
       {/* Region Health Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Region Health Overview</CardTitle>
+          <CardTitle className="text-base">{t('helth.regionOverview')}</CardTitle>
         </CardHeader>
         <CardContent>
           {regionChartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No region data available.</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
           ) : (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -516,14 +518,14 @@ export default function HealthView() {
       {/* Full Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">Health Score Details</CardTitle>
+          <CardTitle className="text-base">{t('helth.details')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
-                <SelectValue placeholder="Technology" />
+                <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Tech</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -532,10 +534,10 @@ export default function HealthView() {
             </Select>
             <Select value={gradeFilter} onValueChange={setGradeFilter}>
               <SelectTrigger className="w-28">
-                <SelectValue placeholder="Grade" />
+                <SelectValue placeholder={t('filter.grade')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Grades</SelectItem>
+                <SelectItem value="all">{t('filter.allGrades')}</SelectItem>
                 <SelectItem value="A+">A+</SelectItem>
                 <SelectItem value="A">A</SelectItem>
                 <SelectItem value="B">B</SelectItem>
@@ -546,10 +548,10 @@ export default function HealthView() {
             </Select>
             <Select value={regionFilter} onValueChange={setRegionFilter}>
               <SelectTrigger className="w-36">
-                <SelectValue placeholder="Region" />
+                <SelectValue placeholder={t('filter.region')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
+                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
                 {regions.map((r) => (
                   <SelectItem key={r} value={r}>{r}</SelectItem>
                 ))}
@@ -560,23 +562,23 @@ export default function HealthView() {
         <CardContent>
           {healthScores.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              No sites match the selected filters.
+              {t('helth.noSiteMatch')}
             </p>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
-                    <TableHead>Tech</TableHead>
-                    <TableHead>Region</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
+                    <TableHead>{t('th.region')}</TableHead>
                     <TableHead className="text-right">Overall</TableHead>
                     <TableHead className="text-right">Coverage</TableHead>
                     <TableHead className="text-right">Capacity</TableHead>
                     <TableHead className="text-right">Quality</TableHead>
                     <TableHead className="text-right">Reliability</TableHead>
                     <TableHead className="text-right">Experience</TableHead>
-                    <TableHead>Grade</TableHead>
+                    <TableHead>{t('th.grade')}</TableHead>
                     <TableHead>Trend</TableHead>
                     <TableHead>Issues</TableHead>
                   </TableRow>
