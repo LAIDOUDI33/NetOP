@@ -1,23 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import ZAI from 'z-ai-web-dev-sdk';
+
+let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null;
+
+async function getZai() {
+  if (!zaiInstance) {
+    zaiInstance = await ZAI.create();
+  }
+  return zaiInstance;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { question, context } = await request.json();
 
-    const { ChatCompletion } = await import('z-ai-web-dev-sdk');
+    if (!question || typeof question !== 'string') {
+      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    }
+
+    const zai = await getZai();
 
     const systemPrompt = `You are NetOptima AI Assistant, an expert in mobile network optimization (2G/3G/4G/5G). Help users diagnose network issues, interpret KPIs, suggest optimizations, and explain technical concepts. Be concise, actionable, and reference specific metrics when possible. Available data includes: RSRP, RSRQ, SINR, throughput, latency, availability, handover success rate, drop rate, PRB utilization, MOS score, energy consumption, and more.`;
 
     const userContent = context ? `${question}\n\nContext: ${context}` : question;
 
-    const completion = await ChatCompletion.create({
-      model: 'deepseek-chat',
+    const completion = await zai.chat.completions.create({
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'assistant', content: systemPrompt },
         { role: 'user', content: userContent },
       ],
-      max_tokens: 2048,
-      temperature: 0.7,
+      thinking: { type: 'disabled' },
     });
 
     const answer = completion.choices?.[0]?.message?.content || 'No response generated.';

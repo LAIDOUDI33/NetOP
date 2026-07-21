@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       avgAvailability: r.avgAvailability ? Number(r.avgAvailability.toFixed(2)) : null,
       avgHandoverSuccessRate: r.avgHandoverSuccessRate ? Number(r.avgHandoverSuccessRate.toFixed(2)) : null,
       avgDropRate: r.avgDropRate ? Number(r.avgDropRate.toFixed(2)) : null,
-      siteCount: r.siteCount,
+      siteCount: Number(r.siteCount),
     }));
 
     const total = mapped.length;

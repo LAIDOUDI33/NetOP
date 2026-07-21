@@ -647,3 +647,162 @@ Stage Summary:
 - ServicesView (627): Service quality monitoring with SLA compliance
 - AuditView (540): Complete change history with parameter diff
 - VendorCompareView (463): Cross-vendor KPI matrix with best-value highlighting
+---
+Task ID: 5
+Agent: Benchmark Agent
+Task: Phase A Views — Browser Benchmark (16 views, automated sidebar navigation testing)
+
+Work Log:
+- Launched agent-browser, opened http://localhost:3000
+- Identified 45 sidebar navigation items (16 Phase A targets confirmed)
+- Systematically clicked each sidebar nav item, waited 2-3s, took accessibility snapshot
+- Checked browser console errors after each view transition
+- Investigated data shape mismatches by comparing API responses to view interfaces
+
+## Phase A View Benchmark Results (16 views)
+
+### 1. Dashboard
+- A) Renders content: YES — rich KPI cards, charts, technology summary
+- B) KPI cards with numbers: YES — Total Sites (34), Active Users (115), Avg Throughput (136.7/26.7 Mbps), Network Health (98.8%)
+- C) Charts visible: YES — Technology Health Comparison (bar), KPI Trends (line), Technology Distribution (pie)
+- D) Data table with rows: NO traditional table; Technology Summary section shows structured data per tech (2G/3G/4G/5G with site counts, users, availability)
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 2. Monitoring
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Active Sites (11/12), Avg Signal SINR (11.3 dB), Avg Throughput (75.4 Mbps), Avg Latency (44.0 ms), Total Users (147)
+- C) Charts visible: YES — KPI Trends line chart with 7 series (RSRP, SINR, DL, UL, Latency, Users, Availability)
+- D) Data table with rows: YES — 12-row table with 9 columns (Site, Status, DL, UL, Latency, Availability, Users, Drop Rate, SINR)
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 3. SON Automation
+- A) Renders content: YES — but KPI summary cards show misleading zeros
+- B) KPI cards with numbers: PARTIAL — TOTAL MODULES (0), ACTIVE MODULES (0), TOTAL ACTIONS (0), AVG IMPACT SCORE (6.9%). Zeros are WRONG.
+- C) Charts visible: NO
+- D) Data table with rows: YES — Action History tab has 10-row table with action details, rollback buttons
+- E) Errors/broken layout: MINOR — Default technology filter is "5G" but SON modules have compound technology field ("4G,5G"). API does exact match, returns 0 modules. Switching to "ALL" would show 8 modules.
+- F) Rate: **MINOR_ISSUE** — Root cause: SON API `/api/son?technology=5G` returns 0 modules because modules have `technology: "4G,5G"` (comma-separated). The API filter does exact match, not contains. View defaults to 5G filter. Fix: change default filter to "ALL" or make API filter use `contains`.
+
+### 4. Site Onboarding
+- A) Renders content: YES — form + pipeline table
+- B) KPI cards with numbers: YES — Total Sites (8), In Progress (2), Completed (4), Failed (0)
+- C) Charts visible: NO (form-based view, charts not expected)
+- D) Data table with rows: YES — Onboarding Pipeline table with 10 columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 5. Live Dashboard
+- A) Renders content: YES — live streaming metrics
+- B) KPI cards with numbers: YES — Active Users (3,920), Download (4647.3 Mbps), Upload (906.7 Mbps), Availability (98.8%), Power (42.4 kW), Active Alerts (8). All tagged "Real-time"
+- C) Charts visible: NO (live metrics dashboard, charts not expected)
+- D) Data table with rows: YES — Per-Technology Statistics table with 4 rows (5G, 4G, 3G, 2G) and 7 columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 6. Incidents
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Open Incidents (3), Investigating (4), Resolved Today (6), SLA Breaches (2), Avg MTTR (75.0min), Total Incidents (15)
+- C) Charts visible: YES — Status Distribution (bar), Category Distribution (donut), Severity by Category (bar)
+- D) Data table with rows: YES — Full incident list with tags, severity, site info, actions
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 7. Outages
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Total Outages (15), Active (2), Compensating (2), Restored (4), Avg Duration (4h 41m), Affected Users (40,712)
+- C) Charts visible: YES — Outage Status Distribution (bar), Outage Type Distribution (donut with Full/Partial/Degradation)
+- D) Data table with rows: YES — All Outages table with 9 columns and filters
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 8. Spectrum Analysis
+- A) Renders content: NO — Shows "No Spectrum Data Available" empty state
+- B) KPI cards with numbers: NO
+- C) Charts visible: NO
+- D) Data table with rows: NO
+- E) Errors/broken layout: YES — DATA SHAPE MISMATCH. API `/api/spectrum` returns `{ items: [...], summary: { total, totalBandwidthMhz, avgUtilizationPct, byBand, byTech, refarmCandidates } }` but view expects `{ blocks: [...], summary: { totalBandwidth, avgUtilization, avgInterference, avgRsrp, totalRefarmSaving } }`. Three field name mismatches: `items`→`blocks`, `totalBandwidthMhz`→`totalBandwidth`, `avgUtilizationPct`→`avgUtilization`. Missing summary fields: `avgInterference`, `avgRsrp`, `totalRefarmSaving`.
+- F) Rate: **BROKEN** — Fix: rename API response keys OR update view interface to match API.
+
+### 9. KPI Analytics
+- A) Renders content: YES
+- B) KPI cards with numbers: NO explicit KPI summary cards (view has filter dropdowns + trend chart + table)
+- C) Charts visible: YES — Download Throughput trend chart with 2G/3G/4G/5G series, time-series X-axis
+- D) Data table with rows: YES — Site Comparison table ranked 1-N with Site, Technology, Status, Value columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 10. Alerts
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Total Unresolved (8), Critical (3), Warning (2), Info (3)
+- C) Charts visible: NO
+- D) Data table with rows: YES — 8-row alert table with Severity, Site, Technology, Metric, Value vs Threshold, Message, Status, Actions columns
+- E) Errors/broken layout: MINOR — "Value vs Threshold" column displays raw unformatted floating-point numbers (e.g., "-0.2030322644271081 / 34.45236555777527"). Values should be formatted to 1-2 decimal places with units.
+- F) Rate: **MINOR_ISSUE** — Fix: format the value/threshold numbers in the alert table cell renderer.
+
+### 11. Coverage Map
+- A) Renders content: YES — interactive Leaflet map with markers, legend, stats
+- B) KPI cards with numbers: PARTIAL — 34 sites displayed, technology counts (2G:8, 3G:8, 4G:12, 5G:6), status legend
+- C) Charts visible: YES — Leaflet map with site markers, Technology Distribution section with per-tech site counts
+- D) Data table with rows: YES — Region Statistics table with Region, Total Sites, Avg Availability, Avg Signal, Tech Distribution columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 12. Correlation
+- A) Renders content: INTERMITTENT — first load caused UNRECOVERABLE APP CRASH ("Application error: a client-side exception has occurred"). Second load worked correctly with full content.
+- B) KPI cards with numbers: NO explicit KPI cards (view has charts and matrix grid)
+- C) Charts visible: YES (when it loads) — Traffic Distribution donut (2G 5%, 3G 14%, 4G 27%, 5G 54%), Technology Comparison radar chart (5 KPIs × 4 techs), Performance Correlation Matrix (4×4 grid with balance scores)
+- D) Data table with rows: NO traditional table; uses correlation matrix grid
+- E) Errors/broken layout: CRITICAL — Intermittent client-side exception that crashes the entire Next.js app (not just the view). Requires page reload to recover. Likely a race condition or error boundary issue.
+- F) Rate: **BROKEN** — App-crashing bug on navigation. Needs error boundary or root cause investigation.
+
+### 13. QoE / KQI
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Avg MOS Score (4.11), Avg Satisfaction Index (86.6), Total Complaints (21), Sites Tracked (9)
+- C) Charts visible: YES — MOS gauge, Satisfaction gauge, MOS Score by Technology bar chart, Satisfaction Index by Technology chart
+- D) Data table with rows: YES — Worst Performing Sites table (5 rows: Site, Tech, MOS, Satisfaction, Complaints)
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 14. Capacity Planning
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Total Forecasts (40), Sites at Risk (13), Avg Growth Rate (10.19%), Avg Confidence (85.5%)
+- C) Charts visible: YES — Risk Distribution (bar: Low/Medium/High/Critical), Avg Forecast by Technology (bar: 2G/3G/4G/5G)
+- D) Data table with rows: YES — Forecast Details table with Site, Tech, Region, Metric, Current, Forecast, Growth%, Risk columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 15. Handover Analysis
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Total Pairs (60), Avg Success Rate (95.7%), Total Attempts (174.4K), Total Failures (7.6K), Ping-Pong Events (198), Critical Pairs (5)
+- C) Charts visible: YES — HO Success Rate Distribution (bar: Critical/Degraded/Normal), Relation Type Distribution (donut: Intra Freq/Inter Freq/Inter Tech)
+- D) Data table with rows: YES — Handover Pair Details table with 12 columns (Serving Cell, Code, Neighbor, Code, Tech, Type, Attempts, Success, Failures, Success%, Prep ms, Exec ms, Ping-Pong)
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+### 16. Load Balancing
+- A) Renders content: YES
+- B) KPI cards with numbers: YES — Total Cells (34), Avg PRB DL (50.7%), Avg User Load (56.5%), Congested Sites (1), Total Active Users (6.1K)
+- C) Charts visible: YES — Congestion Distribution (bar), Avg PRB DL by Region (horizontal bar with 7 regions)
+- D) Data table with rows: YES — Cell Load Details table with Site, Code, Tech, Region, PRB DL%, PRB UL%, Users, User Load%, DL Mbps columns
+- E) Errors/broken layout: None
+- F) Rate: **OK**
+
+## Summary Statistics
+
+| Rating | Count | Views |
+|--------|-------|-------|
+| OK | 12 | Dashboard, Monitoring, Site Onboarding, Live Dashboard, Incidents, Outages, KPI Analytics, Coverage Map, QoE/KQI, Capacity Planning, Handover Analysis, Load Balancing |
+| MINOR_ISSUE | 2 | SON Automation (default filter mismatch), Alerts (raw float formatting) |
+| BROKEN | 2 | Spectrum Analysis (API shape mismatch), Correlation (app-crashing client-side exception) |
+
+## Bugs Requiring Fixes
+
+### BROKEN — Must Fix
+1. **Spectrum Analysis** (SpectrumView.tsx): View interface expects `data.blocks` but API returns `data.items`. Summary field name mismatches: `totalBandwidthMhz` vs `totalBandwidth`, `avgUtilizationPct` vs `avgUtilization`. Fix: update view interface or API response.
+2. **Correlation** (CorrelationView.tsx): Intermittent client-side exception crashes the entire Next.js app. Requires page reload to recover. Likely a race condition during component mount or a missing null check. Needs error boundary + root cause fix.
+
+### MINOR — Should Fix
+3. **SON Automation** (SonView.tsx): Default technology filter is "5G" but SON modules have compound `technology` field ("4G,5G"). API `/api/son?technology=5G` does exact match → returns 0 modules → all KPI cards show 0. Fix: change default to "ALL" or make API use `contains` filter.
+4. **Alerts** (AlertsView.tsx): "Value vs Threshold" column shows raw unformatted floating-point decimals (e.g., "-0.2030322644271081 / 34.45236555777527"). Fix: format to 1-2 decimal places with units.
