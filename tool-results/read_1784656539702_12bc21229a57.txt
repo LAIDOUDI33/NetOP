@@ -1,0 +1,481 @@
+     1→src/components/views/CoverageView.tsx-                        </span>
+     2→src/components/views/CoverageView.tsx-                        <span className={`text-[10px] ml-1 ${getSignalColor(site.avgSignal)}`}>
+     3→src/components/views/CoverageView.tsx:                          ({t('signal.' + getSignalLabelKey(site.avgSignal))})
+     4→src/components/views/CoverageView.tsx-                        </span>
+     5→src/components/views/CoverageView.tsx-                      </TableCell>
+     6→===
+     7→src/components/views/AnomalyDetectionView.tsx-                <TableHeader>
+     8→src/components/views/AnomalyDetectionView.tsx-                  <TableRow>
+     9→src/components/views/AnomalyDetectionView.tsx:                    <TableHead className="w-[100px]">{t('th.severity')}</TableHead>
+    10→src/components/views/AnomalyDetectionView.tsx:                    <TableHead>{t('th.site')}</TableHead>
+    11→src/components/views/AnomalyDetectionView.tsx:                    <TableHead className="w-[80px]">{t('th.tech')}</TableHead>
+    12→src/components/views/AnomalyDetectionView.tsx:                    <TableHead>{t('th.metric')}</TableHead>
+    13→src/components/views/AnomalyDetectionView.tsx:                    <TableHead className="w-[90px] text-right">{t('th.zScore')}</TableHead>
+    14→src/components/views/AnomalyDetectionView.tsx:                    <TableHead className="hidden md:table-cell">{t('th.description')}</TableHead>
+    15→src/components/views/AnomalyDetectionView.tsx:                    <TableHead className="w-[160px]">{t('th.status')}</TableHead>
+    16→src/components/views/AnomalyDetectionView.tsx-                  </TableRow>
+    17→src/components/views/AnomalyDetectionView.tsx-                </TableHeader>
+    18→--
+    19→src/components/views/SettingsView.tsx-                  <TableHeader>
+    20→src/components/views/SettingsView.tsx-                    <TableRow>
+    21→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.parameter')}</TableHead>
+    22→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.currentValue')}</TableHead>
+    23→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.min')}</TableHead>
+    24→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.max')}</TableHead>
+    25→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.unit')}</TableHead>
+    26→src/components/views/SettingsView.tsx:                      <TableHead className="text-xs">{t('th.description')}</TableHead>
+    27→src/components/views/SettingsView.tsx-                    </TableRow>
+    28→src/components/views/SettingsView.tsx-                  </TableHeader>
+    29→--
+    30→src/components/views/NpiView.tsx-                      <TableRow>
+    31→src/components/views/NpiView.tsx-                        <TableHead className="w-16">Rank</TableHead>
+    32→src/components/views/NpiView.tsx:                        <TableHead>{t('th.site')}</TableHead>
+    33→src/components/views/NpiView.tsx:                        <TableHead className="w-20">{t('th.tech')}</TableHead>
+    34→src/components/views/NpiView.tsx-                        <TableHead className="w-48">{t('npi.overallScore')}</TableHead>
+    35→src/components/views/NpiView.tsx-                        <TableHead className="w-20 text-right">{t('npi.coverage')}</TableHead>
+    36→--
+    37→src/components/views/NpiView.tsx-                        <TableHead className="w-24 text-right">{t('npi.reliability')}</TableHead>
+    38→src/components/views/NpiView.tsx-                        <TableHead className="w-24 text-right">{t('npi.costEfficiency')}</TableHead>
+    39→src/components/views/NpiView.tsx:                        <TableHead className="w-28">{t('th.region')}</TableHead>
+    40→src/components/views/NpiView.tsx-                      </TableRow>
+    41→src/components/views/NpiView.tsx-                    </TableHeader>
+    42→--
+    43→src/components/views/SlicingView.tsx-                <TableHeader>
+    44→src/components/views/SlicingView.tsx-                  <TableRow>
+    45→src/components/views/SlicingView.tsx:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.name')}</TableHead>
+    46→src/components/views/SlicingView.tsx:                    <TableHead className="min-w-[80px]">{t('th.type')}</TableHead>
+    47→src/components/views/SlicingView.tsx:                    <TableHead className="min-w-[120px]">{t('th.site')}</TableHead>
+    48→src/components/views/SlicingView.tsx-                    <TableHead className="min-w-[80px]">SST/SD</TableHead>
+    49→src/components/views/SlicingView.tsx:                    <TableHead className="text-right min-w-[80px]">{t('th.bandwidth')}</TableHead>
+    50→src/components/views/SlicingView.tsx-                    <TableHead className="text-right min-w-[100px]">Guaranteed BW</TableHead>
+    51→src/components/views/SlicingView.tsx:                    <TableHead className="min-w-[70px]">{t('th.priority')}</TableHead>
+    52→src/components/views/SlicingView.tsx:                    <TableHead className="text-right min-w-[80px]">{t('th.latencyTarget')}</TableHead>
+    53→src/components/views/SlicingView.tsx:                    <TableHead className="min-w-[140px]">{t('th.currentLoad')}</TableHead>
+    54→src/components/views/SlicingView.tsx:                    <TableHead className="text-right min-w-[60px]">{t('th.users')}</TableHead>
+    55→src/components/views/SlicingView.tsx:                    <TableHead className="text-right min-w-[90px]">{t('th.dlThroughput')}</TableHead>
+    56→src/components/views/SlicingView.tsx:                    <TableHead className="min-w-[90px]">{t('th.status')}</TableHead>
+    57→src/components/views/SlicingView.tsx-                    <TableHead className="min-w-[70px]">QCI/5QI</TableHead>
+    58→src/components/views/SlicingView.tsx-                  </TableRow>
+    59→--
+    60→src/components/views/MonitoringView.tsx-                <TableHeader>
+    61→src/components/views/MonitoringView.tsx-                  <TableRow>
+    62→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+    63→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+    64→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.dl')}</TableHead>
+    65→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.ul')}</TableHead>
+    66→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.latency')}</TableHead>
+    67→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.availability')}</TableHead>
+    68→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.users')}</TableHead>
+    69→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.dropRate')}</TableHead>
+    70→src/components/views/MonitoringView.tsx:                    <TableHead className="text-xs">{t('th.sinr')}</TableHead>
+    71→src/components/views/MonitoringView.tsx-                  </TableRow>
+    72→src/components/views/MonitoringView.tsx-                </TableHeader>
+    73→--
+    74→src/components/views/VendorsView.tsx-                  <TableRow>
+    75→src/components/views/VendorsView.tsx-                    <TableHead className="w-[180px] sticky left-0 bg-background z-10">
+    76→src/components/views/VendorsView.tsx:                      {t('th.vendor')}
+    77→src/components/views/VendorsView.tsx-                    </TableHead>
+    78→src/components/views/VendorsView.tsx-                    {MATRIX_TECHS.map((tech) => (
+    79→--
+    80→src/components/views/CapacityView.tsx-              <TableHeader>
+    81→src/components/views/CapacityView.tsx-                <TableRow>
+    82→src/components/views/CapacityView.tsx:                  <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+    83→src/components/views/CapacityView.tsx:                  <TableHead>{t('th.tech')}</TableHead>
+    84→src/components/views/CapacityView.tsx:                  <TableHead>{t('th.region')}</TableHead>
+    85→src/components/views/CapacityView.tsx:                  <TableHead>{t('th.metric')}</TableHead>
+    86→src/components/views/CapacityView.tsx:                  <TableHead className="text-right">{t('th.current')}</TableHead>
+    87→src/components/views/CapacityView.tsx:                  <TableHead className="text-right">{t('th.forecast')}</TableHead>
+    88→src/components/views/CapacityView.tsx:                  <TableHead className="text-right">{t('th.change')}</TableHead>
+    89→src/components/views/CapacityView.tsx-                  <TableHead>{t('filter.riskLevel')}</TableHead>
+    90→src/components/views/CapacityView.tsx:                  <TableHead className="text-right">{t('th.confidence')}</TableHead>
+    91→src/components/views/CapacityView.tsx:                  <TableHead>{t('th.description')}</TableHead>
+    92→src/components/views/CapacityView.tsx-                </TableRow>
+    93→src/components/views/CapacityView.tsx-              </TableHeader>
+    94→--
+    95→src/components/views/AlertsView.tsx-                <TableHeader>
+    96→src/components/views/AlertsView.tsx-                  <TableRow>
+    97→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.severity')}</TableHead>
+    98→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+    99→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   100→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.metric')}</TableHead>
+   101→src/components/views/AlertsView.tsx-                    <TableHead className="text-xs">{t('alert.valueVsThreshold')}</TableHead>
+   102→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.message')}</TableHead>
+   103→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+   104→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs text-right">{t('th.actions')}</TableHead>
+   105→src/components/views/AlertsView.tsx-                  </TableRow>
+   106→src/components/views/AlertsView.tsx-                </TableHeader>
+   107→--
+   108→src/components/views/AlertsView.tsx-                <TableHeader>
+   109→src/components/views/AlertsView.tsx-                  <TableRow>
+   110→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.ruleName')}</TableHead>
+   111→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   112→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.metric')}</TableHead>
+   113→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.condition')}</TableHead>
+   114→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.threshold')}</TableHead>
+   115→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs">{t('th.severity')}</TableHead>
+   116→src/components/views/AlertsView.tsx:                    <TableHead className="text-xs text-center">{t('th.enabled')}</TableHead>
+   117→src/components/views/AlertsView.tsx-                  </TableRow>
+   118→src/components/views/AlertsView.tsx-                </TableHeader>
+   119→--
+   120→src/components/views/LiveView.tsx-              <TableHeader>
+   121→src/components/views/LiveView.tsx-                <TableRow>
+   122→src/components/views/LiveView.tsx:                  <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   123→src/components/views/LiveView.tsx:                  <TableHead className="text-xs text-right">{t('th.site')}</TableHead>
+   124→src/components/views/LiveView.tsx:                  <TableHead className="text-xs text-right">{t('th.users')}</TableHead>
+   125→src/components/views/LiveView.tsx-                  <TableHead className="text-xs text-right">DL ({t('unit.mbps')})</TableHead>
+   126→src/components/views/LiveView.tsx-                  <TableHead className="text-xs text-right">UL ({t('unit.mbps')})</TableHead>
+   127→src/components/views/LiveView.tsx:                  <TableHead className="text-xs text-right">{t('th.availability')} (%)</TableHead>
+   128→src/components/views/LiveView.tsx-                  <TableHead className="text-xs text-right">{t('live.power')} ({t('unit.kw')})</TableHead>
+   129→src/components/views/LiveView.tsx-                </TableRow>
+   130→--
+   131→src/components/views/QoEView.tsx-                  <TableHeader>
+   132→src/components/views/QoEView.tsx-                    <TableRow>
+   133→src/components/views/QoEView.tsx:                      <TableHead>{t('th.site')}</TableHead>
+   134→src/components/views/QoEView.tsx:                      <TableHead>{t('th.tech')}</TableHead>
+   135→src/components/views/QoEView.tsx-                      <TableHead className="text-right">{t('svc.mos')}</TableHead>
+   136→src/components/views/QoEView.tsx-                      <TableHead className="text-right">{t('svc.satisfaction')}</TableHead>
+   137→--
+   138→src/components/views/QoEView.tsx-                  <TableRow>
+   139→src/components/views/QoEView.tsx-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   140→src/components/views/QoEView.tsx:                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
+   141→src/components/views/QoEView.tsx-                    <TableHead>Tech</TableHead>
+   142→src/components/views/QoEView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   143→src/components/views/QoEView.tsx-                    <TableHead className="text-right">MOS</TableHead>
+   144→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.dataRate')}</TableHead>
+   145→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.callSetup')}</TableHead>
+   146→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.pageLoad')}</TableHead>
+   147→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.videoStart')}</TableHead>
+   148→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.latency')}</TableHead>
+   149→src/components/views/QoEView.tsx-                    <TableHead className="text-right">{t('svc.jitter')}</TableHead>
+   150→src/components/views/QoEView.tsx-                    <TableHead className="text-right">Satisfaction</TableHead>
+   151→src/components/views/QoEView.tsx:                    <TableHead className="text-right">{t('th.users')}</TableHead>
+   152→src/components/views/QoEView.tsx-                    <TableHead className="text-right">Complaints</TableHead>
+   153→src/components/views/QoEView.tsx-                  </TableRow>
+   154→--
+   155→src/components/views/PoliciesView.tsx-                      <TableHeader>
+   156→src/components/views/PoliciesView.tsx-                        <TableRow>
+   157→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.time')}</TableHead>
+   158→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.policyName')}</TableHead>
+   159→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   160→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.trigger')}</TableHead>
+   161→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.status')}</TableHead>
+   162→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.sitesAffected')}</TableHead>
+   163→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.actionsTaken')}</TableHead>
+   164→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.duration')}</TableHead>
+   165→src/components/views/PoliciesView.tsx-                          <TableHead className="text-xs">{t('pol.kpiImpact')}</TableHead>
+   166→src/components/views/PoliciesView.tsx:                          <TableHead className="text-xs">{t('th.rollback')}</TableHead>
+   167→src/components/views/PoliciesView.tsx-                        </TableRow>
+   168→src/components/views/PoliciesView.tsx-                      </TableHeader>
+   169→--
+   170→src/components/views/ReportsView.tsx-                  <TableRow>
+   171→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs w-12">#</TableHead>
+   172→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+   173→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   174→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+   175→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs text-right">{t('th.value')}</TableHead>
+   176→src/components/views/ReportsView.tsx-                  </TableRow>
+   177→src/components/views/ReportsView.tsx-                </TableHeader>
+   178→--
+   179→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs">{t('rpt.time')}</TableHead>
+   180→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs">{t('rpt.module')}</TableHead>
+   181→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+   182→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs">{t('rpt.actionType')}</TableHead>
+   183→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.parameter')}</TableHead>
+   184→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs">{t('rpt.beforeAfter')}</TableHead>
+   185→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs text-right">{t('rpt.impact')}</TableHead>
+   186→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+   187→src/components/views/ReportsView.tsx-                  </TableRow>
+   188→src/components/views/ReportsView.tsx-                </TableHeader>
+   189→--
+   190→src/components/views/ReportsView.tsx-                <TableHeader>
+   191→src/components/views/ReportsView.tsx-                  <TableRow>
+   192→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.name')}</TableHead>
+   193→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.tech')}</TableHead>
+   194→src/components/views/ReportsView.tsx:                    <TableHead className="text-xs">{t('th.trigger')}</TableHead>
+   195→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs">{t('rpt.scope')}</TableHead>
+   196→src/components/views/ReportsView.tsx-                    <TableHead className="text-xs text-center">Priority</TableHead>
+   197→--
+   198→src/components/views/FaultsView.tsx-                <TableHeader>
+   199→src/components/views/FaultsView.tsx-                  <TableRow>
+   200→src/components/views/FaultsView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   201→src/components/views/FaultsView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   202→src/components/views/FaultsView.tsx:                    <TableHead>{t('th.component')}</TableHead>
+   203→src/components/views/FaultsView.tsx:                    <TableHead>{t('th.type')}</TableHead>
+   204→src/components/views/FaultsView.tsx:                    <TableHead className="text-right">{t('th.probability')}</TableHead>
+   205→src/components/views/FaultsView.tsx-                    <TableHead>Severity</TableHead>
+   206→src/components/views/FaultsView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   207→src/components/views/FaultsView.tsx:                    <TableHead className="text-right">{t('th.confidence')}</TableHead>
+   208→src/components/views/FaultsView.tsx-                    <TableHead>Time to Fail</TableHead>
+   209→src/components/views/FaultsView.tsx:                    <TableHead>{t('th.action')}</TableHead>
+   210→src/components/views/FaultsView.tsx:                    <TableHead className="sticky right-0 bg-background z-10">{t('th.createdAt')}</TableHead>
+   211→src/components/views/FaultsView.tsx-                  </TableRow>
+   212→src/components/views/FaultsView.tsx-                </TableHeader>
+   213→--
+   214→src/components/views/HealthView.tsx-                <TableHeader>
+   215→src/components/views/HealthView.tsx-                  <TableRow>
+   216→src/components/views/HealthView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   217→src/components/views/HealthView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   218→src/components/views/HealthView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   219→src/components/views/HealthView.tsx-                    <TableHead className="text-right">Overall</TableHead>
+   220→src/components/views/HealthView.tsx-                    <TableHead className="text-right">Coverage</TableHead>
+   221→--
+   222→src/components/views/HealthView.tsx-                    <TableHead className="text-right">Reliability</TableHead>
+   223→src/components/views/HealthView.tsx-                    <TableHead className="text-right">Experience</TableHead>
+   224→src/components/views/HealthView.tsx:                    <TableHead>{t('th.grade')}</TableHead>
+   225→src/components/views/HealthView.tsx-                    <TableHead>Trend</TableHead>
+   226→src/components/views/HealthView.tsx-                    <TableHead>Issues</TableHead>
+   227→--
+   228→src/components/views/CoverageView.tsx-                <TableHeader>
+   229→src/components/views/CoverageView.tsx-                  <TableRow>
+   230→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+   231→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs">{t('th.code')}</TableHead>
+   232→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   233→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs">{t('th.region')}</TableHead>
+   234→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+   235→src/components/views/CoverageView.tsx-                    <TableHead className="text-xs text-right">Signal</TableHead>
+   236→src/components/views/CoverageView.tsx-                    <TableHead className="text-xs text-right">Throughput</TableHead>
+   237→src/components/views/CoverageView.tsx:                    <TableHead className="text-xs text-right">{t('th.users')}</TableHead>
+   238→src/components/views/CoverageView.tsx-                  </TableRow>
+   239→src/components/views/CoverageView.tsx-                </TableHeader>
+   240→--
+   241→src/components/views/LoadBalancingView.tsx-            <Select value={congestionFilter} onValueChange={setCongestionFilter}>
+   242→src/components/views/LoadBalancingView.tsx-              <SelectTrigger className="w-36">
+   243→src/components/views/LoadBalancingView.tsx:                <SelectValue placeholder={t('th.riskLevel')} />
+   244→src/components/views/LoadBalancingView.tsx-              </SelectTrigger>
+   245→src/components/views/LoadBalancingView.tsx-              <SelectContent>
+   246→--
+   247→src/components/views/LoadBalancingView.tsx-                <TableHeader>
+   248→src/components/views/LoadBalancingView.tsx-                  <TableRow>
+   249→src/components/views/LoadBalancingView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   250→src/components/views/LoadBalancingView.tsx:                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.siteCode')}</TableHead>
+   251→src/components/views/LoadBalancingView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   252→src/components/views/LoadBalancingView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   253→src/components/views/LoadBalancingView.tsx-                    <TableHead className="text-right">{t('lb.prbDl')}</TableHead>
+   254→src/components/views/LoadBalancingView.tsx-                    <TableHead className="text-right">{t('lb.prbUl')}</TableHead>
+   255→src/components/views/LoadBalancingView.tsx:                    <TableHead className="text-right">{t('th.users')}</TableHead>
+   256→src/components/views/LoadBalancingView.tsx-                    <TableHead className="text-right">{t('lb.userLoadPct')}</TableHead>
+   257→src/components/views/LoadBalancingView.tsx-                    <TableHead className="text-right">{t('lb.dlMbps')}</TableHead>
+   258→--
+   259→src/components/views/CoverageMapView.tsx-                <TableHeader>
+   260→src/components/views/CoverageMapView.tsx-                  <TableRow>
+   261→src/components/views/CoverageMapView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   262→src/components/views/CoverageMapView.tsx-                    <TableHead className="text-right">{t('cov.totalSites')}</TableHead>
+   263→src/components/views/CoverageMapView.tsx-                    <TableHead className="text-right">{t('cov.avgAvailability')}</TableHead>
+   264→--
+   265→src/components/views/KpiAnalyticsView.tsx-                  <TableRow>
+   266→src/components/views/KpiAnalyticsView.tsx-                    <TableHead className="text-xs">#</TableHead>
+   267→src/components/views/KpiAnalyticsView.tsx:                    <TableHead className="text-xs">{t('th.site')}</TableHead>
+   268→src/components/views/KpiAnalyticsView.tsx:                    <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   269→src/components/views/KpiAnalyticsView.tsx:                    <TableHead className="text-xs">{t('th.status')}</TableHead>
+   270→src/components/views/KpiAnalyticsView.tsx:                    <TableHead className="text-xs text-right">{t('th.value')}</TableHead>
+   271→src/components/views/KpiAnalyticsView.tsx-                  </TableRow>
+   272→src/components/views/KpiAnalyticsView.tsx-                </TableHeader>
+   273→--
+   274→src/components/views/ServicesView.tsx-                <TableHeader>
+   275→src/components/views/ServicesView.tsx-                  <TableRow>
+   276→src/components/views/ServicesView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.name')}</TableHead>
+   277→src/components/views/ServicesView.tsx:                    <TableHead>{t('th.type')}</TableHead>
+   278→src/components/views/ServicesView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   279→src/components/views/ServicesView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   280→src/components/views/ServicesView.tsx-                    <TableHead className="text-right">{t('svc.mos')}</TableHead>
+   281→src/components/views/ServicesView.tsx:                    <TableHead className="text-right">{t('th.latency')}</TableHead>
+   282→src/components/views/ServicesView.tsx-                    <TableHead className="text-right">{t('svc.jitter')}</TableHead>
+   283→src/components/views/ServicesView.tsx-                    <TableHead className="text-right">{t('svc.pktLoss')}</TableHead>
+   284→src/components/views/ServicesView.tsx:                    <TableHead className="text-right">{t('th.throughput')}</TableHead>
+   285→src/components/views/ServicesView.tsx:                    <TableHead className="text-right">{t('th.users')}</TableHead>
+   286→src/components/views/ServicesView.tsx:                    <TableHead>{t('th.sla')}</TableHead>
+   287→src/components/views/ServicesView.tsx:                    <TableHead className="text-right">{t('th.impactScore')}</TableHead>
+   288→src/components/views/ServicesView.tsx-                  </TableRow>
+   289→src/components/views/ServicesView.tsx-                </TableHeader>
+   290→--
+   291→src/components/views/EnergyView.tsx-                <TableHeader>
+   292→src/components/views/EnergyView.tsx-                  <TableRow>
+   293→src/components/views/EnergyView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   294→src/components/views/EnergyView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   295→src/components/views/EnergyView.tsx-                    <TableHead className="text-right">Power (W)</TableHead>
+   296→src/components/views/EnergyView.tsx-                    <TableHead className="text-right">Energy (Wh)</TableHead>
+   297→--
+   298→src/components/views/EnergyView.tsx-                    <TableHead className="text-right">Load %</TableHead>
+   299→src/components/views/EnergyView.tsx-                    <TableHead className="text-right">Temp °C</TableHead>
+   300→src/components/views/EnergyView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   301→src/components/views/EnergyView.tsx-                    <TableHead className="text-right">CO₂ (g)</TableHead>
+   302→src/components/views/EnergyView.tsx-                    <TableHead>Sleep?</TableHead>
+   303→--
+   304→src/components/views/BenchmarkView.tsx-                <TableHeader>
+   305→src/components/views/BenchmarkView.tsx-                  <TableRow>
+   306→src/components/views/BenchmarkView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   307→src/components/views/BenchmarkView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   308→src/components/views/BenchmarkView.tsx:                    <TableHead>{t('th.metric')}</TableHead>
+   309→src/components/views/BenchmarkView.tsx:                    <TableHead className="text-right">{t('th.actual')}</TableHead>
+   310→src/components/views/BenchmarkView.tsx-                    <TableHead className="text-right">Benchmark</TableHead>
+   311→src/components/views/BenchmarkView.tsx:                    <TableHead className="text-right">{t('th.target')}</TableHead>
+   312→src/components/views/BenchmarkView.tsx-                    <TableHead className="text-right">Percentile</TableHead>
+   313→src/components/views/BenchmarkView.tsx-                    <TableHead className="text-right">Gap</TableHead>
+   314→src/components/views/BenchmarkView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   315→src/components/views/BenchmarkView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   316→src/components/views/BenchmarkView.tsx-                  </TableRow>
+   317→src/components/views/BenchmarkView.tsx-                </TableHeader>
+   318→--
+   319→src/components/views/SonView.tsx-                        <TableHead className="text-xs">{t('son.parameter')}</TableHead>
+   320→src/components/views/SonView.tsx-                        <TableHead className="text-xs">{t('son.change')}</TableHead>
+   321→src/components/views/SonView.tsx:                        <TableHead className="text-xs">{t('th.status')}</TableHead>
+   322→src/components/views/SonView.tsx-                        <TableHead className="text-xs text-right">{t('son.impact')}</TableHead>
+   323→src/components/views/SonView.tsx-                        <TableHead className="text-xs text-right w-[80px]">
+   324→src/components/views/SonView.tsx:                          {t('th.rollback')}
+   325→src/components/views/SonView.tsx-                        </TableHead>
+   326→src/components/views/SonView.tsx-                      </TableRow>
+   327→--
+   328→src/components/views/SonView.tsx-                        <TableHead className="text-xs">{t('son.servingCell')}</TableHead>
+   329→src/components/views/SonView.tsx-                        <TableHead className="text-xs">{t('son.neighborCell')}</TableHead>
+   330→src/components/views/SonView.tsx:                        <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   331→src/components/views/SonView.tsx-                        <TableHead className="text-xs">
+   332→src/components/views/SonView.tsx-                          {t('son.relationType')}
+   333→--
+   334→src/components/views/SonView.tsx-                          {t('son.hoSuccessRate')}
+   335→src/components/views/SonView.tsx-                        </TableHead>
+   336→src/components/views/SonView.tsx:                        <TableHead className="text-xs">{t('th.status')}</TableHead>
+   337→src/components/views/SonView.tsx-                        <TableHead className="text-xs text-right">
+   338→src/components/views/SonView.tsx-                          {t('son.lastUpdated')}
+   339→--
+   340→src/components/views/InterferenceView.tsx-                <TableHeader>
+   341→src/components/views/InterferenceView.tsx-                  <TableRow>
+   342→src/components/views/InterferenceView.tsx:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[120px]">{t('th.site')}</TableHead>
+   343→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   344→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.type')}</TableHead>
+   345→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.riskLevel')}</TableHead>
+   346→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   347→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.servingCell')}</TableHead>
+   348→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.conflictingCell')}</TableHead>
+   349→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.frequency')}</TableHead>
+   350→src/components/views/InterferenceView.tsx-                    <TableHead>PCI</TableHead>
+   351→src/components/views/InterferenceView.tsx:                    <TableHead className="text-right">{t('th.impactScore')}</TableHead>
+   352→src/components/views/InterferenceView.tsx-                    <TableHead>{t('intf.affectedKpis')}</TableHead>
+   353→src/components/views/InterferenceView.tsx:                    <TableHead className="min-w-[160px]">{t('th.description')}</TableHead>
+   354→src/components/views/InterferenceView.tsx:                    <TableHead>{t('th.createdAt')}</TableHead>
+   355→src/components/views/InterferenceView.tsx-                  </TableRow>
+   356→src/components/views/InterferenceView.tsx-                </TableHeader>
+   357→--
+   358→src/components/views/SubscribersView.tsx-              <TableHeader>
+   359→src/components/views/SubscribersView.tsx-                <TableRow>
+   360→src/components/views/SubscribersView.tsx:                  <TableHead className="min-w-[140px]">{t('th.segmentName')}</TableHead>
+   361→src/components/views/SubscribersView.tsx:                  <TableHead>{t('th.tech')}</TableHead>
+   362→src/components/views/SubscribersView.tsx:                  <TableHead className="text-right">{t('th.users')}</TableHead>
+   363→src/components/views/SubscribersView.tsx-                  <TableHead className="text-right">Avg Data (GB)</TableHead>
+   364→src/components/views/SubscribersView.tsx-                  <TableHead className="text-right">Voice (min)</TableHead>
+   365→src/components/views/SubscribersView.tsx-                  <TableHead className="text-right">ARPU ($)</TableHead>
+   366→src/components/views/SubscribersView.tsx:                  <TableHead className="text-center">{t('th.churnRisk')}</TableHead>
+   367→src/components/views/SubscribersView.tsx-                  <TableHead className="text-right">Satisfaction</TableHead>
+   368→src/components/views/SubscribersView.tsx:                  <TableHead>{t('th.peakHour')}</TableHead>
+   369→src/components/views/SubscribersView.tsx:                  <TableHead className="min-w-[180px]">{t('th.topServices')}</TableHead>
+   370→src/components/views/SubscribersView.tsx-                </TableRow>
+   371→src/components/views/SubscribersView.tsx-              </TableHeader>
+   372→--
+   373→src/components/views/ConfigView.tsx-          <CardContent className="p-4">
+   374→src/components/views/ConfigView.tsx-            <div className="flex items-center justify-between">
+   375→src/components/views/ConfigView.tsx:              <p className="text-sm font-medium text-muted-foreground">{t('th.category')}</p>
+   376→src/components/views/ConfigView.tsx-              <Tags className="h-4 w-4 text-muted-foreground" />
+   377→src/components/views/ConfigView.tsx-            </div>
+   378→--
+   379→src/components/views/ConfigView.tsx-          <CardTitle className="text-base font-semibold flex items-center gap-2">
+   380→src/components/views/ConfigView.tsx-            <Layers className="h-4 w-4" />
+   381→src/components/views/ConfigView.tsx:            {t('th.category')} Distribution
+   382→src/components/views/ConfigView.tsx-          </CardTitle>
+   383→src/components/views/ConfigView.tsx-        </CardHeader>
+   384→--
+   385→src/components/views/VendorCompareView.tsx-                  <TableRow>
+   386→src/components/views/VendorCompareView.tsx-                    <TableHead className="text-xs whitespace-nowrap min-w-[160px]">
+   387→src/components/views/VendorCompareView.tsx:                      {t('th.metric')}
+   388→src/components/views/VendorCompareView.tsx-                    </TableHead>
+   389→src/components/views/VendorCompareView.tsx-                    {comparisons.map((c) => (
+   390→--
+   391→src/components/views/SLADashboardView.tsx-                <TableHeader>
+   392→src/components/views/SLADashboardView.tsx-                  <TableRow>
+   393→src/components/views/SLADashboardView.tsx:                    <TableHead className="w-[100px]">{t('th.technology')}</TableHead>
+   394→src/components/views/SLADashboardView.tsx:                    <TableHead>{t('th.metric')}</TableHead>
+   395→src/components/views/SLADashboardView.tsx:                    <TableHead className="text-right">{t('th.target')}</TableHead>
+   396→src/components/views/SLADashboardView.tsx:                    <TableHead className="text-right">{t('th.actual')}</TableHead>
+   397→src/components/views/SLADashboardView.tsx:                    <TableHead className="text-right">{t('th.breach')}</TableHead>
+   398→src/components/views/SLADashboardView.tsx:                    <TableHead className="w-[100px]">{t('th.severity')}</TableHead>
+   399→src/components/views/SLADashboardView.tsx-                  </TableRow>
+   400→src/components/views/SLADashboardView.tsx-                </TableHeader>
+   401→--
+   402→src/components/views/HandoverView.tsx-                  <TableRow>
+   403→src/components/views/HandoverView.tsx-                    <TableHead className="sticky left-0 bg-background z-10">Serving Cell</TableHead>
+   404→src/components/views/HandoverView.tsx:                    <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
+   405→src/components/views/HandoverView.tsx-                    <TableHead className="sticky left-[200px] bg-background z-10">Neighbor</TableHead>
+   406→src/components/views/HandoverView.tsx:                    <TableHead className="sticky left-[340px] bg-background z-10">{t('th.code')}</TableHead>
+   407→src/components/views/HandoverView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   408→src/components/views/HandoverView.tsx:                    <TableHead>{t('th.type')}</TableHead>
+   409→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Attempts</TableHead>
+   410→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Success</TableHead>
+   411→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Failures</TableHead>
+   412→src/components/views/HandoverView.tsx:                    <TableHead className="text-right">{t('th.hoSuccessRate')}</TableHead>
+   413→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Prep ms</TableHead>
+   414→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Exec ms</TableHead>
+   415→src/components/views/HandoverView.tsx-                    <TableHead className="text-right">Ping-Pong</TableHead>
+   416→src/components/views/HandoverView.tsx-                    <TableHead>Early/Late</TableHead>
+   417→src/components/views/HandoverView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   418→src/components/views/HandoverView.tsx:                    <TableHead>{t('th.action')}</TableHead>
+   419→src/components/views/HandoverView.tsx-                  </TableRow>
+   420→src/components/views/HandoverView.tsx-                </TableHeader>
+   421→--
+   422→src/components/views/EvolutionView.tsx-                <TableHeader>
+   423→src/components/views/EvolutionView.tsx-                  <TableRow>
+   424→src/components/views/EvolutionView.tsx:                    <TableHead className="sticky left-0 bg-background z-10">{t('th.name')}</TableHead>
+   425→src/components/views/EvolutionView.tsx-                    <TableHead>Migration</TableHead>
+   426→src/components/views/EvolutionView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   427→src/components/views/EvolutionView.tsx-                    <TableHead className="text-right">Progress</TableHead>
+   428→src/components/views/EvolutionView.tsx-                    <TableHead className="text-right">Budget</TableHead>
+   429→src/components/views/EvolutionView.tsx-                    <TableHead className="text-right">Cost %</TableHead>
+   430→src/components/views/EvolutionView.tsx-                    <TableHead>Risk</TableHead>
+   431→src/components/views/EvolutionView.tsx:                    <TableHead>{t('th.startTime')}</TableHead>
+   432→src/components/views/EvolutionView.tsx:                    <TableHead>{t('th.target')}</TableHead>
+   433→src/components/views/EvolutionView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   434→src/components/views/EvolutionView.tsx-                    <TableHead>Notes</TableHead>
+   435→src/components/views/EvolutionView.tsx-                  </TableRow>
+   436→--
+   437→src/components/views/OutagesView.tsx-                <TableHeader>
+   438→src/components/views/OutagesView.tsx-                  <TableRow>
+   439→src/components/views/OutagesView.tsx:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.site')}</TableHead>
+   440→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.tech')}</TableHead>
+   441→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.type')}</TableHead>
+   442→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.severity')}</TableHead>
+   443→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.status')}</TableHead>
+   444→src/components/views/OutagesView.tsx-                    <TableHead>{t('out.started')}</TableHead>
+   445→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.duration')}</TableHead>
+   446→src/components/views/OutagesView.tsx-                    <TableHead className="text-right">{t}{t('out.affectedUsers')}</TableHead>
+   447→src/components/views/OutagesView.tsx-                    <TableHead>{t('out.compensation')}</TableHead>
+   448→src/components/views/OutagesView.tsx-                    <TableHead>{t('out.rootCauseCol')}</TableHead>
+   449→src/components/views/OutagesView.tsx:                    <TableHead>{t('th.region')}</TableHead>
+   450→src/components/views/OutagesView.tsx-                    <TableHead>{t('out.resolvedCol')}</TableHead>
+   451→src/components/views/OutagesView.tsx-                  </TableRow>
+   452→===
+   453→src/components/views/QoEView.tsx-      {/* Header */}
+   454→src/components/views/QoEView.tsx-      <div>
+   455→src/components/views/QoEView.tsx:        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.qoe')}</h1>
+   456→src/components/views/QoEView.tsx-        <p className="text-muted-foreground text-sm mt-1">
+   457→src/components/views/QoEView.tsx-          Real-time subscriber quality tracking across all technologies
+   458→--
+   459→src/components/views/OnboardingView.tsx-      {/* ── Header ── */}
+   460→src/components/views/OnboardingView.tsx-      <div>
+   461→src/components/views/OnboardingView.tsx:        <h1 className="text-2xl font-bold tracking-tight">{t('title.onboarding')}</h1>
+   462→src/components/views/OnboardingView.tsx-        <p className="text-sm text-muted-foreground">
+   463→src/components/views/OnboardingView.tsx-          {t('onb.subtitle')}
+   464→--
+   465→src/components/views/BenchmarkView.tsx-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   466→src/components/views/BenchmarkView.tsx-          <Target className="h-6 w-6 text-amber-500" />
+   467→src/components/views/BenchmarkView.tsx:          {t('title.benchmark')}
+   468→src/components/views/BenchmarkView.tsx-        </h1>
+   469→src/components/views/BenchmarkView.tsx-        <p className="text-muted-foreground text-sm mt-1">
+   470→--
+   471→src/components/views/SonView.tsx-          <div>
+   472→src/components/views/SonView.tsx-            <h1 className="text-2xl font-bold tracking-tight">
+   473→src/components/views/SonView.tsx:              {t('title.sonAutomation', { defaultValue: 'SON Automation' })}
+   474→src/components/views/SonView.tsx-            </h1>
+   475→src/components/views/SonView.tsx-            <p className="text-sm text-muted-foreground">
+   476→--
+   477→src/components/views/OutagesView.tsx-      {/* Header */}
+   478→src/components/views/OutagesView.tsx-      <div>
+   479→src/components/views/OutagesView.tsx:        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.outages')}</h1>
+   480→src/components/views/OutagesView.tsx-        <p className="text-muted-foreground text-sm mt-1">
+   481→src/components/views/OutagesView.tsx-          {t('out.subtitle')}
