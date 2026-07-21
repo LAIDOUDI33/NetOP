@@ -223,7 +223,7 @@ export default function AlertsView() {
                           <TableCell className="text-xs">{alert.metric}</TableCell>
                           <TableCell className="text-xs">
                             <span className={alert.value > alert.threshold ? 'text-red-600 font-medium' : ''}>
-                              {alert.value} / {alert.threshold}
+                              {Number(alert.value).toFixed(1)} / {Number(alert.threshold).toFixed(1)}
                             </span>
                           </TableCell>
                           <TableCell className="text-xs max-w-[200px] truncate">{alert.message}</TableCell>

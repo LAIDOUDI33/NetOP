@@ -130,6 +130,7 @@ export default function CorrelationView() {
     tech4gQuery.isLoading || tech5gQuery.isLoading;
 
   const dashboard = dashboardQuery.data;
+  const techHealth = dashboard?.techHealth ?? [];
   const monitoringCache: TechMonitoringCache = {
     '2G': tech2gQuery.data,
     '3G': tech3gQuery.data,
@@ -148,7 +149,7 @@ export default function CorrelationView() {
         fill: TECH_COLORS[tech],
       };
     }).filter(d => d.value > 0);
-  }, [dashboard]);
+  }, [dashboard, techHealth]);
 
   // ── Radar chart data ────────────────────────────────────────────────
   const radarData = useMemo(() => {
@@ -157,7 +158,7 @@ export default function CorrelationView() {
       const point: Record<string, string | number> = { metric: metric.label };
       TECHNOLOGIES.forEach(tech => {
         const mon = monitoringCache[tech];
-        const health = dashboard.techHealth.find(h => h.technology === tech);
+        const health = techHealth.find(h => h.technology === tech);
         let value = 0;
         switch (metric.key) {
           case 'throughput':
@@ -182,14 +183,14 @@ export default function CorrelationView() {
       });
       return point;
     });
-  }, [monitoringCache, dashboard.techHealth]);
+  }, [monitoringCache, techHealth]);
 
   // ── Performance matrix data ─────────────────────────────────────────
   const techNorms = useMemo(() => {
     const norms: Record<string, { throughput: number; latency: number; availability: number; handover: number; signal: number }> = {};
     TECHNOLOGIES.forEach(tech => {
       const mon = monitoringCache[tech];
-      const health = dashboard.techHealth.find(h => h.technology === tech);
+      const health = techHealth.find(h => h.technology === tech);
       norms[tech] = {
         throughput: Math.min(100, (mon?.summary.avgDownload ?? health?.throughput ?? 0) / 2),
         latency: mon?.summary.avgLatency ?? health?.latency ?? 0,
@@ -199,7 +200,7 @@ export default function CorrelationView() {
       };
     });
     return norms;
-  }, [monitoringCache, dashboard.techHealth]);
+  }, [monitoringCache, techHealth]);
 
   const matrixPairs: { a: Technology; b: Technology; score: number }[] = useMemo(() => {
     const pairs: { a: Technology; b: Technology; score: number }[] = [];

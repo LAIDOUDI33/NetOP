@@ -160,8 +160,34 @@ export default function VendorCompareView() {
     refetchInterval: 60000,
   });
 
-  const comparisons = data?.comparisons ?? [];
-  const summary = data?.summary;
+  const rawMatches = (data as any)?.matches ?? [];
+  const comparisons = rawMatches;
+
+  // Compute best-vendor summary from comparisons
+  const summary = useMemo(() => {
+    if (comparisons.length === 0) return null;
+    const best = (field: keyof VendorComparison, higherBetter: boolean) => {
+      let best: VendorComparison | null = null;
+      for (const c of comparisons) {
+        const val = c[field] as number;
+        if (val == null) continue;
+        if (!best) { best = c; continue; }
+        const bval = best[field] as number;
+        if (bval == null) { best = c; continue; }
+        if (higherBetter ? val > bval : val < bval) best = c;
+      }
+      return best ? { vendor: best.vendor, value: best[field] as number } : null;
+    };
+    return {
+      totalVendors: new Set(comparisons.map(c => c.vendor)).size,
+      bestRsrp: best('avgRsrp', true),
+      bestThroughput: best('avgDownloadThroughput', true),
+      bestLatency: best('avgLatency', false),
+      bestAvailability: best('avgAvailability', true),
+      bestHoRate: best('avgHandoverSuccessRate', true),
+      bestLowestDropRate: best('avgDropRate', false),
+    };
+  }, [comparisons]);
 
   // Build a map: vendor -> color
   const vendorColorMap = useMemo(() => {

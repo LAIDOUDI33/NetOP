@@ -98,7 +98,8 @@ export function getSignalDot(rsrp?: number, rssi?: number, rxlev?: number): stri
   return 'bg-red-500';
 }
 
-export function formatNumber(n: number, decimals = 2): string {
+export function formatNumber(n: number | null | undefined, decimals = 2): string {
+  if (n == null || isNaN(n)) return '—';
   return n.toFixed(decimals);
 }
 

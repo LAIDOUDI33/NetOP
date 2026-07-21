@@ -50,9 +50,29 @@ interface SpectrumSummary {
   totalRefarmSaving: number;
 }
 
-interface SpectrumResponse {
-  blocks: SpectrumBlock[];
-  summary: SpectrumSummary;
+interface SpectrumApiResponse {
+  items: SpectrumBlock[];
+  summary: {
+    total: number;
+    byBand: Record<string, number>;
+    byTech: Record<string, number>;
+    byStatus: Record<string, number>;
+    refarmCandidates: number;
+    totalBandwidthMhz: number;
+    avgUtilizationPct: number;
+  };
+}
+
+interface SpectrumSummary {
+  total: number;
+  totalBandwidth: number;
+  avgUtilization: number;
+  avgInterference: number;
+  avgRsrp: number;
+  byBand: Record<string, number>;
+  byTech: Record<string, number>;
+  refarmCandidates: number;
+  totalRefarmSaving: number;
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────
@@ -176,7 +196,7 @@ export default function SpectrumView() {
   const [regionFilter, setRegionFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  const { data, isLoading, isError } = useQuery<SpectrumResponse>({
+  const { data: rawData, isLoading, isError } = useQuery<SpectrumApiResponse>({
     queryKey: ['spectrum', techFilter, bandFilter, regionFilter, statusFilter],
     queryFn: () => {
       const params = new URLSearchParams();
@@ -190,14 +210,29 @@ export default function SpectrumView() {
     refetchInterval: 30000,
   });
 
-  const blocks = data?.blocks ?? [];
-  const summary = data?.summary;
+  const items = rawData?.items ?? [];
+  const rawSummary = rawData?.summary;
+
+  // Derive summary with computed fields from items
+  const summary: SpectrumSummary | undefined = rawSummary
+    ? {
+        total: rawSummary.total,
+        totalBandwidth: rawSummary.totalBandwidthMhz,
+        avgUtilization: rawSummary.avgUtilizationPct,
+        avgInterference: items.length > 0 ? Number((items.reduce((s, b) => s + b.avgInterference, 0) / items.length).toFixed(1)) : 0,
+        avgRsrp: items.length > 0 ? Number((items.reduce((s, b) => s + b.avgRsrp, 0) / items.length).toFixed(1)) : 0,
+        byBand: rawSummary.byBand,
+        byTech: rawSummary.byTech,
+        refarmCandidates: rawSummary.refarmCandidates,
+        totalRefarmSaving: items.reduce((s, b) => s + (b.refarmCandidate ? b.refarmPotentialSaving : 0), 0),
+      }
+    : undefined;
 
   // Derive unique regions from data for region filter
-  const regions = Array.from(new Set(blocks.map((b) => b.region))).sort();
+  const regions = Array.from(new Set(items.map((b) => b.region))).sort();
 
   // Band utilization chart data
-  const bandUtilData = blocks.map((b) => ({
+  const bandUtilData = items.map((b) => ({
     band: `${b.band} MHz`,
     utilization: b.utilizationPct,
     fill: utilizationChartColor(b.utilizationPct),
@@ -242,7 +277,7 @@ export default function SpectrumView() {
   }
 
   // ─── Render: Empty State ────────────────────────────────────────────
-  if (!data || blocks.length === 0) {
+  if (!rawData || items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <RadioTower className="h-12 w-12 mb-4" />
@@ -282,7 +317,7 @@ export default function SpectrumView() {
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Active frequency blocks</p>
+            <p className="text-xs text-muted-foreground mt-1">Frequency blocks</p>
           </CardContent>
         </Card>
 
@@ -505,7 +540,7 @@ export default function SpectrumView() {
           </div>
         </CardHeader>
         <CardContent>
-          {blocks.length === 0 ? (
+          {items.length === 0 ? (
             <p className="text-sm text-muted-foreground py-8 text-center">
               No spectrum blocks match the selected filters.
             </p>
@@ -528,7 +563,7 @@ export default function SpectrumView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {blocks.map((block) => (
+                  {items.map((block) => (
                     <TableRow key={block.id}>
                       <TableCell className="font-medium text-xs sticky left-0 bg-background">
                         {block.band} MHz

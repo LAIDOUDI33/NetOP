@@ -186,14 +186,15 @@ export default function SonView() {
     selectedTechnology === 'ALL' ? undefined : selectedTechnology;
 
   // ─── Queries ──────────────────────────────────────────────────────
+  // Note: SON modules use compound technology (e.g. "4G,5G"), so we
+  // fetch all modules without technology filter.
 
   const {
     data: modulesData,
     isLoading: modulesLoading,
   } = useQuery<{ modules: SonModuleItem[] }>({
-    queryKey: ['son-modules', selectedTechnology],
-    queryFn: () =>
-      fetch(`/api/son?technology=${selectedTechnology}`).then((r) => r.json()),
+    queryKey: ['son-modules'],
+    queryFn: () => fetch('/api/son').then((r) => r.json()),
     refetchInterval: 15000,
   });
 
@@ -201,11 +202,9 @@ export default function SonView() {
     data: actionsData,
     isLoading: actionsLoading,
   } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
-    queryKey: ['son-actions', selectedTechnology],
+    queryKey: ['son-actions'],
     queryFn: () =>
-      fetch(
-        `/api/son/actions?technology=${selectedTechnology}&limit=50`
-      ).then((r) => r.json()),
+      fetch('/api/son/actions?limit=50').then((r) => r.json()),
     refetchInterval: 15000,
   });
 
@@ -213,11 +212,9 @@ export default function SonView() {
     data: neighborsData,
     isLoading: neighborsLoading,
   } = useQuery<{ neighbors: NeighborRelationItem[] }>({
-    queryKey: ['son-neighbors', selectedTechnology],
+    queryKey: ['son-neighbors'],
     queryFn: () =>
-      fetch(
-        `/api/son/neighbors?technology=${selectedTechnology}`
-      ).then((r) => r.json()),
+      fetch('/api/son/neighbors').then((r) => r.json()),
     refetchInterval: 15000,
   });
 
