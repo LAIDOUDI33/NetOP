@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/tooltip';
 import { ShieldCheck, AlertTriangle, Target, TrendingUp } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import { TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber } from '@/lib/constants';
 import type { Technology, AlertSeverity } from '@/types';
 
@@ -305,6 +306,7 @@ export default function SLADashboardView() {
             <Badge variant="destructive" className="font-semibold">
               {t('sla.breaches', { n: breaches.length })}
             </Badge>
+            <ExportButton data={breaches} filenamePrefix="sla" columns={[{ key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'targetValue', header: 'Target' }, { key: 'actualValue', header: 'Actual' }, { key: 'breachPercent', header: 'Breach (%)' }, { key: 'severity', header: 'Severity' }]} />
           </div>
         </CardHeader>
         <CardContent className="p-4">

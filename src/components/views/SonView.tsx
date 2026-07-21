@@ -54,6 +54,7 @@ import { useAppStore } from '@/store/app';
 import { TECH_COLORS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import type {
   Technology,
   SonModuleMode,
@@ -523,6 +524,7 @@ export default function SonView() {
                 <Activity className="h-4 w-4 text-muted-foreground" />
                 {t('son.recentActions')}
               </CardTitle>
+              <ExportButton data={actions} filenamePrefix="son" columns={[{ key: 'createdAt', header: 'Time' }, { key: 'moduleName', header: 'Module' }, { key: 'siteName', header: 'Site' }, { key: 'actionType', header: 'Action Type' }, { key: 'parameter', header: 'Parameter' }, { key: 'oldValue', header: 'Old Value' }, { key: 'newValue', header: 'New Value' }, { key: 'status', header: 'Status' }]} />
             </CardHeader>
             <CardContent className="p-0">
               {actionsLoading ? (

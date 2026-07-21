@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRightLeft, Layers, MapPin, TrendingUp, DollarSign, CreditCard } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -529,6 +530,7 @@ export default function EvolutionView() {
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={plans as unknown as Record<string, any>[]} filenamePrefix="evolution" columns={[{ key: 'name', header: 'Name' }, { key: 'sourceTech', header: 'Source Tech' }, { key: 'targetTech', header: 'Target Tech' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'sitesAffected', header: 'Sites' }, { key: 'budget', header: 'Budget ($)' }, { key: 'progress', header: 'Progress (%)' }]} />
           </div>
         </CardHeader>
         <CardContent>

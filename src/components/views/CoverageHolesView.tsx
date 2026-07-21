@@ -19,6 +19,7 @@ import { MapPinOff, Frown, Users, AlertTriangle, CircleDot } from 'lucide-react'
 import { TECH_BG_CLASSES, TECHNOLOGIES, formatNumber } from '@/lib/constants';
 import { useT } from '@/lib/i18n';
 import DataExportButton from '@/components/DataExportButton';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ───────────────────────────────────────────
@@ -509,6 +510,8 @@ export default function CoverageHolesView() {
               </SelectContent>
             </Select>
             <DataExportButton data={holes as unknown as Record<string, unknown>[]} filename="coverage-holes" />
+            <ExportButton data={holes} filenamePrefix="coverage-holes" columns={[{ key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'severity', header: 'Severity' }, { key: 'signalStrength', header: 'Signal (dBm)' }, { key: 'gapDb', header: 'Gap (dB)' }, { key: 'nearestSiteName', header: 'Nearest Site' }, { key: 'affectedUsers', header: 'Affected Users' }, { key: 'status', header: 'Status' }]}
+ />
           </div>
         </CardHeader>
         <CardContent>

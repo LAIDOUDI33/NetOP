@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import {
   PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -441,6 +442,7 @@ export default function CorrelationView() {
             <CardTitle className="text-base font-semibold">{t('corr.vendorComp')}</CardTitle>
           </div>
           <CardDescription className="text-xs">{t('corr.vendorDesc')}</CardDescription>
+          <ExportButton data={vendorData} filenamePrefix="correlation" columns={[{ key: 'vendor', header: 'Vendor' }, { key: 'availability', header: 'Availability (%)' }, { key: 'throughput', header: 'Throughput' }, { key: 'latency', header: 'Latency (inv.)' }, { key: 'handoverSuccess', header: 'Handover' }, { key: 'signalQuality', header: 'Signal' }]} />
         </CardHeader>
         <CardContent className="p-4">
           {vendorData.length === 0 ? (

@@ -51,6 +51,7 @@ import type {
 } from '@/types';
 import { useAppStore } from '@/store/app';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import { toast } from 'sonner';
 
 // ──────────────────────────────────────────────
@@ -809,6 +810,7 @@ export default function PoliciesView() {
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
+            <ExportButton data={filteredPolicies as unknown as Record<string, any>[]} filenamePrefix="policies" columns={[{ key: 'name', header: 'Name' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'enabled', header: 'Enabled' }, { key: 'executionStats.totalRuns', header: 'Total Runs' }, { key: 'executionStats.successRate', header: 'Success Rate (%)' }, { key: 'lastExecution.status', header: 'Last Status' }]} />
           </div>
         </div>
 

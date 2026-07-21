@@ -13,6 +13,7 @@ import { Send, RefreshCw, Sparkles, Activity, TrendingUp, Clock, Users, AlertTri
 import type { OptimizationItem, OptimizationStatus, Technology } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -116,6 +117,9 @@ export default function OptimizerView() {
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Refresh
               </Button>
+              {data?.optimizations && (
+                <ExportButton data={data.optimizations} filenamePrefix="optimizer" columns={[{ key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'issue', header: 'Issue' }, { key: 'recommendation', header: 'Recommendation' }, { key: 'impact', header: 'Impact' }]} />
+              )}
             </div>
           </CardHeader>
           <Separator />

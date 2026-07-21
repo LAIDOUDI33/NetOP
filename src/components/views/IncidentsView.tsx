@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
 import DataExportButton from '@/components/DataExportButton';
+import { ExportButton } from '@/components/ExportButton';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
@@ -575,6 +576,7 @@ export default function IncidentsView() {
           </SelectContent>
         </Select>
         <DataExportButton data={incidents as unknown as Record<string, unknown>[]} filename="incidents" />
+        <ExportButton data={incidents} filenamePrefix="incidents" columns={[{ key: 'title', header: 'Title' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'category', header: 'Category' }, { key: 'assignedTo', header: 'Assigned To' }, { key: 'reportedBy', header: 'Reported By' }]} />
       </div>
 
       {/* Incidents Table */}

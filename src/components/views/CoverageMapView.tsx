@@ -17,6 +17,7 @@ import { MapPin, Signal, TrendingUp, Users, Wifi } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, getSignalQuality } from '@/lib/constants';
 import type { Technology, SiteStatus, CoverageData } from '@/types';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -298,6 +299,7 @@ export default function CoverageMapView() {
           <CardTitle className="text-base font-semibold">
             {t('cov.regionStats')}
           </CardTitle>
+          <ExportButton data={regionStats} filenamePrefix="coverage-map" columns={[{ key: 'region', header: 'Region' }, { key: 'totalSites', header: 'Total Sites' }, { key: 'avgAvailability', header: 'Avg Availability (%)' }, { key: 'avgSignal', header: 'Avg Signal (dBm)' }]} />
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (

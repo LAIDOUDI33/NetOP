@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { FlaskConical, Frown, Zap, Target, TrendingUp } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
@@ -527,6 +528,7 @@ export default function SimulationsView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={simulations as unknown as Record<string, any>[]} filenamePrefix="simulations" columns={[{ key: 'name', header: 'Name' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'confidence', header: 'Confidence (%)' }, { key: 'impactScore', header: 'Impact Score' }, { key: 'estimatedSaving', header: 'Est. Saving' }, { key: 'createdAt', header: 'Created At' }]} />
           </div>
         </CardHeader>
         <CardContent>

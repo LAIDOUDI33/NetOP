@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -732,7 +733,8 @@ export default function QoEView() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">{e}{t('qoe.details')}</CardTitle>
-          <Select value={techFilter} onValueChange={setTechFilter}>
+          <div className="flex items-center gap-2">
+            <Select value={techFilter} onValueChange={setTechFilter}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder={t('filter.technology')} />
             </SelectTrigger>
@@ -744,6 +746,8 @@ export default function QoEView() {
               <SelectItem value="5G">5G</SelectItem>
             </SelectContent>
           </Select>
+            <ExportButton data={filteredSites} filenamePrefix="qoe" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'mosScore', header: 'MOS' }, { key: 'satisfactionIndex', header: 'Satisfaction' }, { key: 'dataRateExperienced', header: 'Data Rate' }, { key: 'pingLatency', header: 'Ping Latency' }]} />
+          </div>
         </CardHeader>
         <CardContent>
           {filteredSites.length === 0 ? (

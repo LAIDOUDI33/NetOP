@@ -16,6 +16,7 @@ import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/type
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
 import DataExportButton from '@/components/DataExportButton';
+import { ExportButton } from '@/components/ExportButton';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -176,7 +177,10 @@ export default function AlertsView() {
       {/* Alerts Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">{t('alert.result', { n: data.alerts.length })}</CardTitle>
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base font-semibold">{t('alert.result', { n: data.alerts.length })}</CardTitle>
+            <ExportButton data={data.alerts} filenamePrefix="alerts" columns={[{ key: 'severity', header: 'Severity' }, { key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'value', header: 'Value' }, { key: 'threshold', header: 'Threshold' }, { key: 'message', header: 'Message' }, { key: 'status', header: 'Status' }]} />
+          </div>
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

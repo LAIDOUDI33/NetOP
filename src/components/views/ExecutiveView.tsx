@@ -12,6 +12,7 @@ import {
   Crown, Star, XCircle, Zap, Activity, DollarSign, Gauge,
 } from 'lucide-react';
 import { TECH_COLORS, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -198,16 +199,19 @@ export default function ExecutiveView() {
     <div className="space-y-6">
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <Crown className="h-5 w-5 text-amber-500" />
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <Crown className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">{t('exec.title')}</h1>
+              <p className="text-sm text-muted-foreground">
+                {t('exec.subtitle')}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('exec.title')}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t('exec.subtitle')}
-            </p>
-          </div>
+          {d && <ExportButton data={[{ totalSites: d.totalSites, activeAlerts: d.activeAlerts, avgAvailability: d.avgAvailability, avgNpi: d.avgNpi, totalRoiSaving: d.totalRoiSaving, totalEnergyKw: d.totalEnergyKw, avgMos: d.avgMos, sonActionsToday: d.sonActionsToday }]} filenamePrefix="executive" columns={[{ key: 'totalSites', header: 'Total Sites' }, { key: 'activeAlerts', header: 'Active Alerts' }, { key: 'avgAvailability', header: 'Avg Availability (%)' }, { key: 'avgNpi', header: 'Avg NPI' }, { key: 'totalRoiSaving', header: 'ROI Savings ($)' }, { key: 'totalEnergyKw', header: 'Energy (kW)' }, { key: 'avgMos', header: 'Avg MOS' }, { key: 'sonActionsToday', header: 'SON Actions Today' }]} />}
         </div>
         <Separator className="mt-4" />
       </div>

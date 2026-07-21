@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Scale, Frown } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -455,6 +456,7 @@ export default function LoadBalancingView() {
                 <SelectItem value="congested">{t('lb.congested')}</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={loads} filenamePrefix="load-balancing" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'prbUtilDownlink', header: 'PRB DL (%)' }, { key: 'prbUtilUplink', header: 'PRB UL (%)' }, { key: 'activeUsers', header: 'Users' }, { key: 'congestionLevel', header: 'Congestion' }, { key: 'balancedScore', header: 'Balance' }]} />
           </div>
         </CardHeader>
         <CardContent>

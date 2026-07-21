@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Heart, Frown, Radio } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -557,6 +558,7 @@ export default function HealthView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={healthScores} filenamePrefix="health" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'overallScore', header: 'Overall' }, { key: 'grade', header: 'Grade' }, { key: 'trend', header: 'Trend' }]} />
           </div>
         </CardHeader>
         <CardContent>

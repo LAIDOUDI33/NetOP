@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Zap, Moon, Thermometer, Leaf, Battery } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -524,6 +525,7 @@ export default function EnergyView() {
                 <SelectItem value="shutdown">Shutdown</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={sortedMetrics} filenamePrefix="energy" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'powerConsumption', header: 'Power (W)' }, { key: 'energyConsumed', header: 'Energy (Wh)' }, { key: 'activeUsers', header: 'Users' }, { key: 'trafficLoad', header: 'Load %' }, { key: 'temperature', header: 'Temp °C' }, { key: 'mode', header: 'Mode' }, { key: 'co2Emission', header: 'CO₂ (g)' }, { key: 'sleepMode', header: 'Sleep Mode' }]} />
           </div>
         </CardHeader>
         <CardContent>

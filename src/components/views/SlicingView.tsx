@@ -21,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Layers, Users, Wifi, Zap, Cpu, ServerOff } from 'lucide-react';
 import { TECH_COLORS, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 
 // ─── API Response Types ────────────────────────────────────────────────
 
@@ -629,6 +630,7 @@ export default function SlicingView() {
                 <SelectItem value="mMTC">mMTC</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={slices} filenamePrefix="slicing" columns={[{ key: 'name', header: 'Slice Name' }, { key: 'sliceType', header: 'Type' }, { key: 'status', header: 'Status' }, { key: 'technology', header: 'Technology' }, { key: 'currentLoad', header: 'Load (%)' }, { key: 'activeUsers', header: 'Users' }, { key: 'avgThroughput', header: 'Avg Throughput' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'priorityLevel', header: 'Priority' }]} />
           </div>
         </CardHeader>
         <CardContent>

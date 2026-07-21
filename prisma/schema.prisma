@@ -981,3 +981,69 @@ model AuditTrail {
   @@index([category])
   @@index([createdAt])
 }
+
+// ========== RBAC MODELS ==========
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  avatar        String?
+  phone         String?
+  department    String    @default("NOC")
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  roles         UserRole[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique  // superadmin, noc_manager, rf_engineer, nop_engineer, field_tech, view_only
+  displayName String
+  description String
+  isSystem    Boolean          @default(false)  // system roles cannot be deleted
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id        String           @id @default(cuid())
+  module    String
+  action    String
+  createdAt DateTime         @default(now())
+  roles     RolePermission[]
+
+  @@unique([module, action])
+}
+
+model UserRole {
+  id     String @id @default(cuid())
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}

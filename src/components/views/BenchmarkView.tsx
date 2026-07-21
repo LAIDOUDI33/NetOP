@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Target, Frown, Radio } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -478,6 +479,7 @@ export default function BenchmarkView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={benchmarks as unknown as Record<string, any>[]} filenamePrefix="benchmark" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'actualValue', header: 'Actual' }, { key: 'benchmarkValue', header: 'Benchmark' }, { key: 'targetValue', header: 'Target' }, { key: 'percentileRank', header: 'Percentile' }, { key: 'gap', header: 'Gap' }, { key: 'status', header: 'Status' }, { key: 'region', header: 'Region' }]} />
           </div>
         </CardHeader>
         <CardContent>

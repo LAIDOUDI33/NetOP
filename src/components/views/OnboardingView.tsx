@@ -46,6 +46,7 @@ import { Label } from '@/components/ui/label';
 
 import type { SiteOnboardingItem, OnboardingStatus } from '@/types';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 // ──────────────────────────── Constants ────────────────────────────
 
@@ -654,6 +655,7 @@ export default function OnboardingView() {
               <Badge variant="secondary" className="ml-auto text-[10px]">
                 Auto-refresh: 15s
               </Badge>
+              <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: 'Site Name' }, { key: 'siteCode', header: 'Site Code' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'vendor', header: 'Vendor' }, { key: 'region', header: 'Region' }, { key: 'progress', header: 'Progress (%)' }, { key: 'createdAt', header: 'Created At' }]} />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

@@ -31,6 +31,7 @@ import {
   Cable,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ExportButton } from '@/components/ExportButton';
 import type {
   VendorProfileItem,
   VendorApiType,
@@ -238,13 +239,16 @@ export default function VendorsView() {
   return (
     <div className="space-y-6">
       {/* ─── Header ─────────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Vendor Management
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t('vnd.subtitle')}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Vendor Management
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t('vnd.subtitle')}
+          </p>
+        </div>
+        <ExportButton data={vendors as unknown as Record<string, any>[]} filenamePrefix="vendors" columns={[{ key: 'displayName', header: 'Vendor' }, { key: 'vendor', header: 'Code' }, { key: 'status', header: 'Status' }, { key: 'apiType', header: 'API Type' }, { key: 'technologies', header: 'Technologies' }, { key: 'stats.sitesManaged', header: 'Sites Managed' }, { key: 'stats.syncStatus', header: 'Sync Status' }]} />
       </div>
 
       {/* ─── Stats Row ──────────────────────────────────────────────────── */}

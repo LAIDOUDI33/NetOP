@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import type { Technology } from '@/types';
 
@@ -566,6 +567,7 @@ export default function SubscribersView() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t('sub.segments')}</CardTitle>
+          <ExportButton data={segments} filenamePrefix="subscribers" columns={[{ key: 'segmentName', header: 'Segment' }, { key: 'technology', header: 'Technology' }, { key: 'subscriberCount', header: 'Subscribers' }, { key: 'avgDataUsage', header: 'Avg Data (GB)' }, { key: 'arpu', header: 'ARPU' }, { key: 'churnRisk', header: 'Churn Risk' }, { key: 'satisfactionScore', header: 'Satisfaction' }, { key: 'peakHour', header: 'Peak Hour' }]} />
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">

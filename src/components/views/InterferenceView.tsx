@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Radio, AlertTriangle, Frown, CheckCircle2, BarChart3 } from 'lucide-react';
 import { TECH_BG_CLASSES, TECHNOLOGIES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -538,6 +539,7 @@ export default function InterferenceView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={events} filenamePrefix="interference" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'interferenceType', header: 'Type' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'impactScore', header: 'Impact' }, { key: 'sourceCellName', header: 'Source Cell' }, { key: 'conflictingCellName', header: 'Conflicting Cell' }]} />
           </div>
         </CardHeader>
         <CardContent>

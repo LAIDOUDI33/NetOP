@@ -13,6 +13,7 @@ import {
   AlertTriangle, WifiOff, CheckCircle,
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import type { DashboardData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -87,6 +88,10 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <ExportButton data={healthData} filenamePrefix="dashboard" columns={[{ key: 'technology', header: 'Technology' }, { key: 'availability', header: 'Availability (%)' }, { key: 'throughput', header: 'Throughput (÷10)' }, { key: 'latency', header: 'Latency (÷5)' }]} />
+      </div>
+
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>

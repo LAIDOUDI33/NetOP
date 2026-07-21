@@ -1,5 +1,6 @@
 'use client';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -155,6 +156,7 @@ export default function CoverageView() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">Sites ({data.sites.length})</CardTitle>
+          <ExportButton data={data.sites} filenamePrefix="coverage" columns={[{ key: 'name', header: 'Site' }, { key: 'code', header: 'Code' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'avgSignal', header: 'Signal (dBm)' }, { key: 'avgThroughput', header: 'Throughput (Mbps)' }, { key: 'avgUsers', header: 'Users' }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

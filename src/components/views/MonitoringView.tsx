@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Server, Signal, TrendingUp, Clock, Users } from 'lucide-react';
 import { useAppStore } from '@/store/app';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import type { MonitoringData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -185,8 +186,9 @@ export default function MonitoringView() {
 
       {/* Sites Table */}
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-base font-semibold">{t('mon.siteDetails', { tech: selectedTechnology })}</CardTitle>
+          <ExportButton data={data.sites} filenamePrefix="monitoring" columns={[{ key: 'siteName', header: 'Site' }, { key: 'status', header: 'Status' }, { key: 'avgDownloadThroughput', header: 'DL (Mbps)' }, { key: 'avgUploadThroughput', header: 'UL (Mbps)' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'avgAvailability', header: 'Availability (%)' }, { key: 'avgActiveUsers', header: 'Users' }, { key: 'avgDropRate', header: 'Drop Rate (%)' }, { key: 'avgSinr', header: 'SINR (dB)' }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

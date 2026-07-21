@@ -34,6 +34,20 @@ const fr: Record<string, string> = {
   'cmd.check5gHealth': 'Vérifier Santé 5G',
   'cmd.pressEsc': 'NetOptima · Appuyez sur ÉCHAP pour fermer',
 
+  // ========== AUTH ==========
+  'auth.subtitle': 'Connectez-vous à votre compte NOC',
+  'auth.email': 'Email',
+  'auth.password': 'Mot de passe',
+  'auth.signIn': 'Se connecter',
+  'auth.signingIn': 'Connexion...',
+  'auth.invalidCredentials': 'Email ou mot de passe invalide',
+  'auth.error': 'Une erreur est survenue. Veuillez réessayer.',
+  'auth.demoAccounts': 'Comptes de Démonstration',
+  'auth.signOut': 'Déconnexion',
+  'auth.profile': 'Profil',
+  'auth.roles': 'Rôles',
+  'auth.permissions': 'Permissions',
+
   // ========== NOTIFICATIONS ==========
   'notif.title': 'Notifications',
   'notif.markAllRead': 'Tout Marquer Lu',
@@ -158,6 +172,9 @@ const fr: Record<string, string> = {
   'th.ruleName': 'Nom de Règle',
   'th.condition': 'Condition',
   'th.threshold': 'Seuil',
+  'th.time': 'Heure',
+  'th.throughput': 'Débit',
+  'th.riskLevel': 'Niveau de Risque',
   'th.enabled': 'Activé',
   'th.affectedUsers': 'Utilisateurs Affectés',
   'th.rootCause': 'Cause Racine',
@@ -245,6 +262,7 @@ const fr: Record<string, string> = {
   // ========== COMMON BUTTON LABELS ==========
   'btn.refresh': 'Actualiser',
   'btn.exportCsv': 'Exporter CSV',
+  'btn.export': 'Exporter',
   'btn.save': 'Enregistrer',
   'btn.saveN': 'Enregistrer ({n})',
   'btn.ack': 'Acquitter',
@@ -721,12 +739,14 @@ const fr: Record<string, string> = {
   'exec.currentDraw': 'Consommation Actuelle',
 
   // ========== VIEW-SPECIFIC: Incidents ==========
+  'inc.allIncidents': 'Tous les Incidents',
   'inc.noMatch': 'Aucun incident ne correspond aux filtres actuels.',
   'inc.statusDist': 'Répartition par Statut',
   'inc.catDist': 'Répartition par Catégorie',
   'inc.sevByCat': 'Sévérité par Catégorie',
 
   // ========== VIEW-SPECIFIC: Health ==========
+  'helth.title': 'Santé du Réseau',
   'helth.gradeDist': 'Répartition par Note',
   'helth.trendDist': 'Répartition par Tendance',
   'helth.regionOverview': 'Aperçu Santé Régional',
@@ -735,6 +755,7 @@ const fr: Record<string, string> = {
   'helth.noSiteMatch': 'Aucun site ne correspond aux filtres sélectionnés.',
 
   // ========== VIEW-SPECIFIC: Handover ==========
+  'ho.title': 'Analyse Handover',
   'ho.subtitle': 'Optimisation Handover',
   'ho.successRateDist': 'Répartition Taux de Réussite HO',
   'ho.relationTypeDist': 'Répartition par Type de Relation',
@@ -778,11 +799,13 @@ const fr: Record<string, string> = {
   'spc.blocks': 'Blocs de Spectre',
 
   // ========== VIEW-SPECIFIC: Faults ==========
+  'flt.title': 'Gestion des Pannes',
   'flt.sevDist': 'Répartition par Sévérité',
   'flt.componentHeatmap': 'Carte de Chaleur Risques Composants',
   'flt.predictions': 'Prédictions de Pannes',
 
   // ========== VIEW-SPECIFIC: Subscribers ==========
+  'sub.title': 'Analyse des Abonnés',
   'sub.topServices': 'Services Principaux',
   'sub.arpuBySeg': 'ARPU par Segment',
   'sub.churnBySeg': 'Risque d\'Attrition par Segment',
@@ -819,6 +842,9 @@ const fr: Record<string, string> = {
   'roi.records': 'Enregistrements ROI',
 
   // ========== VIEW-SPECIFIC: Benchmark ==========
+  'bm.subtitle': 'Benchmarking des Performances Réseau',
+  'bm.totalBenchmarks': 'Total des Benchmarks',
+  'bm.metricComparisons': 'Comparaisons de Métriques',
   'bm.statusDist': 'Répartition par Statut',
   'bm.avgGap': 'Écart Moyen par Métrique',
   'bm.details': 'Détails du Benchmark',

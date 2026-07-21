@@ -35,6 +35,7 @@ import { Settings2, FileText, Tags, Star, Layers, Clock, Copy } from 'lucide-rea
 import { TECH_BG_CLASSES } from '@/lib/constants';
 import type { Technology } from '@/types';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 interface TemplateParam {
   value: string | number;
@@ -282,6 +283,7 @@ export default function ConfigView() {
         <span className="text-sm text-muted-foreground ml-auto">
           {templates.length} template{templates.length !== 1 ? 's' : ''}
         </span>
+        <ExportButton data={templates as unknown as Record<string, any>[]} filenamePrefix="config" columns={[{ key: 'name', header: 'Template Name' }, { key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'version', header: 'Version' }, { key: 'paramCount', header: 'Parameters' }, { key: 'applicationCount', header: 'Applications' }]} />
       </div>
 
       {/* Template Cards Grid */}

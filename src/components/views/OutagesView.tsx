@@ -20,6 +20,7 @@ import {
   PowerOff, Frown, Users, Clock, CheckCircle2, AlertTriangle, Zap,
 } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -513,6 +514,7 @@ export default function OutagesView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={outages} filenamePrefix="outages" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'outageType', header: 'Type' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'startedAt', header: 'Started' }, { key: 'affectedUsers', header: 'Affected Users' }, { key: 'region', header: 'Region' }]} />
           </div>
         </CardHeader>
         <CardContent>

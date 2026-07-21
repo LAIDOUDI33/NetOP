@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Send, Bot, User, Sparkles } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -137,6 +138,7 @@ export default function AssistantView() {
         <p className="text-muted-foreground text-sm mt-1">
           {t('ai.subtitle')}
         </p>
+        <ExportButton data={messages.map(m => ({ role: m.role, content: m.content, timestamp: m.timestamp.toLocaleString() }))} filenamePrefix="assistant" columns={[{ key: 'role', header: 'Role' }, { key: 'content', header: 'Message' }, { key: 'timestamp', header: 'Timestamp' }]} />
       </div>
 
       {/* Chat Container */}

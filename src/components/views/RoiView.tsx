@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { DollarSign, Frown, CheckCircle2 } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
@@ -525,6 +526,7 @@ export default function RoiView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="roi" columns={[{ key: 'initiative', header: 'Initiative' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'investment', header: 'Investment ($)' }, { key: 'projectedReturn', header: 'Projected Return ($)' }, { key: 'roiPercentage', header: 'ROI (%)' }, { key: 'paybackMonths', header: 'Payback (months)' }]} />
           </div>
         </CardHeader>
         <CardContent>

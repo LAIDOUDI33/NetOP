@@ -42,6 +42,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology, AlertSeverity } from '@/types';
 
 function timeAgo(dateStr: string): string {
@@ -250,6 +251,7 @@ export default function LiveView() {
           </span>
           ● LIVE
         </div>
+        <ExportButton data={topLoaded as unknown as Record<string, any>[]} filenamePrefix="live" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'loadPercent', header: 'Load (%)' }, { key: 'users', header: 'Users' }]} />
       </div>
 
       {/* KPI Cards */}

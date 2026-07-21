@@ -1,0 +1,750 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { useT } from '@/lib/i18n';
+     5→import { useQuery } from '@tanstack/react-query';
+     6→import {
+     7→  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
+     8→  Tooltip, Legend, ResponsiveContainer, ReferenceLine,
+     9→} from 'recharts';
+    10→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    11→import { Badge } from '@/components/ui/badge';
+    12→import { Progress } from '@/components/ui/progress';
+    13→import {
+    14→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    15→} from '@/components/ui/select';
+    16→import {
+    17→  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
+    18→} from '@/components/ui/table';
+    19→import { Skeleton } from '@/components/ui/skeleton';
+    20→import { Separator } from '@/components/ui/separator';
+    21→import { ScrollArea } from '@/components/ui/scroll-area';
+    22→import { Layers, Users, Wifi, Zap, Cpu, ServerOff } from 'lucide-react';
+    23→import { TECH_COLORS, formatNumber } from '@/lib/constants';
+    24→
+    25→// ─── API Response Types ────────────────────────────────────────────────
+    26→
+    27→interface NetworkSlice {
+    28→  id: string;
+    29→  name: string;
+    30→  sliceType: 'eMBB' | 'URLLC' | 'mMTC';
+    31→  technology: string;
+    32→  status: 'active' | 'suspended' | 'deactivated';
+    33→  siteId: string | null;
+    34→  siteName: string | null;
+    35→  siteCode: string | null;
+    36→  sst: string;
+    37→  sd: string | null;
+    38→  maxBandwidth: number;
+    39→  guaranteedBw: number;
+    40→  maxUsers: number;
+    41→  priorityLevel: number;
+    42→  latencyTarget: number;
+    43→  reliabilityTarget: number;
+    44→  currentLoad: number;
+    45→  activeUsers: number;
+    46→  avgThroughput: number;
+    47→  avgLatency: number;
+    48→  qci: string | null;
+    49→  fiveQi: number | null;
+    50→  parameters: Record<string, unknown>;
+    51→  createdAt: string;
+    52→  updatedAt: string;
+    53→}
+    54→
+    55→interface SlicingSummary {
+    56→  total: number;
+    57→  active: number;
+    58→  suspended: number;
+    59→  deactivated: number;
+    60→  byType: Record<string, number>;
+    61→  avgLoad: number;
+    62→}
+    63→
+    64→interface SlicingResponse {
+    65→  slices: NetworkSlice[];
+    66→  summary: SlicingSummary;
+    67→}
+    68→
+    69→// ─── Constants ─────────────────────────────────────────────────────────
+    70→
+    71→const SLICE_TYPE_COLORS: Record<string, string> = {
+    72→  eMBB: '#10B981',
+    73→  URLLC: '#F59E0B',
+    74→  mMTC: '#06B6D4',
+    75→};
+    76→
+    77→const SLICE_TYPE_BG: Record<string, string> = {
+    78→  eMBB: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    79→  URLLC: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    80→  mMTC: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
+    81→};
+    82→
+    83→const SLICE_TYPE_BADGE_BG: Record<string, string> = {
+    84→  eMBB: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25',
+    85→  URLLC: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25',
+    86→  mMTC: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/25',
+    87→};
+    88→
+    89→const STATUS_BADGE_VARIANT: Record<string, 'default' | 'outline' | 'secondary'> = {
+    90→  active: 'default',
+    91→  suspended: 'outline',
+    92→  deactivated: 'secondary',
+    93→};
+    94→
+    95→const STATUS_LABEL: Record<string, string> = {
+    96→  active: 'Active',
+    97→  suspended: 'Suspended',
+    98→  deactivated: 'Deactivated',
+    99→};
+   100→
+   101→// ─── Helper Functions ──────────────────────────────────────────────────
+   102→
+   103→function loadBarColor(load: number): string {
+   104→  if (load >= 80) return 'bg-red-500';
+   105→  if (load >= 60) return 'bg-amber-500';
+   106→  return 'bg-emerald-500';
+   107→}
+   108→
+   109→function loadTextColor(load: number): string {
+   110→  if (load >= 80) return 'text-red-600 dark:text-red-400';
+   111→  if (load >= 60) return 'text-amber-600 dark:text-amber-400';
+   112→  return 'text-emerald-600 dark:text-emerald-400';
+   113→}
+   114→
+   115→function loadProgressClass(load: number): string {
+   116→  if (load >= 80) return '[&>div]:bg-red-500';
+   117→  if (load >= 60) return '[&>div]:bg-amber-500';
+   118→  return '[&>div]:bg-emerald-500';
+   119→}
+   120→
+   121→function computeTypeStats(slices: NetworkSlice[], type: string) {
+   122→  const typed = slices.filter((s) => s.sliceType === type);
+   123→  if (typed.length === 0) return { count: 0, avgLoad: 0, totalUsers: 0 };
+   124→  const avgLoad = Number((typed.reduce((sum, s) => sum + s.currentLoad, 0) / typed.length).toFixed(1));
+   125→  const totalUsers = typed.reduce((sum, s) => sum + s.activeUsers, 0);
+   126→  return { count: typed.length, avgLoad, totalUsers };
+   127→}
+   128→
+   129→// ─── Custom Chart Tooltip ─────────────────────────────────────────────
+   130→
+   131→function ChartTooltipContent({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) {
+   132→  if (!active || !payload?.length) return null;
+   133→  return (
+   134→    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
+   135→      <p className="font-medium mb-1">{label}</p>
+   136→      {payload.map((entry, idx) => (
+   137→        <div key={idx} className="flex items-center gap-2">
+   138→          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+   139→          <span className="text-muted-foreground">{entry.name}:</span>
+   140→          <span className="font-medium">{formatNumber(entry.value, 1)}%</span>
+   141→        </div>
+   142→      ))}
+   143→    </div>
+   144→  );
+   145→}
+   146→
+   147→// ─── Loading Skeletons ────────────────────────────────────────────────
+   148→
+   149→function KpiCardsSkeleton() {
+   150→  return (
+   151→    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   152→      {Array.from({ length: 5 }).map((_, i) => (
+   153→        <Card key={i}>
+   154→          <CardHeader className="pb-2">
+   155→            <Skeleton className="h-4 w-28" />
+   156→          </CardHeader>
+   157→          <CardContent>
+   158→            <Skeleton className="h-8 w-16 mb-2" />
+   159→          </CardContent>
+   160→        </Card>
+   161→      ))}
+   162→    </div>
+   163→  );
+   164→}
+   165→
+   166→function TypeCardsSkeleton() {
+   167→  return (
+   168→    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   169→      {Array.from({ length: 3 }).map((_, i) => (
+   170→        <Card key={i}>
+   171→          <CardContent className="p-6">
+   172→            <div className="flex items-center gap-3 mb-4">
+   173→              <Skeleton className="h-10 w-10 rounded-lg" />
+   174→              <Skeleton className="h-6 w-20" />
+   175→            </div>
+   176→            <Skeleton className="h-4 w-32 mb-3" />
+   177→            <Skeleton className="h-2 w-full rounded-full" />
+   178→          </CardContent>
+   179→        </Card>
+   180→      ))}
+   181→    </div>
+   182→  );
+   183→}
+   184→
+   185→function ChartSkeleton() {
+   186→  return (
+   187→    <Card>
+   188→      <CardHeader>
+   189→        <Skeleton className="h-5 w-48" />
+   190→      </CardHeader>
+   191→      <CardContent>
+   192→        <Skeleton className="h-72 w-full" />
+   193→      </CardContent>
+   194→    </Card>
+   195→  );
+   196→}
+   197→
+   198→function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number }) {
+   199→  return (
+   200→    <Card>
+   201→      <CardHeader>
+   202→        <Skeleton className="h-5 w-40" />
+   203→      </CardHeader>
+   204→      <CardContent>
+   205→        <div className="space-y-2">
+   206→          <Skeleton className="h-8 w-full" />
+   207→          {Array.from({ length: rows }).map((_, r) => (
+   208→            <Skeleton key={r} className="h-10 w-full" />
+   209→          ))}
+   210→        </div>
+   211→      </CardContent>
+   212→    </Card>
+   213→  );
+   214→}
+   215→
+   216→// ─── Main Component ────────────────────────────────────────────────────
+   217→
+   218→export default function SlicingView() {
+   219→  const t = useT();
+   220→  const [statusFilter, setStatusFilter] = useState<string>('all');
+   221→  const [sliceTypeFilter, setSliceTypeFilter] = useState<string>('all');
+   222→
+   223→  const { data, isLoading, isError } = useQuery<SlicingResponse>({
+   224→    queryKey: ['slicing', statusFilter, sliceTypeFilter],
+   225→    queryFn: () => {
+   226→      const params = new URLSearchParams();
+   227→      if (statusFilter !== 'all') params.set('status', statusFilter);
+   228→      if (sliceTypeFilter !== 'all') params.set('sliceType', sliceTypeFilter);
+   229→      const qs = params.toString();
+   230→      return fetch(`/api/slicing${qs ? `?${qs}` : ''}`).then((r) => r.json());
+   231→    },
+   232→    refetchInterval: 30000,
+   233→  });
+   234→
+   235→  const slices = data?.slices ?? [];
+   236→  const summary = data?.summary;
+   237→
+   238→  // Computed KPI values
+   239→  const totalActiveUsers = slices.reduce((sum, s) => sum + s.activeUsers, 0);
+   240→  const urlccCount = summary?.byType?.URLLC ?? 0;
+   241→
+   242→  // Per-type stats
+   243→  const embBStats = computeTypeStats(slices, 'eMBB');
+   244→  const urllcStats = computeTypeStats(slices, 'URLLC');
+   245→  const mmtcStats = computeTypeStats(slices, 'mMTC');
+   246→
+   247→  // Bar chart data — sorted by currentLoad desc
+   248→  const barChartData = [...slices]
+   249→    .sort((a, b) => b.currentLoad - a.currentLoad)
+   250→    .map((s) => ({
+   251→      name: s.name,
+   252→      currentLoad: s.currentLoad,
+   253→      sliceType: s.sliceType,
+   254→      color: SLICE_TYPE_COLORS[s.sliceType] ?? '#94A3B8',
+   255→    }));
+   256→
+   257→  // ─── Render: Loading State ──────────────────────────────────────────
+   258→  if (isLoading) {
+   259→    return (
+   260→      <div className="space-y-6 p-6">
+   261→        <div>
+   262→          <Skeleton className="h-8 w-72 mb-2" />
+   263→          <Skeleton className="h-4 w-96" />
+   264→        </div>
+   265→        <KpiCardsSkeleton />
+   266→        <TypeCardsSkeleton />
+   267→        <ChartSkeleton />
+   268→        <TableSkeleton rows={6} cols={13} />
+   269→      </div>
+   270→    );
+   271→  }
+   272→
+   273→  // ─── Render: Error State ────────────────────────────────────────────
+   274→  if (isError) {
+   275→    return (
+   276→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   277→        <ServerOff className="h-12 w-12 mb-4" />
+   278→        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'slicing' })}</p>
+   279→        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
+   280→      </div>
+   281→    );
+   282→  }
+   283→
+   284→  // ─── Render: Empty State ────────────────────────────────────────────
+   285→  if (!data || slices.length === 0) {
+   286→    return (
+   287→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   288→        <Layers className="h-12 w-12 mb-4" />
+   289→        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Network Slices' })}</p>
+   290→        <p className="text-sm mt-1">
+   291→          {statusFilter !== 'all' || sliceTypeFilter !== 'all'
+   292→            ? t('sli.noMatch')
+   293→            : t('sli.noSlices')}
+   294→        </p>
+   295→      </div>
+   296→    );
+   297→  }
+   298→
+   299→  // ─── Render: Main View ─────────────────────────────────────────────
+   300→  return (
+   301→    <div className="space-y-6 p-6">
+   302→      {/* Header */}
+   303→      <div>
+   304→        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   305→          <Layers className="h-6 w-6 text-amber-500" />
+   306→          Network Slicing (5G NR)
+   307→        </h1>
+   308→        <p className="text-muted-foreground text-sm mt-1">
+   309→          S-NSSAI slice lifecycle and QoS management
+   310→        </p>
+   311→      </div>
+   312→
+   313→      {/* KPI Summary Cards */}
+   314→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   315→        {/* Total Slices */}
+   316→        <Card>
+   317→          <CardHeader className="pb-2">
+   318→            <CardTitle className="text-sm font-medium text-muted-foreground">
+   319→              Total Slices
+   320→            </CardTitle>
+   321→          </CardHeader>
+   322→          <CardContent>
+   323→            <span className="text-3xl font-bold">{summary?.total ?? 0}</span>
+   324→            <p className="text-xs text-muted-foreground mt-1">Configured slices</p>
+   325→          </CardContent>
+   326→        </Card>
+   327→
+   328→        {/* Active Slices */}
+   329→        <Card className="border-emerald-500/40">
+   330→          <CardHeader className="pb-2">
+   331→            <CardTitle className="text-sm font-medium text-muted-foreground">
+   332→              Active Slices
+   333→            </CardTitle>
+   334→          </CardHeader>
+   335→          <CardContent>
+   336→            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+   337→              {summary?.active ?? 0}
+   338→            </span>
+   339→            <p className="text-xs text-muted-foreground mt-1">Currently running</p>
+   340→          </CardContent>
+   341→        </Card>
+   342→
+   343→        {/* Avg Load */}
+   344→        <Card>
+   345→          <CardHeader className="pb-2">
+   346→            <CardTitle className="text-sm font-medium text-muted-foreground">
+   347→              Avg Load
+   348→            </CardTitle>
+   349→          </CardHeader>
+   350→          <CardContent>
+   351→            <div className="flex items-baseline gap-1">
+   352→              <span className={`text-3xl font-bold ${loadTextColor(summary?.avgLoad ?? 0)}`}>
+   353→                {formatNumber(summary?.avgLoad ?? 0, 1)}
+   354→              </span>
+   355→              <span className="text-sm text-muted-foreground">%</span>
+   356→            </div>
+   357→            <div className="mt-2 h-2 w-full rounded-full bg-muted overflow-hidden">
+   358→              <div
+   359→                className={`h-full rounded-full transition-all ${loadBarColor(summary?.avgLoad ?? 0)}`}
+   360→                style={{ width: `${Math.min(summary?.avgLoad ?? 0, 100)}%` }}
+   361→              />
+   362→            </div>
+   363→          </CardContent>
+   364→        </Card>
+   365→
+   366→        {/* Total Active Users */}
+   367→        <Card>
+   368→          <CardHeader className="pb-2">
+   369→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   370→              <Users className="h-4 w-4 text-cyan-500" />
+   371→              Total Active Users
+   372→            </CardTitle>
+   373→          </CardHeader>
+   374→          <CardContent>
+   375→            <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+   376→              {totalActiveUsers.toLocaleString()}
+   377→            </span>
+   378→            <p className="text-xs text-muted-foreground mt-1">Across all slices</p>
+   379→          </CardContent>
+   380→        </Card>
+   381→
+   382→        {/* URLLC Slices */}
+   383→        <Card className="border-amber-500/40">
+   384→          <CardHeader className="pb-2">
+   385→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   386→              <Zap className="h-4 w-4 text-amber-500" />
+   387→              URLLC Slices
+   388→            </CardTitle>
+   389→          </CardHeader>
+   390→          <CardContent>
+   391→            <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+   392→              {urlccCount}
+   393→            </span>
+   394→            <p className="text-xs text-muted-foreground mt-1">Ultra-reliable low-latency</p>
+   395→          </CardContent>
+   396→        </Card>
+   397→      </div>
+   398→
+   399→      {/* Slice Type Distribution Cards */}
+   400→      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   401→        {/* eMBB Card */}
+   402→        <Card className="bg-emerald-500/5 border-emerald-500/20">
+   403→          <CardContent className="p-4">
+   404→            <div className="flex items-center gap-3 mb-3">
+   405→              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-500/15">
+   406→                <Wifi className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+   407→              </div>
+   408→              <div>
+   409→                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+   410→                  eMBB
+   411→                </p>
+   412→                <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
+   413→                  Enhanced Mobile Broadband
+   414→                </p>
+   415→              </div>
+   416→            </div>
+   417→            <div className="flex items-baseline gap-1 mb-2">
+   418→              <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+   419→                {embBStats.count}
+   420→              </span>
+   421→              <span className="text-xs text-muted-foreground">slices</span>
+   422→            </div>
+   423→            <div className="mb-2">
+   424→              <div className="flex items-center justify-between text-xs mb-1">
+   425→                <span className="text-muted-foreground">Avg Load</span>
+   426→                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+   427→                  {formatNumber(embBStats.avgLoad, 1)}%
+   428→                </span>
+   429→              </div>
+   430→              <div className="h-1.5 w-full rounded-full bg-emerald-500/10 overflow-hidden">
+   431→                <div
+   432→                  className="h-full rounded-full bg-emerald-500 transition-all"
+   433→                  style={{ width: `${Math.min(embBStats.avgLoad, 100)}%` }}
+   434→                />
+   435→              </div>
+   436→            </div>
+   437→            <p className="text-xs text-muted-foreground">
+   438→              <Users className="h-3 w-3 inline mr-1" />
+   439→              {embBStats.totalUsers.toLocaleString()} active users
+   440→            </p>
+   441→          </CardContent>
+   442→        </Card>
+   443→
+   444→        {/* URLLC Card */}
+   445→        <Card className="bg-amber-500/5 border-amber-500/20">
+   446→          <CardContent className="p-4">
+   447→            <div className="flex items-center gap-3 mb-3">
+   448→              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-500/15">
+   449→                <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+   450→              </div>
+   451→              <div>
+   452→                <p className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+   453→                  URLLC
+   454→                </p>
+   455→                <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
+   456→                  Ultra-Reliable Low-Latency
+   457→                </p>
+   458→              </div>
+   459→            </div>
+   460→            <div className="flex items-baseline gap-1 mb-2">
+   461→              <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+   462→                {urllcStats.count}
+   463→              </span>
+   464→              <span className="text-xs text-muted-foreground">slices</span>
+   465→            </div>
+   466→            <div className="mb-2">
+   467→              <div className="flex items-center justify-between text-xs mb-1">
+   468→                <span className="text-muted-foreground">Avg Load</span>
+   469→                <span className="font-medium text-amber-600 dark:text-amber-400">
+   470→                  {formatNumber(urllcStats.avgLoad, 1)}%
+   471→                </span>
+   472→              </div>
+   473→              <div className="h-1.5 w-full rounded-full bg-amber-500/10 overflow-hidden">
+   474→                <div
+   475→                  className="h-full rounded-full bg-amber-500 transition-all"
+   476→                  style={{ width: `${Math.min(urllcStats.avgLoad, 100)}%` }}
+   477→                />
+   478→              </div>
+   479→            </div>
+   480→            <p className="text-xs text-muted-foreground">
+   481→              <Users className="h-3 w-3 inline mr-1" />
+   482→              {urllcStats.totalUsers.toLocaleString()} active users
+   483→            </p>
+   484→          </CardContent>
+   485→        </Card>
+   486→
+   487→        {/* mMTC Card */}
+   488→        <Card className="bg-cyan-500/5 border-cyan-500/20">
+   489→          <CardContent className="p-4">
+   490→            <div className="flex items-center gap-3 mb-3">
+   491→              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-cyan-500/15">
+   492→                <Cpu className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+   493→              </div>
+   494→              <div>
+   495→                <p className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">
+   496→                  mMTC
+   497→                </p>
+   498→                <p className="text-xs text-cyan-600/70 dark:text-cyan-400/70">
+   499→                  Massive Machine-Type Comm
+   500→                </p>
+   501→              </div>
+   502→            </div>
+   503→            <div className="flex items-baseline gap-1 mb-2">
+   504→              <span className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
+   505→                {mmtcStats.count}
+   506→              </span>
+   507→              <span className="text-xs text-muted-foreground">slices</span>
+   508→            </div>
+   509→            <div className="mb-2">
+   510→              <div className="flex items-center justify-between text-xs mb-1">
+   511→                <span className="text-muted-foreground">Avg Load</span>
+   512→                <span className="font-medium text-cyan-600 dark:text-cyan-400">
+   513→                  {formatNumber(mmtcStats.avgLoad, 1)}%
+   514→                </span>
+   515→              </div>
+   516→              <div className="h-1.5 w-full rounded-full bg-cyan-500/10 overflow-hidden">
+   517→                <div
+   518→                  className="h-full rounded-full bg-cyan-500 transition-all"
+   519→                  style={{ width: `${Math.min(mmtcStats.avgLoad, 100)}%` }}
+   520→                />
+   521→              </div>
+   522→            </div>
+   523→            <p className="text-xs text-muted-foreground">
+   524→              <Users className="h-3 w-3 inline mr-1" />
+   525→              {mmtcStats.totalUsers.toLocaleString()} active users
+   526→            </p>
+   527→          </CardContent>
+   528→        </Card>
+   529→      </div>
+   530→
+   531→      {/* Slice Load BarChart */}
+   532→      <Card>
+   533→        <CardHeader>
+   534→          <CardTitle className="text-base">{e}{t('sli.sliceLoadDist')}</CardTitle>
+   535→        </CardHeader>
+   536→        <CardContent>
+   537→          <div className="h-72">
+   538→            <ResponsiveContainer width="100%" height="100%">
+   539→              <BarChart data={barChartData} margin={{ top: 8, right: 16, bottom: 60, left: 0 }}>
+   540→                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+   541→                <XAxis
+   542→                  dataKey="name"
+   543→                  className="text-xs"
+   544→                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+   545→                  angle={-35}
+   546→                  textAnchor="end"
+   547→                  interval={0}
+   548→                  height={80}
+   549→                />
+   550→                <YAxis
+   551→                  domain={[0, 100]}
+   552→                  className="text-xs"
+   553→                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   554→                  tickFormatter={(v: number) => `${v}%`}
+   555→                />
+   556→                <Tooltip content={<ChartTooltipContent />} />
+   557→                <Legend
+   558→                  verticalAlign="top"
+   559→                  align="right"
+   560→                  iconType="circle"
+   561→                  iconSize={8}
+   562→                  wrapperStyle={{ fontSize: '12px', paddingBottom: '8px' }}
+   563→                  formatter={(value: string) => (
+   564→                    <span className="text-muted-foreground">{value}</span>
+   565→                  )}
+   566→                />
+   567→                <ReferenceLine
+   568→                  y={80}
+   569→                  stroke="#EF4444"
+   570→                  strokeDasharray="6 4"
+   571→                  strokeWidth={1.5}
+   572→                  label={{
+   573→                    value: 'Threshold (80%)',
+   574→                    position: 'insideTopRight',
+   575→                    fill: '#EF4444',
+   576→                    fontSize: 11,
+   577→                  }}
+   578→                />
+   579→                <Bar dataKey="currentLoad" name="Current Load (%)" radius={[4, 4, 0, 0]} barSize={32}>
+   580→                  {barChartData.map((entry, idx) => (
+   581→                    <Cell key={idx} fill={entry.color} />
+   582→                  ))}
+   583→                </Bar>
+   584→              </BarChart>
+   585→            </ResponsiveContainer>
+   586→          </div>
+   587→          {/* Legend color guide */}
+   588→          <div className="flex items-center justify-center gap-6 mt-2">
+   589→            {Object.entries(SLICE_TYPE_COLORS).map(([type, color]) => (
+   590→              <div key={type} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   591→                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
+   592→                <span>{type}</span>
+   593→              </div>
+   594→            ))}
+   595→            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+   596→              <div className="w-3 h-0.5 border-t-2 border-dashed border-red-500" />
+   597→              <span>Threshold</span>
+   598→            </div>
+   599→          </div>
+   600→        </CardContent>
+   601→      </Card>
+   602→
+   603→      <Separator />
+   604→
+   605→      {/* Full Slices Table */}
+   606→      <Card>
+   607→        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
+   608→          <CardTitle className="text-base">{e}{t('sli.allSlices')}</CardTitle>
+   609→          <div className="flex items-center gap-3">
+   610→            <Select value={statusFilter} onValueChange={setStatusFilter}>
+   611→              <SelectTrigger className="w-36">
+   612→                <SelectValue placeholder={t('filter.status')} />
+   613→              </SelectTrigger>
+   614→              <SelectContent>
+   615→                <SelectItem value="all">{l}{t('filter.allStatus')}</SelectItem>
+   616→                <SelectItem value="active">{t('status.active')}</SelectItem>
+   617→                <SelectItem value="suspended">Suspended</SelectItem>
+   618→                <SelectItem value="deactivated">Deactivated</SelectItem>
+   619→              </SelectContent>
+   620→            </Select>
+   621→            <Select value={sliceTypeFilter} onValueChange={setSliceTypeFilter}>
+   622→              <SelectTrigger className="w-36">
+   623→                <SelectValue placeholder={t('filter.sliceType')} />
+   624→              </SelectTrigger>
+   625→              <SelectContent>
+   626→                <SelectItem value="all">{l}{t('filter.allTypes')}</SelectItem>
+   627→                <SelectItem value="eMBB">eMBB</SelectItem>
+   628→                <SelectItem value="URLLC">URLLC</SelectItem>
+   629→                <SelectItem value="mMTC">mMTC</SelectItem>
+   630→              </SelectContent>
+   631→            </Select>
+   632→          </div>
+   633→        </CardHeader>
+   634→        <CardContent>
+   635→          {slices.length === 0 ? (
+   636→            <p className="text-sm text-muted-foreground py-8 text-center">
+   637→              {t('sli.noMatch')}
+   638→            </p>
+   639→          ) : (
+   640→            <ScrollArea className="max-h-96">
+   641→              <Table>
+   642→                <TableHeader>
+   643→                  <TableRow>
+   644→                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.name')}</TableHead>
+   645→                    <TableHead className="min-w-[80px]">{t('th.type')}</TableHead>
+   646→                    <TableHead className="min-w-[120px]">{t('th.site')}</TableHead>
+   647→                    <TableHead className="min-w-[80px]">SST/SD</TableHead>
+   648→                    <TableHead className="text-right min-w-[80px]">{t('th.bandwidth')}</TableHead>
+   649→                    <TableHead className="text-right min-w-[100px]">Guaranteed BW</TableHead>
+   650→                    <TableHead className="min-w-[70px]">{t('th.priority')}</TableHead>
+   651→                    <TableHead className="text-right min-w-[80px]">{t('th.latencyTarget')}</TableHead>
+   652→                    <TableHead className="min-w-[140px]">{t('th.currentLoad')}</TableHead>
+   653→                    <TableHead className="text-right min-w-[60px]">{t('th.users')}</TableHead>
+   654→                    <TableHead className="text-right min-w-[90px]">{t('th.dlThroughput')}</TableHead>
+   655→                    <TableHead className="min-w-[90px]">{t('th.status')}</TableHead>
+   656→                    <TableHead className="min-w-[70px]">QCI/5QI</TableHead>
+   657→                  </TableRow>
+   658→                </TableHeader>
+   659→                <TableBody>
+   660→                  {slices.map((slice) => (
+   661→                    <TableRow key={slice.id}>
+   662→                      {/* Name */}
+   663→                      <TableCell className="font-medium text-xs max-w-[160px] truncate sticky left-0 bg-background z-10">
+   664→                        {slice.name}
+   665→                      </TableCell>
+   666→                      {/* Type */}
+   667→                      <TableCell>
+   668→                        <Badge
+   669→                          variant="outline"
+   670→                          className={SLICE_TYPE_BG[slice.sliceType]}
+   671→                        >
+   672→                          {slice.sliceType}
+   673→                        </Badge>
+   674→                      </TableCell>
+   675→                      {/* Site */}
+   676→                      <TableCell>
+   677→                        {slice.siteName ? (
+   678→                          <div>
+   679→                            <p className="text-xs font-medium leading-tight">{slice.siteName}</p>
+   680→                            {slice.siteCode && (
+   681→                              <p className="text-[10px] text-muted-foreground leading-tight">{slice.siteCode}</p>
+   682→                            )}
+   683→                          </div>
+   684→                        ) : (
+   685→                          <span className="text-xs text-muted-foreground">—</span>
+   686→                        )}
+   687→                      </TableCell>
+   688→                      {/* SST/SD */}
+   689→                      <TableCell className="text-xs font-mono">
+   690→                        {slice.sd ? `${slice.sst}/${slice.sd}` : slice.sst}
+   691→                      </TableCell>
+   692→                      {/* Max BW */}
+   693→                      <TableCell className="text-right text-xs">
+   694→                        {slice.maxBandwidth} Mbps
+   695→                      </TableCell>
+   696→                      {/* Guaranteed BW */}
+   697→                      <TableCell className="text-right text-xs">
+   698→                        {slice.guaranteedBw} Mbps
+   699→                      </TableCell>
+   700→                      {/* Priority */}
+   701→                      <TableCell>
+   702→                        <Badge variant="secondary" className="text-xs">
+   703→                          P{slice.priorityLevel}
+   704→                        </Badge>
+   705→                      </TableCell>
+   706→                      {/* Latency Target */}
+   707→                      <TableCell className="text-right text-xs">
+   708→                        {formatNumber(slice.latencyTarget, 1)} ms
+   709→                      </TableCell>
+   710→                      {/* Current Load */}
+   711→                      <TableCell>
+   712→                        <div className="flex items-center gap-2 min-w-[130px]">
+   713→                          <Progress
+   714→                            value={slice.currentLoad}
+   715→                            className={`h-2 flex-1 ${loadProgressClass(slice.currentLoad)}`}
+   716→                          />
+   717→                          <span className={`text-xs font-medium w-10 text-right ${loadTextColor(slice.currentLoad)}`}>
+   718→                            {formatNumber(slice.currentLoad, 1)}%
+   719→                          </span>
+   720→                        </div>
+   721→                      </TableCell>
+   722→                      {/* Users */}
+   723→                      <TableCell className="text-right text-xs">
+   724→                        {slice.activeUsers}
+   725→                      </TableCell>
+   726→                      {/* Throughput */}
+   727→                      <TableCell className="text-right text-xs">
+   728→                        {formatNumber(slice.avgThroughput, 1)} Mbps
+   729→                      </TableCell>
+   730→                      {/* Status */}
+   731→                      <TableCell>
+   732→                        <Badge variant={STATUS_BADGE_VARIANT[slice.status]}>
+   733→                          {STATUS_LABEL[slice.status]}
+   734→                        </Badge>
+   735→                      </TableCell>
+   736→                      {/* QCI/FiveQI */}
+   737→                      <TableCell className="text-xs font-mono text-muted-foreground">
+   738→                        {slice.fiveQi != null ? `5QI: ${slice.fiveQi}` : slice.qci != null ? `QCI: ${slice.qci}` : '—'}
+   739→                      </TableCell>
+   740→                    </TableRow>
+   741→                  ))}
+   742→                </TableBody>
+   743→              </Table>
+   744→            </ScrollArea>
+   745→          )}
+   746→        </CardContent>
+   747→      </Card>
+   748→    </div>
+   749→  );
+   750→}

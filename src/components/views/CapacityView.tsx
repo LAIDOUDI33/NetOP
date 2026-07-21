@@ -21,6 +21,7 @@ import {
   TrendingUp, ShieldAlert, Frown, BarChart3,
 } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -431,6 +432,7 @@ export default function CapacityView() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{e}{t('cap.forecastDetails')}</CardTitle>
+          <ExportButton data={forecasts} filenamePrefix="capacity" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'metric', header: 'Metric' }, { key: 'currentValue', header: 'Current (%)' }, { key: 'forecastValue', header: 'Forecast (%)' }, { key: 'growthRate', header: 'Growth Rate (%)' }, { key: 'riskLevel', header: 'Risk' }, { key: 'confidence', header: 'Confidence' }]} />
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">

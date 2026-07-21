@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { GitBranch, Frown, CheckCircle2, AlertTriangle, RotateCcw, Clock } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
@@ -496,6 +497,7 @@ export default function ChangesView() {
                 ))}
               </SelectContent>
             </Select>
+            <ExportButton data={changes as unknown as Record<string, any>[]} filenamePrefix="changes" columns={[{ key: 'title', header: 'Title' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'priority', header: 'Priority' }, { key: 'siteName', header: 'Site' }, { key: 'createdBy', header: 'Created By' }, { key: 'createdAt', header: 'Created At' }]} />
           </div>
         </CardHeader>
         <CardContent>

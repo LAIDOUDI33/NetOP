@@ -14,6 +14,7 @@ import { Save, RefreshCw } from 'lucide-react';
 import type { NetworkParameterItem, Technology } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -151,6 +152,7 @@ export default function SettingsView() {
                 <Save className="h-3 w-3 mr-1" />
                 Save ({Object.keys(filteredEdits).length})
               </Button>
+              <ExportButton data={(data?.parameters ?? []) as unknown as Record<string, any>[]} filenamePrefix="settings" columns={[{ key: 'name', header: 'Parameter' }, { key: 'category', header: 'Category' }, { key: 'currentValue', header: 'Current Value' }, { key: 'minValue', header: 'Min' }, { key: 'maxValue', header: 'Max' }, { key: 'unit', header: 'Unit' }]} />
             </div>
           </div>
         </CardHeader>

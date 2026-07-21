@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileSearch, Users, Tag, BarChart3, Clock } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -250,6 +251,7 @@ export default function AuditView() {
             {t('aud.subtitle')}
           </p>
         </div>
+        <ExportButton data={trails as unknown as Record<string, any>[]} filenamePrefix="audit" columns={[{ key: 'entityType', header: 'Entity Type' }, { key: 'entityName', header: 'Entity' }, { key: 'action', header: 'Action' }, { key: 'user', header: 'User' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'details', header: 'Details' }, { key: 'createdAt', header: 'Timestamp' }]} />
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────── */}

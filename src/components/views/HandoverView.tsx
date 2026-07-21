@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRightLeft, Frown } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -478,6 +479,7 @@ export default function HandoverView() {
                 <SelectItem value="critical">{t('status.critical')}</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={handovers} filenamePrefix="handover" columns={[{ key: 'servingCellName', header: 'Serving Cell' }, { key: 'neighborCellName', header: 'Neighbor' }, { key: 'technology', header: 'Technology' }, { key: 'relationType', header: 'Type' }, { key: 'hoSuccessRate', header: 'Success Rate' }, { key: 'hoAttempts', header: 'Attempts' }, { key: 'hoFailures', header: 'Failures' }, { key: 'status', header: 'Status' }]} />
           </div>
         </CardHeader>
         <CardContent>

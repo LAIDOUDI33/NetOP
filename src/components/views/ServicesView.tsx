@@ -20,6 +20,7 @@ import {
   Globe, Activity, ShieldCheck, Users, AlertTriangle, Zap,
 } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -533,6 +534,7 @@ export default function ServicesView() {
                 <SelectItem value="Ibadan">Ibadan</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={services as unknown as Record<string, any>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: 'Service Name' }, { key: 'serviceType', header: 'Type' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'qoeScore', header: 'QoE Score' }, { key: 'activeSessions', header: 'Sessions' }, { key: 'avgLatency', header: 'Avg Latency (ms)' }]} />
           </div>
         </CardHeader>
         <CardContent>

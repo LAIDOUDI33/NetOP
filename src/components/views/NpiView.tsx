@@ -1,6 +1,7 @@
 'use client';
 import { useT } from '@/lib/i18n';
 
+import { ExportButton } from '@/components/ExportButton';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -272,6 +273,7 @@ export default function NpiView() {
                     ))}
               </SelectContent>
             </Select>
+            <ExportButton data={npis as unknown as Record<string, any>[]} filenamePrefix="npi" columns={[{ key: 'networkElement', header: 'Network Element' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'siteName', header: 'Site' }, { key: 'npiScore', header: 'NPI Score' }, { key: 'category', header: 'Category' }, { key: 'trend', header: 'Trend' }]} />
           </div>
         </div>
         <Separator className="mt-4" />

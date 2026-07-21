@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, Frown, ListOrdered, TrendingUp, BarChart3, Hash } from 'lucide-react';
 import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology, AlertSeverity } from '@/types';
 
@@ -451,6 +452,7 @@ export default function PlaybooksView() {
                 <SelectItem value="5G">5G</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={playbooks as unknown as Record<string, any>[]} filenamePrefix="playbooks" columns={[{ key: 'name', header: 'Name' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'estimatedTime', header: 'Est. Time' }, { key: 'steps', header: 'Steps' }, { key: 'successRate', header: 'Success Rate (%)' }, { key: 'usageCount', header: 'Usage' }, { key: 'enabled', header: 'Enabled' }]} />
           </div>
         </CardHeader>
         <CardContent>

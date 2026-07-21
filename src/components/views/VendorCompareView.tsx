@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { GitCompare, Signal, ArrowDownToLine, ArrowUpFromLine, Timer, ShieldCheck, ArrowRightLeft, TrendingDown, Building2 } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -302,16 +303,19 @@ export default function VendorCompareView() {
         </div>
 
         {/* Filter */}
-        <Select value={technology} onValueChange={setTechnology}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TECHNOLOGIES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={technology} onValueChange={setTechnology}>
+            <SelectTrigger className="w-[140px] h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TECHNOLOGIES.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <ExportButton data={comparisons as unknown as Record<string, any>[]} filenamePrefix="vendor-compare" columns={[{ key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'siteCount', header: 'Sites' }, { key: 'avgRsrp', header: 'RSRP (dBm)' }, { key: 'avgDownloadThroughput', header: 'DL (Mbps)' }, { key: 'avgUploadThroughput', header: 'UL (Mbps)' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'avgAvailability', header: 'Availability (%)' }, { key: 'avgHandoverSuccessRate', header: 'HO Rate (%)' }, { key: 'avgDropRate', header: 'Drop Rate (%)' }]} />
+        </div>
       </div>
 
       {/* ── KPI Cards ──────────────────────────────────────────────── */}

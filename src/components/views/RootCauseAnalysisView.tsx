@@ -1,5 +1,6 @@
 'use client';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 
 import { useState, useRef, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -172,11 +173,12 @@ Provide analysis in this format:
       {/* ===== LEFT PANEL — Analysis Input (2 cols) ===== */}
       <div className="lg:col-span-2 space-y-4">
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Brain className="h-5 w-5 text-primary" />
               Root Cause Analysis
             </CardTitle>
+            <ExportButton data={history as unknown as Record<string, any>[]} filenamePrefix="rca" columns={[{ key: 'timestamp', header: 'Time' }, { key: 'technology', header: 'Technology' }, { key: 'site', header: 'Site' }, { key: 'symptom', header: 'Symptom' }, { key: 'response', header: 'Analysis' }]} />
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Row: Tech + Site */}

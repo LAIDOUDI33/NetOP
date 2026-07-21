@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useT } from '@/lib/i18n';
+import { ExportButton } from '@/components/ExportButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -188,6 +189,7 @@ export default function KpiAnalyticsView() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">{t('kpi.siteComparison', { metric: t(METRIC_KEYS[metric]) + (METRIC_UNITS[metric] ? ` (${t(METRIC_UNITS[metric])})` : '') })}</CardTitle>
+          <ExportButton data={formattedSites} filenamePrefix="kpi" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'value', header: 'Value' }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

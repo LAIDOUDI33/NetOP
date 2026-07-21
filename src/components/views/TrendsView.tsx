@@ -17,6 +17,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, Frown, ArrowUp, ArrowRight, ArrowDown } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
 
@@ -497,6 +498,7 @@ export default function TrendsView() {
                 <SelectItem value="Ibadan">Ibadan</SelectItem>
               </SelectContent>
             </Select>
+            <ExportButton data={trends as unknown as Record<string, any>[]} filenamePrefix="trends" columns={[{ key: 'metric', header: 'Metric' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'currentValue', header: 'Current Value' }, { key: 'forecastedValue', header: 'Forecasted Value' }, { key: 'trendDirection', header: 'Trend' }, { key: 'confidenceInterval', header: 'Confidence (%)' }, { key: 'forecastDate', header: 'Forecast Date' }]} />
           </div>
         </CardHeader>
         <CardContent>
