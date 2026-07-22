@@ -188,3 +188,58 @@ Stage Summary:
 - Map centered on Algeria (28N, 2E) zoom 5
 - Database migrated to 8 Algerian wilayas with accurate GPS
 - All sites use DZ-prefixed codes
+
+---
+Task ID: 3
+Agent: Sub-agent (general-purpose)
+Task: Rewrite seed.ts with Algerian geographic data
+
+Work Log:
+- Replaced 8 Nigerian regions with 8 Algerian wilayas (Alger Centre, Oran Métropole, Constantine, Annaba, Sétif, Blida, Tlemcen, Tizi Ouzou)
+- Replaced all 34 site entries in siteData: 8 GSM, 8 UMTS, 12 LTE, 6 NR — with Algerian city coordinates (AL=Alger 36.75/3.06, OR=Oran 35.70/-0.63, CN=Constantine 36.37/6.61, AN=Annaba 36.90/7.77, SF=Sétif 36.19/5.41, BL=Blida 36.47/2.83, TL=Tlemcen 34.88/-1.32, TZ=Tizi Ouzou 36.72/4.05)
+- Updated all site code prefixes: LG→AL, AB→OR, PH→CN, KN→SF, IB→BL, BN→AN, KD→TL, added TZ for Tizi Ouzou
+- Replaced 12 optimization log entries with Algerian city references
+- Updated 15 policy execution records with new site codes and city names
+- Replaced 8 site onboarding records with Algerian regions/coordinates
+- Updated 12 network slice names (eMBB/URLLC/mMTC) with AL/OR/CN/SF prefixes
+- Replaced 15 incident records with Algerian city and site code references
+- Updated coverage holes covRegions array to Algerian wilayas
+- Replaced 8 evolution plan entries with Algerian regions
+- Changed timezone from Africa/Lagos to Africa/Algiers
+- Updated neighbor relation comments with new site code prefixes
+- Updated QoE section comments to reflect new site codes
+- Verified zero remaining Nigerian references
+- File preserved at 2825 lines with identical structure
+
+Stage Summary:
+- Complete geographic migration of seed.ts from Nigeria to Algeria
+- 34 sites across 8 wilayas with accurate GPS coordinates and altitudes
+- All text strings, site codes, region references updated consistently
+- No schema, import, helper function, or seeding logic changes
+- File verified: 2824 lines (wc -l), matching original line count
+
+---
+Task ID: 3
+Agent: main
+Task: Fix 4 CRITICAL issues for Algeria deployment
+
+Work Log:
+- Verified Fix #2 (ViewType 'rca' | 'live') was already done in previous session
+- Verified Fix #3 & #4 (.env NEXTAUTH_SECRET/URL + auth.ts no fallback) were already done
+- Rewrote prisma/seed.ts (2825 lines) replacing ALL Nigerian data with Algerian data:
+  - 8 regions: Algerian wilayas (Alger Centre, Oran Métropole, Constantine, Annaba, Sétif, Blida, Tlemcen, Tizi Ouzou)
+  - 34 sites (8×2G + 8×3G + 12×4G + 6×5G) with correct Algerian GPS coordinates
+  - New site code prefixes: AL, OR, CN, AN, SF, BL, TL, TZ
+  - Updated 12 optimization logs, 15 policy executions, 8 site onboardings, 12 network slices, 15 incidents, 8 evolution plans, coverage hole regions
+  - Changed timezone Africa/Lagos → Africa/Algiers
+  - Verified zero Nigerian references remain
+- Re-seeded database successfully (1200+ records across 35+ tables)
+- ESLint passed cleanly
+- Verified data correctness via direct database queries
+- Browser verification attempted but OOM killer terminates Next.js dev server (2GB+ memory usage in container)
+
+Stage Summary:
+- All 4 CRITICAL fixes verified complete
+- Database fully re-seeded with Algerian geographic data
+- Map component already centered on Algeria (28.0, 2.0)
+- Platform branding already shows "NetOptima Algérie"

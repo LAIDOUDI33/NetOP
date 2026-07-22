@@ -1,7 +1,7 @@
 import { db } from '../src/lib/db';
 import { subHours, subMinutes } from 'date-fns';
 
-const regions = ['Lagos Mainland', 'Lagos Island', 'Abuja Central', 'Port Harcourt', 'Kano Metro', 'Ibadan', 'Benin City', 'Kaduna'];
+const regions = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou'];
 const vendors = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
 
 function rand(min: number, max: number) { return Math.random() * (max - min) + min; }
@@ -16,43 +16,43 @@ function pickStatus(tech: string): string {
 
 const siteData = [
   // 2G (8 sites)
-  { name: 'GSM-LG-001', code: 'LG001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 6.524, lng: 3.379, alt: 45 },
-  { name: 'GSM-LG-002', code: 'LG002G', tech: '2G', freq: '1800MHz', bw: 0.2, cap: 120, lat: 6.451, lng: 3.395, alt: 52 },
-  { name: 'GSM-AB-001', code: 'AB001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 100, lat: 9.057, lng: 7.495, alt: 55 },
-  { name: 'GSM-PH-001', code: 'PH001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 90, lat: 4.815, lng: 7.049, alt: 30 },
-  { name: 'GSM-KN-001', code: 'KN001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 85, lat: 12.002, lng: 8.592, alt: 48 },
-  { name: 'GSM-IB-001', code: 'IB001G', tech: '2G', freq: '1800MHz', bw: 0.2, cap: 110, lat: 7.377, lng: 3.947, alt: 42 },
-  { name: 'GSM-BN-001', code: 'BN001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 90, lat: 6.335, lng: 5.627, alt: 35 },
-  { name: 'GSM-KD-001', code: 'KD001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 10.610, lng: 7.432, alt: 55 },
+  { name: 'GSM-AL-001', code: 'AL001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 36.7538, lng: 3.0588, alt: 25 },
+  { name: 'GSM-OR-001', code: 'OR001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 100, lat: 35.6971, lng: -0.6334, alt: 80 },
+  { name: 'GSM-CN-001', code: 'CN001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 90, lat: 36.3650, lng: 6.6147, alt: 650 },
+  { name: 'GSM-AN-001', code: 'AN001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 85, lat: 36.9000, lng: 7.7667, alt: 5 },
+  { name: 'GSM-SF-001', code: 'SF001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 85, lat: 36.1891, lng: 5.4082, alt: 1081 },
+  { name: 'GSM-BL-001', code: 'BL001G', tech: '2G', freq: '1800MHz', bw: 0.2, cap: 110, lat: 36.4700, lng: 2.8300, alt: 230 },
+  { name: 'GSM-TL-001', code: 'TL001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 90, lat: 34.8815, lng: -1.3156, alt: 810 },
+  { name: 'GSM-TZ-001', code: 'TZ001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 36.7162, lng: 4.0483, alt: 200 },
   // 3G (8 sites)
-  { name: 'UMTS-LG-001', code: 'LG001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 6.524, lng: 3.381, alt: 45 },
-  { name: 'UMTS-LG-002', code: 'LG002U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 6.451, lng: 3.397, alt: 52 },
-  { name: 'UMTS-AB-001', code: 'AB001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 9.057, lng: 7.497, alt: 55 },
-  { name: 'UMTS-PH-001', code: 'PH001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 4.815, lng: 7.051, alt: 30 },
-  { name: 'UMTS-KN-001', code: 'KN001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 12.002, lng: 8.594, alt: 48 },
-  { name: 'UMTS-IB-001', code: 'IB001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 7.377, lng: 3.949, alt: 42 },
-  { name: 'UMTS-BN-001', code: 'BN001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 6.335, lng: 5.629, alt: 35 },
-  { name: 'UMTS-KD-001', code: 'KD001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 10.610, lng: 7.434, alt: 55 },
+  { name: 'UMTS-AL-001', code: 'AL001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.7538, lng: 3.0590, alt: 25 },
+  { name: 'UMTS-OR-001', code: 'OR001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 35.6971, lng: -0.6332, alt: 80 },
+  { name: 'UMTS-CN-001', code: 'CN001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.3650, lng: 6.6149, alt: 650 },
+  { name: 'UMTS-AN-001', code: 'AN001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.9000, lng: 7.7669, alt: 5 },
+  { name: 'UMTS-SF-001', code: 'SF001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 36.1891, lng: 5.4084, alt: 1081 },
+  { name: 'UMTS-BL-001', code: 'BL001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.4700, lng: 2.8302, alt: 230 },
+  { name: 'UMTS-TL-001', code: 'TL001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 34.8815, lng: -1.3154, alt: 810 },
+  { name: 'UMTS-TZ-001', code: 'TZ001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.7162, lng: 4.0485, alt: 200 },
   // 4G (12 sites)
-  { name: 'LTE-LG-001', code: 'LG001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 6.524, lng: 3.383, alt: 45 },
-  { name: 'LTE-LG-002', code: 'LG002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 6.451, lng: 3.399, alt: 52 },
-  { name: 'LTE-LG-003', code: 'LG003L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 6.595, lng: 3.345, alt: 38 },
-  { name: 'LTE-LG-004', code: 'LG004L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 6.470, lng: 3.410, alt: 50 },
-  { name: 'LTE-AB-001', code: 'AB001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 9.057, lng: 7.499, alt: 55 },
-  { name: 'LTE-AB-002', code: 'AB002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 9.024, lng: 7.485, alt: 60 },
-  { name: 'LTE-PH-001', code: 'PH001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 4.815, lng: 7.053, alt: 30 },
-  { name: 'LTE-PH-002', code: 'PH002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 4.790, lng: 7.030, alt: 25 },
-  { name: 'LTE-KN-001', code: 'KN001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 12.002, lng: 8.596, alt: 48 },
-  { name: 'LTE-IB-001', code: 'IB001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 7.377, lng: 3.951, alt: 42 },
-  { name: 'LTE-IB-002', code: 'IB002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 7.390, lng: 3.920, alt: 40 },
-  { name: 'LTE-BN-001', code: 'BN001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 6.335, lng: 5.631, alt: 35 },
+  { name: 'LTE-AL-001', code: 'AL001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 36.7538, lng: 3.0592, alt: 25 },
+  { name: 'LTE-AL-002', code: 'AL002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 36.7500, lng: 3.0650, alt: 28 },
+  { name: 'LTE-AL-003', code: 'AL003L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 36.7600, lng: 3.0500, alt: 22 },
+  { name: 'LTE-AL-004', code: 'AL004L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.7450, lng: 3.0700, alt: 30 },
+  { name: 'LTE-OR-001', code: 'OR001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 35.6971, lng: -0.6330, alt: 80 },
+  { name: 'LTE-OR-002', code: 'OR002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 35.7000, lng: -0.6250, alt: 85 },
+  { name: 'LTE-CN-001', code: 'CN001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.3650, lng: 6.6151, alt: 650 },
+  { name: 'LTE-CN-002', code: 'CN002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 36.3600, lng: 6.6200, alt: 645 },
+  { name: 'LTE-SF-001', code: 'SF001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.1891, lng: 5.4086, alt: 1081 },
+  { name: 'LTE-BL-001', code: 'BL001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 36.4700, lng: 2.8304, alt: 230 },
+  { name: 'LTE-BL-002', code: 'BL002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 36.4750, lng: 2.8250, alt: 225 },
+  { name: 'LTE-AN-001', code: 'AN001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.9000, lng: 7.7671, alt: 5 },
   // 5G (6 sites)
-  { name: 'NR-LG-001', code: 'LG001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 6.524, lng: 3.385, alt: 45 },
-  { name: 'NR-LG-002', code: 'LG002N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 6.451, lng: 3.401, alt: 52 },
-  { name: 'NR-LG-003', code: 'LG003N', tech: '5G', freq: '2600MHz', bw: 80, cap: 800, lat: 6.595, lng: 3.347, alt: 38 },
-  { name: 'NR-AB-001', code: 'AB001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 9.057, lng: 7.501, alt: 55 },
-  { name: 'NR-AB-002', code: 'AB002N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 9.024, lng: 7.487, alt: 60 },
-  { name: 'NR-PH-001', code: 'PH001N', tech: '5G', freq: '3500MHz', bw: 80, cap: 800, lat: 4.815, lng: 7.055, alt: 30 },
+  { name: 'NR-AL-001', code: 'AL001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.7538, lng: 3.0594, alt: 25 },
+  { name: 'NR-AL-002', code: 'AL002N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.7500, lng: 3.0652, alt: 28 },
+  { name: 'NR-AL-003', code: 'AL003N', tech: '5G', freq: '2600MHz', bw: 80, cap: 800, lat: 36.7600, lng: 3.0502, alt: 22 },
+  { name: 'NR-OR-001', code: 'OR001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 35.6971, lng: -0.6328, alt: 80 },
+  { name: 'NR-CN-001', code: 'CN001N', tech: '5G', freq: '3500MHz', bw: 80, cap: 800, lat: 36.3650, lng: 6.6153, alt: 650 },
+  { name: 'NR-SF-001', code: 'SF001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.1891, lng: 5.4088, alt: 1081 },
 ];
 
 function genKpi(siteId: string, tech: string, timestamp: Date) {
@@ -191,18 +191,18 @@ async function main() {
   // Seed optimization logs
   console.log('Seeding optimization logs...');
   const optLogs = [
-    { tech: '4G', cat: 'coverage', issue: 'Weak RSRP coverage gap in Lagos Mainland', rec: 'Adjust antenna tilt from 6° to 4° and increase RS power by 3dB. Consider adding a small cell.', impact: 'high', status: 'implemented' },
-    { tech: '5G', cat: 'interference', issue: 'High interference on 3500MHz in Abuja', rec: 'PCI re-planning to eliminate conflicts. Enable ICIC and adjust power control parameters.', impact: 'high', status: 'pending' },
+    { tech: '4G', cat: 'coverage', issue: 'Weak RSRP coverage gap in Alger Centre', rec: 'Adjust antenna tilt from 6° to 4° and increase RS power by 3dB. Consider adding a small cell.', impact: 'high', status: 'implemented' },
+    { tech: '5G', cat: 'interference', issue: 'High interference on 3500MHz in Oran Métropole', rec: 'PCI re-planning to eliminate conflicts. Enable ICIC and adjust power control parameters.', impact: 'high', status: 'pending' },
     { tech: '4G', cat: 'capacity', issue: 'PRB utilization exceeding 85% at peak hours', rec: 'Enable carrier aggregation Band 3 + Band 7. Deploy additional carriers and optimize load balancing.', impact: 'high', status: 'pending' },
-    { tech: '3G', cat: 'handover', issue: 'Low handover success rate in Port Harcourt', rec: 'Increase hysteresis to 3dB, adjust time-to-trigger to 320ms. Review neighbor cell list.', impact: 'medium', status: 'implemented' },
-    { tech: '2G', cat: 'parameter', issue: 'High call blocking rate in Kano', rec: 'Reduce half-rate threshold for peak hours. Review frequency plan and channel allocation.', impact: 'medium', status: 'dismissed' },
+    { tech: '3G', cat: 'handover', issue: 'Low handover success rate in Constantine', rec: 'Increase hysteresis to 3dB, adjust time-to-trigger to 320ms. Review neighbor cell list.', impact: 'medium', status: 'implemented' },
+    { tech: '2G', cat: 'parameter', issue: 'High call blocking rate in Sétif', rec: 'Reduce half-rate threshold for peak hours. Review frequency plan and channel allocation.', impact: 'medium', status: 'dismissed' },
     { tech: '5G', cat: 'coverage', issue: '5G NR coverage limited to 200m from gNB', rec: 'Increase TX power by 2dB and review beamforming. Consider 700MHz for extended coverage.', impact: 'high', status: 'pending' },
-    { tech: '4G', cat: 'interference', issue: 'Co-channel interference LTE-LG-002 and LTE-LG-004', rec: 'Implement eICIC with ABS patterns. Adjust antenna azimuth to minimize overlap.', impact: 'medium', status: 'implemented' },
-    { tech: '3G', cat: 'capacity', issue: 'HSUPA throughput degradation in Ibadan', rec: 'Increase HSUPA channel allocation. Consider upgrading to DC-HSPA+.', impact: 'medium', status: 'pending' },
+    { tech: '4G', cat: 'interference', issue: 'Co-channel interference LTE-AL-002 and LTE-AL-004', rec: 'Implement eICIC with ABS patterns. Adjust antenna azimuth to minimize overlap.', impact: 'medium', status: 'implemented' },
+    { tech: '3G', cat: 'capacity', issue: 'HSUPA throughput degradation in Blida', rec: 'Increase HSUPA channel allocation. Consider upgrading to DC-HSPA+.', impact: 'medium', status: 'pending' },
     { tech: '4G', cat: 'parameter', issue: 'Suboptimal PCI assignment causing PSS/SSS conflicts', rec: 'Re-plan PCI ensuring adequate modulus-3 and modulus-30 separation.', impact: 'high', status: 'pending' },
     { tech: '5G', cat: 'handover', issue: '5G to 4G inter-RAT handover failures', rec: 'Optimize A2/B2 event thresholds for NR-LTE handover. Review NSA DC config.', impact: 'high', status: 'pending' },
-    { tech: '4G', cat: 'coverage', issue: 'Indoor coverage deficiency in Lagos high-rises', rec: 'Deploy indoor DAS or small cells. Configure dedicated indoor carriers.', impact: 'medium', status: 'pending' },
-    { tech: '3G', cat: 'interference', issue: 'Pilot pollution in Kaduna city center', rec: 'Reduce pilot power by 3-6dB. Optimize antenna downtilt and azimuth.', impact: 'medium', status: 'implemented' },
+    { tech: '4G', cat: 'coverage', issue: 'Indoor coverage deficiency in Alger high-rises', rec: 'Deploy indoor DAS or small cells. Configure dedicated indoor carriers.', impact: 'medium', status: 'pending' },
+    { tech: '3G', cat: 'interference', issue: 'Pilot pollution in Tlemcen city center', rec: 'Reduce pilot power by 3-6dB. Optimize antenna downtilt and azimuth.', impact: 'medium', status: 'implemented' },
   ];
   for (const log of optLogs) {
     await db.optimizationLog.create({
@@ -702,68 +702,68 @@ async function main() {
   // Build neighbor pairs between 4G sites
   // Each of the 10 selected 4G sites gets 3-8 neighbors
   const neighborPairs: { servingIdx: number; neighborIdx: number; relType: string; hoType: string }[] = [
-    // LG001L (idx 0) — 6 neighbors
+    // AL001L (idx 0) — 6 neighbors
     { servingIdx: 0, neighborIdx: 1, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 0, neighborIdx: 2, relType: 'intra_freq', hoType: 'manual' },
     { servingIdx: 0, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 0, neighborIdx: 4, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 0, neighborIdx: 6, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 0, neighborIdx: 9, relType: 'inter_freq', hoType: 'pnp_auto' },
-    // LG002L (idx 1) — 5 neighbors
+    // AL002L (idx 1) — 5 neighbors
     { servingIdx: 1, neighborIdx: 0, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 1, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 1, neighborIdx: 5, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 1, neighborIdx: 2, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 1, neighborIdx: 4, relType: 'intra_freq', hoType: 'manual' },
-    // LG003L (idx 2) — 4 neighbors
+    // AL003L (idx 2) — 4 neighbors
     { servingIdx: 2, neighborIdx: 0, relType: 'intra_freq', hoType: 'manual' },
     { servingIdx: 2, neighborIdx: 1, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 2, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 2, neighborIdx: 10, relType: 'intra_freq', hoType: 'pnp_auto' },
-    // LG004L (idx 3) — 5 neighbors
+    // AL004L (idx 3) — 5 neighbors
     { servingIdx: 3, neighborIdx: 0, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 3, neighborIdx: 1, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 3, neighborIdx: 2, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 3, neighborIdx: 4, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 3, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
-    // AB001L (idx 4) — 5 neighbors
+    // OR001L (idx 4) — 5 neighbors
     { servingIdx: 4, neighborIdx: 0, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 4, neighborIdx: 1, relType: 'intra_freq', hoType: 'manual' },
     { servingIdx: 4, neighborIdx: 3, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 4, neighborIdx: 5, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 4, neighborIdx: 11, relType: 'intra_freq', hoType: 'manual' },
-    // AB002L (idx 5) — 4 neighbors
+    // OR002L (idx 5) — 4 neighbors
     { servingIdx: 5, neighborIdx: 1, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 5, neighborIdx: 4, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 5, neighborIdx: 8, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 5, neighborIdx: 6, relType: 'intra_freq', hoType: 'pnp_auto' },
-    // PH001L (idx 6) — 4 neighbors
+    // CN001L (idx 6) — 4 neighbors
     { servingIdx: 6, neighborIdx: 0, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 6, neighborIdx: 5, relType: 'intra_freq', hoType: 'pnp_auto' },
     { servingIdx: 6, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 6, neighborIdx: 11, relType: 'inter_freq', hoType: 'anr_auto' },
-    // PH002L (idx 7) — 4 neighbors
+    // CN002L (idx 7) — 4 neighbors
     { servingIdx: 7, neighborIdx: 6, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 7, neighborIdx: 8, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 7, neighborIdx: 10, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 7, neighborIdx: 11, relType: 'intra_freq', hoType: 'anr_auto' },
-    // KN001L (idx 8) — 4 neighbors
+    // SF001L (idx 8) — 4 neighbors
     { servingIdx: 8, neighborIdx: 5, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 8, neighborIdx: 7, relType: 'inter_freq', hoType: 'manual' },
     { servingIdx: 8, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 8, neighborIdx: 10, relType: 'intra_freq', hoType: 'manual' },
-    // IB001L (idx 9) — 5 neighbors
+    // BL001L (idx 9) — 5 neighbors
     { servingIdx: 9, neighborIdx: 0, relType: 'inter_freq', hoType: 'pnp_auto' },
     { servingIdx: 9, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 9, neighborIdx: 8, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 9, neighborIdx: 10, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 9, neighborIdx: 11, relType: 'inter_freq', hoType: 'manual' },
-    // IB002L (idx 10) — 4 neighbors
+    // BL002L (idx 10) — 4 neighbors
     { servingIdx: 10, neighborIdx: 2, relType: 'intra_freq', hoType: 'pnp_auto' },
     { servingIdx: 10, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
     { servingIdx: 10, neighborIdx: 8, relType: 'intra_freq', hoType: 'manual' },
     { servingIdx: 10, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
-    // BN001L (idx 11) — 4 neighbors
+    // AN001L (idx 11) — 4 neighbors
     { servingIdx: 11, neighborIdx: 4, relType: 'intra_freq', hoType: 'manual' },
     { servingIdx: 11, neighborIdx: 6, relType: 'inter_freq', hoType: 'anr_auto' },
     { servingIdx: 11, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
@@ -866,7 +866,7 @@ async function main() {
       description: 'Scheduled policy that runs AIC every 6 hours to detect and correct parameter inconsistencies across the network.',
       technology: 'ALL',
       triggerType: 'schedule',
-      triggerConfig: JSON.stringify({ cron: '0 */6 * * *', timezone: 'Africa/Lagos' }),
+      triggerConfig: JSON.stringify({ cron: '0 */6 * * *', timezone: 'Africa/Algiers' }),
       actionModules: JSON.stringify([aicMod.id]),
       scope: 'all',
       priority: 7,
@@ -904,8 +904,8 @@ async function main() {
     {
       policyId: policies[0].id, // Auto Coverage Recovery
       status: 'completed',
-      triggerReason: 'RSRP at LTE-LG-003 dropped to -108.3dBm for 2 consecutive 15-min intervals',
-      affectedSites: JSON.stringify(['LG003L']),
+      triggerReason: 'RSRP at LTE-AL-003 dropped to -108.3dBm for 2 consecutive 15-min intervals',
+      affectedSites: JSON.stringify(['AL003L']),
       actionsTaken: JSON.stringify(['adjusted antenna tilt 6° → 4°', 'increased RS power 15.2 → 17.0 dBm']),
       kpiImpact: JSON.stringify({ before: { rsrp: -108.3, coverageArea: 82 }, after: { rsrp: -96.1, coverageArea: 91 } }),
       durationMs: 18500,
@@ -915,8 +915,8 @@ async function main() {
     {
       policyId: policies[1].id, // Load Balancing
       status: 'completed',
-      triggerReason: 'PRB utilization at LTE-LG-001 reached 87.2% for 3 consecutive intervals',
-      affectedSites: JSON.stringify(['LG001L', 'LG002L']),
+      triggerReason: 'PRB utilization at LTE-AL-001 reached 87.2% for 3 consecutive intervals',
+      affectedSites: JSON.stringify(['AL001L', 'AL002L']),
       actionsTaken: JSON.stringify(['reduced RS power 15.2 → 13.0 dBm', 'adjusted MLB offset +2dB']),
       kpiImpact: JSON.stringify({ before: { prbUtilization: 87.2, activeUsers: 285 }, after: { prbUtilization: 68.4, activeUsers: 192 } }),
       durationMs: 12300,
@@ -926,9 +926,9 @@ async function main() {
     {
       policyId: policies[2].id, // Outage Compensation
       status: 'completed',
-      triggerReason: 'Cell LTE-PH-002 availability dropped to 91.3% — suspected RRU failure',
-      affectedSites: JSON.stringify(['PH002L', 'PH001L']),
-      actionsTaken: JSON.stringify(['boosted PH001L RS power by 3dB', 'reduced PH001L tilt by 1°']),
+      triggerReason: 'Cell LTE-CN-002 availability dropped to 91.3% — suspected RRU failure',
+      affectedSites: JSON.stringify(['CN002L', 'CN001L']),
+      actionsTaken: JSON.stringify(['boosted CN001L RS power by 3dB', 'reduced CN001L tilt by 1°']),
       kpiImpact: JSON.stringify({ before: { availability: 91.3, affectedUsers: 145 }, after: { availability: 98.7, affectedUsers: 12 } }),
       durationMs: 42000,
       createdAt: subHours(now, 18),
@@ -937,8 +937,8 @@ async function main() {
     {
       policyId: policies[3].id, // Neighbor Optimization
       status: 'completed',
-      triggerReason: 'Handover success rate at LTE-AB-001 dropped to 93.8% over 30min window',
-      affectedSites: JSON.stringify(['AB001L', 'AB002L']),
+      triggerReason: 'Handover success rate at LTE-OR-001 dropped to 93.8% over 30min window',
+      affectedSites: JSON.stringify(['OR001L', 'OR002L']),
       actionsTaken: JSON.stringify(['added 2 missing neighbors via ANR', 'increased hysteresis 2dB → 3dB via MRO']),
       kpiImpact: JSON.stringify({ before: { handoverSuccessRate: 93.8, pingPongRate: 4.1 }, after: { handoverSuccessRate: 97.2, pingPongRate: 1.8 } }),
       durationMs: 55000,
@@ -949,8 +949,8 @@ async function main() {
       policyId: policies[4].id, // Config Drift
       status: 'completed',
       triggerReason: 'Scheduled run — 6h config drift check',
-      affectedSites: JSON.stringify(['LG001L', 'LG002L', 'AB001L', 'KN001L', 'IB001L']),
-      actionsTaken: JSON.stringify(['corrected QRXLEVMIN at LG001L', 'corrected hysteresis at KN001L', 'corrected SIntraSearch at AB001L']),
+      affectedSites: JSON.stringify(['AL001L', 'AL002L', 'OR001L', 'SF001L', 'BL001L']),
+      actionsTaken: JSON.stringify(['corrected QRXLEVMIN at AL001L', 'corrected hysteresis at SF001L', 'corrected SIntraSearch at OR001L']),
       kpiImpact: JSON.stringify({ before: { inconsistencies: 3, avgHoRate: 95.8 }, after: { inconsistencies: 0, avgHoRate: 97.1 } }),
       durationMs: 95000,
       createdAt: subHours(now, 4),
@@ -959,9 +959,9 @@ async function main() {
     {
       policyId: policies[5].id, // PCI Conflict
       status: 'completed',
-      triggerReason: 'PCI conflict detected: modulus-3 collision between LTE-LG-001 (PCI 504) and LTE-LG-004 (PCI 501)',
-      affectedSites: JSON.stringify(['LG001L', 'LG004L']),
-      actionsTaken: JSON.stringify(['reassigned PCI 504 → 502 at LTE-LG-001']),
+      triggerReason: 'PCI conflict detected: modulus-3 collision between LTE-AL-001 (PCI 504) and LTE-AL-004 (PCI 501)',
+      affectedSites: JSON.stringify(['AL001L', 'AL004L']),
+      actionsTaken: JSON.stringify(['reassigned PCI 504 → 502 at LTE-AL-001']),
       kpiImpact: JSON.stringify({ before: { sinr: 7.2, conflictCount: 1 }, after: { sinr: 11.5, conflictCount: 0 } }),
       durationMs: 28000,
       createdAt: subHours(now, 24),
@@ -970,8 +970,8 @@ async function main() {
     {
       policyId: policies[0].id,
       status: 'completed',
-      triggerReason: 'RSRP at NR-LG-002 dropped to -112dBm in 5G coverage area',
-      affectedSites: JSON.stringify(['LG002N']),
+      triggerReason: 'RSRP at NR-AL-002 dropped to -112dBm in 5G coverage area',
+      affectedSites: JSON.stringify(['AL002N']),
       actionsTaken: JSON.stringify(['increased SSB power 16 → 18 dBm', 'adjusted beam weight']),
       kpiImpact: JSON.stringify({ before: { rsrp: -112, coverageRadius: 280 }, after: { rsrp: -99, coverageRadius: 410 } }),
       durationMs: 22000,
@@ -981,9 +981,9 @@ async function main() {
     {
       policyId: policies[1].id,
       status: 'completed',
-      triggerReason: 'PRB utilization at LTE-AB-002 sustained 83% for 30min during peak',
-      affectedSites: JSON.stringify(['AB002L', 'AB001L']),
-      actionsTaken: JSON.stringify(['adjusted MLB threshold', 'reduced AB002L RS power 15.2 → 12.5 dBm']),
+      triggerReason: 'PRB utilization at LTE-OR-002 sustained 83% for 30min during peak',
+      affectedSites: JSON.stringify(['OR002L', 'OR001L']),
+      actionsTaken: JSON.stringify(['adjusted MLB threshold', 'reduced OR002L RS power 15.2 → 12.5 dBm']),
       kpiImpact: JSON.stringify({ before: { prbUtilization: 83.1 }, after: { prbUtilization: 71.5 } }),
       durationMs: 15000,
       createdAt: subHours(now, 10),
@@ -992,11 +992,11 @@ async function main() {
     {
       policyId: policies[2].id,
       status: 'failed',
-      triggerReason: 'Potential outage at UMTS-IB-001 — availability 94.1%',
-      affectedSites: JSON.stringify(['IB001U']),
+      triggerReason: 'Potential outage at UMTS-BL-001 — availability 94.1%',
+      affectedSites: JSON.stringify(['BL001U']),
       actionsTaken: JSON.stringify([]),
       kpiImpact: JSON.stringify({ before: { availability: 94.1 }, after: { availability: 94.1 } }),
-      rollbackReason: 'No adjacent cells available for compensation in Ibadan region',
+      rollbackReason: 'No adjacent cells available for compensation in Blida region',
       durationMs: 8500,
       createdAt: subHours(now, 36),
       completedAt: subHours(now, 36),
@@ -1004,8 +1004,8 @@ async function main() {
     {
       policyId: policies[5].id,
       status: 'failed',
-      triggerReason: 'PCI conflict detected at LTE-KN-001 but all alternative PCIs occupied',
-      affectedSites: JSON.stringify(['KN001L']),
+      triggerReason: 'PCI conflict detected at LTE-SF-001 but all alternative PCIs occupied',
+      affectedSites: JSON.stringify(['SF001L']),
       actionsTaken: JSON.stringify(['attempted PCI reassignment to 128', 'attempted PCI reassignment to 256']),
       kpiImpact: JSON.stringify({ before: { conflictCount: 1 }, after: { conflictCount: 1 } }),
       rollbackReason: 'No available PCI in the neighborhood that satisfies modulus-3, modulus-6, and modulus-30 constraints',
@@ -1016,8 +1016,8 @@ async function main() {
     {
       policyId: policies[1].id,
       status: 'failed',
-      triggerReason: 'HLB triggered for LTE-IB-002 but vendor API timeout',
-      affectedSites: JSON.stringify(['IB002L']),
+      triggerReason: 'HLB triggered for LTE-BL-002 but vendor API timeout',
+      affectedSites: JSON.stringify(['BL002L']),
       actionsTaken: JSON.stringify(['API call to Nokia EMS timed out']),
       kpiImpact: JSON.stringify({ before: { prbUtilization: 88.2 }, after: { prbUtilization: 88.2 } }),
       rollbackReason: 'Nokia EMS connection timeout after 30s — no action applied',
@@ -1028,11 +1028,11 @@ async function main() {
     {
       policyId: policies[0].id,
       status: 'rolled_back',
-      triggerReason: 'RSRP degradation at LTE-BN-001 triggered coverage recovery',
-      affectedSites: JSON.stringify(['BN001L']),
+      triggerReason: 'RSRP degradation at LTE-AN-001 triggered coverage recovery',
+      affectedSites: JSON.stringify(['AN001L']),
       actionsTaken: JSON.stringify(['increased RS power 15.2 → 19.0 dBm', 'reduced tilt 6° → 2°']),
       kpiImpact: JSON.stringify({ before: { rsrp: -107 }, after: { rsrp: -107 } }),
-      rollbackReason: 'Compensation caused interference spike at LTE-IB-001 — SINR dropped from 12 to 4 dB',
+      rollbackReason: 'Compensation caused interference spike at LTE-BL-001 — SINR dropped from 12 to 4 dB',
       durationMs: 120000,
       createdAt: subHours(now, 14),
       completedAt: subHours(now, 14),
@@ -1040,8 +1040,8 @@ async function main() {
     {
       policyId: policies[3].id,
       status: 'rolled_back',
-      triggerReason: 'Handover success rate at LTE-IB-001 dropped to 94.5%',
-      affectedSites: JSON.stringify(['IB001L', 'IB002L']),
+      triggerReason: 'Handover success rate at LTE-BL-001 dropped to 94.5%',
+      affectedSites: JSON.stringify(['BL001L', 'BL002L']),
       actionsTaken: JSON.stringify(['added 3 neighbors via ANR', 'adjusted timeToTrigger 256ms → 128ms']),
       kpiImpact: JSON.stringify({ before: { handoverSuccessRate: 94.5 }, after: { handoverSuccessRate: 94.5 } }),
       rollbackReason: 'Reduced timeToTrigger caused excessive handover rate — network instability detected',
@@ -1052,8 +1052,8 @@ async function main() {
     {
       policyId: policies[0].id,
       status: 'triggered',
-      triggerReason: 'RSRP at LTE-LG-004 dropped to -109.7dBm — evaluation in progress',
-      affectedSites: JSON.stringify(['LG004L']),
+      triggerReason: 'RSRP at LTE-AL-004 dropped to -109.7dBm — evaluation in progress',
+      affectedSites: JSON.stringify(['AL004L']),
       actionsTaken: JSON.stringify([]),
       kpiImpact: JSON.stringify({}),
       durationMs: null,
@@ -1063,8 +1063,8 @@ async function main() {
     {
       policyId: policies[1].id,
       status: 'triggered',
-      triggerReason: 'PRB utilization at NR-LG-001 reached 78% — approaching threshold, monitoring',
-      affectedSites: JSON.stringify(['LG001N']),
+      triggerReason: 'PRB utilization at NR-AL-001 reached 78% — approaching threshold, monitoring',
+      affectedSites: JSON.stringify(['AL001N']),
       actionsTaken: JSON.stringify([]),
       kpiImpact: JSON.stringify({}),
       durationMs: null,
@@ -1149,18 +1149,18 @@ async function main() {
       siteName: 'NewSite-4G-001',
       siteCode: 'NS4G001',
       technology: '4G',
-      region: 'Lagos Mainland',
+      region: 'Alger Centre',
       vendor: 'Ericsson',
-      latitude: 6.510,
-      longitude: 3.360,
-      altitude: 42,
+      latitude: 36.760,
+      longitude: 3.050,
+      altitude: 22,
       frequency: '1800MHz',
       bandwidth: 20,
       maxCapacity: 150,
       status: 'completed',
       assignedPci: '502',
       assignedFreq: 'Band 3 (1800MHz)',
-      initialNeighbors: JSON.stringify(['LG001L', 'LG002L', 'LG003L']),
+      initialNeighbors: JSON.stringify(['AL001L', 'AL002L', 'AL003L']),
       kpiBaseline: JSON.stringify({ rsrp: -88, sinr: 14, downloadThroughput: 85, prbUtilization: 35 }),
       completedAt: subHours(now, 48),
       createdAt: subHours(now, 52),
@@ -1169,18 +1169,18 @@ async function main() {
       siteName: 'NewSite-5G-001',
       siteCode: 'NS5G001',
       technology: '5G',
-      region: 'Abuja Central',
+      region: 'Oran Métropole',
       vendor: 'Huawei',
-      latitude: 9.045,
-      longitude: 7.510,
-      altitude: 58,
+      latitude: 35.700,
+      longitude: -0.625,
+      altitude: 85,
       frequency: '3500MHz',
       bandwidth: 100,
       maxCapacity: 1000,
       status: 'completed',
       assignedPci: '24',
       assignedFreq: 'n78 (3500MHz)',
-      initialNeighbors: JSON.stringify(['AB001N', 'AB002N', 'AB001L']),
+      initialNeighbors: JSON.stringify(['OR001N', 'OR001L']),
       kpiBaseline: JSON.stringify({ rsrp: -82, sinr: 18, downloadThroughput: 450, prbUtilization: 22 }),
       completedAt: subHours(now, 24),
       createdAt: subHours(now, 28),
@@ -1189,18 +1189,18 @@ async function main() {
       siteName: 'NewSite-4G-002',
       siteCode: 'NS4G002',
       technology: '4G',
-      region: 'Port Harcourt',
+      region: 'Constantine',
       vendor: 'Nokia',
-      latitude: 4.805,
-      longitude: 7.060,
-      altitude: 28,
+      latitude: 36.370,
+      longitude: 6.620,
+      altitude: 645,
       frequency: '1800MHz',
       bandwidth: 20,
       maxCapacity: 150,
       status: 'completed',
       assignedPci: '506',
       assignedFreq: 'Band 3 (1800MHz)',
-      initialNeighbors: JSON.stringify(['PH001L', 'PH002L']),
+      initialNeighbors: JSON.stringify(['CN001L', 'CN002L']),
       kpiBaseline: JSON.stringify({ rsrp: -91, sinr: 12, downloadThroughput: 72, prbUtilization: 41 }),
       completedAt: subHours(now, 12),
       createdAt: subHours(now, 16),
@@ -1209,18 +1209,18 @@ async function main() {
       siteName: 'NewSite-4G-003',
       siteCode: 'NS4G003',
       technology: '4G',
-      region: 'Ibadan',
+      region: 'Blida',
       vendor: 'ZTE',
-      latitude: 7.385,
-      longitude: 3.935,
-      altitude: 40,
+      latitude: 36.475,
+      longitude: 2.825,
+      altitude: 225,
       frequency: '800MHz',
       bandwidth: 10,
       maxCapacity: 75,
       status: 'completed',
       assignedPci: '510',
       assignedFreq: 'Band 20 (800MHz)',
-      initialNeighbors: JSON.stringify(['IB001L', 'IB002L']),
+      initialNeighbors: JSON.stringify(['BL001L', 'BL002L']),
       kpiBaseline: JSON.stringify({ rsrp: -85, sinr: 11, downloadThroughput: 48, prbUtilization: 38 }),
       completedAt: subHours(now, 6),
       createdAt: subHours(now, 10),
@@ -1229,11 +1229,11 @@ async function main() {
       siteName: 'NewSite-5G-002',
       siteCode: 'NS5G002',
       technology: '5G',
-      region: 'Lagos Island',
+      region: 'Oran Métropole',
       vendor: 'Samsung',
-      latitude: 6.445,
-      longitude: 3.405,
-      altitude: 55,
+      latitude: 35.695,
+      longitude: -0.640,
+      altitude: 75,
       frequency: '3500MHz',
       bandwidth: 100,
       maxCapacity: 1000,
@@ -1249,18 +1249,18 @@ async function main() {
       siteName: 'NewSite-4G-004',
       siteCode: 'NS4G004',
       technology: '4G',
-      region: 'Kano Metro',
+      region: 'Sétif',
       vendor: 'Huawei',
-      latitude: 11.995,
-      longitude: 8.600,
-      altitude: 50,
+      latitude: 36.195,
+      longitude: 5.410,
+      altitude: 1075,
       frequency: '1800MHz',
       bandwidth: 15,
       maxCapacity: 120,
       status: 'configuring',
       assignedPci: '514',
       assignedFreq: 'Band 3 (1800MHz)',
-      initialNeighbors: JSON.stringify(['KN001L']),
+      initialNeighbors: JSON.stringify(['SF001L']),
       kpiBaseline: JSON.stringify({}),
       completedAt: null,
       createdAt: subHours(now, 4),
@@ -1269,11 +1269,11 @@ async function main() {
       siteName: 'NewSite-4G-005',
       siteCode: 'NS4G005',
       technology: '4G',
-      region: 'Benin City',
+      region: 'Annaba',
       vendor: 'Ericsson',
-      latitude: 6.340,
-      longitude: 5.620,
-      altitude: 38,
+      latitude: 36.905,
+      longitude: 7.775,
+      altitude: 8,
       frequency: '2600MHz',
       bandwidth: 20,
       maxCapacity: 200,
@@ -1289,11 +1289,11 @@ async function main() {
       siteName: 'NewSite-5G-003',
       siteCode: 'NS5G003',
       technology: '5G',
-      region: 'Kaduna',
+      region: 'Tlemcen',
       vendor: 'Nokia',
-      latitude: 10.605,
-      longitude: 7.440,
-      altitude: 52,
+      latitude: 34.885,
+      longitude: -1.320,
+      altitude: 805,
       frequency: '3500MHz',
       bandwidth: 100,
       maxCapacity: 1000,
@@ -1318,8 +1318,8 @@ async function main() {
   console.log('Seeding QoEMetrics...');
 
   // Select 5 4G sites and 4 5G sites (using first available of each)
-  const qoeSites4G = site4G.slice(0, 5); // LG001L, LG002L, LG003L, LG004L, AB001L
-  const qoeSites5G = site5G.slice(0, 4); // LG001N, LG002N, LG003N, AB001N
+  const qoeSites4G = site4G.slice(0, 5); // AL001L, AL002L, AL003L, AL004L, OR001L
+  const qoeSites5G = site5G.slice(0, 4); // AL001N, AL002N, AL003N, OR001N
   const qoeSites = [...qoeSites4G, ...qoeSites5G]; // 9 sites
 
   // 6 hourly points per site = 54 base records
@@ -1474,20 +1474,20 @@ async function main() {
   console.log('Seeding NetworkSlices...');
   const sliceData = [
     // eMBB (4 slices)
-    { name: 'eMBB-Video-Streaming-LG001', sliceType: 'eMBB', siteIdx: 0, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 200, priority: 3, latTarget: 20, load: 72, users: 145, throughput: 65.3, latency: 12.4, fiveQi: 9 },
-    { name: 'eMBB-Broadband-LG002', sliceType: 'eMBB', siteIdx: 1, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 150, priority: 4, latTarget: 20, load: 58, users: 87, throughput: 48.7, latency: 14.1, fiveQi: 9 },
-    { name: 'eMBB-Enterprise-AB001', sliceType: 'eMBB', siteIdx: 3, sst: '1', maxBw: 100, guarBw: 50, maxUsers: 100, priority: 2, latTarget: 15, load: 45, users: 42, throughput: 38.2, latency: 10.8, fiveQi: 8 },
-    { name: 'eMBB-Public-Safety-PH001', sliceType: 'eMBB', siteIdx: 5, sst: '1', maxBw: 80, guarBw: 40, maxUsers: 80, priority: 1, latTarget: 20, load: 33, users: 26, throughput: 25.1, latency: 11.5, fiveQi: 8 },
+    { name: 'eMBB-Video-Streaming-AL001', sliceType: 'eMBB', siteIdx: 0, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 200, priority: 3, latTarget: 20, load: 72, users: 145, throughput: 65.3, latency: 12.4, fiveQi: 9 },
+    { name: 'eMBB-Broadband-AL002', sliceType: 'eMBB', siteIdx: 1, sst: '1', maxBw: 100, guarBw: 30, maxUsers: 150, priority: 4, latTarget: 20, load: 58, users: 87, throughput: 48.7, latency: 14.1, fiveQi: 9 },
+    { name: 'eMBB-Enterprise-OR001', sliceType: 'eMBB', siteIdx: 3, sst: '1', maxBw: 100, guarBw: 50, maxUsers: 100, priority: 2, latTarget: 15, load: 45, users: 42, throughput: 38.2, latency: 10.8, fiveQi: 8 },
+    { name: 'eMBB-Public-Safety-CN001', sliceType: 'eMBB', siteIdx: 5, sst: '1', maxBw: 80, guarBw: 40, maxUsers: 80, priority: 1, latTarget: 20, load: 33, users: 26, throughput: 25.1, latency: 11.5, fiveQi: 8 },
     // URLLC (4 slices)
-    { name: 'URLLC-Industrial-LG001', sliceType: 'URLLC', siteIdx: 0, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 50, priority: 1, latTarget: 5, load: 28, users: 12, throughput: 8.5, latency: 3.2, fiveQi: 80 },
-    { name: 'URLLC-Autonomous-AB002', sliceType: 'URLLC', siteIdx: 4, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 30, priority: 1, latTarget: 5, load: 85, users: 25, throughput: 42.3, latency: 4.1, fiveQi: 80 },
-    { name: 'URLLC-AR-VR-LG003', sliceType: 'URLLC', siteIdx: 2, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 100, priority: 2, latTarget: 5, load: 40, users: 38, throughput: 15.6, latency: 3.8, fiveQi: 82 },
-    { name: 'URLLC-Remote-Surgery-AB001', sliceType: 'URLLC', siteIdx: 3, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 10, priority: 1, latTarget: 5, load: 20, users: 4, throughput: 5.2, latency: 2.8, fiveQi: 84 },
+    { name: 'URLLC-Industrial-AL001', sliceType: 'URLLC', siteIdx: 0, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 50, priority: 1, latTarget: 5, load: 28, users: 12, throughput: 8.5, latency: 3.2, fiveQi: 80 },
+    { name: 'URLLC-Autonomous-OR002', sliceType: 'URLLC', siteIdx: 4, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 30, priority: 1, latTarget: 5, load: 85, users: 25, throughput: 42.3, latency: 4.1, fiveQi: 80 },
+    { name: 'URLLC-AR-VR-AL003', sliceType: 'URLLC', siteIdx: 2, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 100, priority: 2, latTarget: 5, load: 40, users: 38, throughput: 15.6, latency: 3.8, fiveQi: 82 },
+    { name: 'URLLC-Remote-Surgery-OR001', sliceType: 'URLLC', siteIdx: 3, sst: '2', maxBw: 50, guarBw: 10, maxUsers: 10, priority: 1, latTarget: 5, load: 20, users: 4, throughput: 5.2, latency: 2.8, fiveQi: 84 },
     // mMTC (4 slices)
-    { name: 'mMTC-Smart-Meter-LG001', sliceType: 'mMTC', siteIdx: 0, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 5, latTarget: 100, load: 65, users: 320, throughput: 3.2, latency: 45.6, fiveQi: 2 },
-    { name: 'mMTC-Agri-Sensors-KN001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 400, priority: 6, latTarget: 100, load: 22, users: 88, throughput: 1.1, latency: 62.3, fiveQi: 2 },
-    { name: 'mMTC-Tracking-AB001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 600, priority: 5, latTarget: 100, load: 51, users: 305, throughput: 4.8, latency: 38.9, fiveQi: 2 },
-    { name: 'mMTC-Smart-City-LG002', sliceType: 'mMTC', siteIdx: 1, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 4, latTarget: 100, load: 78, users: 390, throughput: 6.1, latency: 42.1, fiveQi: 2 },
+    { name: 'mMTC-Smart-Meter-AL001', sliceType: 'mMTC', siteIdx: 0, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 5, latTarget: 100, load: 65, users: 320, throughput: 3.2, latency: 45.6, fiveQi: 2 },
+    { name: 'mMTC-Agri-Sensors-SF001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 400, priority: 6, latTarget: 100, load: 22, users: 88, throughput: 1.1, latency: 62.3, fiveQi: 2 },
+    { name: 'mMTC-Tracking-OR001', sliceType: 'mMTC', siteIdx: 3, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 600, priority: 5, latTarget: 100, load: 51, users: 305, throughput: 4.8, latency: 38.9, fiveQi: 2 },
+    { name: 'mMTC-Smart-City-AL002', sliceType: 'mMTC', siteIdx: 1, sst: '3', maxBw: 20, guarBw: 1, maxUsers: 500, priority: 4, latTarget: 100, load: 78, users: 390, throughput: 6.1, latency: 42.1, fiveQi: 2 },
   ];
 
   const networkSliceBatch = sliceData.map(sd => {
@@ -1669,24 +1669,24 @@ async function main() {
   console.log('Seeding Incidents...');
   const incidentData = [
     // 4 critical
-    { title: 'Major Outage - LTE-LG-001 Complete Service Loss', desc: 'All sectors down on LTE-LG-001 due to power supply unit failure. Affecting approximately 2000 active users in Lagos Mainland.', tech: '4G', siteIdx: 0, sev: 'critical', status: 'resolved', cat: 'power', mttr: 180, assigned: 'Team Alpha', root: 'PSU hardware failure causing complete power loss to RRU and BBU', resolution: 'Emergency PSU replacement completed. All sectors restored and verified.', slaBreach: true, tags: ['outage', 'hardware', 'power'] },
-    { title: 'Hardware Failure - NR-LG-001 BBU Crash', desc: 'Baseband Unit experiencing repeated crashes causing 5G service disruption in Lagos Island.', tech: '5G', siteIdx: 1, sev: 'critical', status: 'investigating', cat: 'hardware', mttr: 240, assigned: 'Team Beta', tags: ['hardware', '5g', 'bbu'] },
-    { title: 'Fiber Cut - Multiple Sites Port Harcourt', desc: 'Backbone fiber cut affecting 3G/4G backhaul for PH001 and PH002 clusters.', tech: '4G', siteIdx: 8, sev: 'critical', status: 'open', cat: 'network', mttr: 120, assigned: 'NOC Team', tags: ['fiber', 'backhaul', 'outage'] },
-    { title: 'Core Network Congestion - Kano Metro', desc: 'SGW/PGW overload causing throughput degradation for all 4G sites in Kano Metro region.', tech: '4G', siteIdx: 10, sev: 'critical', status: 'investigating', cat: 'network', mttr: 90, assigned: 'Core Team', tags: ['congestion', 'core', 'capacity'] },
+    { title: 'Major Outage - LTE-AL-001 Complete Service Loss', desc: 'All sectors down on LTE-AL-001 due to power supply unit failure. Affecting approximately 2000 active users in Alger Centre.', tech: '4G', siteIdx: 0, sev: 'critical', status: 'resolved', cat: 'power', mttr: 180, assigned: 'Team Alpha', root: 'PSU hardware failure causing complete power loss to RRU and BBU', resolution: 'Emergency PSU replacement completed. All sectors restored and verified.', slaBreach: true, tags: ['outage', 'hardware', 'power'] },
+    { title: 'Hardware Failure - NR-AL-001 BBU Crash', desc: 'Baseband Unit experiencing repeated crashes causing 5G service disruption in Oran Métropole.', tech: '5G', siteIdx: 1, sev: 'critical', status: 'investigating', cat: 'hardware', mttr: 240, assigned: 'Team Beta', tags: ['hardware', '5g', 'bbu'] },
+    { title: 'Fiber Cut - Multiple Sites Constantine', desc: 'Backbone fiber cut affecting 3G/4G backhaul for CN001 and CN002 clusters.', tech: '4G', siteIdx: 8, sev: 'critical', status: 'open', cat: 'network', mttr: 120, assigned: 'NOC Team', tags: ['fiber', 'backhaul', 'outage'] },
+    { title: 'Core Network Congestion - Sétif', desc: 'SGW/PGW overload causing throughput degradation for all 4G sites in Sétif region.', tech: '4G', siteIdx: 10, sev: 'critical', status: 'investigating', cat: 'network', mttr: 90, assigned: 'Core Team', tags: ['congestion', 'core', 'capacity'] },
     // 5 high
-    { title: 'Capacity Saturation - LTE-LG-002', desc: 'PRB utilization consistently above 92% during peak hours causing call blocking.', tech: '4G', siteIdx: 1, sev: 'high', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'Insufficient capacity for growing user demand in Lagos Island business district', resolution: 'Additional carrier activated and load balancing parameters adjusted.', slaBreach: false, tags: ['capacity', 'prb'] },
-    { title: 'Interference Detection - LTE-AB-002', desc: 'High uplink interference detected causing elevated noise floor and degraded UL throughput.', tech: '4G', siteIdx: 5, sev: 'high', status: 'investigating', cat: 'network', mttr: 45, assigned: 'RF Team', tags: ['interference', 'uplink'] },
-    { title: 'Transport Link Flapping - NR-AB-001', desc: 'CPRI/OBSAI link to NR-AB-001 experiencing intermittent failures causing 5G service drops.', tech: '5G', siteIdx: 3, sev: 'high', status: 'open', cat: 'network', mttr: 30, assigned: 'Transport Team', tags: ['transport', '5g'] },
-    { title: 'High Drop Rate - UMTS-PH-001', desc: 'Call drop rate exceeding 3.5% threshold on UMTS-PH-001 due to poor neighbor relations.', tech: '3G', siteIdx: 13, sev: 'high', status: 'resolved', cat: 'network', mttr: 90, assigned: 'Optimization Team', root: 'Missing inter-frequency neighbor causing calls to drop at cell edge', resolution: 'ANR module added missing neighbors and MRO optimized handover parameters.', slaBreach: true, tags: ['drop_rate', 'handover'] },
-    { title: 'Thermal Alert - NR-LG-002 RRU', desc: 'RRU temperature exceeding 65°C threshold, auto-power reduction activated.', tech: '5G', siteIdx: 2, sev: 'high', status: 'resolved', cat: 'environmental', mttr: 30, assigned: 'Field Team', root: 'Cooling fan failure in RRU enclosure', resolution: 'Fan replaced and thermal paste reapplied. Temperature returned to normal.', slaBreach: false, tags: ['thermal', 'hardware'] },
+    { title: 'Capacity Saturation - LTE-AL-002', desc: 'PRB utilization consistently above 92% during peak hours causing call blocking.', tech: '4G', siteIdx: 1, sev: 'high', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'Insufficient capacity for growing user demand in Oran Métropole business district', resolution: 'Additional carrier activated and load balancing parameters adjusted.', slaBreach: false, tags: ['capacity', 'prb'] },
+    { title: 'Interference Detection - LTE-OR-002', desc: 'High uplink interference detected causing elevated noise floor and degraded UL throughput.', tech: '4G', siteIdx: 5, sev: 'high', status: 'investigating', cat: 'network', mttr: 45, assigned: 'RF Team', tags: ['interference', 'uplink'] },
+    { title: 'Transport Link Flapping - NR-OR-001', desc: 'CPRI/OBSAI link to NR-OR-001 experiencing intermittent failures causing 5G service drops.', tech: '5G', siteIdx: 3, sev: 'high', status: 'open', cat: 'network', mttr: 30, assigned: 'Transport Team', tags: ['transport', '5g'] },
+    { title: 'High Drop Rate - UMTS-CN-001', desc: 'Call drop rate exceeding 3.5% threshold on UMTS-CN-001 due to poor neighbor relations.', tech: '3G', siteIdx: 13, sev: 'high', status: 'resolved', cat: 'network', mttr: 90, assigned: 'Optimization Team', root: 'Missing inter-frequency neighbor causing calls to drop at cell edge', resolution: 'ANR module added missing neighbors and MRO optimized handover parameters.', slaBreach: true, tags: ['drop_rate', 'handover'] },
+    { title: 'Thermal Alert - NR-AL-002 RRU', desc: 'RRU temperature exceeding 65°C threshold, auto-power reduction activated.', tech: '5G', siteIdx: 2, sev: 'high', status: 'resolved', cat: 'environmental', mttr: 30, assigned: 'Field Team', root: 'Cooling fan failure in RRU enclosure', resolution: 'Fan replaced and thermal paste reapplied. Temperature returned to normal.', slaBreach: false, tags: ['thermal', 'hardware'] },
     // 4 medium
-    { title: 'Performance Degradation - LTE-IB-001', desc: 'Gradual throughput decline over 48 hours, likely due to interference from new co-located system.', tech: '4G', siteIdx: 11, sev: 'medium', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'External interference from newly installed DAS system in adjacent building', resolution: 'Coordination with building management to adjust DAS antenna tilt and power.', slaBreach: false, tags: ['degradation', 'interference'] },
-    { title: 'Power Issue - GSM-KN-001', desc: 'Battery backup failing to hold charge, risking service loss during power outages.', tech: '2G', siteIdx: 6, sev: 'medium', status: 'closed', cat: 'power', mttr: 120, assigned: 'Power Team', root: 'Aged battery cells reaching end of life', resolution: 'Full battery string replacement completed and tested.', slaBreach: false, tags: ['power', 'battery'] },
-    { title: 'Configuration Drift - LTE-IB-002', desc: 'Parameter values deviating from approved template causing sub-optimal performance.', tech: '4G', siteIdx: 12, sev: 'medium', status: 'open', cat: 'software', mttr: 30, assigned: 'SON Team', tags: ['config', 'parameter'] },
-    { title: 'Neighborhood Optimization Needed - UMTS-AB-001', desc: 'Handover success rate dropped below 93% indicating neighbor list issues.', tech: '3G', siteIdx: 10, sev: 'medium', status: 'investigating', cat: 'network', mttr: 60, assigned: 'Optimization Team', tags: ['handover', 'neighbor'] },
+    { title: 'Performance Degradation - LTE-BL-001', desc: 'Gradual throughput decline over 48 hours, likely due to interference from new co-located system.', tech: '4G', siteIdx: 11, sev: 'medium', status: 'resolved', cat: 'network', mttr: 60, assigned: 'RF Team', root: 'External interference from newly installed DAS system in adjacent building', resolution: 'Coordination with building management to adjust DAS antenna tilt and power.', slaBreach: false, tags: ['degradation', 'interference'] },
+    { title: 'Power Issue - GSM-SF-001', desc: 'Battery backup failing to hold charge, risking service loss during power outages.', tech: '2G', siteIdx: 6, sev: 'medium', status: 'closed', cat: 'power', mttr: 120, assigned: 'Power Team', root: 'Aged battery cells reaching end of life', resolution: 'Full battery string replacement completed and tested.', slaBreach: false, tags: ['power', 'battery'] },
+    { title: 'Configuration Drift - LTE-BL-002', desc: 'Parameter values deviating from approved template causing sub-optimal performance.', tech: '4G', siteIdx: 12, sev: 'medium', status: 'open', cat: 'software', mttr: 30, assigned: 'SON Team', tags: ['config', 'parameter'] },
+    { title: 'Neighborhood Optimization Needed - UMTS-OR-001', desc: 'Handover success rate dropped below 93% indicating neighbor list issues.', tech: '3G', siteIdx: 10, sev: 'medium', status: 'investigating', cat: 'network', mttr: 60, assigned: 'Optimization Team', tags: ['handover', 'neighbor'] },
     // 2 low
-    { title: 'Minor Config Issue - NR-AB-002', desc: 'PCI assignment not following regional plan, potential modulo-3 conflict with planned site.', tech: '5G', siteIdx: 4, sev: 'low', status: 'closed', cat: 'software', mttr: 30, assigned: 'Planning Team', root: 'PCI not updated during last site commissioning', resolution: 'PCI reassigned to conflict-free value per regional plan.', slaBreach: false, tags: ['pci', 'config'] },
-    { title: 'Alarm Storm - GSM-LG-001', desc: 'Multiple transient alarms triggered by brief power fluctuation. No service impact.', tech: '2G', siteIdx: 0, sev: 'low', status: 'resolved', cat: 'power', mttr: 30, assigned: 'NOC', root: 'Momentary power grid fluctuation', resolution: 'No action needed. Alarms cleared and monitoring continued.', slaBreach: false, tags: ['alarm', 'power'] },
+    { title: 'Minor Config Issue - NR-OR-002', desc: 'PCI assignment not following regional plan, potential modulo-3 conflict with planned site.', tech: '5G', siteIdx: 4, sev: 'low', status: 'closed', cat: 'software', mttr: 30, assigned: 'Planning Team', root: 'PCI not updated during last site commissioning', resolution: 'PCI reassigned to conflict-free value per regional plan.', slaBreach: false, tags: ['pci', 'config'] },
+    { title: 'Alarm Storm - GSM-AL-001', desc: 'Multiple transient alarms triggered by brief power fluctuation. No service impact.', tech: '2G', siteIdx: 0, sev: 'low', status: 'resolved', cat: 'power', mttr: 30, assigned: 'NOC', root: 'Momentary power grid fluctuation', resolution: 'No action needed. Alarms cleared and monitoring continued.', slaBreach: false, tags: ['alarm', 'power'] },
   ];
 
   const incidentBatch = incidentData.map(inc => {
@@ -2172,7 +2172,7 @@ async function main() {
   console.log('Seeding CoverageHoles...');
 
   const covTechs = ['2G', '3G', '4G', '5G'];
-  const covRegions = ['Lagos Mainland', 'Lagos Island', 'Abuja Central', 'Port Harcourt', 'Kano Metro', 'Ibadan', 'Benin City', 'Kaduna'];
+  const covRegions = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou'];
 
   const coverageHoleData: any[] = [];
   for (let i = 0; i < 20; i++) {
@@ -2694,14 +2694,14 @@ async function main() {
   // 14. EvolutionPlan (8 records)
   console.log('Seeding EvolutionPlans...');
   const evoPlans = [
-    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Lagos', region: 'Lagos Mainland', sites: 4, completed: 2, cost: 2400000, spent: 1200000, status: 'in_progress', risk: 'medium' },
-    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Abuja', region: 'Abuja Central', sites: 2, completed: 0, cost: 800000, spent: 0, status: 'planned', risk: 'low' },
-    { src: '3G', tgt: '4G', name: '3G WCDMA to 4G - Port Harcourt', region: 'Port Harcourt', sites: 3, completed: 1, cost: 1800000, spent: 600000, status: 'in_progress', risk: 'medium' },
-    { src: '3G', tgt: '4G', name: '3G Sunset Plan - Kano', region: 'Kano Metro', sites: 2, completed: 0, cost: 600000, spent: 0, status: 'planned', risk: 'high' },
-    { src: '4G', tgt: '5G', name: '5G NR Overlay - Lagos Core', region: 'Lagos Island', sites: 4, completed: 3, cost: 5000000, spent: 3750000, status: 'in_progress', risk: 'low' },
-    { src: '4G', tgt: '5G', name: '5G NR Expansion - Abuja', region: 'Abuja Central', sites: 3, completed: 2, cost: 3750000, spent: 2500000, status: 'in_progress', risk: 'medium' },
-    { src: '2G', tgt: '5G', name: 'Direct 2G to 5G Leapfrog - Ibadan', region: 'Ibadan', sites: 2, completed: 0, cost: 1500000, spent: 0, status: 'planned', risk: 'high' },
-    { src: '3G', tgt: '5G', name: '3G to 5G Direct Migration - Benin', region: 'Benin City', sites: 2, completed: 0, cost: 1200000, spent: 0, status: 'planned', risk: 'high' },
+    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Alger', region: 'Alger Centre', sites: 4, completed: 2, cost: 2400000, spent: 1200000, status: 'in_progress', risk: 'medium' },
+    { src: '2G', tgt: '4G', name: '2G to 4G LTE Migration - Oran', region: 'Oran Métropole', sites: 2, completed: 0, cost: 800000, spent: 0, status: 'planned', risk: 'low' },
+    { src: '3G', tgt: '4G', name: '3G WCDMA to 4G - Constantine', region: 'Constantine', sites: 3, completed: 1, cost: 1800000, spent: 600000, status: 'in_progress', risk: 'medium' },
+    { src: '3G', tgt: '4G', name: '3G Sunset Plan - Sétif', region: 'Sétif', sites: 2, completed: 0, cost: 600000, spent: 0, status: 'planned', risk: 'high' },
+    { src: '4G', tgt: '5G', name: '5G NR Overlay - Alger Core', region: 'Alger Centre', sites: 4, completed: 3, cost: 5000000, spent: 3750000, status: 'in_progress', risk: 'low' },
+    { src: '4G', tgt: '5G', name: '5G NR Expansion - Oran', region: 'Oran Métropole', sites: 3, completed: 2, cost: 3750000, spent: 2500000, status: 'in_progress', risk: 'medium' },
+    { src: '2G', tgt: '5G', name: 'Direct 2G to 5G Leapfrog - Blida', region: 'Blida', sites: 2, completed: 0, cost: 1500000, spent: 0, status: 'planned', risk: 'high' },
+    { src: '3G', tgt: '5G', name: '3G to 5G Direct Migration - Annaba', region: 'Annaba', sites: 2, completed: 0, cost: 1200000, spent: 0, status: 'planned', risk: 'high' },
   ];
   const evolutionData: any[] = [];
   for (const ep of evoPlans) {
