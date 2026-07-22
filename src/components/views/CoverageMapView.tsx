@@ -147,8 +147,8 @@ export default function CoverageMapView() {
                 </div>
               ) : (
                 <MapContainer
-                  center={[7.5, 4.0]}
-                  zoom={6}
+                  center={[28.0, 2.0]}
+                  zoom={5}
                   className="h-full w-full"
                   style={{ height: '100%', width: '100%' }}
                 >

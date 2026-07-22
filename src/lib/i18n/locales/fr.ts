@@ -1,9 +1,9 @@
-// French translations for NetOptima
+// French translations for NetOptima Algérie
 const fr: Record<string, string> = {
   // ========== APP SHELL ==========
-  'app.brand': 'NetOptima',
+  'app.brand': 'NetOptima Algérie',
   'app.tagline': 'Plateforme d\'Optimisation de Réseau Mobile',
-  'app.footer': '© 2025 NetOptima · 2G · 3G · 4G · 5G Optimisation Réseau · <kbd class="px-1.5 py-0.5 rounded border bg-muted text-[10px] font-mono">⌘K</kbd>',
+  'app.footer': '© 2025 NetOptima Algérie · 2G · 3G · 4G · 5G Optimisation Réseau · <kbd class="px-1.5 py-0.5 rounded border bg-muted text-[10px] font-mono">⌘K</kbd>',
   'app.toggleTheme': 'Changer le thème',
   'app.mainNav': 'Navigation principale',
   'app.collapseSidebar': 'Réduire la barre latérale',
@@ -32,7 +32,7 @@ const fr: Record<string, string> = {
   'cmd.openOptimizer': 'Ouvrir l\'Optimiseur IA',
   'cmd.check4gHealth': 'Vérifier Santé 4G',
   'cmd.check5gHealth': 'Vérifier Santé 5G',
-  'cmd.pressEsc': 'NetOptima · Appuyez sur ÉCHAP pour fermer',
+  'cmd.pressEsc': 'NetOptima Algérie · Appuyez sur ÉCHAP pour fermer',
 
   // ========== AUTH ==========
   'auth.subtitle': 'Connectez-vous à votre compte NOC',
@@ -509,12 +509,12 @@ const fr: Record<string, string> = {
   // ========== VIEW-SPECIFIC: Reports ==========
   'rpt.subtitle': 'Générez et exportez des rapports de performance réseau',
   'rpt.exportPdf': 'Exporter PDF',
-  'rpt.printTitle': 'Rapport Réseau NetOptima',
+  'rpt.printTitle': 'Rapport Réseau NetOptima Algérie',
   'rpt.generated': 'Généré le :',
   'rpt.kpiReport': 'Rapport KPI',
   'rpt.sonActivity': 'Activité SON',
   'rpt.policyReport': 'Rapport Politiques',
-  'rpt.printPlatform': 'Plateforme d\'Optimisation Réseau NetOptima',
+  'rpt.printPlatform': 'Plateforme d\'Optimisation Réseau NetOptima Algérie',
   'rpt.confidential': 'Confidentiel',
   'rpt.minimum': 'Minimum',
   'rpt.maximum': 'Maximum',
@@ -659,7 +659,7 @@ const fr: Record<string, string> = {
 
   // ========== VIEW-SPECIFIC: Assistant ==========
   'ai.subtitle': 'Posez des questions sur votre réseau, obtenez de l\'aide au diagnostic et des recommandations d\'optimisation',
-  'ai.welcome': 'Bienvenue sur NetOptima IA',
+  'ai.welcome': 'Bienvenue sur NetOptima Algérie IA',
   'ai.intro': 'Je peux vous aider à diagnostiquer les problèmes réseau, analyser les métriques de performance et fournir des recommandations d\'optimisation. Demandez-moi tout sur votre réseau.',
   'ai.suggestion1': 'Quelle est la cause du taux de coupe élevé ?',
   'ai.suggestion2': 'Analyser les problèmes de couverture 4G',

@@ -1,9 +1,9 @@
-// English translations for NetOptima
+// English translations for NetOptima Algérie
 const en: Record<string, string> = {
   // ========== APP SHELL ==========
-  'app.brand': 'NetOptima',
+  'app.brand': 'NetOptima Algérie',
   'app.tagline': 'Mobile Network Optimization Platform',
-  'app.footer': '© 2025 NetOptima · 2G · 3G · 4G · 5G Network Optimization',
+  'app.footer': '© 2025 NetOptima Algérie · 2G · 3G · 4G · 5G Network Optimization',
   'app.toggleTheme': 'Toggle theme',
   'app.mainNav': 'Main navigation',
   'app.collapseSidebar': 'Collapse sidebar',

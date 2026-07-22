@@ -110,7 +110,7 @@ export async function seedRbac() {
   }
 
   // Create default admin user
-  const adminEmail = 'admin@netoptima.local';
+  const adminEmail = 'admin@netoptima-dz.local';
   const existingAdmin = await db.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
     const passwordHash = await bcrypt.hash('admin123', 10);
@@ -125,11 +125,11 @@ export async function seedRbac() {
 
   // Create demo users for each role
   const demoUsers = [
-    { email: 'noc@netoptima.local', name: 'NOC Manager', role: 'noc_manager', dept: 'NOC' },
-    { email: 'rf@netoptima.local', name: 'RF Engineer', role: 'rf_engineer', dept: 'RF Optimization' },
-    { email: 'nop@netoptima.local', name: 'NOP Engineer', role: 'nop_engineer', dept: 'Network Ops' },
-    { email: 'field@netoptima.local', name: 'Field Technician', role: 'field_tech', dept: 'Field Operations' },
-    { email: 'viewer@netoptima.local', name: 'Viewer', role: 'view_only', dept: 'Management' },
+    { email: 'noc@netoptima-dz.local', name: 'NOC Manager', role: 'noc_manager', dept: 'NOC' },
+    { email: 'rf@netoptima-dz.local', name: 'RF Engineer', role: 'rf_engineer', dept: 'RF Optimization' },
+    { email: 'nop@netoptima-dz.local', name: 'NOP Engineer', role: 'nop_engineer', dept: 'Network Ops' },
+    { email: 'field@netoptima-dz.local', name: 'Field Technician', role: 'field_tech', dept: 'Field Operations' },
+    { email: 'viewer@netoptima-dz.local', name: 'Viewer', role: 'view_only', dept: 'Management' },
   ];
 
   for (const du of demoUsers) {

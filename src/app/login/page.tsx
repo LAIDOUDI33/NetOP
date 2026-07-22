@@ -60,7 +60,7 @@ export default function LoginPage() {
             <Shield className="h-7 w-7 text-emerald-500" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-white">NetOptima</CardTitle>
+            <CardTitle className="text-2xl font-bold text-white">NetOptima Algérie</CardTitle>
             <CardDescription className="text-slate-400 mt-1">
               {t('auth.subtitle')}
             </CardDescription>
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@netoptima.local"
+                placeholder="admin@netoptima-dz.local"
                 required
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500"
                 autoComplete="email"
@@ -131,13 +131,13 @@ export default function LoginPage() {
           <div className="mt-6 p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
             <p className="text-xs text-slate-400 font-medium mb-2">{t('auth.demoAccounts')}</p>
             <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-500">
-              <div><span className="text-emerald-400 font-medium">admin</span>@netoptima.local</div>
+              <div><span className="text-emerald-400 font-medium">admin</span>@netoptima-dz.local</div>
               <div className="text-slate-600">admin123</div>
-              <div><span className="text-cyan-400 font-medium">noc</span>@netoptima.local</div>
+              <div><span className="text-cyan-400 font-medium">noc</span>@netoptima-dz.local</div>
               <div className="text-slate-600">demo123</div>
-              <div><span className="text-amber-400 font-medium">rf</span>@netoptima.local</div>
+              <div><span className="text-amber-400 font-medium">rf</span>@netoptima-dz.local</div>
               <div className="text-slate-600">demo123</div>
-              <div><span className="text-violet-400 font-medium">viewer</span>@netoptima.local</div>
+              <div><span className="text-violet-400 font-medium">viewer</span>@netoptima-dz.local</div>
               <div className="text-slate-600">demo123</div>
             </div>
           </div>

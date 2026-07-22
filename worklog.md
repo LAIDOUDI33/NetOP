@@ -171,3 +171,20 @@ Stage Summary:
 - ESLint: 0 errors
 - API tests: all 200 (base, status filter, type filter)
 - Homepage compilation: 200
+---
+Task ID: 5
+Agent: Main Agent
+Task: Adapt map and site name to Algeria
+
+Work Log:
+- Rebranded NetOptima to NetOptima Algérie in 6 source files
+- Updated map center from Nigeria [7.5, 4.0] to Algeria [28.0, 2.0]
+- Migrated 34 DB sites from Nigerian to Algerian regions
+- Updated all email domains to @netoptima-dz.local
+- ESLint: 0 errors
+
+Stage Summary:
+- Platform rebranded as NetOptima Algérie for Algeria deployment
+- Map centered on Algeria (28N, 2E) zoom 5
+- Database migrated to 8 Algerian wilayas with accurate GPS
+- All sites use DZ-prefixed codes
