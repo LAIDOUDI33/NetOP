@@ -294,7 +294,7 @@ export default function CorrelationView() {
                     dataKey="value"
                     nameKey="name"
                     label={({ name, percent }: { name: string; percent: number }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
+                      `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                     }
                     labelLine={{ strokeWidth: 1 }}
                   >
@@ -460,7 +460,7 @@ export default function CorrelationView() {
                   <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${v}%`} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
-                    formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name]}
+                    formatter={(value: number, name: string) => [`${(value ?? 0).toFixed(1)}%`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
                   <Bar dataKey="availability" fill="#10B981" name="Availability" radius={[2, 2, 0, 0]} />

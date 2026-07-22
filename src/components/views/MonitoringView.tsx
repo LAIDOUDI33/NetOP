@@ -127,7 +127,7 @@ export default function MonitoringView() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">{t('mon.avgThroughput')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgDownload.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.mbps')}</span></p>
+            <p className="text-xl font-bold mt-1">{(data.summary.avgDownload ?? 0).toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.mbps')}</span></p>
           </CardContent>
         </Card>
         <Card>
@@ -136,7 +136,7 @@ export default function MonitoringView() {
               <Clock className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">{t('mon.avgLatency')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgLatency.toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.ms')}</span></p>
+            <p className="text-xl font-bold mt-1">{(data.summary.avgLatency ?? 0).toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.ms')}</span></p>
           </CardContent>
         </Card>
         <Card>
@@ -216,12 +216,12 @@ export default function MonitoringView() {
                           {site.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs">{site.avgDownloadThroughput.toFixed(1)}</TableCell>
-                      <TableCell className="text-xs">{site.avgUploadThroughput.toFixed(1)}</TableCell>
-                      <TableCell className="text-xs">{site.avgLatency.toFixed(1)}</TableCell>
-                      <TableCell className="text-xs">{site.avgAvailability.toFixed(1)}%</TableCell>
+                      <TableCell className="text-xs">{(site.avgDownloadThroughput ?? 0).toFixed(1)}</TableCell>
+                      <TableCell className="text-xs">{(site.avgUploadThroughput ?? 0).toFixed(1)}</TableCell>
+                      <TableCell className="text-xs">{(site.avgLatency ?? 0).toFixed(1)}</TableCell>
+                      <TableCell className="text-xs">{(site.avgAvailability ?? 0).toFixed(1)}%</TableCell>
                       <TableCell className="text-xs">{Math.round(site.avgActiveUsers)}</TableCell>
-                      <TableCell className="text-xs">{site.avgDropRate.toFixed(2)}%</TableCell>
+                      <TableCell className="text-xs">{(site.avgDropRate ?? 0).toFixed(2)}%</TableCell>
                       <TableCell className="text-xs">{site.avgSinr?.toFixed(1) || 'N/A'}</TableCell>
                     </TableRow>
                   ))}

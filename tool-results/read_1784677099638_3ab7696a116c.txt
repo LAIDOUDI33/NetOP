@@ -1,0 +1,661 @@
+     1→'use client';
+     2→import { useT } from '@/lib/i18n';
+     3→
+     4→import { useState } from 'react';
+     5→import { useQuery } from '@tanstack/react-query';
+     6→import {
+     7→  BarChart, Bar, Cell, PieChart, Pie, XAxis, YAxis, CartesianGrid,
+     8→  Tooltip, ResponsiveContainer,
+     9→} from 'recharts';
+    10→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    11→import { Badge } from '@/components/ui/badge';
+    12→import {
+    13→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    14→} from '@/components/ui/select';
+    15→import {
+    16→  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
+    17→} from '@/components/ui/table';
+    18→import { Skeleton } from '@/components/ui/skeleton';
+    19→import { Heart, Frown, Radio } from 'lucide-react';
+    20→import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+    21→import { ExportButton } from '@/components/ExportButton';
+    22→import type { Technology } from '@/types';
+    23→
+    24→// ─── API Response Types ────────────────────────────────────────────────
+    25→
+    26→interface HealthScoreItem {
+    27→  id: string;
+    28→  siteId: string;
+    29→  siteName: string;
+    30→  siteCode: string;
+    31→  technology: Technology;
+    32→  region: string;
+    33→  overallScore: number;
+    34→  coverageScore: number;
+    35→  capacityScore: number;
+    36→  qualityScore: number;
+    37→  reliabilityScore: number;
+    38→  experienceScore: number;
+    39→  grade: string;
+    40→  trend: string;
+    41→  issues: string[];
+    42→  timestamp: string;
+    43→  createdAt: string;
+    44→}
+    45→
+    46→interface HealthSummary {
+    47→  total: number;
+    48→  avgOverall: number;
+    49→  byGrade: Record<string, number>;
+    50→  byRegion: Record<string, number>;
+    51→  byTrend: Record<string, number>;
+    52→}
+    53→
+    54→interface HealthResponse {
+    55→  healthScores: HealthScoreItem[];
+    56→  summary: HealthSummary;
+    57→}
+    58→
+    59→// ─── Grade & Trend Colors ─────────────────────────────────────────────
+    60→
+    61→const GRADE_COLORS: Record<string, string> = {
+    62→  'A+': '#059669',
+    63→  'A': '#34D399',
+    64→  'B': '#F59E0B',
+    65→  'C': '#F97316',
+    66→  'D': '#EF4444',
+    67→  'F': '#B91C1C',
+    68→};
+    69→
+    70→const GRADE_BG: Record<string, string> = {
+    71→  'A+': 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border-emerald-600/20',
+    72→  'A': 'bg-emerald-400/10 text-emerald-700 dark:text-emerald-300 border-emerald-400/20',
+    73→  'B': 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    74→  'C': 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20',
+    75→  'D': 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+    76→  'F': 'bg-red-700/10 text-red-700 dark:text-red-300 border-red-700/20',
+    77→};
+    78→
+    79→const GRADE_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    80→  'A+': 'default',
+    81→  'A': 'default',
+    82→  'B': 'secondary',
+    83→  'C': 'secondary',
+    84→  'D': 'destructive',
+    85→  'F': 'destructive',
+    86→};
+    87→
+    88→const TREND_COLORS: Record<string, string> = {
+    89→  improving: '#10B981',
+    90→  stable: '#F59E0B',
+    91→  degrading: '#EF4444',
+    92→};
+    93→
+    94→const TREND_BG: Record<string, string> = {
+    95→  improving: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    96→  stable: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    97→  degrading: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+    98→};
+    99→
+   100→function healthScoreColor(score: number): string {
+   101→  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
+   102→  if (score >= 60) return 'text-amber-600 dark:text-amber-400';
+   103→  return 'text-red-600 dark:text-red-400';
+   104→}
+   105→
+   106→function healthBarColor(score: number): string {
+   107→  if (score >= 80) return 'bg-emerald-500';
+   108→  if (score >= 60) return 'bg-amber-500';
+   109→  return 'bg-red-500';
+   110→}
+   111→
+   112→// ─── Loading Skeletons ────────────────────────────────────────────────
+   113→
+   114→function KpiCardsSkeleton() {
+   115→  return (
+   116→    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   117→      {Array.from({ length: 5 }).map((_, i) => (
+   118→        <Card key={i}>
+   119→          <CardHeader className="pb-2">
+   120→            <Skeleton className="h-4 w-28" />
+   121→          </CardHeader>
+   122→          <CardContent>
+   123→            <Skeleton className="h-8 w-16" />
+   124→          </CardContent>
+   125→        </Card>
+   126→      ))}
+   127→    </div>
+   128→  );
+   129→}
+   130→
+   131→function ChartSkeleton() {
+   132→  return (
+   133→    <Card>
+   134→      <CardHeader>
+   135→        <Skeleton className="h-5 w-48" />
+   136→      </CardHeader>
+   137→      <CardContent>
+   138→        <Skeleton className="h-64 w-full" />
+   139→      </CardContent>
+   140→    </Card>
+   141→  );
+   142→}
+   143→
+   144→function TableSkeleton() {
+   145→  return (
+   146→    <Card>
+   147→      <CardHeader>
+   148→        <Skeleton className="h-5 w-40" />
+   149→      </CardHeader>
+   150→      <CardContent>
+   151→        <div className="space-y-2">
+   152→          <Skeleton className="h-8 w-full" />
+   153→          {Array.from({ length: 5 }).map((_, r) => (
+   154→            <Skeleton key={r} className="h-10 w-full" />
+   155→          ))}
+   156→        </div>
+   157→      </CardContent>
+   158→    </Card>
+   159→  );
+   160→}
+   161→
+   162→// ─── Custom Chart Tooltip ─────────────────────────────────────────────
+   163→
+   164→function ChartTooltipContent({ active, payload, label }: any) {
+   165→  if (!active || !payload?.length) return null;
+   166→  return (
+   167→    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
+   168→      <p className="font-medium mb-1">{label}</p>
+   169→      {payload.map((entry: any, idx: number) => (
+   170→        <div key={idx} className="flex items-center gap-2">
+   171→          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+   172→          <span className="text-muted-foreground">{entry.name}:</span>
+   173→          <span className="font-medium">{formatNumber(entry.value)}</span>
+   174→        </div>
+   175→      ))}
+   176→    </div>
+   177→  );
+   178→}
+   179→
+   180→// ─── Pie Label ─────────────────────────────────────────────────────────
+   181→
+   182→const RADIAN = Math.PI / 180;
+   183→
+   184→function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) {
+   185→  const radius = innerRadius + (outerRadius - innerRadius) * 1.6;
+   186→  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+   187→  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+   188→  return (
+   189→    <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} className="fill-muted-foreground text-xs">
+   190→      {name} ({(percent * 100).toFixed(0)}%)
+   191→    </text>
+   192→  );
+   193→}
+   194→
+   195→// ─── Main Component ───────────────────────────────────────────────────
+   196→
+   197→export default function HealthView() {
+   198→  const t = useT();
+   199→  const [techFilter, setTechFilter] = useState<string>('all');
+   200→  const [gradeFilter, setGradeFilter] = useState<string>('all');
+   201→  const [regionFilter, setRegionFilter] = useState<string>('all');
+   202→
+   203→  const { data, isLoading, isError } = useQuery<HealthResponse>({
+   204→    queryKey: ['health', techFilter, gradeFilter, regionFilter],
+   205→    queryFn: () => {
+   206→      const params = new URLSearchParams();
+   207→      if (techFilter !== 'all') params.set('technology', techFilter);
+   208→      if (gradeFilter !== 'all') params.set('grade', gradeFilter);
+   209→      if (regionFilter !== 'all') params.set('region', regionFilter);
+   210→      const qs = params.toString();
+   211→      return fetch(`/api/health${qs ? `?${qs}` : ''}`).then((r) => r.json());
+   212→    },
+   213→    refetchInterval: 30000,
+   214→  });
+   215→
+   216→  const healthScores = data?.healthScores ?? [];
+   217→  const summary = data?.summary;
+   218→
+   219→  // Grade distribution chart data
+   220→  const gradeOrder = ['A+', 'A', 'B', 'C', 'D', 'F'];
+   221→  const gradeChartData = gradeOrder
+   222→    .filter((g) => (summary?.byGrade?.[g] ?? 0) > 0)
+   223→    .map((g) => ({
+   224→      grade: g,
+   225→      count: summary?.byGrade?.[g] ?? 0,
+   226→      fill: GRADE_COLORS[g],
+   227→    }));
+   228→
+   229→  // Trend distribution pie data
+   230→  const trendPieData = [
+   231→    { name: 'Improving', value: summary?.byTrend?.improving ?? 0, fill: TREND_COLORS.improving },
+   232→    { name: 'Stable', value: summary?.byTrend?.stable ?? 0, fill: TREND_COLORS.stable },
+   233→    { name: 'Degrading', value: summary?.byTrend?.degrading ?? 0, fill: TREND_COLORS.degrading },
+   234→  ].filter((d) => d.value > 0);
+   235→
+   236→  // Region health chart data
+   237→  const regionChartData = summary?.byRegion
+   238→    ? Object.entries(summary.byRegion).map(([region, avgScore]) => {
+   239→        const regionSites = healthScores.filter((s) => s.region === region);
+   240→        const overall = regionSites.length > 0
+   241→          ? Number((regionSites.reduce((sum, s) => sum + s.overallScore, 0) / regionSites.length).toFixed(2))
+   242→          : avgScore as number;
+   243→        return { region, score: overall };
+   244→      })
+   245→    : [];
+   246→
+   247→  // KPI values
+   248→  const totalSites = summary?.total ?? 0;
+   249→  const avgOverall = summary?.avgOverall ?? 0;
+   250→  const aPlusCount = summary?.byGrade?.['A+'] ?? 0;
+   251→  const degradingCount = summary?.byTrend?.degrading ?? 0;
+   252→  const fCount = summary?.byGrade?.['F'] ?? 0;
+   253→
+   254→  // Unique regions for filter
+   255→  const regions = Array.from(new Set(healthScores.map((s) => s.region))).sort();
+   256→
+   257→  // ─── Render: Loading State ──────────────────────────────────────────
+   258→  if (isLoading) {
+   259→    return (
+   260→      <div className="space-y-6 p-6">
+   261→        <div>
+   262→          <Skeleton className="h-8 w-72 mb-2" />
+   263→          <Skeleton className="h-4 w-96" />
+   264→        </div>
+   265→        <KpiCardsSkeleton />
+   266→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   267→          <ChartSkeleton />
+   268→          <ChartSkeleton />
+   269→        </div>
+   270→        <ChartSkeleton />
+   271→        <TableSkeleton />
+   272→      </div>
+   273→    );
+   274→  }
+   275→
+   276→  // ─── Render: Error State ────────────────────────────────────────────
+   277→  if (isError) {
+   278→    return (
+   279→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   280→        <Frown className="h-12 w-12 mb-4" />
+   281→        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('helth.title') })}</p>
+   282→        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
+   283→      </div>
+   284→    );
+   285→  }
+   286→
+   287→  // ─── Render: Empty State ────────────────────────────────────────────
+   288→  if (!data || healthScores.length === 0) {
+   289→    return (
+   290→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   291→        <Radio className="h-12 w-12 mb-4" />
+   292→        <p className="text-lg font-medium">No Health Data Available</p>
+   293→        <p className="text-sm mt-1">
+   294→          Health scores have not been computed yet.
+   295→        </p>
+   296→      </div>
+   297→    );
+   298→  }
+   299→
+   300→  // ─── Render: Main View ─────────────────────────────────────────────
+   301→  return (
+   302→    <div className="space-y-6 p-6">
+   303→      {/* Header */}
+   304→      <div>
+   305→        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   306→          <Heart className="h-6 w-6 text-red-500" />
+   307→          {t('exec.networkHealth')}
+   308→        </h1>
+   309→        <p className="text-muted-foreground text-sm mt-1">
+   310→          Composite health index across coverage, capacity, quality, reliability, and experience
+   311→        </p>
+   312→      </div>
+   313→
+   314→      {/* KPI Cards */}
+   315→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   316→        {/* Total Sites */}
+   317→        <Card>
+   318→          <CardHeader className="pb-2">
+   319→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   320→              <Radio className="h-4 w-4 text-cyan-500" />
+   321→              {t('exec.totalSites')}
+   322→            </CardTitle>
+   323→          </CardHeader>
+   324→          <CardContent>
+   325→            <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+   326→              {totalSites}
+   327→            </span>
+   328→            <p className="text-xs text-muted-foreground mt-1">Health-scored sites</p>
+   329→          </CardContent>
+   330→        </Card>
+   331→
+   332→        {/* Avg Health Score */}
+   333→        <Card>
+   334→          <CardHeader className="pb-2">
+   335→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   336→              <Heart className="h-4 w-4 text-red-500" />
+   337→              {t('exec.networkHealth')}
+   338→            </CardTitle>
+   339→          </CardHeader>
+   340→          <CardContent>
+   341→            <span className={`text-3xl font-bold ${healthScoreColor(avgOverall)}`}>
+   342→              {formatNumber(avgOverall)}
+   343→            </span>
+   344→            <div className="mt-2 h-2 w-full rounded-full bg-muted overflow-hidden">
+   345→              <div
+   346→                className={`h-full rounded-full transition-all ${healthBarColor(avgOverall)}`}
+   347→                style={{ width: `${Math.min(avgOverall, 100)}%` }}
+   348→              />
+   349→            </div>
+   350→            <p className="text-xs text-muted-foreground mt-1">Scale: 0 – 100</p>
+   351→          </CardContent>
+   352→        </Card>
+   353→
+   354→        {/* A+ Grade Sites */}
+   355→        <Card>
+   356→          <CardHeader className="pb-2">
+   357→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   358→              <Heart className="h-4 w-4 text-emerald-500" />
+   359→              A+ Grade Sites
+   360→            </CardTitle>
+   361→          </CardHeader>
+   362→          <CardContent>
+   363→            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+   364→              {aPlusCount}
+   365→            </span>
+   366→            <p className="text-xs text-muted-foreground mt-1">
+   367→              {totalSites > 0 ? `${((aPlusCount / totalSites) * 100).toFixed(1)}%` : '0%'} of total
+   368→            </p>
+   369→          </CardContent>
+   370→        </Card>
+   371→
+   372→        {/* Degrading Sites */}
+   373→        <Card>
+   374→          <CardHeader className="pb-2">
+   375→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   376→              <Frown className="h-4 w-4 text-red-500" />
+   377→              Degrading Sites
+   378→            </CardTitle>
+   379→          </CardHeader>
+   380→          <CardContent>
+   381→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   382→              {degradingCount}
+   383→            </span>
+   384→            <p className="text-xs text-muted-foreground mt-1">Trending downward</p>
+   385→          </CardContent>
+   386→        </Card>
+   387→
+   388→        {/* F Grade Sites */}
+   389→        <Card>
+   390→          <CardHeader className="pb-2">
+   391→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   392→              <Frown className="h-4 w-4 text-red-500" />
+   393→              F Grade Sites
+   394→            </CardTitle>
+   395→          </CardHeader>
+   396→          <CardContent>
+   397→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   398→              {fCount}
+   399→            </span>
+   400→            <p className="text-xs text-muted-foreground mt-1">Critical attention needed</p>
+   401→          </CardContent>
+   402→        </Card>
+   403→      </div>
+   404→
+   405→      {/* Charts Row 1: Grade Distribution + Trend Distribution */}
+   406→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   407→        {/* Grade Distribution Bar Chart */}
+   408→        <Card>
+   409→          <CardHeader>
+   410→            <CardTitle className="text-base">{t('helth.gradeDist')}</CardTitle>
+   411→          </CardHeader>
+   412→          <CardContent>
+   413→            {gradeChartData.length === 0 ? (
+   414→              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   415→            ) : (
+   416→              <div className="h-64">
+   417→                <ResponsiveContainer width="100%" height="100%">
+   418→                  <BarChart data={gradeChartData} barSize={48}>
+   419→                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+   420→                    <XAxis
+   421→                      dataKey="grade"
+   422→                      className="text-xs"
+   423→                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   424→                    />
+   425→                    <YAxis
+   426→                      className="text-xs"
+   427→                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   428→                      allowDecimals={false}
+   429→                    />
+   430→                    <Tooltip content={<ChartTooltipContent />} />
+   431→                    <Bar dataKey="count" name="Sites" radius={[4, 4, 0, 0]}>
+   432→                      {gradeChartData.map((entry, idx) => (
+   433→                        <Cell key={idx} fill={entry.fill} />
+   434→                      ))}
+   435→                    </Bar>
+   436→                  </BarChart>
+   437→                </ResponsiveContainer>
+   438→              </div>
+   439→            )}
+   440→          </CardContent>
+   441→        </Card>
+   442→
+   443→        {/* Trend Distribution Pie Chart */}
+   444→        <Card>
+   445→          <CardHeader>
+   446→            <CardTitle className="text-base">{t('helth.trendDist')}</CardTitle>
+   447→          </CardHeader>
+   448→          <CardContent>
+   449→            {trendPieData.length === 0 ? (
+   450→              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   451→            ) : (
+   452→              <div className="h-64">
+   453→                <ResponsiveContainer width="100%" height="100%">
+   454→                  <PieChart>
+   455→                    <Pie
+   456→                      data={trendPieData}
+   457→                      cx="50%"
+   458→                      cy="50%"
+   459→                      innerRadius={50}
+   460→                      outerRadius={90}
+   461→                      dataKey="value"
+   462→                      nameKey="name"
+   463→                      label={renderPieLabel}
+   464→                      labelLine={false}
+   465→                    >
+   466→                      {trendPieData.map((entry, idx) => (
+   467→                        <Cell key={idx} fill={entry.fill} />
+   468→                      ))}
+   469→                    </Pie>
+   470→                    <Tooltip content={<ChartTooltipContent />} />
+   471→                  </PieChart>
+   472→                </ResponsiveContainer>
+   473→              </div>
+   474→            )}
+   475→          </CardContent>
+   476→        </Card>
+   477→      </div>
+   478→
+   479→      {/* Region Health Bar Chart */}
+   480→      <Card>
+   481→        <CardHeader>
+   482→          <CardTitle className="text-base">{t('helth.regionOverview')}</CardTitle>
+   483→        </CardHeader>
+   484→        <CardContent>
+   485→          {regionChartData.length === 0 ? (
+   486→            <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   487→          ) : (
+   488→            <div className="h-64">
+   489→              <ResponsiveContainer width="100%" height="100%">
+   490→                <BarChart data={regionChartData} barSize={36} layout="vertical">
+   491→                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+   492→                  <XAxis
+   493→                    type="number"
+   494→                    domain={[0, 100]}
+   495→                    className="text-xs"
+   496→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   497→                  />
+   498→                  <YAxis
+   499→                    type="category"
+   500→                    dataKey="region"
+   501→                    className="text-xs"
+   502→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   503→                    width={80}
+   504→                  />
+   505→                  <Tooltip content={<ChartTooltipContent />} />
+   506→                  <Bar dataKey="score" name="Avg Overall" radius={[0, 4, 4, 0]}>
+   507→                    {regionChartData.map((entry) => {
+   508→                      const tech = healthScores.find((s) => s.region === entry.region)?.technology ?? '4G';
+   509→                      return <Cell key={entry.region} fill={TECH_COLORS[tech as Technology] ?? '#10B981'} />;
+   510→                    })}
+   511→                  </Bar>
+   512→                </BarChart>
+   513→              </ResponsiveContainer>
+   514→            </div>
+   515→          )}
+   516→        </CardContent>
+   517→      </Card>
+   518→
+   519→      {/* Full Table */}
+   520→      <Card>
+   521→        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+   522→          <CardTitle className="text-base">{t('helth.details')}</CardTitle>
+   523→          <div className="flex items-center gap-2 flex-wrap">
+   524→            <Select value={techFilter} onValueChange={setTechFilter}>
+   525→              <SelectTrigger className="w-32">
+   526→                <SelectValue placeholder={t('filter.technology')} />
+   527→              </SelectTrigger>
+   528→              <SelectContent>
+   529→                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+   530→                <SelectItem value="2G">2G</SelectItem>
+   531→                <SelectItem value="3G">3G</SelectItem>
+   532→                <SelectItem value="4G">4G</SelectItem>
+   533→                <SelectItem value="5G">5G</SelectItem>
+   534→              </SelectContent>
+   535→            </Select>
+   536→            <Select value={gradeFilter} onValueChange={setGradeFilter}>
+   537→              <SelectTrigger className="w-28">
+   538→                <SelectValue placeholder={t('filter.grade')} />
+   539→              </SelectTrigger>
+   540→              <SelectContent>
+   541→                <SelectItem value="all">{t('filter.allGrades')}</SelectItem>
+   542→                <SelectItem value="A+">A+</SelectItem>
+   543→                <SelectItem value="A">A</SelectItem>
+   544→                <SelectItem value="B">B</SelectItem>
+   545→                <SelectItem value="C">C</SelectItem>
+   546→                <SelectItem value="D">D</SelectItem>
+   547→                <SelectItem value="F">F</SelectItem>
+   548→              </SelectContent>
+   549→            </Select>
+   550→            <Select value={regionFilter} onValueChange={setRegionFilter}>
+   551→              <SelectTrigger className="w-36">
+   552→                <SelectValue placeholder={t('filter.region')} />
+   553→              </SelectTrigger>
+   554→              <SelectContent>
+   555→                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
+   556→                {regions.map((r) => (
+   557→                  <SelectItem key={r} value={r}>{r}</SelectItem>
+   558→                ))}
+   559→              </SelectContent>
+   560→            </Select>
+   561→            <ExportButton data={healthScores} filenamePrefix="health" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'overallScore', header: 'Overall' }, { key: 'grade', header: 'Grade' }, { key: 'trend', header: 'Trend' }]} />
+   562→          </div>
+   563→        </CardHeader>
+   564→        <CardContent>
+   565→          {healthScores.length === 0 ? (
+   566→            <p className="text-sm text-muted-foreground py-8 text-center">
+   567→              {t('helth.noSiteMatch')}
+   568→            </p>
+   569→          ) : (
+   570→            <div className="max-h-96 overflow-y-auto">
+   571→              <Table>
+   572→                <TableHeader>
+   573→                  <TableRow>
+   574→                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   575→                    <TableHead>{t('th.tech')}</TableHead>
+   576→                    <TableHead>{t('th.region')}</TableHead>
+   577→                    <TableHead className="text-right">Overall</TableHead>
+   578→                    <TableHead className="text-right">Coverage</TableHead>
+   579→                    <TableHead className="text-right">Capacity</TableHead>
+   580→                    <TableHead className="text-right">Quality</TableHead>
+   581→                    <TableHead className="text-right">Reliability</TableHead>
+   582→                    <TableHead className="text-right">Experience</TableHead>
+   583→                    <TableHead>{t('th.grade')}</TableHead>
+   584→                    <TableHead>Trend</TableHead>
+   585→                    <TableHead>Issues</TableHead>
+   586→                  </TableRow>
+   587→                </TableHeader>
+   588→                <TableBody>
+   589→                  {healthScores.map((item) => (
+   590→                    <TableRow key={item.id}>
+   591→                      <TableCell className="font-medium text-xs max-w-[160px] truncate sticky left-0 bg-background">
+   592→                        {item.siteName}
+   593→                      </TableCell>
+   594→                      <TableCell>
+   595→                        <Badge variant="outline" className={TECH_BG_CLASSES[item.technology]}>
+   596→                          {item.technology}
+   597→                        </Badge>
+   598→                      </TableCell>
+   599→                      <TableCell className="text-xs">{item.region}</TableCell>
+   600→                      <TableCell className="text-right">
+   601→                        <div className="flex items-center gap-2 justify-end">
+   602→                          <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+   603→                            <div
+   604→                              className={`h-full rounded-full ${healthBarColor(item.overallScore)}`}
+   605→                              style={{ width: `${Math.min(item.overallScore, 100)}%` }}
+   606→                            />
+   607→                          </div>
+   608→                          <span className={`text-xs font-medium ${healthScoreColor(item.overallScore)}`}>
+   609→                            {formatNumber(item.overallScore)}
+   610→                          </span>
+   611→                        </div>
+   612→                      </TableCell>
+   613→                      <TableCell className="text-right text-xs font-medium">
+   614→                        {formatNumber(item.coverageScore)}
+   615→                      </TableCell>
+   616→                      <TableCell className="text-right text-xs font-medium">
+   617→                        {formatNumber(item.capacityScore)}
+   618→                      </TableCell>
+   619→                      <TableCell className="text-right text-xs font-medium">
+   620→                        {formatNumber(item.qualityScore)}
+   621→                      </TableCell>
+   622→                      <TableCell className="text-right text-xs font-medium">
+   623→                        {formatNumber(item.reliabilityScore)}
+   624→                      </TableCell>
+   625→                      <TableCell className="text-right text-xs font-medium">
+   626→                        {formatNumber(item.experienceScore)}
+   627→                      </TableCell>
+   628→                      <TableCell>
+   629→                        <Badge variant={GRADE_VARIANT[item.grade] ?? 'outline'} className={GRADE_BG[item.grade] ?? ''}>
+   630→                          {item.grade}
+   631→                        </Badge>
+   632→                      </TableCell>
+   633→                      <TableCell>
+   634→                        <Badge variant="outline" className={TREND_BG[item.trend] ?? 'bg-muted'}>
+   635→                          {item.trend}
+   636→                        </Badge>
+   637→                      </TableCell>
+   638→                      <TableCell>
+   639→                        <div className="flex flex-wrap gap-1 max-w-[180px]">
+   640→                          {item.issues.length === 0 ? (
+   641→                            <span className="text-xs text-muted-foreground">—</span>
+   642→                          ) : (
+   643→                            item.issues.map((issue, idx) => (
+   644→                              <Badge key={idx} variant="secondary" className="text-[10px] px-1.5 py-0">
+   645→                                {issue}
+   646→                              </Badge>
+   647→                            ))
+   648→                          )}
+   649→                        </div>
+   650→                      </TableCell>
+   651→                    </TableRow>
+   652→                  ))}
+   653→                </TableBody>
+   654→              </Table>
+   655→            </div>
+   656→          )}
+   657→        </CardContent>
+   658→      </Card>
+   659→    </div>
+   660→  );
+   661→}

@@ -187,7 +187,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, n
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
   return (
     <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} className="fill-muted-foreground text-xs">
-      {name} ({(percent * 100).toFixed(0)}%)
+      {name} ({((percent ?? 0) * 100).toFixed(0)}%)
     </text>
   );
 }

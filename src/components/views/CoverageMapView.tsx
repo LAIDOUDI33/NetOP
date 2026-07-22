@@ -198,12 +198,12 @@ export default function CoverageMapView() {
                             <div className="flex items-center gap-1">
                               <Signal className="h-3 w-3 text-gray-400" />
                               <span>{t('cov.signal')}</span>
-                              <span className="font-mono font-medium">{site.avgSignal.toFixed(1)} {t('unit.dbm')}</span>
+                              <span className="font-mono font-medium">{(site.avgSignal ?? 0).toFixed(1)} {t('unit.dbm')}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <TrendingUp className="h-3 w-3 text-gray-400" />
                               <span>{t('cov.throughput')}</span>
-                              <span className="font-mono font-medium">{site.avgThroughput.toFixed(1)} {t('unit.mbps')}</span>
+                              <span className="font-mono font-medium">{(site.avgThroughput ?? 0).toFixed(1)} {t('unit.mbps')}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="h-3 w-3 text-gray-400" />
@@ -330,11 +330,11 @@ export default function CoverageMapView() {
                           {rs.totalSites}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {rs.avgAvailability.toFixed(1)}%
+                          {(rs.avgAvailability ?? 0).toFixed(1)}%
                         </TableCell>
                         <TableCell className="text-right">
                           <span className={`font-mono text-xs ${quality.color}`}>
-                            {rs.avgSignal.toFixed(1)} dBm
+                            {(rs.avgSignal ?? 0).toFixed(1)} dBm
                           </span>
                           <span className="text-xs text-muted-foreground ml-1">
                             ({quality.label})

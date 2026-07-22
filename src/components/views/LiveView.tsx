@@ -191,7 +191,7 @@ export default function LiveView() {
     },
     {
       label: 'Download',
-      value: `${overview?.totalDownloadMbps.toFixed(1) ?? '0'} Mbps`,
+      value: `${(overview?.totalDownloadMbps ?? 0).toFixed(1)} Mbps`,
       icon: Download,
       color: 'text-cyan-600 dark:text-cyan-400',
       bg: 'bg-cyan-500/10',
@@ -199,7 +199,7 @@ export default function LiveView() {
     },
     {
       label: 'Upload',
-      value: `${overview?.totalUploadMbps.toFixed(1) ?? '0'} Mbps`,
+      value: `${(overview?.totalUploadMbps ?? 0).toFixed(1)} Mbps`,
       icon: Upload,
       color: 'text-teal-600 dark:text-teal-400',
       bg: 'bg-teal-500/10',
@@ -309,12 +309,12 @@ export default function LiveView() {
                     </TableCell>
                     <TableCell className="text-right text-sm font-medium">{row.sites}</TableCell>
                     <TableCell className="text-right text-sm">{row.users.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-sm">{row.download.toFixed(1)}</TableCell>
-                    <TableCell className="text-right text-sm">{row.upload.toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-sm">{(row.download ?? 0).toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-sm">{(row.upload ?? 0).toFixed(1)}</TableCell>
                     <TableCell className="text-right text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                      {row.availability.toFixed(1)}
+                      {(row.availability ?? 0).toFixed(1)}
                     </TableCell>
-                    <TableCell className="text-right text-sm">{(row.power / 1000).toFixed(1)}</TableCell>
+                    <TableCell className="text-right text-sm">{((row.power ?? 0) / 1000).toFixed(1)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -343,7 +343,7 @@ export default function LiveView() {
                       borderRadius: '8px',
                       fontSize: '12px',
                     }}
-                    formatter={(value: number) => [`${value.toFixed(1)}%`, 'Load']}
+                    formatter={(value: number) => [(value ?? 0).toFixed(1), 'Load']}
                   />
                   <Bar dataKey="load" radius={[0, 4, 4, 0]}>
                     {loadedChartData.map((entry, index) => (
@@ -417,11 +417,11 @@ export default function LiveView() {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">{t('live.power')}</p>
-                <p className="text-lg font-bold mt-0.5">{energy?.totalPowerKw.toFixed(1) ?? '0'}<span className="text-xs font-normal text-muted-foreground ml-0.5">{t('unit.kw')}</span></p>
+                <p className="text-lg font-bold mt-0.5">{(energy?.totalPowerKw ?? 0).toFixed(1)}<span className="text-xs font-normal text-muted-foreground ml-0.5">{t('unit.kw')}</span></p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">{t('live.co2')}</p>
-                <p className="text-lg font-bold mt-0.5">{energy?.totalCO2kg.toFixed(1) ?? '0'}<span className="text-xs font-normal text-muted-foreground ml-0.5">kg</span></p>
+                <p className="text-lg font-bold mt-0.5">{(energy?.totalCO2kg ?? 0).toFixed(1)}<span className="text-xs font-normal text-muted-foreground ml-0.5">kg</span></p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">{t('live.sleepMode')}</p>

@@ -125,14 +125,14 @@ export default function CoverageView() {
                   <div className="flex items-center justify-center gap-1">
                     <Wifi className="h-3 w-3 text-muted-foreground" />
                   </div>
-                  <p className="text-lg font-bold">{rs.avgAvailability.toFixed(1)}%</p>
+                  <p className="text-lg font-bold">{(rs.avgAvailability ?? 0).toFixed(1)}%</p>
                   <p className="text-[10px] text-muted-foreground">Avail</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-center gap-1">
                     <Signal className="h-3 w-3 text-muted-foreground" />
                   </div>
-                  <p className="text-lg font-bold">{rs.avgSignal.toFixed(0)}</p>
+                  <p className="text-lg font-bold">{(rs.avgSignal ?? 0).toFixed(0)}</p>
                   <p className="text-[10px] text-muted-foreground">Signal</p>
                 </div>
               </div>
@@ -195,13 +195,13 @@ export default function CoverageView() {
                       </TableCell>
                       <TableCell className="text-xs text-right">
                         <span className={`font-medium ${getSignalColor(site.avgSignal)}`}>
-                          {site.avgSignal.toFixed(1)} {t('unit.dbm')}
+                          {(site.avgSignal ?? 0).toFixed(1)} {t('unit.dbm')}
                         </span>
                         <span className={`text-[10px] ml-1 ${getSignalColor(site.avgSignal)}`}>
                           ({t('signal.' + getSignalLabelKey(site.avgSignal))})
                         </span>
                       </TableCell>
-                      <TableCell className="text-xs text-right">{site.avgThroughput.toFixed(1)} {t('unit.mbps')}</TableCell>
+                      <TableCell className="text-xs text-right">{(site.avgThroughput ?? 0).toFixed(1)} {t('unit.mbps')}</TableCell>
                       <TableCell className="text-xs text-right">{Math.round(site.avgUsers)}</TableCell>
                     </TableRow>
                   ))}

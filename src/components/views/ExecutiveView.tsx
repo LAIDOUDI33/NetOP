@@ -579,7 +579,7 @@ export default function ExecutiveView() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ~{(d.totalEnergyKw / Math.max(1, d.totalSites)).toFixed(1)} kW avg per site
+                    ~{((d.totalEnergyKw ?? 0) / Math.max(1, d.totalSites)).toFixed(1)} kW avg per site
                   </p>
                 </div>
               </CardContent>

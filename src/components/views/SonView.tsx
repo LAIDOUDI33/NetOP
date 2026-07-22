@@ -851,7 +851,7 @@ function StatsCard({
             ) : (
               <>
                 <p className="text-2xl font-bold tracking-tight">
-                  {isDecimal ? value.toFixed(1) : value.toLocaleString()}
+                  {isDecimal ? (value ?? 0).toFixed(1) : value.toLocaleString()}
                   {isDecimal && (
                     <span className="text-sm font-normal text-muted-foreground ml-1">
                       %

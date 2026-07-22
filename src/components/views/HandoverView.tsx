@@ -95,7 +95,7 @@ function relationTypeColor(type: string): string {
 }
 
 function formatK(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  if (n >= 1000) return `${((n ?? 0) / 1000).toFixed(1)}K`;
   return String(n);
 }
 

@@ -94,8 +94,8 @@ const STATUS_BG_MAP: Record<string, string> = {
 // ─── Helper Functions ──────────────────────────────────────────────────
 
 function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1_000_000) return `$${((value ?? 0) / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${((value ?? 0) / 1_000).toFixed(1)}K`;
   return `$${formatNumber(value, 0)}`;
 }
 

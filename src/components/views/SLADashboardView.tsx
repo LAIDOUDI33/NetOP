@@ -98,7 +98,7 @@ function CircularProgress({ value, size = 180 }: { value: number; size?: number 
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-4xl font-bold" style={{ color }}>
-          {value.toFixed(1)}%
+          {(value ?? 0).toFixed(1)}%
         </span>
         <span className="text-xs text-muted-foreground mt-1">{t('sla.compliance')}</span>
       </div>

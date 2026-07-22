@@ -685,6 +685,7 @@ function ExecutionTableSkeleton() {
 // ──────────────────────────────────────────────
 
 export default function PoliciesView() {
+  const t = useT();
   const queryClient = useQueryClient();
   const { selectedTechnology } = useAppStore();
   const [techFilter, setTechFilter] = useState<string>(selectedTechnology);

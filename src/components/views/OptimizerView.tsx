@@ -255,12 +255,12 @@ export default function OptimizerView() {
                     <div className="flex items-center gap-1">
                       <Activity className="h-3 w-3 text-muted-foreground" />
                       <span className="text-muted-foreground">{t('opt.avail')}</span>
-                      <span className="font-medium">{h.avgAvailability.toFixed(1)}%</span>
+                      <span className="font-medium">{(h.avgAvailability ?? 0).toFixed(1)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 text-muted-foreground" />
                       <span className="text-muted-foreground">{t('opt.drop')}</span>
-                      <span className="font-medium">{h.avgDropRate.toFixed(2)}%</span>
+                      <span className="font-medium">{(h.avgDropRate ?? 0).toFixed(2)}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3 text-muted-foreground" />

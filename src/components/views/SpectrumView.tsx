@@ -118,8 +118,8 @@ function utilizationChartColor(pct: number): string {
 }
 
 function formatCurrency(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
+  if (value >= 1_000_000) return `$${((value ?? 0) / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${((value ?? 0) / 1_000).toFixed(1)}K`;
   return `$${value.toLocaleString()}`;
 }
 
@@ -461,7 +461,7 @@ export default function SpectrumView() {
                     paddingAngle={3}
                     dataKey="value"
                     nameKey="name"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     labelLine={{ stroke: 'hsl(var(--muted-foreground))' }}
                   >
                     {techPieData.map((entry, idx) => (

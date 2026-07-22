@@ -103,8 +103,8 @@ export default function KpiAnalyticsView() {
     return allSites.map(s => ({
       ...s,
       formattedValue: metric === 'availability' || metric === 'dropRate' || metric === 'handoverSuccessRate' || metric === 'prbUtilization'
-        ? `${s.value.toFixed(2)}%`
-        : s.value.toFixed(2),
+        ? `${(s.value ?? 0).toFixed(2)}%`
+        : (s.value ?? 0).toFixed(2),
     })).sort((a, b) => b.value - a.value);
   }, [allSites, metric]);
 

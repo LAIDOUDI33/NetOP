@@ -68,8 +68,8 @@ export default function DashboardView() {
   const healthData = data.techHealth.map(h => ({
     technology: h.technology,
     availability: h.availability,
-    throughput: Number((h.throughput / 10).toFixed(1)),
-    latency: Number((h.latency / 5).toFixed(1)),
+    throughput: Number(((h.throughput ?? 0) / 10).toFixed(1)),
+    latency: Number(((h.latency ?? 0) / 5).toFixed(1)),
   }));
 
   const trendData = data.kpiTrends.timestamps.map((ts, i) => ({
@@ -84,7 +84,7 @@ export default function DashboardView() {
     value: count,
   }));
 
-  const healthPercent = Number(data.avgAvailability.toFixed(1));
+  const healthPercent = Number((data.avgAvailability ?? 0).toFixed(1));
 
   return (
     <div className="space-y-6">
@@ -136,9 +136,9 @@ export default function DashboardView() {
               <div>
                 <p className="text-sm text-muted-foreground">{t('dash.avgThroughput')}</p>
                 <p className="text-2xl font-bold">
-                  <span className="text-emerald-600">{data.avgThroughput.download.toFixed(1)}</span>
+                  <span className="text-emerald-600">{(data.avgThroughput.download ?? 0).toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> / </span>
-                  <span className="text-cyan-600">{data.avgThroughput.upload.toFixed(1)}</span>
+                  <span className="text-cyan-600">{(data.avgThroughput.upload ?? 0).toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> Mbps</span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">{t('dash.dlUlAvg')}</p>
@@ -313,7 +313,7 @@ export default function DashboardView() {
                       />
                     </div>
                   </div>
-                  <span className="text-xs font-medium shrink-0">{h.availability.toFixed(1)}%</span>
+                  <span className="text-xs font-medium shrink-0">{(h.availability ?? 0).toFixed(1)}%</span>
                 </div>
               ))}
             </div>

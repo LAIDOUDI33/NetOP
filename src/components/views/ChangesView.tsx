@@ -211,7 +211,7 @@ function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }:
   if (percent < 0.06) return null;
   return (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
-      {`${(percent * 100).toFixed(0)}%`}
+      {`${((percent ?? 0) * 100).toFixed(0)}%`}
     </text>
   );
 }

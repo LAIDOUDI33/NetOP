@@ -347,7 +347,7 @@ export default function AnomalyDetectionView() {
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid hsl(var(--border))' }}
                   formatter={(value: number, name: string) => {
-                    if (name === 'Z-Score') return [value.toFixed(2), 'Z-Score'];
+                    if (name === 'Z-Score') return [(value ?? 0).toFixed(2), 'Z-Score'];
                     return [value, name];
                   }}
                   labelFormatter={(_label: string, payload) => {
