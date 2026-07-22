@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null;
 
@@ -12,6 +13,8 @@ async function getZai() {
 
 export async function POST(request: NextRequest) {
   try {
+  const _auth = await checkApiAuth(request);
+  if (!_auth) return authError();
     const { question, context } = await request.json();
 
     if (!question || typeof question !== 'string') {

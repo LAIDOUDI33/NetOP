@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const _auth = await checkApiAuth(request);
+  if (!_auth) return authError();
   const sourceTech = searchParams.get('sourceTech');
   const targetTech = searchParams.get('targetTech');
   const status = searchParams.get('status');

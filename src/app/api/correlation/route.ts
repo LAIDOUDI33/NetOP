@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 // ── Pearson correlation coefficient ──
 function pearson(xs: number[], ys: number[]): number {
@@ -24,6 +25,8 @@ function pearson(xs: number[], ys: number[]): number {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const _auth = await checkApiAuth(request);
+  if (!_auth) return authError();
   const type = searchParams.get('type') || 'kpi';
   const technology = searchParams.get('technology');
   const now = new Date();

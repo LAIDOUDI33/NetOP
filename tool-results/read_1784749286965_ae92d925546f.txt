@@ -1,0 +1,1050 @@
+     1→generator client {
+     2→  provider = "prisma-client-js"
+     3→}
+     4→
+     5→datasource db {
+     6→  provider = "sqlite"
+     7→  url      = env("DATABASE_URL")
+     8→}
+     9→
+    10→model NetworkSite {
+    11→  id          String   @id @default(cuid())
+    12→  name        String
+    13→  code        String   @unique
+    14→  technology  String
+    15→  region      String
+    16→  status      String   @default("active")
+    17→  latitude    Float
+    18→  longitude   Float
+    19→  altitude    Float    @default(0)
+    20→  frequency   String   @default("")
+    21→  bandwidth   Float    @default(0)
+    22→  maxCapacity Int      @default(0)
+    23→  vendor      String   @default("")
+    24→  createdAt   DateTime @default(now())
+    25→  updatedAt   DateTime @updatedAt
+    26→  kpiMetrics    KpiMetric[]
+    27→  alerts        Alert[]
+    28→  anomalies     AnomalyEvent[]
+    29→  neighbors     NeighborRelation[]
+    30→  sonActions    SonAction[]
+    31→  qoeMetrics    QoEMetric[]
+    32→  capacityForecasts CapacityForecast[]
+    33→  networkSlices NetworkSlice[]
+    34→  energyMetrics  EnergyMetric[]
+    35→  faultPredictions FaultPrediction[]
+    36→  incidents      Incident[]
+    37→  healthScores   HealthScore[]
+    38→  benchmarks     BenchmarkRecord[]
+    39→  handoverKpis   HandoverKpi[]
+    40→  cellLoads      CellLoad[]
+    41→  interferenceEvents InterferenceEvent[]
+    42→  outages        OutageEvent[]
+    43→  simulations    SimulationScenario[]
+    44→  trendForecasts  TrendForecast[]
+    45→  npiRecords     NpiRecord[]
+    46→}
+    47→
+    48→model KpiMetric {
+    49→  id          String      @id @default(cuid())
+    50→  siteId      String
+    51→  site        NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+    52→  technology  String
+    53→  timestamp   DateTime    @default(now())
+    54→  rssi        Float?
+    55→  rsrp        Float?
+    56→  rsrq        Float?
+    57→  sinr        Float?
+    58→  rscp        Float?
+    59→  ecno        Float?
+    60→  rxlev       Float?
+    61→  cqichannel  Float?
+    62→  downloadThroughput Float?
+    63→  uploadThroughput   Float?
+    64→  latency      Float?
+    65→  jitter       Float?
+    66→  packetLoss   Float?
+    67→  availability Float?
+    68→  activeUsers  Int?
+    69→  handoverSuccessRate Float?
+    70→  dropRate     Float?
+    71→  blockedCallRate     Float?
+    72→  prbUtilization     Float?
+    73→  createdAt   DateTime    @default(now())
+    74→
+    75→  @@index([siteId])
+    76→  @@index([technology])
+    77→  @@index([timestamp])
+    78→}
+    79→
+    80→model AlertRule {
+    81→  id          String   @id @default(cuid())
+    82→  name        String
+    83→  technology  String
+    84→  metric      String
+    85→  condition   String
+    86→  threshold   Float
+    87→  severity    String   @default("warning")
+    88→  enabled     Boolean  @default(true)
+    89→  createdAt   DateTime @default(now())
+    90→  updatedAt   DateTime @updatedAt
+    91→  alerts      Alert[]
+    92→}
+    93→
+    94→model Alert {
+    95→  id            String      @id @default(cuid())
+    96→  ruleId        String?
+    97→  rule          AlertRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+    98→  siteId        String?
+    99→  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   100→  technology    String
+   101→  metric        String
+   102→  value         Float
+   103→  threshold     Float
+   104→  condition     String
+   105→  severity      String
+   106→  message       String
+   107→  acknowledged  Boolean     @default(false)
+   108→  correlatedGroupId String?   // groups related alerts together
+   109→  resolvedAt    DateTime?
+   110→  createdAt     DateTime     @default(now())
+   111→
+   112→  @@index([siteId])
+   113→  @@index([technology])
+   114→  @@index([severity])
+   115→  @@index([createdAt])
+   116→  @@index([correlatedGroupId])
+   117→}
+   118→
+   119→model OptimizationLog {
+   120→  id          String   @id @default(cuid())
+   121→  technology  String
+   122→  siteId      String?
+   123→  siteName    String?
+   124→  category    String
+   125→  issue       String
+   126→  recommendation String
+   127→  impact      String
+   128→  status      String   @default("pending")
+   129→  createdAt   DateTime @default(now())
+   130→  updatedAt   DateTime @updatedAt
+   131→
+   132→  @@index([technology])
+   133→  @@index([category])
+   134→  @@index([status])
+   135→}
+   136→
+   137→model NetworkParameter {
+   138→  id          String   @id @default(cuid())
+   139→  technology  String
+   140→  parameter   String
+   141→  displayName String
+   142→  currentValue String
+   143→  unit        String   @default("")
+   144→  minRange    String?
+   145→  maxRange    String?
+   146→  description String
+   147→  category    String   @default("general")
+   148→  createdAt   DateTime @default(now())
+   149→  updatedAt   DateTime @updatedAt
+   150→
+   151→  @@index([technology])
+   152→  @@index([category])
+   153→}
+   154→
+   155→model SLATarget {
+   156→  id            String   @id @default(cuid())
+   157→  technology    String
+   158→  metric        String
+   159→  targetValue   Float
+   160→  condition     String
+   161→  severity      String   @default("warning")
+   162→  enabled       Boolean  @default(true)
+   163→  createdAt     DateTime @default(now())
+   164→  updatedAt     DateTime @updatedAt
+   165→}
+   166→
+   167→model AnomalyEvent {
+   168→  id            String      @id @default(cuid())
+   169→  siteId        String?
+   170→  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   171→  technology    String
+   172→  metric        String
+   173→  actualValue   Float
+   174→  expectedValue Float
+   175→  zScore        Float
+   176→  severity      String
+   177→  status        String      @default("detected")
+   178→  description   String
+   179→  resolvedAt    DateTime?
+   180→  createdAt     DateTime    @default(now())
+   181→
+   182→  @@index([siteId])
+   183→  @@index([technology])
+   184→  @@index([severity])
+   185→  @@index([status])
+   186→}
+   187→
+   188→model AuditLog {
+   189→  id          String   @id @default(cuid())
+   190→  entityType  String
+   191→  entityId    String?
+   192→  action      String
+   193→  oldValue    String?
+   194→  newValue    String?
+   195→  description String
+   196→  technology  String?
+   197→  createdAt   DateTime @default(now())
+   198→
+   199→  @@index([entityType])
+   200→  @@index([createdAt])
+   201→}
+   202→
+   203→// ========== PHASE A: SON & AUTOMATION MODELS ==========
+   204→
+   205→model SonModule {
+   206→  id            String   @id @default(cuid())
+   207→  name          String   // ANR, PCI, MRO, CCO, HLB, CODC, AIC, PnP
+   208→  displayName   String
+   209→  technology    String   // 2G, 3G, 4G, 5G, ALL
+   210→  description   String
+   211→  enabled       Boolean  @default(true)
+   212→  mode          String   @default("semi-automated") // open-loop, semi-automated, closed-loop
+   213→  schedule      String?  // cron expression or "always"
+   214→  parameters    String   @default("{}") // JSON: module-specific config
+   215→  stats         String   @default("{}") // JSON: {actions24h, successRate, avgImpact}
+   216→  createdAt     DateTime @default(now())
+   217→  updatedAt     DateTime @updatedAt
+   218→  actions       SonAction[]
+   219→}
+   220→
+   221→model SonAction {
+   222→  id              String      @id @default(cuid())
+   223→  moduleId        String
+   224→  module          SonModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+   225→  siteId          String?
+   226→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   227→  technology      String
+   228→  actionType      String      // add_neighbor, remove_neighbor, modify_pci, adjust_tilt, adjust_power, compensate_outage, correct_config
+   229→  parameter       String      // which param was changed
+   230→  previousValue   String
+   231→  newValue        String
+   232→  reason          String
+   233→  status          String      @default("pending") // pending, applied, rolled_back, failed
+   234→  kpiBefore       String      @default("{}") // JSON snapshot of KPIs before action
+   235→  kpiAfter        String?     // JSON snapshot of KPIs after action
+   236→  impactScore     Float?      // computed improvement
+   237→  rollbackReason  String?
+   238→  appliedAt       DateTime?
+   239→  rolledBackAt    DateTime?
+   240→  createdAt       DateTime    @default(now())
+   241→  updatedAt       DateTime    @updatedAt
+   242→
+   243→  @@index([moduleId])
+   244→  @@index([siteId])
+   245→  @@index([technology])
+   246→  @@index([status])
+   247→  @@index([createdAt])
+   248→}
+   249→
+   250→model NeighborRelation {
+   251→  id              String      @id @default(cuid())
+   252→  servingCellId   String
+   253→  servingCell     NetworkSite @relation(fields: [servingCellId], references: [id], onDelete: Cascade)
+   254→  neighborCellId  String
+   255→  neighborCellName String
+   256→  neighborCellCode String
+   257→  technology      String
+   258→  relationType    String  // intra_freq, inter_freq, inter_tech
+   259→  hoType          String  @default("manual") // manual, anr_auto, pnp_auto
+   260→  status          String  @default("active") // active, removed, blacklisted
+   261→  hoSuccessRate   Float?
+   262→  lastUpdated     DateTime @default(now())
+   263→
+   264→  @@index([servingCellId])
+   265→  @@index([technology])
+   266→}
+   267→
+   268→model Policy {
+   269→  id            String   @id @default(cuid())
+   270→  name          String
+   271→  description   String
+   272→  technology    String   // ALL for cross-tech
+   273→  triggerType   String   // kpi_breach, anomaly_detected, schedule, manual
+   274→  triggerConfig String   @default("{}") // JSON: {metric, condition, threshold} or {cron}
+   275→  actionModules String   @default("[]") // JSON: array of SON module IDs to execute
+   276→  scope         String   @default("all") // all, region, site, cluster
+   277→  scopeValue    String?  // region name or site ID
+   278→  priority      Int      @default(5) // 1=highest
+   279→  enabled       Boolean  @default(true)
+   280→  cooldownMins  Int      @default(30)
+   281→  stats         String   @default("{}") // JSON: {totalRuns, successRate, lastRun}
+   282→  createdAt     DateTime @default(now())
+   283→  updatedAt     DateTime @updatedAt
+   284→  executions    PolicyExecution[]
+   285→}
+   286→
+   287→model PolicyExecution {
+   288→  id            String   @id @default(cuid())
+   289→  policyId      String
+   290→  policy        Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+   291→  status        String   @default("triggered") // triggered, running, completed, failed, rolled_back
+   292→  triggerReason String
+   293→  affectedSites String   @default("[]") // JSON: site IDs
+   294→  actionsTaken  String   @default("[]") // JSON: SonAction IDs
+   295→  kpiImpact     String   @default("{}") // JSON: before/after KPI summary
+   296→  rollbackReason String?
+   297→  durationMs    Int?
+   298→  createdAt     DateTime @default(now())
+   299→  completedAt   DateTime?
+   300→
+   301→  @@index([policyId])
+   302→  @@index([status])
+   303→  @@index([createdAt])
+   304→}
+   305→
+   306→model QoEMetric {
+   307→  id              String      @id @default(cuid())
+   308→  siteId          String
+   309→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   310→  technology      String
+   311→  timestamp       DateTime    @default(now())
+   312→  mosScore        Float?      // Mean Opinion Score 1-5
+   313→  dataRateExperienced Float?  // Actual user throughput (Mbps)
+   314→  callSetupTime   Float?      // Seconds
+   315→  callDropRate    Float?      // %
+   316→  webPageLoadTime Float?      // Seconds
+   317→  videoStartTime  Float?      // Seconds
+   318→  pingLatency     Float?      // ms
+   319→  jitterExperience Float?     // ms
+   320→  satisfactionIndex Float?    // 0-100 composite
+   321→  subscriberCount Int?
+   322→  complaintCount  Int         @default(0)
+   323→  createdAt       DateTime    @default(now())
+   324→
+   325→  @@index([siteId])
+   326→  @@index([technology])
+   327→  @@index([timestamp])
+   328→}
+   329→
+   330→model VendorProfile {
+   331→  id          String   @id @default(cuid())
+   332→  vendor      String   @unique // Ericsson, Huawei, Nokia, Samsung, ZTE
+   333→  displayName String
+   334→  technologies String   @default("[]") // JSON: supported techs
+   335→  apiType     String   @default("rest") // rest, netconf, snmp, cli
+   336→  apiEndpoint String?
+   337→  credentials  String?  // encrypted reference (not actual creds)
+   338→  status      String   @default("active") // active, disconnected, error
+   339→  lastSync    DateTime?
+   340→  stats       String   @default("{}") // JSON: {sitesManaged, lastActionCount, syncStatus}
+   341→  createdAt   DateTime @default(now())
+   342→  updatedAt   DateTime @updatedAt
+   343→}
+   344→
+   345→model SiteOnboarding {
+   346→  id          String   @id @default(cuid())
+   347→  siteName    String
+   348→  siteCode    String   @unique
+   349→  technology  String
+   350→  region      String
+   351→  vendor      String
+   352→  latitude    Float
+   353→  longitude   Float
+   354→  altitude    Float    @default(0)
+   355→  frequency   String   @default("")
+   356→  bandwidth   Float    @default(0)
+   357→  maxCapacity Int      @default(0)
+   358→  status      String   @default("pending") // pending, provisioning, configuring, verifying, completed, failed
+   359→  assignedPci String?
+   360→  assignedFreq String?
+   361→  initialNeighbors String  @default("[]") // JSON: neighbor site codes
+   362→  kpiBaseline String   @default("{}") // JSON: first KPI readings
+   363→  errorMessage String?
+   364→  completedAt DateTime?
+   365→  createdAt   DateTime @default(now())
+   366→  updatedAt   DateTime @updatedAt
+   367→
+   368→  @@index([status])
+   369→  @@index([technology])
+   370→  @@index([createdAt])
+   371→}
+   372→
+   373→// ========== PHASE B: ADVANCED INTELLIGENCE & OPERATIONS ==========
+   374→
+   375→model CapacityForecast {
+   376→  id            String   @id @default(cuid())
+   377→  siteId        String?
+   378→  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   379→  technology    String
+   380→  region        String
+   381→  metric        String   // prbUtilization, activeUsers, throughput
+   382→  currentValue  Float
+   383→  forecastValue Float
+   384→  forecastHorizon String   @default("7d") // 7d, 14d, 30d, 90d
+   385→  growthRate    Float    // percentage growth predicted
+   386→  capacityLimit  Float?
+   387→  utilizationAtLimit Float? // predicted utilization when capacity is reached
+   388→  confidence    Float    @default(0.85) // 0-1 prediction confidence
+   389→  riskLevel     String   @default("low") // low, medium, high, critical
+   390→  recommendation String   @default("")
+   391→  timestamp     DateTime @default(now())
+   392→  createdAt     DateTime @default(now())
+   393→
+   394→  @@index([siteId])
+   395→  @@index([technology])
+   396→  @@index([region])
+   397→  @@index([riskLevel])
+   398→  @@index([timestamp])
+   399→}
+   400→
+   401→model NetworkSlice {
+   402→  id            String   @id @default(cuid())
+   403→  name          String
+   404→  sliceType     String   // eMBB, URLLC, mMTC
+   405→  technology    String   @default("5G")
+   406→  status        String   @default("active") // active, suspended, deactivated
+   407→  siteId        String?
+   408→  site          NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   409→  sst           String?  // S-NSSAI SST
+   410→  sd            String?  // S-NSSAI SD
+   411→  maxBandwidth  Float    @default(100) // Mbps
+   412→  guaranteedBw  Float    @default(30)  // Mbps guaranteed
+   413→  maxUsers     Int      @default(100)
+   414→  priorityLevel Int      @default(5)  // 1=highest
+   415→  latencyTarget Float?  // ms
+   416→  reliabilityTarget Float? // 99.999 etc
+   417→  currentLoad  Float    @default(0)   // percentage
+   418→  activeUsers  Int      @default(0)
+   419→  avgThroughput Float?
+   420→  avgLatency   Float?
+   421→  qci           Int?     // QoS Class Identifier
+   422→  FiveQi        Int?     // 5G QoS Identifier
+   423→  parameters    String   @default("{}") // JSON: slice-specific params
+   424→  createdAt     DateTime @default(now())
+   425→  updatedAt     DateTime @updatedAt
+   426→
+   427→  @@index([siteId])
+   428→  @@index([technology])
+   429→  @@index([status])
+   430→  @@index([sliceType])
+   431→}
+   432→
+   433→model EnergyMetric {
+   434→  id              String      @id @default(cuid())
+   435→  siteId          String
+   436→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   437→  technology      String
+   438→  timestamp       DateTime    @default(now())
+   439→  powerConsumption Float      // Watts
+   440→  energyConsumed  Float      // Wh in the interval
+   441→  activeUsers     Int?
+   442→  trafficLoad     Float?     // PRB utilization %
+   443→  temperature     Float?     // Celsius
+   444→  sleepMode       Boolean     @default(false)
+   445→  mode            String      @default("normal") // normal, energy_saving, sleep, shutdown
+   446→  co2Emission     Float?     // kg CO2 equivalent
+   447→  solarGeneration  Float?     // Watts from solar
+   448→  batteryLevel    Float?     // % if battery backup
+   449→  createdAt       DateTime    @default(now())
+   450→
+   451→  @@index([siteId])
+   452→  @@index([technology])
+   453→  @@index([timestamp])
+   454→  @@index([mode])
+   455→}
+   456→
+   457→model FaultPrediction {
+   458→  id              String   @id @default(cuid())
+   459→  siteId          String?
+   460→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   461→  technology      String
+   462→  component       String   // RRU, BBU, PSU, Antenna, Fiber, Transport
+   463→  faultType       String   // hardware_failure, software_bug, degradation, power_issue, environmental
+   464→  probability      Float    // 0-1 predicted probability
+   465→  severity        String   @default("medium") // low, medium, high, critical
+   466→  status          String   @default("predicted") // predicted, confirmed, mitigated, false_positive
+   467→  confidence      Float    @default(0.0)
+   468→  indicators      String   @default("[]") // JSON: list of contributing KPIs
+   469→  recommendedAction String   @default("")
+   470→ estimatedTimeToFail String?  // e.g. "72h", "7d", "30d"
+   471→  resolvedAt      DateTime?
+   472→  createdAt       DateTime   @default(now())
+   473→  updatedAt       DateTime   @updatedAt
+   474→
+   475→  @@index([siteId])
+   476→  @@index([technology])
+   477→  @@index([severity])
+   478→  @@index([status])
+   479→  @@index([component])
+   480→}
+   481→
+   482→model SubscriberSegment {
+   483→  id              String   @id @default(cuid())
+   484→  segmentName     String
+   485→  technology      String
+   486→  criteria        String   @default("{}") // JSON: {dataRange, usagePattern, location, deviceType}
+   487→  subscriberCount Int      @default(0)
+   488→  avgDataUsage    Float    @default(0) // GB per month
+   489→  avgVoiceMinutes Float    @default(0) // minutes per month
+   490→  arpu            Float    @default(0) // Average Revenue Per User
+   491→  churnRisk       Float    @default(0) // 0-1
+   492→  satisfactionScore Float?  // 0-100
+   493→  topServices     String   @default("[]") // JSON: ["video_streaming", "social_media", ...]
+   494→  peakHour       String?  // e.g. "20:00-23:00"
+   495→  createdAt       DateTime @default(now())
+   496→  updatedAt       DateTime @updatedAt
+   497→
+   498→  @@index([technology])
+   499→}
+   500→
+   501→model Incident {
+   502→  id              String   @id @default(cuid())
+   503→  title           String
+   504→  description     String   @default("")
+   505→  technology      String
+   506→  siteId          String?
+   507→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   508→  severity        String   @default("medium") // low, medium, high, critical
+   509→  status          String   @default("open") // open, investigating, resolved, closed
+   510→  category        String   @default("network") // network, hardware, software, power, environmental, third_party
+   511→  priority        Int      @default(5)  // 1=highest
+   512→  assignedTo      String?
+   513→  reportedBy      String   @default("system")
+   514→  mttrTarget      Int?     // minutes
+   515→  mtbfValue      Float?   // hours
+   516→  rootCause       String?
+   517→  resolution      String?
+   518→  affectedSites   String   @default("[]") // JSON: site IDs
+   519→  relatedAlerts   String   @default("[]") // JSON: alert IDs
+   520→  tags            String   @default("[]") // JSON: ["capacity", "interference", ...]
+   521→  slaBreach       Boolean   @default(false)
+   522→  resolvedAt      DateTime?
+   523→  createdAt       DateTime   @default(now())
+   524→  updatedAt       DateTime   @updatedAt
+   525→
+   526→  @@index([siteId])
+   527→  @@index([technology])
+   528→  @@index([severity])
+   529→  @@index([status])
+   530→  @@index([category])
+   531→  @@index([priority])
+   532→  @@index([createdAt])
+   533→}
+   534→
+   535→model ConfigTemplate {
+   536→  id              String   @id @default(cuid())
+   537→  name            String
+   538→  technology      String
+   539→  category        String   @default("general") // radio, neighbor, handover, power, capacity
+   540→  description     String   @default("")
+   541→  vendor          String   @default("")
+   542→  parameters      String   @default("{}") // JSON: {paramName: {value, unit, range}}
+   543→  isDefault       Boolean @default(false)
+   544→  applyCount      Int      @default(0)
+   545→  lastApplied     DateTime?
+   546→  createdAt       DateTime   @default(now())
+   547→  updatedAt       DateTime   @updatedAt
+   548→}
+   549→// ========== PHASE C: ADVANCED OPERATIONS & OPTIMIZATION ==========
+   550→
+   551→model HealthScore {
+   552→  id              String      @id @default(cuid())
+   553→  siteId          String
+   554→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   555→  technology      String
+   556→  region          String
+   557→  overallScore    Float
+   558→  coverageScore   Float
+   559→  capacityScore   Float
+   560→  qualityScore    Float
+   561→  reliabilityScore Float
+   562→  experienceScore Float
+   563→  grade           String     @default("B")
+   564→  trend           String     @default("stable")
+   565→  issues          String     @default("[]")
+   566→  timestamp       DateTime    @default(now())
+   567→  createdAt       DateTime    @default(now())
+   568→
+   569→  @@index([siteId])
+   570→  @@index([technology])
+   571→  @@index([region])
+   572→  @@index([grade])
+   573→}
+   574→
+   575→model BenchmarkRecord {
+   576→  id              String      @id @default(cuid())
+   577→  siteId          String
+   578→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   579→  technology      String
+   580→  region          String
+   581→  metric          String
+   582→  actualValue     Float
+   583→  benchmarkValue  Float
+   584→  targetValue     Float
+   585→  percentileRank  Float
+   586→  gap             Float
+   587→  status          String     @default("on_track")
+   588→  timestamp       DateTime    @default(now())
+   589→  createdAt       DateTime    @default(now())
+   590→
+   591→  @@index([siteId])
+   592→  @@index([technology])
+   593→  @@index([metric])
+   594→  @@index([status])
+   595→}
+   596→
+   597→model HandoverKpi {
+   598→  id                String      @id @default(cuid())
+   599→  servingCellId     String
+   600→  servingCell       NetworkSite @relation(fields: [servingCellId], references: [id], onDelete: Cascade)
+   601→  neighborCellName  String
+   602→  neighborCellCode  String
+   603→  technology        String
+   604→  relationType      String
+   605→  hoAttempts        Int        @default(0)
+   606→  hoSuccess         Int        @default(0)
+   607→  hoFailures        Int        @default(0)
+   608→  hoSuccessRate     Float
+   609→  avgPrepTime       Float?
+   610→  avgExecTime       Float?
+   611→  pingPongCount     Int        @default(0)
+   612→  tooEarlyCount     Int        @default(0)
+   613→  tooLateCount      Int        @default(0)
+   614→  status            String     @default("normal")
+   615→  recommendation    String     @default("")
+   616→  timestamp         DateTime    @default(now())
+   617→  createdAt         DateTime    @default(now())
+   618→
+   619→  @@index([servingCellId])
+   620→  @@index([technology])
+   621→  @@index([status])
+   622→}
+   623→
+   624→model CellLoad {
+   625→  id              String      @id @default(cuid())
+   626→  siteId          String
+   627→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   628→  technology      String
+   629→  region          String
+   630→  prbUtilDownlink  Float
+   631→  prbUtilUplink   Float
+   632→  activeUsers     Int
+   633→  maxUsers        Int
+   634→  userLoadPct     Float
+   635→  throughputDown   Float
+   636→  throughputUp     Float
+   637→  balancedScore   Float
+   638→  congestionLevel String     @default("low")
+   639→  recommendation  String     @default("")
+   640→  timestamp       DateTime    @default(now())
+   641→  createdAt       DateTime    @default(now())
+   642→
+   643→  @@index([siteId])
+   644→  @@index([technology])
+   645→  @@index([region])
+   646→  @@index([congestionLevel])
+   647→}
+   648→
+   649→model InterferenceEvent {
+   650→  id              String      @id @default(cuid())
+   651→  siteId          String?
+   652→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   653→  technology      String
+   654→  interferenceType String
+   655→  severity        String     @default("medium")
+   656→  status          String     @default("detected")
+   657→  sourceCell      String?
+   658→  sourceCellName  String?
+   659→  conflictingCell String?
+   660→  conflictingCellName String?
+   661→  frequency       String?
+   662→  pci             String?
+   663→  affectedKpis    String     @default("[]")
+   664→  impactScore     Float      @default(0)
+   665→  recommendation  String     @default("")
+   666→  resolvedAt      DateTime?
+   667→  createdAt       DateTime    @default(now())
+   668→  updatedAt       DateTime    @updatedAt
+   669→
+   670→  @@index([siteId])
+   671→  @@index([technology])
+   672→  @@index([severity])
+   673→  @@index([status])
+   674→  @@index([interferenceType])
+   675→}
+   676→
+   677→model CoverageHole {
+   678→  id              String   @id @default(cuid())
+   679→  technology      String
+   680→  region          String
+   681→  latitude        Float
+   682→  longitude       Float
+   683→  radiusMeters    Float    @default(500)
+   684→  areaKm2         Float
+   685→  signalStrength  Float
+   686→  expectedSignal  Float
+   687→  gapDb           Float
+   688→  severity        String   @default("medium")
+   689→  nearestSite     String?
+   690→  nearestSiteName String?
+   691→  nearestSiteDistKm Float?
+   692→  affectedUsers   Int      @default(0)
+   693→  recommendation  String   @default("")
+   694→  status          String   @default("open")
+   695→  createdAt       DateTime @default(now())
+   696→  updatedAt       DateTime @updatedAt
+   697→
+   698→  @@index([technology])
+   699→  @@index([region])
+   700→  @@index([severity])
+   701→  @@index([status])
+   702→}
+   703→
+   704→model ChangeRequest {
+   705→  id              String   @id @default(cuid())
+   706→  title           String
+   707→  technology      String
+   708→  siteId          String?
+   709→  siteName        String?
+   710→  category        String
+   711→  parameter       String
+   712→  previousValue   String
+   713→  proposedValue   String
+   714→  reason          String
+   715→  impact          String   @default("")
+   716→  riskLevel       String   @default("low")
+   717→  status          String   @default("pending")
+   718→  requestedBy     String   @default("system")
+   719→  approvedBy      String?
+   720→  implementedAt   DateTime?
+   721→  rollbackReason  String?
+   722→  kpiImpact       String   @default("{}")
+   723→  createdAt       DateTime @default(now())
+   724→  updatedAt       DateTime @updatedAt
+   725→
+   726→  @@index([technology])
+   727→  @@index([category])
+   728→  @@index([status])
+   729→  @@index([riskLevel])
+   730→  @@index([createdAt])
+   731→}
+   732→
+   733→model OutageEvent {
+   734→  id              String      @id @default(cuid())
+   735→  siteId          String?
+   736→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   737→  technology      String
+   738→  region          String
+   739→  outageType      String
+   740→  severity        String     @default("medium")
+   741→  status          String     @default("active")
+   742→  startedAt       DateTime
+   743→  detectedAt      DateTime    @default(now())
+   744→  estimatedDuration String?
+   745→  actualDuration  Int?
+   746→  affectedUsers   Int        @default(0)
+   747→  rootCause       String?
+   748→  compensationApplied String  @default("none")
+   749→  compensationSites String    @default("[]")
+   750→  resolvedAt      DateTime?
+   751→  createdAt       DateTime    @default(now())
+   752→  updatedAt       DateTime    @updatedAt
+   753→
+   754→  @@index([siteId])
+   755→  @@index([technology])
+   756→  @@index([region])
+   757→  @@index([severity])
+   758→  @@index([status])
+   759→}
+   760→
+   761→model Playbook {
+   762→  id              String          @id @default(cuid())
+   763→  name            String
+   764→  category        String
+   765→  technology      String          @default("ALL")
+   766→  description     String          @default("")
+   767→  severity        String          @default("medium")
+   768→  estimatedTime   String          @default("30min")
+   769→  steps           PlaybookStep[]
+   770→  usageCount      Int             @default(0)
+   771→  successRate     Float           @default(0.85)
+   772→  tags            String          @default("[]")
+   773→  enabled         Boolean         @default(true)
+   774→  createdAt       DateTime        @default(now())
+   775→  updatedAt       DateTime        @updatedAt
+   776→}
+   777→
+   778→model PlaybookStep {
+   779→  id              String   @id @default(cuid())
+   780→  playbookId      String
+   781→  playbook        Playbook @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+   782→  stepNumber      Int
+   783→  title           String
+   784→  description     String
+   785→  action          String
+   786→  target          String?
+   787→  expectedOutcome String?
+   788→  isBlocking      Boolean  @default(true)
+   789→  createdAt       DateTime @default(now())
+   790→}
+   791→
+   792→// ========== PHASE D: STRATEGIC INTELLIGENCE & DIFFERENTIATION ==========
+   793→
+   794→model SimulationScenario {
+   795→  id              String   @id @default(cuid())
+   796→  name            String
+   797→  description     String   @default("")
+   798→  technology      String
+   799→  region          String   @default("ALL")
+   800→  siteId          String?
+   801→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   802→  category        String   // capacity, coverage, interference, migration, energy
+   803→  parameters      String   @default("{}") // JSON: what-if input params
+   804→  baselineKpis    String   @default("{}") // JSON: before-simulation KPIs
+   805→  simulatedKpis   String   @default("{}") // JSON: predicted KPIs after change
+   806→  impactScore     Float   @default(0)
+   807→  recommendation  String   @default("")
+   808→  confidence      Float   @default(0.8)
+   809→  status          String   @default("completed") // draft, running, completed, failed
+   810→  createdAt       DateTime @default(now())
+   811→  updatedAt       DateTime @updatedAt
+   812→
+   813→  @@index([technology])
+   814→  @@index([category])
+   815→  @@index([status])
+   816→}
+   817→
+   818→model TrendForecast {
+   819→  id              String   @id @default(cuid())
+   820→  siteId          String?
+   821→  site            NetworkSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+   822→  technology      String
+   823→  region          String
+   824→  metric          String   // rsrp, throughput, latency, users, prbUtilization
+   825→  forecastPoints  String   @default("[]") // JSON: [{date, predicted, lower, upper}]
+   826→  horizon         String   @default("30d") // 7d, 14d, 30d, 90d
+   827→  trendDirection  String   @default("stable") // improving, stable, degrading
+   828→  confidence      Float   @default(0.8)
+   829→  recommendation  String   @default("")
+   830→  timestamp       DateTime @default(now())
+   831→  createdAt       DateTime @default(now())
+   832→
+   833→  @@index([siteId])
+   834→  @@index([technology])
+   835→  @@index([metric])
+   836→  @@index([region])
+   837→}
+   838→
+   839→model RoiRecord {
+   840→  id              String   @id @default(cuid())
+   841→  title           String
+   842→  category        String   // energy_saving, capacity_deferred, churn_reduction, sla_improvement, outage_reduction
+   843→  technology      String   @default("ALL")
+   844→  siteId          String?
+   845→  siteName        String?
+   846→  investmentCost  Float
+   847→  annualSaving    Float
+   848→  paybackMonths   Int
+   849→  roiPercentage   Float
+   850→  status          String   @default("projected") // projected, in_progress, realized, failed
+   851→  kpiImpact       String   @default("{}") // JSON: before/after
+   852→  period          String   @default("monthly")
+   853→  periodValue     Float   @default(0)
+   854→  cumulativeSaving Float   @default(0)
+   855→  notes           String   @default("")
+   856→  createdAt       DateTime @default(now())
+   857→  updatedAt       DateTime @updatedAt
+   858→
+   859→  @@index([category])
+   860→  @@index([status])
+   861→  @@index([technology])
+   862→}
+   863→
+   864→model SpectrumBlock {
+   865→  id              String   @id @default(cuid())
+   866→  band            String   // 700, 800, 900, 1800, 2100, 2300, 2600, 3500
+   867→  bandwidth       Float   // MHz
+   868→  technology      String
+   869→  region          String
+   870→  channelCount    Int
+   871→  utilizedChannels Int
+   872→  utilizationPct  Float
+   873→  avgInterference Float
+   874→  avgRsrp         Float
+   875→  refarmCandidate Boolean @default(false)
+   876→  refarmTargetTech String?
+   877→  refarmPotentialSaving Float?
+   878→  status          String   @default("active") // active, planned_refarm, refarmed, decommissioned
+   879→  createdAt       DateTime @default(now())
+   880→  updatedAt       DateTime @updatedAt
+   881→
+   882→  @@index([technology])
+   883→  @@index([region])
+   884→  @@index([band])
+   885→}
+   886→
+   887→model EvolutionPlan {
+   888→  id              String   @id @default(cuid())
+   889→  name            String
+   890→  sourceTech      String
+   891→  targetTech      String
+   892→  region          String
+   893→  siteCount       Int
+   894→  sitesCompleted  Int     @default(0)
+   895→  estimatedCost   Float
+   896→  spentBudget     Float   @default(0)
+   897→  startDate       DateTime?
+   898→  targetDate      DateTime?
+   899→  status          String   @default("planned") // planned, in_progress, completed, delayed, cancelled
+   900→  spectrumGain    String   @default("[]") // JSON: freed bands
+   901→  capacityGain    String   @default("{}") // JSON: before/after capacity
+   902→  riskLevel       String   @default("medium")
+   903→  notes           String   @default("")
+   904→  createdAt       DateTime @default(now())
+   905→  updatedAt       DateTime @updatedAt
+   906→
+   907→  @@index([sourceTech])
+   908→  @@index([targetTech])
+   909→  @@index([region])
+   910→  @@index([status])
+   911→}
+   912→
+   913→model NpiRecord {
+   914→  id              String      @id @default(cuid())
+   915→  siteId          String
+   916→  site            NetworkSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+   917→  technology      String
+   918→  region          String
+   919→  overallNpi      Float      // 0-100
+   920→  coverageNpi    Float
+   921→  capacityNpi    Float
+   922→  qualityNpi     Float
+   923→  reliabilityNpi Float
+   924→  costEfficiencyNpi Float
+   925→  rank            Int        // 1=best
+   926→  totalSites     Int
+   927→  timestamp       DateTime    @default(now())
+   928→  createdAt       DateTime    @default(now())
+   929→
+   930→  @@index([siteId])
+   931→  @@index([technology])
+   932→  @@index([region])
+   933→  @@index([timestamp])
+   934→}
+   935→
+   936→model ServiceOrchestration {
+   937→  id              String   @id @default(cuid())
+   938→  serviceName     String
+   939→  serviceType     String   // voip, video_streaming, web_browsing, iot_mqtt, gaming, video_call
+   940→  technology      String
+   941→  region          String
+   942→  mosScore        Float
+   943→  latencyMs       Float
+   944→  jitterMs        Float
+   945→  packetLoss      Float
+   946→  throughputMbps  Float
+   947→  availabilityPct  Float
+   948→  userSatisfaction Float
+   949→  activeSessions  Int
+   950→  kpiViolations   Int     @default(0)
+   951→  slaCompliant    Boolean @default(true)
+   952→  issues          String   @default("[]") // JSON
+   953→  timestamp       DateTime @default(now())
+   954→  createdAt       DateTime @default(now())
+   955→
+   956→  @@index([serviceType])
+   957→  @@index([technology])
+   958→  @@index([region])
+   959→  @@index([timestamp])
+   960→}
+   961→
+   962→model AuditTrail {
+   963→  id              String   @id @default(cuid())
+   964→  entityType      String
+   965→  entityId        String?
+   966→  entityName      String?
+   967→  action          String   // create, update, delete, approve, reject, implement, rollback
+   968→  field           String?
+   969→  previousValue   String?
+   970→  newValue        String?
+   971→  technology      String?
+   972→  category        String   // parameter, config, site, policy, incident, son
+   973→  requestedBy     String   @default("system")
+   974→  approvedBy      String?
+   975→  impact          String   @default("")
+   976→  createdAt       DateTime @default(now())
+   977→
+   978→  @@index([entityType])
+   979→  @@index([action])
+   980→  @@index([technology])
+   981→  @@index([category])
+   982→  @@index([createdAt])
+   983→}
+   984→
+   985→// ========== RBAC MODELS ==========
+   986→
+   987→model User {
+   988→  id            String    @id @default(cuid())
+   989→  email         String    @unique
+   990→  name          String
+   991→  passwordHash  String
+   992→  avatar        String?
+   993→  phone         String?
+   994→  department    String    @default("NOC")
+   995→  isActive      Boolean   @default(true)
+   996→  lastLoginAt   DateTime?
+   997→  createdAt     DateTime  @default(now())
+   998→  updatedAt     DateTime  @updatedAt
+   999→  roles         UserRole[]
+  1000→
+  1001→  @@index([email])
+  1002→  @@index([isActive])
+  1003→}
+  1004→
+  1005→model Role {
+  1006→  id          String           @id @default(cuid())
+  1007→  name        String           @unique  // superadmin, noc_manager, rf_engineer, nop_engineer, field_tech, view_only
+  1008→  displayName String
+  1009→  description String
+  1010→  isSystem    Boolean          @default(false)  // system roles cannot be deleted
+  1011→  createdAt   DateTime         @default(now())
+  1012→  updatedAt   DateTime         @updatedAt
+  1013→  users       UserRole[]
+  1014→  permissions RolePermission[]
+  1015→}
+  1016→
+  1017→model Permission {
+  1018→  id        String           @id @default(cuid())
+  1019→  module    String
+  1020→  action    String
+  1021→  createdAt DateTime         @default(now())
+  1022→  roles     RolePermission[]
+  1023→
+  1024→  @@unique([module, action])
+  1025→}
+  1026→
+  1027→model UserRole {
+  1028→  id     String @id @default(cuid())
+  1029→  userId String
+  1030→  roleId String
+  1031→  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1032→  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  1033→
+  1034→  @@unique([userId, roleId])
+  1035→  @@index([userId])
+  1036→  @@index([roleId])
+  1037→}
+  1038→
+  1039→model RolePermission {
+  1040→  id           String     @id @default(cuid())
+  1041→  roleId       String
+  1042→  permissionId String
+  1043→  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  1044→  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  1045→
+  1046→  @@unique([roleId, permissionId])
+  1047→  @@index([roleId])
+  1048→  @@index([permissionId])
+  1049→}
+  1050→

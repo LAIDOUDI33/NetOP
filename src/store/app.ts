@@ -26,6 +26,6 @@ export const useAppStore = create<AppState>((set) => ({
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   refreshKey: 0,
   triggerRefresh: () => set((s) => ({ refreshKey: s.refreshKey + 1 })),
-  locale: 'en',
+  locale: 'fr' as Locale,
   setLocale: (locale) => set({ locale }),
 }));
