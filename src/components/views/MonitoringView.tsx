@@ -145,7 +145,7 @@ export default function MonitoringView() {
               <Users className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">{t('mon.totalUsers')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.totalUsers.toLocaleString()}</p>
+            <p className="text-xl font-bold mt-1">{(data.summary.totalUsers ?? 0).toLocaleString()}</p>
           </CardContent>
         </Card>
       </div>
