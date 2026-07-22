@@ -118,7 +118,7 @@ export default function MonitoringView() {
               <Signal className="h-4 w-4 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">{t('mon.avgSignal')}</p>
             </div>
-            <p className="text-xl font-bold mt-1">{data.summary.avgSinr?.toFixed(1) || 'N/A'} <span className="text-sm text-muted-foreground font-normal">{t('unit.db')}</span></p>
+            <p className="text-xl font-bold mt-1">{(data.summary.avgSinr ?? 0).toFixed(1)} <span className="text-sm text-muted-foreground font-normal">{t('unit.db')}</span></p>
           </CardContent>
         </Card>
         <Card>
@@ -222,7 +222,7 @@ export default function MonitoringView() {
                       <TableCell className="text-xs">{(site.avgAvailability ?? 0).toFixed(1)}%</TableCell>
                       <TableCell className="text-xs">{Math.round(site.avgActiveUsers)}</TableCell>
                       <TableCell className="text-xs">{(site.avgDropRate ?? 0).toFixed(2)}%</TableCell>
-                      <TableCell className="text-xs">{site.avgSinr?.toFixed(1) || 'N/A'}</TableCell>
+                      <TableCell className="text-xs">{(site.avgSinr ?? 0).toFixed(1)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

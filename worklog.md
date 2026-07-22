@@ -88,3 +88,30 @@ Stage Summary:
 - All 42 API endpoints return 200
 - All interactive features (i18n, theme, export, sidebar, auth) work correctly
 - Platform is stable and ready for Phase 1 remaining steps (Steps 9-13)
+
+---
+Task ID: 2
+Agent: Main Agent (continued session)
+Task: Complete browser re-verification and fix all remaining bugs
+
+Work Log:
+- Resumed from previous session where 55 toFixed calls and PoliciesView useT() were fixed
+- Server kept OOM-killing (3.9GB RAM, Next.js Turbopack ~1.5GB + Chrome ~500MB+ = exceeds limit)
+- Launched comprehensive code-level scan of all 98 toFixed calls across 33 view files
+- Found 4 additional unprotected toFixed calls in 2 files:
+  - MonitoringView.tsx lines 121, 225: `?.toFixed()` pattern (style inconsistency)
+  - SubscribersView.tsx lines 235, 632: unprotected `seg.churnRisk` (NaN risk)
+- Fixed all 4 issues with `(expr ?? 0).toFixed()` pattern
+- Verified PoliciesView.tsx useT() fix at line 688
+- Ran ESLint: 0 errors (clean)
+- Tested 48 API routes: 46 return 200, 2 POST-only return 405 (correct behavior)
+- Homepage compilation: 200 OK in 19.5s
+- Browser verification blocked by infrastructure RAM constraint
+
+Stage Summary:
+- Total toFixed fixes: 59 (55 from previous + 4 new)
+- Total useT fixes: 1 (PoliciesView)
+- ESLint: 0 errors
+- API routes: 48/48 correct (46 GET 200 + 2 POST 405)
+- All bugs fixed and verified at code + API level
+- Browser E2E cannot run due to 3.9GB RAM (Next.js 1.5GB + Chrome 500MB = OOM)

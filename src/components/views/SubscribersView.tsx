@@ -232,7 +232,7 @@ export default function SubscribersView() {
   const churnBySegmentData = useMemo(() => {
     return segments.map((seg) => ({
       name: seg.segmentName,
-      churnRisk: Number((seg.churnRisk * 100).toFixed(1)),
+      churnRisk: Number(((seg.churnRisk ?? 0) * 100).toFixed(1)),
     }));
   }, [segments]);
 
@@ -629,7 +629,7 @@ export default function SubscribersView() {
                           variant="outline"
                           className={churnBadgeClasses(seg.churnRisk)}
                         >
-                          {(seg.churnRisk * 100).toFixed(1)}%
+                          {((seg.churnRisk ?? 0) * 100).toFixed(1)}%
                         </Badge>
                       </TableCell>
 
