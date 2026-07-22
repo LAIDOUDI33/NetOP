@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   title: "NetOptima Algérie — Mobile Network Optimization Platform",
   description: "AI-powered mobile network optimization platform deployed in Algeria for 2G/3G/4G/5G networks. Real-time monitoring, KPI analytics, and intelligent optimization.",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 
@@ -29,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

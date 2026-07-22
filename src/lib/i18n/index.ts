@@ -1,14 +1,15 @@
 import { useAppStore } from '@/store/app';
 import en from './locales/en';
 import fr from './locales/fr';
+import ar from './locales/ar';
 
-export type Locale = 'en' | 'fr';
+export type Locale = 'en' | 'fr' | 'ar';
 
-const locales: Record<Locale, Record<string, string>> = { en, fr };
+const locales: Record<Locale, Record<string, string>> = { en, fr, ar };
 
 export function t(key: string, params?: Record<string, string | number>): string {
-  const locale = useAppStore.getState().locale ?? 'en';
-  let text = locales[locale]?.[key] ?? locales.en[key] ?? key;
+  const locale = useAppStore.getState().locale ?? 'fr';
+  let text = locales[locale]?.[key] ?? locales.fr[key] ?? locales.en[key] ?? key;
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
@@ -18,9 +19,9 @@ export function t(key: string, params?: Record<string, string | number>): string
 }
 
 export function useT() {
-  const locale = useAppStore((s) => s.locale ?? 'en');
+  const locale = useAppStore((s) => s.locale ?? 'fr');
   return (key: string, params?: Record<string, string | number>): string => {
-    let text = locales[locale]?.[key] ?? locales.en[key] ?? key;
+    let text = locales[locale]?.[key] ?? locales.fr[key] ?? locales.en[key] ?? key;
     if (params) {
       Object.entries(params).forEach(([k, v]) => {
         text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));

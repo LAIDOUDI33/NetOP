@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { CommandPalette } from '@/components/CommandPalette';
 import { MODULE_VIEW_MAP, usePermissions } from '@/lib/auth-client';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
@@ -221,16 +222,19 @@ function ThemeToggle() {
 function LocaleToggle() {
   const { locale, setLocale } = useAppStore();
   const t = useT();
+  const locales: Array<'en' | 'fr' | 'ar'> = ['en', 'fr', 'ar'];
+  const idx = locales.indexOf(locale as any);
+  const next = locales[(idx + 1) % locales.length];
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(locale === 'en' ? 'fr' : 'en')}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as any)}>
             <Languages className="h-4 w-4" />
-            <span className="sr-only">{locale === 'en' ? t('lang.fr') : t('lang.en')}</span>
+            <span className="sr-only">{t(`lang.${locale}`)}</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent><p>{locale === 'en' ? t('lang.fr') : t('lang.en')}</p></TooltipContent>
+        <TooltipContent><p>{t(`lang.${locale}`)} → {t(`lang.${next}`)}</p></TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -301,6 +305,7 @@ function ViewRenderer() {
     <AnimatePresence mode="wait">
       <motion.div key={currentView} variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
         <Suspense fallback={<ViewFallback />}>
+          <ErrorBoundary>
           {currentView === 'dashboard' && <DashboardView />}
           {currentView === 'monitoring' && <MonitoringView />}
           {currentView === 'kpi' && <KpiAnalyticsView />}
@@ -346,6 +351,7 @@ function ViewRenderer() {
           {currentView === 'audit' && <AuditView />}
           {currentView === 'executive' && <ExecutiveView />}
           {currentView === 'vendor-compare' && <VendorCompareView />}
+          </ErrorBoundary>
         </Suspense>
       </motion.div>
     </AnimatePresence>

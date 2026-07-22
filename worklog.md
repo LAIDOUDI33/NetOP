@@ -265,3 +265,29 @@ Stage Summary:
 - Initial prisma migration created (replaces db push)
 - JWT sessions expire after 8 hours
 - ESLint: 0 errors
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Fix 7 MEDIUM issues (Algeria-Specific & UX Polish)
+
+Work Log:
+- **#11 (Default locale fr):** Already done in HIGH phase. Verified store/app.ts defaults to 'fr'.
+- **#12 (Arabic locale):** Created `src/lib/i18n/locales/ar.ts` with 1200+ Arabic translations covering all unique keys from en.ts. Updated `src/lib/i18n/index.ts` to support `Locale = 'en' | 'fr' | 'ar'`, added ar import, changed fallback chain to fr→en. Added `'lang.ar': 'العربية'` to en.ts and fr.ts. Updated `LocaleToggle` in page.tsx to cycle EN→FR→AR→EN (3-way toggle).
+- **#13 (Timezone Africa/Algiers):** Created `src/lib/timezone.ts` with ALGIERS_TZ constant, formatInTZ(), getAlgiersTime(), formatDate(), formatDatetime() utilities. Updated layout.tsx `<html lang="fr">`.
+- **#14 (Branded logo):** Created `public/icon.svg` — NetOptima Algérie branded SVG (emerald telecom design with signal pattern and NO monogram). Updated layout.tsx icon from external CDN to `/icon.svg`.
+- **#15 (Error boundaries):** Created `src/components/ErrorBoundary.tsx` — React class component with getDerivedStateFromError, componentDidCatch, Retry/Reload buttons. Integrated in page.tsx wrapping the entire ViewRenderer (inside Suspense).
+- **#16 (404 page):** Created `src/app/not-found.tsx` — branded 404 page with Radio icon, clear messaging, and Back to Dashboard button.
+- **#17 (Settings expansion):** Rewrote `src/components/views/SettingsView.tsx` from 212 lines to ~340 lines with 6 tabs: Parameters (original), Users, Roles, Audit Log, System Health, Data Retention. Created 3 new API routes: `/api/settings/users/route.ts`, `/api/settings/roles/route.ts`, `/api/settings/audit/route.ts`. Audit tab shows recent SonAction entries with timestamps in Africa/Algiers TZ.
+
+Stage Summary:
+- All 7 MEDIUM issues fixed
+- Arabic locale: 1200+ keys, 0 missing vs en.ts (verified via comm diff)
+- 3-way language toggle: EN → FR → AR → EN
+- Timezone utility ready for use across components
+- Branded favicon replaces external CDN reference
+- ErrorBoundary catches any view crash with recovery UI
+- Custom 404 page for invalid URLs
+- Settings expanded from 1 tab to 6 admin tabs
+- ESLint: 0 errors
+- Dev server: compiles successfully, GET / 200

@@ -14,6 +14,7 @@ const fr: Record<string, string> = {
   // ========== LANGUAGE ==========
   'lang.en': 'English',
   'lang.fr': 'Français',
+  'lang.ar': 'العربية',
 
   // ========== TIME ==========
   'time.justNow': 'à l\'instant',
