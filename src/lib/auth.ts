@@ -116,5 +116,5 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
   },
-  secret: process.env.NEXTAUTH_SECRET ?? 'netoptima-dev-secret-change-in-production',
+  secret: process.env.NEXTAUTH_SECRET,
 };
