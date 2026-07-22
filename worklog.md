@@ -115,3 +115,34 @@ Stage Summary:
 - API routes: 48/48 correct (46 GET 200 + 2 POST 405)
 - All bugs fixed and verified at code + API level
 - Browser E2E cannot run due to 3.9GB RAM (Next.js 1.5GB + Chrome 500MB = OOM)
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Test and fix Outages module
+
+Work Log:
+- Tested /api/outages GET: 200 OK with 15 outage records
+- Validated response structure: outages[] + summary{total, bySeverity, byStatus, byOutageType, activeOutages, totalAffectedUsers, avgDuration}
+- Found 4 outages with null actualDuration, 13 with null estimatedDuration
+- Deep code review of OutagesView.tsx found 14 bugs:
+  - 3x stray `{e}` causing ReferenceError (lines 410, 442, 482)
+  - 3x stray `{l}` causing ReferenceError (lines 489, 500, 511)
+  - 2x stray `{t}` rendering function as text (lines 303, 537)
+  - 1x variable shadowing `t` in .map callback (line 250)
+  - 1x severity type mismatch: 'critical'|'major'|'minor' vs API's 'critical'|'high'|'medium'|'low'
+  - 1x SEVERITY_BADGE_CLASSES had wrong keys (major/minor instead of high/medium/low)
+  - 1x SEVERITIES filter array had wrong values
+  - 1x compensationApplied typed as boolean but API returns string ("none"/"traffic_reroute")
+  - 1x compensation logic bug: truthy check showed "Active" badge for value "none"
+- Fixed all 14 issues in OutagesView.tsx
+- Verified /api/outages/route.ts is clean (no bugs)
+- Re-verified API with all filter combinations: base(200,15), severity=critical(200,3), status=active(200,2), technology=4G(200,4)
+- ESLint: 0 errors after fixes
+- Homepage compilation: 200 OK (includes lazy-loaded OutagesView)
+
+Stage Summary:
+- 14 bugs found and fixed in OutagesView.tsx
+- API route is clean
+- All tests passing: API 200, ESLint 0 errors, compilation 200
+- Browser E2E blocked by Caddy proxy not forwarding to Next.js

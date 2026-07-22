@@ -25,7 +25,7 @@ import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
 
-type OutageSeverity = 'critical' | 'major' | 'minor';
+type OutageSeverity = 'critical' | 'high' | 'medium' | 'low';
 type OutageStatus = 'active' | 'compensating' | 'restored' | 'resolved';
 type OutageType = 'full' | 'partial' | 'degradation';
 
@@ -45,7 +45,7 @@ interface OutageItem {
   actualDuration: number | null;
   affectedUsers: number;
   rootCause: string | null;
-  compensationApplied: boolean;
+  compensationApplied: string;
   compensationSites: string[];
   resolvedAt: string | null;
   createdAt: string;
@@ -109,13 +109,14 @@ const OUTAGE_TYPE_BADGE_CLASSES: Record<OutageType, string> = {
 
 const SEVERITY_BADGE_CLASSES: Record<OutageSeverity, string> = {
   critical: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
-  major: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
-  minor: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
+  high: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+  medium: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+  low: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
 };
 
 const STATUSES: OutageStatus[] = ['active', 'compensating', 'restored', 'resolved'];
 const OUTAGE_TYPES: OutageType[] = ['full', 'partial', 'degradation'];
-const SEVERITIES: OutageSeverity[] = ['critical', 'major', 'minor'];
+const SEVERITIES: OutageSeverity[] = ['critical', 'high', 'medium', 'low'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -247,10 +248,10 @@ export default function OutagesView() {
   }));
 
   // Chart data: Outage Type Pie
-  const outageTypePieData = OUTAGE_TYPES.map((t) => ({
-    name: OUTAGE_TYPE_LABELS[t],
-    value: summary?.byOutageType[t] ?? 0,
-    fill: OUTAGE_TYPE_COLORS[t],
+  const outageTypePieData = OUTAGE_TYPES.map((ot) => ({
+    name: OUTAGE_TYPE_LABELS[ot],
+    value: summary?.byOutageType[ot] ?? 0,
+    fill: OUTAGE_TYPE_COLORS[ot],
   })).filter((d) => d.value > 0);
 
   // ─── Render: Loading State ──────────────────────────────────────────
@@ -300,7 +301,7 @@ export default function OutagesView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.outages')}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('title.outages')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {t('out.subtitle')}
         </p>
@@ -407,7 +408,7 @@ export default function OutagesView() {
         {/* Status Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('out.statusDist')}</CardTitle>
+            <CardTitle className="text-base">{t('out.statusDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -439,7 +440,7 @@ export default function OutagesView() {
         {/* Outage Type Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('out.typeDist')}</CardTitle>
+            <CardTitle className="text-base">{t('out.typeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -479,16 +480,16 @@ export default function OutagesView() {
       {/* Full Outages Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-          <CardTitle className="text-base">{e}{t('out.allOutages')}</CardTitle>
+          <CardTitle className="text-base">{t('out.allOutages')}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-28">
                 <SelectValue placeholder={t('filter.tech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
-                {TECHNOLOGIES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+                {TECHNOLOGIES.map((tech) => (
+                  <SelectItem key={tech} value={tech}>{tech}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -497,7 +498,7 @@ export default function OutagesView() {
                 <SelectValue placeholder={t('filter.severity')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allSeveritiesShort')}</SelectItem>
+                <SelectItem value="all">{t('filter.allSeveritiesShort')}</SelectItem>
                 {SEVERITIES.map((s) => (
                   <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
                 ))}
@@ -508,7 +509,7 @@ export default function OutagesView() {
                 <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allStatus')}</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 {STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
                 ))}
@@ -534,7 +535,7 @@ export default function OutagesView() {
                     <TableHead>{t('th.status')}</TableHead>
                     <TableHead>{t('out.started')}</TableHead>
                     <TableHead>{t('th.duration')}</TableHead>
-                    <TableHead className="text-right">{t}{t('out.affectedUsers')}</TableHead>
+                    <TableHead className="text-right">{t('out.affectedUsers')}</TableHead>
                     <TableHead>{t('out.compensation')}</TableHead>
                     <TableHead>{t('out.rootCauseCol')}</TableHead>
                     <TableHead>{t('th.region')}</TableHead>
@@ -582,10 +583,10 @@ export default function OutagesView() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        {outage.compensationApplied ? (
+                        {outage.compensationApplied && outage.compensationApplied !== 'none' ? (
                           <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
                             <Zap className="h-3 w-3 mr-1" />
-                            Active
+                            {outage.compensationApplied.replace(/_/g, ' ')}
                           </Badge>
                         ) : (
                           <span className="text-muted-foreground text-xs">{t('view.none')}</span>
