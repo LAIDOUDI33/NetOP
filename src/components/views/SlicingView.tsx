@@ -532,7 +532,7 @@ export default function SlicingView() {
       {/* Slice Load BarChart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{e}{t('sli.sliceLoadDist')}</CardTitle>
+          <CardTitle className="text-base">{t('sli.sliceLoadDist')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-72">
@@ -606,14 +606,14 @@ export default function SlicingView() {
       {/* Full Slices Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
-          <CardTitle className="text-base">{e}{t('sli.allSlices')}</CardTitle>
+          <CardTitle className="text-base">{t('sli.allSlices')}</CardTitle>
           <div className="flex items-center gap-3">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder={t('filter.status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allStatus')}</SelectItem>
+                <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 <SelectItem value="active">{t('status.active')}</SelectItem>
                 <SelectItem value="suspended">Suspended</SelectItem>
                 <SelectItem value="deactivated">Deactivated</SelectItem>
@@ -624,7 +624,7 @@ export default function SlicingView() {
                 <SelectValue placeholder={t('filter.sliceType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allTypes')}</SelectItem>
+                <SelectItem value="all">{t('filter.allTypes')}</SelectItem>
                 <SelectItem value="eMBB">eMBB</SelectItem>
                 <SelectItem value="URLLC">URLLC</SelectItem>
                 <SelectItem value="mMTC">mMTC</SelectItem>

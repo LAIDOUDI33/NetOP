@@ -146,3 +146,28 @@ Stage Summary:
 - API route is clean
 - All tests passing: API 200, ESLint 0 errors, compilation 200
 - Browser E2E blocked by Caddy proxy not forwarding to Next.js
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix issues in Network Slicing module
+
+Work Log:
+- Deep review of SlicingView.tsx (752 lines)
+- Deep review of /api/slicing/route.ts (78 lines)
+- Cross-checked API response against view types and Prisma schema
+- Found 4 bugs in SlicingView.tsx (same stray variable pattern as OutagesView)
+- API route is clean
+- Verified formatNumber() handles null safely for nullable DB fields
+- Validated API returns 12 slices with correct structure, no null numeric fields
+
+Stage Summary:
+- 4 bugs fixed in SlicingView.tsx:
+  1. Line 535: stray {e} → ReferenceError
+  2. Line 609: stray {e} → ReferenceError
+  3. Line 616: stray {l} → ReferenceError
+  4. Line 627: stray {l} → ReferenceError
+- API route: clean, no issues
+- ESLint: 0 errors
+- API tests: all 200 (base, status filter, type filter)
+- Homepage compilation: 200
