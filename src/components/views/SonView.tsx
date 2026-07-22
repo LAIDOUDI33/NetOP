@@ -185,8 +185,6 @@ export default function SonView() {
   const [modeFilter, setModeFilter] = useState<SonModuleMode | 'ALL'>('ALL');
   const [activeTab, setActiveTab] = useState('actions');
 
-  const techParam =
-    selectedTechnology === 'ALL' ? undefined : selectedTechnology;
 
   // ─── Queries ──────────────────────────────────────────────────────
   // Note: SON modules use compound technology (e.g. "4G,5G"), so we
@@ -247,7 +245,7 @@ export default function SonView() {
       queryClient.invalidateQueries({ queryKey: ['son-modules'] });
       queryClient.invalidateQueries({ queryKey: ['son-actions'] });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables: any) => {
       toast.error(error.error || t('son.failedToAction', { action: error.action || variables.action }));
     },
   });

@@ -94,7 +94,7 @@ const onboardingFormSchema = z.object({
   maxCapacity: z.coerce.number().min(0).default(0),
 });
 
-type OnboardingFormValues = z.infer<typeof onboardingFormSchema>;
+type OnboardingFormValues = z.input<typeof onboardingFormSchema>;
 
 // ──────────────────────────── Types ────────────────────────────
 

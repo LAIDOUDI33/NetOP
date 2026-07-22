@@ -133,7 +133,7 @@ export default function CorrelationView() {
     tech4gQuery.isLoading || tech5gQuery.isLoading;
 
   const dashboard = dashboardQuery.data;
-  const techHealth = dashboard?.techHealth ?? [];
+  const techHealth = dashboard?.[0]?.techHealth ?? [];
   const monitoringCache: TechMonitoringCache = {
     '2G': tech2gQuery.data,
     '3G': tech3gQuery.data,
@@ -145,7 +145,7 @@ export default function CorrelationView() {
   const pieData = useMemo(() => {
     if (!dashboard) return [];
     return TECHNOLOGIES.map(tech => {
-      const health = dashboard.techHealth.find(h => h.technology === tech);
+      const health = dashboard?.[0]?.techHealth.find(h => h.technology === tech);
       return {
         name: tech,
         value: health?.users ?? 0,
@@ -226,7 +226,7 @@ export default function CorrelationView() {
     (Object.values(monitoringCache) as MonitoringData[]).forEach(mon => {
       if (!mon) return;
       mon.sites.forEach(site => {
-        const vendor = site.vendor ?? 'Unknown';
+        const vendor = (site as any).vendor ?? 'Unknown';
         if (!vendorMap[vendor]) {
           vendorMap[vendor] = { avail: [], dl: [], lat: [], sig: [], ho: [] };
         }

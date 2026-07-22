@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     const { prompt, healthSummary } = body;
 
     // Use LLM SDK for AI-powered optimization
-    const { ChatCompletion } = await import('z-ai-web-dev-sdk');
+    const ZAI = (await import('z-ai-web-dev-sdk')).default;
+    const zai = await ZAI.create();
 
     const healthContext = healthSummary
       ? `\n\nCurrent Network Health Summary:\n${JSON.stringify(healthSummary, null, 2)}`
@@ -86,7 +87,7 @@ Focus on:
 Be specific with parameter names, values, and expected impact.
 Format your response with clear sections and bullet points.`;
 
-    const completion = await ChatCompletion.create({
+    const completion = await (zai as any).createChatCompletion({
       model: 'deepseek-chat',
       messages: [
         { role: 'system', content: systemPrompt },

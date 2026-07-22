@@ -272,7 +272,7 @@ export default function CapacityView() {
             <SelectValue placeholder={t('filter.technology')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{l}{t('filter.allTech')}</SelectItem>
+            <SelectItem value="all">{t('filter.allTech')}</SelectItem>
             {TECHNOLOGIES.map((t) => (
               <SelectItem key={t} value={t}>{t}</SelectItem>
             ))}
@@ -284,7 +284,7 @@ export default function CapacityView() {
             <SelectValue placeholder={t('filter.riskLevel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">{l}{t('filter.allLevels')}</SelectItem>
+            <SelectItem value="all">{t('filter.allLevels')}</SelectItem>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="medium">Medium</SelectItem>
             <SelectItem value="high">High</SelectItem>
@@ -365,7 +365,7 @@ export default function CapacityView() {
         {/* Risk Distribution Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('cap.riskDist')}</CardTitle>
+            <CardTitle className="text-base">{t('cap.riskDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -398,7 +398,7 @@ export default function CapacityView() {
         {/* Forecast by Technology Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('cap.avgForecast')}</CardTitle>
+            <CardTitle className="text-base">{t('cap.avgForecast')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -431,7 +431,7 @@ export default function CapacityView() {
       {/* Full Forecast Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{e}{t('cap.forecastDetails')}</CardTitle>
+          <CardTitle className="text-base">{t('cap.forecastDetails')}</CardTitle>
           <ExportButton data={forecasts} filenamePrefix="capacity" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'metric', header: 'Metric' }, { key: 'currentValue', header: 'Current (%)' }, { key: 'forecastValue', header: 'Forecast (%)' }, { key: 'growthRate', header: 'Growth Rate (%)' }, { key: 'riskLevel', header: 'Risk' }, { key: 'confidence', header: 'Confidence' }]} />
         </CardHeader>
         <CardContent>

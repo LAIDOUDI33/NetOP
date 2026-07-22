@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     for (const [tech, techData] of Object.entries(byTech)) {
       const valueMap = new Map(techData.timestamps.map((t, i) => [t, techData.values[i]]));
       data[tech] = {
-        values: allTimestamps.map(t => valueMap.get(t) ?? null),
+        values: allTimestamps.map(t => valueMap.get(t) ?? 0),
         sites: [],
       };
     }

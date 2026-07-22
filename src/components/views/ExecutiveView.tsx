@@ -211,7 +211,7 @@ export default function ExecutiveView() {
               </p>
             </div>
           </div>
-          {d && <ExportButton data={[{ totalSites: d.totalSites, activeAlerts: d.activeAlerts, avgAvailability: d.avgAvailability, avgNpi: d.avgNpi, totalRoiSaving: d.totalRoiSaving, totalEnergyKw: d.totalEnergyKw, avgMos: d.avgMos, sonActionsToday: d.sonActionsToday }]} filenamePrefix="executive" columns={[{ key: 'totalSites', header: 'Total Sites' }, { key: 'activeAlerts', header: 'Active Alerts' }, { key: 'avgAvailability', header: 'Avg Availability (%)' }, { key: 'avgNpi', header: 'Avg NPI' }, { key: 'totalRoiSaving', header: 'ROI Savings ($)' }, { key: 'totalEnergyKw', header: 'Energy (kW)' }, { key: 'avgMos', header: 'Avg MOS' }, { key: 'sonActionsToday', header: 'SON Actions Today' }]} />}
+          {d && <ExportButton data={[{ totalSites: d.totalSites, activeAlerts: d.activeAlerts, avgHealth: d.avgHealth, avgNpi: d.avgNpi, totalRoiSaving: d.totalRoiSaving, totalEnergyKw: d.totalEnergyKw, avgMos: d.avgMos, sonActionsToday: d.sonActionsToday }]} filenamePrefix="executive" columns={[{ key: 'totalSites', header: 'Total Sites' }, { key: 'activeAlerts', header: 'Active Alerts' }, { key: 'avgHealth', header: 'Avg Availability (%)' }, { key: 'avgNpi', header: 'Avg NPI' }, { key: 'totalRoiSaving', header: 'ROI Savings ($)' }, { key: 'totalEnergyKw', header: 'Energy (kW)' }, { key: 'avgMos', header: 'Avg MOS' }, { key: 'sonActionsToday', header: 'SON Actions Today' }]} />}
         </div>
         <Separator className="mt-4" />
       </div>

@@ -1090,10 +1090,8 @@ const en: Record<string, string> = {
 
   // ========== VIEW-SPECIFIC: Load Balancing ==========
   'lb.title': 'Load Balancing',
-  'lb.subtitle': 'Cell load distribution and traffic equalization analysis',
   'lb.totalCells': 'Total Cells',
   'lb.cellsAnalyzed': 'Cells analyzed',
-  'lb.avgPrbDl': 'Avg PRB DL',
   'lb.avgUserLoad': 'Avg User Load',
   'lb.userCapacityUtil': 'User capacity utilization',
   'lb.congestedSites': 'Congested Sites',
@@ -1130,7 +1128,6 @@ const en: Record<string, string> = {
   'intf.interModulation': 'Inter-Modulation',
   'intf.affectedKpis': 'Affected KPIs',
   'intf.noEventsFilter': 'No events match the selected filters.',
-  'intf.events': 'Events',
 
   // ========== VIEW-SPECIFIC: Coverage Holes ==========
   'ch.title': 'Coverage Hole Detection',
@@ -1270,7 +1267,6 @@ const en: Record<string, string> = {
   'roi.slaImprovement': 'SLA Improvement',
   'roi.outageReduction': 'Outage Reduction',
   'roi.avgRoiLabel': 'Avg ROI',
-  'roi.records': 'Records',
   'roi.recordsCount': 'records',
   'roi.noRecordsMatch': 'No records match the selected filters.',
 
@@ -1294,7 +1290,6 @@ const en: Record<string, string> = {
   'spc.refarm': 'Refarm?',
   'spc.yes': 'Yes',
   'spc.no': 'No',
-  'spc.blocks': 'Blocks',
   'spc.spectrumBlocks': 'Spectrum Blocks',
 
   // ========== VIEW-SPECIFIC: Evolution ==========
@@ -1313,7 +1308,6 @@ const en: Record<string, string> = {
   'evo.rollout': 'Rollout %',
   'evo.siteName': 'Site Name',
   'evo.siteCode': 'Site Code',
-  'evo.plans': 'Migration Plans',
   'evo.paths': 'Paths',
   'evo.siteDetails': 'Site Details',
 
@@ -1395,8 +1389,6 @@ const en: Record<string, string> = {
   'exec.slaCompliance': 'SLA Compliance',
   'exec.energyEfficiency': 'Energy Efficiency',
   'exec.costSavings': 'Cost Savings',
-  'exec.costAvoidance': 'Cost Avoidance',
-  'exec.currentDraw': 'Current Draw',
   'exec.active': 'Active',
   'exec.degraded': 'Degraded',
   'exec.down': 'Down',
@@ -1418,14 +1410,6 @@ const en: Record<string, string> = {
   'vc.title': 'Vendor Comparison',
   'vc.subtitle': 'Cross-vendor KPI performance matrix and best-value analysis',
   'vc.totalVendors': 'Total Vendors',
-  'vc.bestRsrp': 'Best RSRP',
-  'vc.bestDl': 'Best DL Throughput',
-  'vc.bestUl': 'Best UL Throughput',
-  'vc.bestLatency': 'Best Latency',
-  'vc.bestAvail': 'Best Availability',
-  'vc.bestHo': 'Best HO Rate',
-  'vc.lowestDrop': 'Lowest Drop Rate',
-  'vc.noData': 'No vendor data available for {technology}.',
   'vc.noMatchFilter': 'No vendor data match the selected filters.',
   'vc.noDataYet': 'Vendor comparison data has not been collected yet.',
   'vc.vendor': 'Vendor',

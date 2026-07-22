@@ -558,7 +558,7 @@ export default function ChangesView() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={STATUS_BADGE_CLASSES[change.status]}>
-                          {STATUS_KEYS[change.status] ? t(STATUS_KEYS[change.status]) : (change.status.charAt(0).toUpperCase() + change.status.slice(1))}
+                          {STATUS_KEYS[change.status] ? t(STATUS_KEYS[change.status] ?? '') : (change.status.charAt(0).toUpperCase() + change.status.slice(1))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs">

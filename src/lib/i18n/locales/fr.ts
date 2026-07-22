@@ -1088,10 +1088,8 @@ const fr: Record<string, string> = {
 
   // ========== VIEW-SPECIFIC: Load Balancing ==========
   'lb.title': 'Équilibrage de Charge',
-  'lb.subtitle': 'Analyse de la répartition de charge cellulaire et d\'égalisation du trafic',
   'lb.totalCells': 'Total Cellules',
   'lb.cellsAnalyzed': 'Cellules analysées',
-  'lb.avgPrbDl': 'PRB DL Moyen',
   'lb.avgUserLoad': 'Charge Utilisateur Moy.',
   'lb.userCapacityUtil': 'Utilisation de la capacité utilisateur',
   'lb.congestedSites': 'Sites Congestionnés',
@@ -1128,7 +1126,6 @@ const fr: Record<string, string> = {
   'intf.interModulation': 'Inter-Modulation',
   'intf.affectedKpis': 'KPI Affectés',
   'intf.noEventsFilter': 'Aucun événement ne correspond aux filtres sélectionnés.',
-  'intf.events': 'Événements',
 
   // ========== VIEW-SPECIFIC: Coverage Holes ==========
   'ch.title': 'Détection des Trous de Couverture',
@@ -1268,7 +1265,6 @@ const fr: Record<string, string> = {
   'roi.slaImprovement': 'Amélioration SLA',
   'roi.outageReduction': 'Réduction des Pannes',
   'roi.avgRoiLabel': 'ROI Moy.',
-  'roi.records': 'Enregistrements',
   'roi.recordsCount': 'enregistrements',
   'roi.noRecordsMatch': 'Aucun enregistrement ne correspond aux filtres sélectionnés.',
 
@@ -1292,7 +1288,6 @@ const fr: Record<string, string> = {
   'spc.refarm': 'Refarming ?',
   'spc.yes': 'Oui',
   'spc.no': 'Non',
-  'spc.blocks': 'Blocs',
   'spc.spectrumBlocks': 'Blocs de Spectre',
 
   // ========== VIEW-SPECIFIC: Evolution ==========
@@ -1311,7 +1306,6 @@ const fr: Record<string, string> = {
   'evo.rollout': 'Déploiement %',
   'evo.siteName': 'Nom du Site',
   'evo.siteCode': 'Code du Site',
-  'evo.plans': 'Plans de Migration',
   'evo.paths': 'Chemins',
   'evo.siteDetails': 'Détails du Site',
 
@@ -1393,8 +1387,6 @@ const fr: Record<string, string> = {
   'exec.slaCompliance': 'Conformité SLA',
   'exec.energyEfficiency': 'Efficacité Énergétique',
   'exec.costSavings': 'Économies',
-  'exec.costAvoidance': 'Économies Évitées',
-  'exec.currentDraw': 'Consommation Actuelle',
   'exec.active': 'Actif',
   'exec.degraded': 'Dégradé',
   'exec.down': 'Hors Service',
@@ -1416,14 +1408,6 @@ const fr: Record<string, string> = {
   'vc.title': 'Comparaison Fournisseurs',
   'vc.subtitle': 'Matrice de performance KPI inter-fournisseurs et analyse de la meilleure valeur',
   'vc.totalVendors': 'Total Fournisseurs',
-  'vc.bestRsrp': 'Meilleur RSRP',
-  'vc.bestDl': 'Meilleur Débit DL',
-  'vc.bestUl': 'Meilleur Débit UL',
-  'vc.bestLatency': 'Meilleure Latence',
-  'vc.bestAvail': 'Meilleure Disponibilité',
-  'vc.bestHo': 'Meilleur Taux HO',
-  'vc.lowestDrop': 'Taux de Coupe le Plus Bas',
-  'vc.noData': 'Aucune donnée fournisseur disponible pour {technology}.',
   'vc.noMatchFilter': 'Aucune donnée fournisseur ne correspond aux filtres sélectionnés.',
   'vc.noDataYet': 'Les données de comparaison fournisseurs n\'ont pas encore été collectées.',
   'vc.vendor': 'Fournisseur',

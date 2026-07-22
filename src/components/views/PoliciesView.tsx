@@ -440,6 +440,7 @@ function PolicyCard({
 }
 
 function ExecutionRow({ execution }: { execution: PolicyExecutionItem }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
 
   const kpiImpactEntries = execution.kpiImpact

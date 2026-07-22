@@ -377,7 +377,7 @@ export default function EnergyView() {
         {/* Power by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('eng.powerByTech')}</CardTitle>
+            <CardTitle className="text-base">{t('eng.powerByTech')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -415,7 +415,7 @@ export default function EnergyView() {
         {/* Energy Mode Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('eng.modeDist')}</CardTitle>
+            <CardTitle className="text-base">{t('eng.modeDist')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -459,7 +459,7 @@ export default function EnergyView() {
         {/* CO₂ Emission by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('eng.co2ByTech')}</CardTitle>
+            <CardTitle className="text-base">{t('eng.co2ByTech')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -498,14 +498,14 @@ export default function EnergyView() {
       {/* Full Energy Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">{e}{t('eng.siteDetails')}</CardTitle>
+          <CardTitle className="text-base">{t('eng.siteDetails')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder={t('filter.technology')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
+                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
                 {TECHNOLOGIES.map((tech) => (
                   <SelectItem key={tech} value={tech}>
                     {tech}
@@ -518,7 +518,7 @@ export default function EnergyView() {
                 <SelectValue placeholder={t('filter.mode')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{l}{t('filter.allModes')}</SelectItem>
+                <SelectItem value="all">{t('filter.allModes')}</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
                 <SelectItem value="energy_saving">Energy Saving</SelectItem>
                 <SelectItem value="sleep">Sleep</SelectItem>

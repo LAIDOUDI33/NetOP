@@ -240,7 +240,6 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Timeline Dialog ──────────────────────────────────────────────────
 
 function TimelineDialog({
-  // t is used from parent scope via props
   siteId,
   siteName,
   open,
@@ -251,6 +250,7 @@ function TimelineDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useT();
   const { data, isLoading, error } = useQuery<QoETimelineResponse>({
     queryKey: ['qoe', 'timeline', siteId],
     queryFn: () => fetch(`/api/qoe?siteId=${siteId}`).then((r) => r.json()),
@@ -506,7 +506,7 @@ export default function QoEView() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t}{t('title.qoe')}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t('title.qoe')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           Real-time subscriber quality tracking across all technologies
         </p>
@@ -595,7 +595,7 @@ export default function QoEView() {
       {/* MOS by Technology Bar Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{e}{t('qoe.mosByTech')}</CardTitle>
+          <CardTitle className="text-base">{t('qoe.mosByTech')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
@@ -696,7 +696,7 @@ export default function QoEView() {
         {/* Satisfaction by Technology */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{e}{t('qoe.satisfaction')}</CardTitle>
+            <CardTitle className="text-base">{t('qoe.satisfaction')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -732,14 +732,14 @@ export default function QoEView() {
       {/* Site QoE Details Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">{e}{t('qoe.details')}</CardTitle>
+          <CardTitle className="text-base">{t('qoe.details')}</CardTitle>
           <div className="flex items-center gap-2">
             <Select value={techFilter} onValueChange={setTechFilter}>
             <SelectTrigger className="w-32">
               <SelectValue placeholder={t('filter.technology')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{l}{t('filter.allTechShort')}</SelectItem>
+              <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
               <SelectItem value="2G">2G</SelectItem>
               <SelectItem value="3G">3G</SelectItem>
               <SelectItem value="4G">4G</SelectItem>

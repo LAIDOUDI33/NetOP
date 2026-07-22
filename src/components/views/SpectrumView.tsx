@@ -426,7 +426,7 @@ export default function SpectrumView() {
                           <p className="font-medium mb-1">{label}</p>
                           <div className="flex items-center gap-2">
                             <span className="text-muted-foreground">Utilization:</span>
-                            <span className="font-medium">{formatNumber(payload[0].value, 1)}%</span>
+                            <span className="font-medium">{formatNumber(Number(payload[0].value) ?? null, 1)}%</span>
                           </div>
                         </div>
                       );

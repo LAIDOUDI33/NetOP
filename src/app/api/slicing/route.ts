@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       avgThroughput: s.avgThroughput,
       avgLatency: s.avgLatency,
       qci: s.qci,
-      fiveQi: s.fiveQi,
+      FiveQi: s.FiveQi,
       parameters: JSON.parse(s.parameters || '{}'),
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),

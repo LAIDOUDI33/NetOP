@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Compute stats and detect anomalies
-    const detected: any[] = [];
+    const detected: Array<{ siteId: string; technology: string; metric: string; actualValue: number; expectedValue: number; zScore: number; severity: string; description: string }> = [];
     const sites = await db.networkSite.findMany({ select: { id: true, name: true, technology: true } });
     const siteMap = new Map(sites.map(s => [s.id, s]));
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save detected anomalies
-    const saved = [];
+    const saved: any[] = [];
     for (const d of detected) {
       const anomaly = await db.anomalyEvent.create({
         data: {

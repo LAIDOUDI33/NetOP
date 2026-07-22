@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { checkApiAuth } from '@/lib/api-auth';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
-export async function GET() {
-  const auth = checkApiAuth();
-  if (auth) return auth;
+export async function GET(request: Request) {
+  const auth = await checkApiAuth(request);
+  if (!auth) return authError();
 
   try {
     const users = await db.user.findMany({
-      select: { id: true, email: true, name: true, active: true, createdAt: true },
+      select: { id: true, email: true, name: true, isActive: true, createdAt: true, updatedAt: true },
       orderBy: { createdAt: 'desc' },
     });
     const roles = await db.userRole.findMany({
@@ -24,6 +24,8 @@ export async function GET() {
 
     const result = users.map((u) => ({
       ...u,
+      createdAt: u.createdAt.toISOString(),
+      updatedAt: u.updatedAt.toISOString(),
       roles: roleMap.get(u.id) ?? [],
     }));
 
