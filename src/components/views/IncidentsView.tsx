@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
-import DataExportButton from '@/components/DataExportButton';
+import { useAppStore } from '@/store/app';
 import { ExportButton } from '@/components/ExportButton';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -129,7 +129,9 @@ function computeMTTR(incident: Incident): string {
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const locale = useAppStore.getState().locale;
+  const dateLocale = locale === 'ar' ? 'ar-DZ' : locale === 'fr' ? 'fr-FR' : 'en-US';
+  return d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ─── Custom Tooltip ──────────────────────────────────────────────────
@@ -233,7 +235,7 @@ export default function IncidentsView() {
       if (status !== 'all') params.set('status', status);
       if (category !== 'all') params.set('category', category);
       const qs = params.toString();
-      return fetch(`/api/incidents${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/incidents${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Incidents API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
@@ -386,7 +388,7 @@ export default function IncidentsView() {
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {formatNumber(summary?.avgMTTR ?? 0, 1)}
             </span>
-            <span className="text-sm text-muted-foreground ml-1">{t('unit.ms')}</span>
+            <span className="text-sm text-muted-foreground ml-1">{t('unit.min')}</span>
           </CardContent>
         </Card>
 
@@ -529,8 +531,8 @@ export default function IncidentsView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allTech')}</SelectItem>
-            {TECHNOLOGIES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+            {TECHNOLOGIES.map((tech) => (
+              <SelectItem key={tech} value={tech}>{tech}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -557,7 +559,7 @@ export default function IncidentsView() {
             <SelectItem value="open">{t('status.open')}</SelectItem>
             <SelectItem value="investigating">{t('status.investigating')}</SelectItem>
             <SelectItem value="resolved">{t('status.resolved')}</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
+            <SelectItem value="closed">{t('status.closed')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -575,7 +577,6 @@ export default function IncidentsView() {
             <SelectItem value="third_party">Third Party</SelectItem>
           </SelectContent>
         </Select>
-        <DataExportButton data={incidents as unknown as Record<string, unknown>[]} filename="incidents" />
         <ExportButton data={incidents} filenamePrefix="incidents" columns={[{ key: 'title', header: 'Title' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'category', header: 'Category' }, { key: 'assignedTo', header: 'Assigned To' }, { key: 'reportedBy', header: 'Reported By' }]} />
       </div>
 
@@ -584,7 +585,7 @@ export default function IncidentsView() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-500" />
-            t('inc.allIncidents')
+            {t('inc.allIncidents')}
             <Badge variant="secondary" className="ml-2">{incidents.length}</Badge>
           </CardTitle>
         </CardHeader>
@@ -611,7 +612,7 @@ export default function IncidentsView() {
                 {incidents.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
-                      t('inc.noMatch')
+                      {t('inc.noMatch')}
                     </TableCell>
                   </TableRow>
                 )}

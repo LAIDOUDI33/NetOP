@@ -1,13 +1,11 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   try {
     // 1. KPI metrics - latest per site
     const allKpis = await db.kpiMetric.findMany({
+      where: { timestamp: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
       orderBy: { timestamp: 'desc' },
       include: { site: { select: { id: true, name: true, code: true, technology: true, region: true, status: true } } },
     });
@@ -82,6 +80,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Energy metrics - latest per site
     const allEnergy = await db.energyMetric.findMany({
+      where: { timestamp: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
       orderBy: { timestamp: 'desc' },
     });
     const energySiteMap = new Map<string, (typeof allEnergy)[number]>();

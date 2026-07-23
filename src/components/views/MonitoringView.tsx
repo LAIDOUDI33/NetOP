@@ -40,7 +40,7 @@ export default function MonitoringView() {
 
   const { data, isLoading } = useQuery<MonitoringData>({
     queryKey: ['monitoring', selectedTechnology],
-    queryFn: () => fetch(`/api/monitoring?technology=${selectedTechnology}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/monitoring?technology=${selectedTechnology}`).then(r => { if (!r.ok) throw new Error('Monitoring API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 

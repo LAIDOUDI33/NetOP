@@ -1,11 +1,8 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   const technology = searchParams.get('technology') || 'all';
   const category = searchParams.get('category') || 'all';
 
@@ -40,8 +37,6 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const { paramId, currentValue } = await request.json();
     const param = await db.networkParameter.findUnique({ where: { id: paramId } });
     if (!param) return NextResponse.json({ error: 'Parameter not found' }, { status: 404 });

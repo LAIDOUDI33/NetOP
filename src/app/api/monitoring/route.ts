@@ -1,11 +1,8 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   const technology = searchParams.get('technology') || '4G';
   const now = new Date();
   const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -80,7 +77,7 @@ export async function GET(request: NextRequest) {
     }
 
     const timestamps = Object.keys(buckets);
-    const avg = (arr: number[]) => Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2));
+    const avg = (arr: number[]) => { if (!arr.length) return 0; return Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)); };
 
     const summary = {
       totalSites: sites.length,

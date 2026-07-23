@@ -1,6 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies (regenerate with: bun install)
 node_modules
 /.pnp
 .pnp.*
@@ -10,45 +8,38 @@ node_modules
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Next.js build cache (regenerate with: bun run dev)
 /.next/
 /out/
 
-# production
+# Testing
+/coverage
+
+# Production
 /build
 
-# misc
+# Misc
 .DS_Store
 *.pem
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
+# Vercel
 .vercel
 
-
-# typescript
+# TypeScript cache
 *.tsbuildinfo
-next-env.d.ts
-local-*
+
+# IDE
+.vscode/
+.idea/
 .claude
 .z-ai-config
-*.log
-dev.log
-dev.out.log
-test
-prompt
 
-server.log
-# Skills directory
+# System skills (not project code)
 /skills/

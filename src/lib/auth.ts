@@ -2,6 +2,7 @@ import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { ALL_MODULES, ALL_ACTIONS, ROLE_DEFAULTS } from './rbac-constants';
 
 // Extend NextAuth types
 declare module 'next-auth' {
@@ -11,7 +12,7 @@ declare module 'next-auth' {
       email: string;
       name: string;
       roles: string[];
-      permissions: string[]; // "module:action" format e.g. "dashboard:view"
+      permissions: string[];
     };
   }
   interface User {
@@ -23,8 +24,25 @@ declare module 'next-auth' {
     email: string;
     name: string;
     roles: string[];
-    permissions: string[];
   }
+}
+
+// Resolve permissions from role names (no DB query needed)
+function resolvePermissions(roleNames: string[]): string[] {
+  const perms = new Set<string>();
+  for (const roleName of roleNames) {
+    const defaults = ROLE_DEFAULTS[roleName] ?? [];
+    for (const permStr of defaults) {
+      if (permStr === '*:*') {
+        for (const mod of ALL_MODULES) for (const action of ALL_ACTIONS) perms.add(`${mod}:${action}`);
+      } else {
+        const [mod, action] = permStr.split(':');
+        if (action === '*') { for (const a of ALL_ACTIONS) perms.add(`${mod}:${a}`); }
+        else { perms.add(permStr); }
+      }
+    }
+  }
+  return Array.from(perms);
 }
 
 export const authOptions: NextAuthOptions = {
@@ -102,7 +120,6 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email!;
         token.name = user.name!;
         token.roles = (user as any).roles ?? [];
-        token.permissions = (user as any).permissions ?? [];
       }
       return token;
     },
@@ -111,8 +128,9 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         session.user.email = token.email!;
         session.user.name = token.name!;
-        (session.user as any).roles = token.roles;
-        (session.user as any).permissions = token.permissions;
+        const roles = (token.roles as string[]) ?? [];
+        (session.user as any).roles = roles;
+        (session.user as any).permissions = resolvePermissions(roles);
       }
       return session;
     },

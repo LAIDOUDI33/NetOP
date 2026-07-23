@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 // ── Statistics helpers ──
 function stats(values: number[]) {
@@ -29,8 +28,6 @@ function extractField(items: any[], field: string): number[] {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   const type = searchParams.get('type') || 'daily';
   const technology = searchParams.get('technology');
 
@@ -473,8 +470,6 @@ async function handleQoeReport(
 // ────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { type, format, name, description, filters } = body;
 

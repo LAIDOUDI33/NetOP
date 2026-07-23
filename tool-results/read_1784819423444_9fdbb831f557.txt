@@ -1,0 +1,762 @@
+     1→'use client';
+     2→
+     3→import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+     4→import { useForm, Controller } from 'react-hook-form';
+     5→import { z } from 'zod';
+     6→import { zodResolver } from '@hookform/resolvers/zod';
+     7→import { toast } from 'sonner';
+     8→import {
+     9→  Plus,
+    10→  Play,
+    11→  RotateCcw,
+    12→  CheckCircle,
+    13→  XCircle,
+    14→  Clock,
+    15→  MapPin,
+    16→  Radio,
+    17→  Building,
+    18→  Server,
+    19→  Zap,
+    20→} from 'lucide-react';
+    21→
+    22→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    23→import { Badge } from '@/components/ui/badge';
+    24→import { Button } from '@/components/ui/button';
+    25→import {
+    26→  Select,
+    27→  SelectContent,
+    28→  SelectItem,
+    29→  SelectTrigger,
+    30→  SelectValue,
+    31→} from '@/components/ui/select';
+    32→import { Input } from '@/components/ui/input';
+    33→import {
+    34→  Table,
+    35→  TableBody,
+    36→  TableCell,
+    37→  TableHead,
+    38→  TableHeader,
+    39→  TableRow,
+    40→} from '@/components/ui/table';
+    41→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    42→import { Skeleton } from '@/components/ui/skeleton';
+    43→import { ScrollArea } from '@/components/ui/scroll-area';
+    44→import { Separator } from '@/components/ui/separator';
+    45→import { Label } from '@/components/ui/label';
+    46→
+    47→import type { SiteOnboardingItem, OnboardingStatus } from '@/types';
+    48→import { useT } from '@/lib/i18n';
+    49→import { ExportButton } from '@/components/ExportButton';
+    50→
+    51→// ──────────────────────────── Constants ────────────────────────────
+    52→
+    53→const TECH_COLORS: Record<string, string> = {
+    54→  '2G': '#94A3B8',
+    55→  '3G': '#06B6D4',
+    56→  '4G': '#10B981',
+    57→  '5G': '#F59E0B',
+    58→};
+    59→
+    60→const STATUS_COLORS: Record<OnboardingStatus, string> = {
+    61→  pending: 'slate',
+    62→  provisioning: 'blue',
+    63→  configuring: 'amber',
+    64→  verifying: 'cyan',
+    65→  completed: 'green',
+    66→  failed: 'red',
+    67→};
+    68→
+    69→const PIPELINE_STEPS: OnboardingStatus[] = [
+    70→  'pending',
+    71→  'provisioning',
+    72→  'configuring',
+    73→  'verifying',
+    74→  'completed',
+    75→];
+    76→
+    77→const TECHNOLOGIES = ['2G', '3G', '4G', '5G'] as const;
+    78→const REGIONS = ['North', 'South', 'East', 'West', 'Central'] as const;
+    79→const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'Samsung', 'ZTE'] as const;
+    80→
+    81→// ──────────────────────────── Zod Schema ────────────────────────────
+    82→
+    83→const onboardingFormSchema = z.object({
+    84→  siteName: z.string().min(1, 'required'),
+    85→  siteCode: z.string().min(1, 'required'),
+    86→  technology: z.string().min(1, 'required'),
+    87→  region: z.string().min(1, 'required'),
+    88→  vendor: z.string().min(1, ''),
+    89→  latitude: z.coerce.number().min(-90).max(90).default(0),
+    90→  longitude: z.coerce.number().min(-180).max(180).default(0),
+    91→  altitude: z.coerce.number().default(0),
+    92→  frequency: z.string().default(''),
+    93→  bandwidth: z.coerce.number().min(0).default(0),
+    94→  maxCapacity: z.coerce.number().min(0).default(0),
+    95→});
+    96→
+    97→type OnboardingFormValues = z.input<typeof onboardingFormSchema>;
+    98→
+    99→// ──────────────────────────── Types ────────────────────────────
+   100→
+   101→interface OnboardingApiResponse {
+   102→  records: SiteOnboardingItem[];
+   103→  countsByStatus: Record<string, number>;
+   104→}
+   105→
+   106→// ──────────────────────────── Sub-Components ────────────────────────────
+   107→
+   108→function StatusPipelineIndicator({ status }: { status: OnboardingStatus }) {
+   109→  const isFailed = status === 'failed';
+   110→  const currentStepIdx = isFailed
+   111→    ? -1
+   112→    : PIPELINE_STEPS.indexOf(status as (typeof PIPELINE_STEPS)[number]);
+   113→
+   114→  return (
+   115→    <div className="flex items-center gap-1">
+   116→      {PIPELINE_STEPS.map((step, idx) => {
+   117→        const isCompleted = !isFailed && idx < currentStepIdx;
+   118→        const isCurrent = !isFailed && idx === currentStepIdx;
+   119→        const isFuture = !isCompleted && !isCurrent;
+   120→
+   121→        return (
+   122→          <div key={step} className="flex items-center">
+   123→            <div className="relative flex items-center justify-center">
+   124→              {isCurrent ? (
+   125→                <span className="absolute inline-flex h-4 w-4 animate-ping rounded-full bg-emerald-400 opacity-60" />
+   126→              ) : null}
+   127→              <div
+   128→                className={`h-3 w-3 rounded-full border-[1.5px] transition-all ${
+   129→                  isCompleted
+   130→                    ? 'border-emerald-500 bg-emerald-500'
+   131→                    : isCurrent
+   132→                      ? 'border-emerald-400 bg-emerald-400'
+   133→                      : 'border-muted-foreground/30 bg-transparent'
+   134→                }`}
+   135→              />
+   136→            </div>
+   137→            {idx < PIPELINE_STEPS.length - 1 && (
+   138→              <div
+   139→                className={`mx-[2px] h-[1.5px] w-3 ${
+   140→                  !isFailed && idx < currentStepIdx
+   141→                    ? 'bg-emerald-500'
+   142→                    : 'bg-muted-foreground/20'
+   143→                }`}
+   144→              />
+   145→            )}
+   146→          </div>
+   147→        );
+   148→      })}
+   149→      {isFailed && (
+   150→        <>
+   151→          <div className="mx-[2px] h-[1.5px] w-3 bg-red-400" />
+   152→          <div className="relative flex items-center justify-center">
+   153→            <span className="absolute inline-flex h-4 w-4 animate-ping rounded-full bg-red-400 opacity-50" />
+   154→            <div className="h-3 w-3 rounded-full border-[1.5px] border-red-500 bg-red-500" />
+   155→          </div>
+   156→        </>
+   157→      )}
+   158→    </div>
+   159→  );
+   160→}
+   161→
+   162→function StatusBadge({ status }: { status: OnboardingStatus }) {
+   163→  const colorClasses: Record<OnboardingStatus, string> = {
+   164→    pending: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+   165→    provisioning: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+   166→    configuring: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+   167→    verifying: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+   168→    completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+   169→    failed: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 border-red-200 dark:border-red-800',
+   170→  };
+   171→
+   172→  return (
+   173→    <Badge variant="outline" className={`text-[10px] font-medium ${colorClasses[status]}`}>
+   174→      {status.charAt(0).toUpperCase() + status.slice(1)}
+   175→    </Badge>
+   176→  );
+   177→}
+   178→
+   179→function TechBadge({ tech }: { tech: string }) {
+   180→  const color = TECH_COLORS[tech] || '#94A3B8';
+   181→  return (
+   182→    <span
+   183→      className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white"
+   184→      style={{ backgroundColor: color }}
+   185→    >
+   186→      {tech}
+   187→    </span>
+   188→  );
+   189→}
+   190→
+   191→function StatCard({
+   192→  icon: Icon,
+   193→  label,
+   194→  value,
+   195→  color,
+   196→  bgColor,
+   197→}: {
+   198→  icon: React.ElementType;
+   199→  label: string;
+   200→  value: number;
+   201→  color: string;
+   202→  bgColor: string;
+   203→}) {
+   204→  return (
+   205→    <Card className="py-4">
+   206→      <CardContent className="flex items-center gap-3 p-4">
+   207→        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${bgColor}`}>
+   208→          <Icon className={`h-5 w-5 ${color}`} />
+   209→        </div>
+   210→        <div>
+   211→          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+   212→          <p className="text-2xl font-bold tracking-tight">{value}</p>
+   213→        </div>
+   214→      </CardContent>
+   215→    </Card>
+   216→  );
+   217→}
+   218→
+   219→function TableSkeleton() {
+   220→  return (
+   221→    <div className="space-y-3 p-4">
+   222→      {Array.from({ length: 5 }).map((_, i) => (
+   223→        <div key={i} className="flex items-center gap-4">
+   224→          <Skeleton className="h-4 w-28" />
+   225→          <Skeleton className="h-4 w-16" />
+   226→          <Skeleton className="h-4 w-10" />
+   227→          <Skeleton className="h-4 w-16" />
+   228→          <Skeleton className="h-4 w-20" />
+   229→          <Skeleton className="h-4 w-24" />
+   230→          <Skeleton className="h-4 w-12" />
+   231→          <Skeleton className="h-4 w-20" />
+   232→        </div>
+   233→      ))}
+   234→    </div>
+   235→  );
+   236→}
+   237→
+   238→// ──────────────────────────── Main Component ────────────────────────────
+   239→
+   240→export default function OnboardingView() {
+   241→  const t = useT();
+   242→  const queryClient = useQueryClient();
+   243→
+   244→  // ── Data fetching ──
+   245→
+   246→  const { data, isLoading } = useQuery<OnboardingApiResponse>({
+   247→    queryKey: ['onboarding'],
+   248→    queryFn: () => fetch('/api/onboarding').then((r) => r.json()),
+   249→    refetchInterval: 15000,
+   250→  });
+   251→
+   252→  const records = data?.records ?? [];
+   253→  const counts = data?.countsByStatus ?? {};
+   254→
+   255→  const totalSites = records.length;
+   256→  const inProgress =
+   257→    (counts.provisioning ?? 0) +
+   258→    (counts.configuring ?? 0) +
+   259→    (counts.verifying ?? 0);
+   260→  const completed = counts.completed ?? 0;
+   261→  const failed = counts.failed ?? 0;
+   262→
+   263→  // ── Create mutation ──
+   264→
+   265→  const createMutation = useMutation({
+   266→    mutationFn: (values: OnboardingFormValues) =>
+   267→      fetch('/api/onboarding', {
+   268→        method: 'POST',
+   269→        headers: { 'Content-Type': 'application/json' },
+   270→        body: JSON.stringify(values),
+   271→      }).then((r) => {
+   272→        if (!r.ok) return r.json().then((e) => Promise.reject(new Error(e.error)));
+   273→        return r.json();
+   274→      }),
+   275→    onSuccess: () => {
+   276→      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
+   277→      toast.success(t('toast.onboardOk'));
+   278→      form.reset();
+   279→    },
+   280→    onError: (err: Error) => {
+   281→      toast.error(err.message || t('onb.failedToCreate'));
+   282→    },
+   283→  });
+   284→
+   285→  // ── Advance mutation ──
+   286→
+   287→  const advanceMutation = useMutation({
+   288→    mutationFn: ({ onboardingId }: { onboardingId: string }) =>
+   289→      fetch('/api/onboarding', {
+   290→        method: 'PATCH',
+   291→        headers: { 'Content-Type': 'application/json' },
+   292→        body: JSON.stringify({ onboardingId, action: 'advance' }),
+   293→      }).then((r) => {
+   294→        if (!r.ok) return r.json().then((e) => Promise.reject(new Error(e.error)));
+   295→        return r.json();
+   296→      }),
+   297→    onSuccess: () => {
+   298→      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
+   299→      toast.success(t('toast.pipelineAdvanced'));
+   300→    },
+   301→    onError: (err: Error) => {
+   302→      toast.error(err.message || t('onb.failedToAdvance'));
+   303→    },
+   304→  });
+   305→
+   306→  // ── Retry mutation (resets failed → pending) ──
+   307→
+   308→  const retryMutation = useMutation({
+   309→    mutationFn: ({ onboardingId }: { onboardingId: string }) =>
+   310→      fetch('/api/onboarding', {
+   311→        method: 'PATCH',
+   312→        headers: { 'Content-Type': 'application/json' },
+   313→        body: JSON.stringify({ onboardingId, action: 'advance', status: 'pending' }),
+   314→      }).then((r) => {
+   315→        if (!r.ok) return r.json().then((e) => Promise.reject(new Error(e.error)));
+   316→        return r.json();
+   317→      }),
+   318→    onSuccess: () => {
+   319→      queryClient.invalidateQueries({ queryKey: ['onboarding'] });
+   320→      toast.success(t('toast.onboardRetry'));
+   321→    },
+   322→    onError: (err: Error) => {
+   323→      toast.error(err.message || t('onb.failedToRetry'));
+   324→    },
+   325→  });
+   326→
+   327→  // ── Form ──
+   328→
+   329→  const form = useForm<OnboardingFormValues>({
+   330→    resolver: zodResolver(onboardingFormSchema),
+   331→    defaultValues: {
+   332→      siteName: '',
+   333→      siteCode: '',
+   334→      technology: '',
+   335→      region: '',
+   336→      vendor: '',
+   337→      latitude: 0,
+   338→      longitude: 0,
+   339→      altitude: 0,
+   340→      frequency: '',
+   341→      bandwidth: 0,
+   342→      maxCapacity: 0,
+   343→    },
+   344→  });
+   345→
+   346→  const onSubmit = (values: OnboardingFormValues) => {
+   347→    createMutation.mutate(values);
+   348→  };
+   349→
+   350→  // ── Helpers ──
+   351→
+   352→  const formatDate = (iso: string) => {
+   353→    try {
+   354→      return new Date(iso).toLocaleDateString('en-US', {
+   355→        month: 'short',
+   356→        day: 'numeric',
+   357→        hour: '2-digit',
+   358→        minute: '2-digit',
+   359→      });
+   360→    } catch {
+   361→      return '—';
+   362→    }
+   363→  };
+   364→
+   365→  const isAdvanceable = (status: OnboardingStatus) =>
+   366→    status !== 'completed' && status !== 'failed';
+   367→
+   368→  const isRetryable = (status: OnboardingStatus) => status === 'failed';
+   369→
+   370→  // ── Render ──
+   371→
+   372→  return (
+   373→    <div className="space-y-6">
+   374→      {/* ── Header ── */}
+   375→      <div>
+   376→        <h1 className="text-2xl font-bold tracking-tight">{t('title.onboarding')}</h1>
+   377→        <p className="text-sm text-muted-foreground">
+   378→          {t('onb.subtitle')}
+   379→        </p>
+   380→      </div>
+   381→
+   382→      {/* ── Stats Row ── */}
+   383→      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   384→        <StatCard
+   385→          icon={Server}
+   386→          label={t('onb.totalSites')}
+   387→          value={totalSites}
+   388→          color="text-slate-700 dark:text-slate-300"
+   389→          bgColor="bg-slate-100 dark:bg-slate-800"
+   390→        />
+   391→        <StatCard
+   392→          icon={Radio}
+   393→          label={t('onb.inProgress')}
+   394→          value={inProgress}
+   395→          color="text-blue-600 dark:text-blue-400"
+   396→          bgColor="bg-blue-100 dark:bg-blue-900/40"
+   397→        />
+   398→        <StatCard
+   399→          icon={CheckCircle}
+   400→          label={t('onb.completed')}
+   401→          value={completed}
+   402→          color="text-emerald-600 dark:text-emerald-400"
+   403→          bgColor="bg-emerald-100 dark:bg-emerald-900/40"
+   404→        />
+   405→        <StatCard
+   406→          icon={XCircle}
+   407→          label={t('onb.failed')}
+   408→          value={failed}
+   409→          color="text-red-600 dark:text-red-400"
+   410→          bgColor="bg-red-100 dark:bg-red-900/40"
+   411→        />
+   412→      </div>
+   413→
+   414→      {/* ── Main Content Grid ── */}
+   415→      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+   416→        {/* ── Left: New Site Form ── */}
+   417→        <Card className="lg:col-span-1">
+   418→          <CardHeader>
+   419→            <CardTitle className="flex items-center gap-2 text-base">
+   420→              <Plus className="h-4 w-4 text-emerald-600" />
+   421→              {t('onb.newSite')}
+   422→            </CardTitle>
+   423→          </CardHeader>
+   424→          <CardContent>
+   425→            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+   426→              {/* Site Name */}
+   427→              <div className="space-y-1.5">
+   428→                <Label htmlFor="siteName" className="text-xs font-medium">
+   429→                  {t('onb.siteName')}
+   430→                </Label>
+   431→                <Input
+   432→                  id="siteName"
+   433→                  placeholder={t('onb.siteNamePh')}
+   434→                  className="h-8 text-sm"
+   435→                  {...form.register('siteName')}
+   436→                />
+   437→                {form.formState.errors.siteName && (
+   438→                  <p className="text-[11px] text-red-500">
+   439→                    {t('onb.siteNameReq')}
+   440→                  </p>
+   441→                )}
+   442→              </div>
+   443→
+   444→              {/* Site Code */}
+   445→              <div className="space-y-1.5">
+   446→                <Label htmlFor="siteCode" className="text-xs font-medium">
+   447→                  {t('onb.siteCode')}
+   448→                </Label>
+   449→                <Input
+   450→                  id="siteCode"
+   451→                  placeholder={t('onb.siteCodePh')}
+   452→                  className="h-8 text-sm"
+   453→                  {...form.register('siteCode')}
+   454→                />
+   455→                {form.formState.errors.siteCode && (
+   456→                  <p className="text-[11px] text-red-500">
+   457→                    {t('onb.siteCodeReq')}
+   458→                  </p>
+   459→                )}
+   460→              </div>
+   461→
+   462→              <Separator />
+   463→
+   464→              {/* Technology & Region row */}
+   465→              <div className="grid grid-cols-2 gap-3">
+   466→                <div className="space-y-1.5">
+   467→                  <Label className="text-xs font-medium">{t('filter.technology')}</Label>
+   468→                  <Controller
+   469→                    name="technology"
+   470→                    control={form.control}
+   471→                    render={({ field }) => (
+   472→                      <Select value={field.value} onValueChange={field.onChange}>
+   473→                        <SelectTrigger className="h-8 w-full text-sm">
+   474→                          <SelectValue placeholder="Select" />
+   475→                        </SelectTrigger>
+   476→                        <SelectContent>
+   477→                          {TECHNOLOGIES.map((t) => (
+   478→                            <SelectItem key={t} value={t}>
+   479→                              {t}
+   480→                            </SelectItem>
+   481→                          ))}
+   482→                        </SelectContent>
+   483→                      </Select>
+   484→                    )}
+   485→                  />
+   486→                  {form.formState.errors.technology && (
+   487→                    <p className="text-[11px] text-red-500">
+   488→                      {form.formState.errors.technology.message}
+   489→                    </p>
+   490→                  )}
+   491→                </div>
+   492→
+   493→                <div className="space-y-1.5">
+   494→                  <Label className="text-xs font-medium">Region</Label>
+   495→                  <Controller
+   496→                    name="region"
+   497→                    control={form.control}
+   498→                    render={({ field }) => (
+   499→                      <Select value={field.value} onValueChange={field.onChange}>
+   500→                        <SelectTrigger className="h-8 w-full text-sm">
+   501→                          <SelectValue placeholder="Select" />
+   502→                        </SelectTrigger>
+   503→                        <SelectContent>
+   504→                          {REGIONS.map((r) => (
+   505→                            <SelectItem key={r} value={r}>
+   506→                              {r}
+   507→                            </SelectItem>
+   508→                          ))}
+   509→                        </SelectContent>
+   510→                      </Select>
+   511→                    )}
+   512→                  />
+   513→                  {form.formState.errors.region && (
+   514→                    <p className="text-[11px] text-red-500">
+   515→                      {form.formState.errors.region.message}
+   516→                    </p>
+   517→                  )}
+   518→                </div>
+   519→              </div>
+   520→
+   521→              {/* Vendor */}
+   522→              <div className="space-y-1.5">
+   523→                <Label className="text-xs font-medium">Vendor</Label>
+   524→                <Controller
+   525→                  name="vendor"
+   526→                  control={form.control}
+   527→                  render={({ field }) => (
+   528→                    <Select value={field.value} onValueChange={field.onChange}>
+   529→                      <SelectTrigger className="h-8 w-full text-sm">
+   530→                        <SelectValue placeholder="Select vendor" />
+   531→                      </SelectTrigger>
+   532→                      <SelectContent>
+   533→                        {VENDORS.map((v) => (
+   534→                          <SelectItem key={v} value={v}>
+   535→                            {v}
+   536→                          </SelectItem>
+   537→                        ))}
+   538→                      </SelectContent>
+   539→                    </Select>
+   540→                  )}
+   541→                />
+   542→                {form.formState.errors.vendor && (
+   543→                  <p className="text-[11px] text-red-500">
+   544→                    {form.formState.errors.vendor.message}
+   545→                  </p>
+   546→                )}
+   547→              </div>
+   548→
+   549→              <Separator />
+   550→
+   551→              {/* Coordinates */}
+   552→              <div className="space-y-1.5">
+   553→                <Label className="flex items-center gap-1.5 text-xs font-medium">
+   554→                  <MapPin className="h-3 w-3" />
+   555→                  Coordinates &amp; Altitude
+   556→                </Label>
+   557→                <div className="grid grid-cols-3 gap-2">
+   558→                  <div>
+   559→                    <Input
+   560→                      placeholder="Lat"
+   561→                      className="h-8 text-sm"
+   562→                      type="number"
+   563→                      step="any"
+   564→                      {...form.register('latitude')}
+   565→                    />
+   566→                  </div>
+   567→                  <div>
+   568→                    <Input
+   569→                      placeholder="Lng"
+   570→                      className="h-8 text-sm"
+   571→                      type="number"
+   572→                      step="any"
+   573→                      {...form.register('longitude')}
+   574→                    />
+   575→                  </div>
+   576→                  <div>
+   577→                    <Input
+   578→                      placeholder="Alt (m)"
+   579→                      className="h-8 text-sm"
+   580→                      type="number"
+   581→                      step="any"
+   582→                      {...form.register('altitude')}
+   583→                    />
+   584→                  </div>
+   585→                </div>
+   586→              </div>
+   587→
+   588→              <Separator />
+   589→
+   590→              {/* Frequency / Bandwidth / Max Capacity */}
+   591→              <div className="space-y-1.5">
+   592→                <Label className="flex items-center gap-1.5 text-xs font-medium">
+   593→                  <Zap className="h-3 w-3" />
+   594→                  RF Configuration
+   595→                </Label>
+   596→                <div className="grid grid-cols-3 gap-2">
+   597→                  <div>
+   598→                    <Input
+   599→                      placeholder="Freq (MHz)"
+   600→                      className="h-8 text-sm"
+   601→                      {...form.register('frequency')}
+   602→                    />
+   603→                  </div>
+   604→                  <div>
+   605→                    <Input
+   606→                      placeholder="BW (MHz)"
+   607→                      className="h-8 text-sm"
+   608→                      type="number"
+   609→                      step="any"
+   610→                      {...form.register('bandwidth')}
+   611→                    />
+   612→                  </div>
+   613→                  <div>
+   614→                    <Input
+   615→                      placeholder="Max Cap"
+   616→                      className="h-8 text-sm"
+   617→                      type="number"
+   618→                      step="any"
+   619→                      {...form.register('maxCapacity')}
+   620→                    />
+   621→                  </div>
+   622→                </div>
+   623→              </div>
+   624→
+   625→              <Separator />
+   626→
+   627→              {/* Submit */}
+   628→              <Button
+   629→                type="submit"
+   630→                className="w-full gap-2"
+   631→                disabled={createMutation.isPending}
+   632→              >
+   633→                {createMutation.isPending ? (
+   634→                  <span className="flex items-center gap-2">
+   635→                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+   636→                    Creating...
+   637→                  </span>
+   638→                ) : (
+   639→                  <>
+   640→                    <Play className="h-4 w-4" />
+   641→                    Start Onboarding
+   642→                  </>
+   643→                )}
+   644→              </Button>
+   645→            </form>
+   646→          </CardContent>
+   647→        </Card>
+   648→
+   649→        {/* ── Right: Pipeline Table ── */}
+   650→        <Card className="lg:col-span-2">
+   651→          <CardHeader>
+   652→            <CardTitle className="flex items-center gap-2 text-base">
+   653→              <Clock className="h-4 w-4 text-amber-500" />
+   654→              Onboarding Pipeline
+   655→              <Badge variant="secondary" className="ml-auto text-[10px]">
+   656→                Auto-refresh: 15s
+   657→              </Badge>
+   658→              <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: 'Site Name' }, { key: 'siteCode', header: 'Site Code' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'vendor', header: 'Vendor' }, { key: 'region', header: 'Region' }, { key: 'progress', header: 'Progress (%)' }, { key: 'createdAt', header: 'Created At' }]} />
+   659→            </CardTitle>
+   660→          </CardHeader>
+   661→          <CardContent className="p-0">
+   662→            {isLoading ? (
+   663→              <TableSkeleton />
+   664→            ) : records.length === 0 ? (
+   665→              <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
+   666→                <Building className="h-10 w-10 opacity-30" />
+   667→                <p className="text-sm font-medium">No onboarding records yet</p>
+   668→                <p className="text-xs">Create a new site to begin the provisioning pipeline</p>
+   669→              </div>
+   670→            ) : (
+   671→              <ScrollArea className="max-h-[520px]">
+   672→                <Table>
+   673→                  <TableHeader>
+   674→                    <TableRow className="hover:bg-transparent">
+   675→                      <TableHead className="text-xs font-semibold">Site</TableHead>
+   676→                      <TableHead className="text-xs font-semibold">Code</TableHead>
+   677→                      <TableHead className="text-xs font-semibold">Tech</TableHead>
+   678→                      <TableHead className="text-xs font-semibold">Region</TableHead>
+   679→                      <TableHead className="text-xs font-semibold">Vendor</TableHead>
+   680→                      <TableHead className="text-xs font-semibold">Status</TableHead>
+   681→                      <TableHead className="text-xs font-semibold">PCI</TableHead>
+   682→                      <TableHead className="text-xs font-semibold">Neighbors</TableHead>
+   683→                      <TableHead className="text-xs font-semibold">Created</TableHead>
+   684→                      <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+   685→                    </TableRow>
+   686→                  </TableHeader>
+   687→                  <TableBody>
+   688→                    {records.map((item) => (
+   689→                      <TableRow key={item.id}>
+   690→                        <TableCell className="font-medium text-sm">
+   691→                          {item.siteName}
+   692→                        </TableCell>
+   693→                        <TableCell className="text-xs text-muted-foreground font-mono">
+   694→                          {item.siteCode}
+   695→                        </TableCell>
+   696→                        <TableCell>
+   697→                          <TechBadge tech={item.technology} />
+   698→                        </TableCell>
+   699→                        <TableCell className="text-xs">{item.region}</TableCell>
+   700→                        <TableCell className="text-xs">{item.vendor}</TableCell>
+   701→                        <TableCell>
+   702→                          <div className="flex flex-col gap-1">
+   703→                            <StatusPipelineIndicator status={item.status} />
+   704→                            <StatusBadge status={item.status} />
+   705→                          </div>
+   706→                        </TableCell>
+   707→                        <TableCell className="text-xs font-mono text-muted-foreground">
+   708→                          {item.assignedPci || '—'}
+   709→                        </TableCell>
+   710→                        <TableCell className="text-xs text-muted-foreground">
+   711→                          {item.initialNeighbors?.length ?? 0}
+   712→                        </TableCell>
+   713→                        <TableCell className="text-[11px] text-muted-foreground">
+   714→                          {formatDate(item.createdAt)}
+   715→                        </TableCell>
+   716→                        <TableCell className="text-right">
+   717→                          <div className="flex items-center justify-end gap-1">
+   718→                            {isAdvanceable(item.status) && (
+   719→                              <Button
+   720→                                variant="ghost"
+   721→                                size="sm"
+   722→                                className="h-7 gap-1 px-2 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+   723→                                onClick={() =>
+   724→                                  advanceMutation.mutate({ onboardingId: item.id })
+   725→                                }
+   726→                                disabled={advanceMutation.isPending}
+   727→                              >
+   728→                                <Play className="h-3 w-3" />
+   729→                                Advance
+   730→                              </Button>
+   731→                            )}
+   732→                            {isRetryable(item.status) && (
+   733→                              <Button
+   734→                                variant="ghost"
+   735→                                size="sm"
+   736→                                className="h-7 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+   737→                                onClick={() =>
+   738→                                  retryMutation.mutate({ onboardingId: item.id })
+   739→                                }
+   740→                                disabled={retryMutation.isPending}
+   741→                              >
+   742→                                <RotateCcw className="h-3 w-3" />
+   743→                                Retry
+   744→                              </Button>
+   745→                            )}
+   746→                            {item.status === 'completed' && (
+   747→                              <CheckCircle className="mx-auto h-4 w-4 text-emerald-500" />
+   748→                            )}
+   749→                          </div>
+   750→                        </TableCell>
+   751→                      </TableRow>
+   752→                    ))}
+   753→                  </TableBody>
+   754→                </Table>
+   755→              </ScrollArea>
+   756→            )}
+   757→          </CardContent>
+   758→        </Card>
+   759→      </div>
+   760→    </div>
+   761→  );
+   762→}

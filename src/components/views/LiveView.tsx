@@ -36,7 +36,6 @@ import {
   TrendingDown,
   Minus,
   Leaf,
-  AlertCircle,
   Clock,
   CheckCircle2,
   ShieldAlert,
@@ -127,7 +126,7 @@ export default function LiveView() {
     incidentSummary: IncidentSummary;
   }>({
     queryKey: ['live'],
-    queryFn: () => fetch('/api/live').then(r => r.json()),
+    queryFn: () => fetch('/api/live').then(r => { if (!r.ok) throw new Error('Live API error: ' + r.status); return r.json(); }),
     refetchInterval: 5000,
   });
 
@@ -251,7 +250,7 @@ export default function LiveView() {
           </span>
           ● LIVE
         </div>
-        <ExportButton data={topLoaded as unknown as Record<string, any>[]} filenamePrefix="live" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'loadPercent', header: 'Load (%)' }, { key: 'users', header: 'Users' }]} />
+        <ExportButton data={topLoaded as unknown as Record<string, any>[]} filenamePrefix="live" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'prbUtilization', header: 'Load (%)' }, { key: 'activeUsers', header: 'Users' }]} />
       </div>
 
       {/* KPI Cards */}

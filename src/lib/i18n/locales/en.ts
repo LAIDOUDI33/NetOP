@@ -120,6 +120,7 @@ const en: Record<string, string> = {
   'status.failed': 'Failed',
   'status.rolledBack': 'Rolled Back',
   'status.open': 'Open',
+  'status.closed': 'Closed',
   'status.improving': 'Improving',
   'status.stable': 'Stable',
   'status.degrading': 'Degrading',
@@ -343,6 +344,7 @@ const en: Record<string, string> = {
   'unit.slices': 'slices',
   'unit.users': 'users',
   'unit.sites': 'sites',
+  'unit.min': 'min',
 
   // ========== NAV GROUPS ==========
   'nav.group.operations': 'Operations',
@@ -490,7 +492,7 @@ const en: Record<string, string> = {
   'alert.result': '{n} result(s)',
 
   // ========== VIEW-SPECIFIC: Coverage Map ==========
-  'cov.subtitle': 'Interactive geographic visualization of network site coverage across Nigeria',
+  'cov.subtitle': 'Interactive geographic visualization of network site coverage across Algeria',
   'cov.sitesDisplayed': '{n} site(s) displayed',
   'cov.noSitesMatch': 'No sites match the selected filters',
   'cov.tryAdjust': 'Try adjusting the technology or region filter',
@@ -1338,6 +1340,15 @@ const en: Record<string, string> = {
   'svc.noData': 'No Service Data Available',
   'svc.noMatchFilter': 'No services match the selected filters.',
   'svc.noDataYet': 'Service quality data has not been collected yet.',
+  'svc.uniqueTypes': 'unique types',
+  'svc.mosScale': 'Scale: 1 – 5',
+  'svc.slaTarget': 'Target: 95%',
+  'svc.activeSessions': 'Active Sessions',
+  'svc.currentlyActive': 'Currently active',
+  'svc.kpiViolations': 'KPI Violations',
+  'svc.acrossAllServices': 'Across all services',
+  'svc.avgThroughput': 'Avg Throughput',
+  'svc.avgDownload': 'Average download',
   'svc.serviceType': 'Service Type',
   'svc.mos': 'MOS',
   'svc.satisfaction': 'Satisfaction',

@@ -222,7 +222,10 @@ export default function ServicesView() {
       if (techFilter !== 'all') params.set('technology', techFilter);
       if (regionFilter !== 'all') params.set('region', regionFilter);
       const qs = params.toString();
-      return fetch(`/api/services${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/services${qs ? `?${qs}` : ''}`).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      });
     },
     refetchInterval: 30000,
   });
@@ -322,7 +325,7 @@ export default function ServicesView() {
               {summary?.total ?? 0}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              {summary?.byServiceType ? Object.keys(summary.byServiceType).length : 0} unique types
+              {summary?.byServiceType ? Object.keys(summary.byServiceType).length : 0} {t('svc.uniqueTypes')}
             </p>
           </CardContent>
         </Card>
@@ -345,7 +348,7 @@ export default function ServicesView() {
                 style={{ width: `${Math.min(((summary?.avgMos ?? 0) / 5) * 100, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Scale: 1 – 5</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('svc.mosScale')}</p>
           </CardContent>
         </Card>
 
@@ -367,7 +370,7 @@ export default function ServicesView() {
                 style={{ width: `${Math.min(slaRate, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Target: 95%</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('svc.slaTarget')}</p>
           </CardContent>
         </Card>
 
@@ -376,14 +379,14 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-amber-500" />
-              Active Sessions
+              {t('svc.activeSessions')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {formatSessions(summary?.totalSessions ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Currently active</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('svc.currentlyActive')}</p>
           </CardContent>
         </Card>
 
@@ -392,14 +395,14 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
-              KPI Violations
+              {t('svc.kpiViolations')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {(summary?.totalViolations ?? 0).toLocaleString()}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all services</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('svc.acrossAllServices')}</p>
           </CardContent>
         </Card>
 
@@ -408,7 +411,7 @@ export default function ServicesView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-rose-500" />
-              Avg Throughput
+              {t('svc.avgThroughput')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -416,7 +419,7 @@ export default function ServicesView() {
               {formatNumber(summary?.avgThroughput ?? 0, 1)}
               <span className="text-base font-normal ml-1">{t('unit.mbps')}</span>
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Average download</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('svc.avgDownload')}</p>
           </CardContent>
         </Card>
       </div>
@@ -527,11 +530,14 @@ export default function ServicesView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
-                <SelectItem value="Lagos">Lagos</SelectItem>
-                <SelectItem value="Abuja">Abuja</SelectItem>
-                <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
-                <SelectItem value="Kano">Kano</SelectItem>
-                <SelectItem value="Ibadan">Ibadan</SelectItem>
+                <SelectItem value="Alger Centre">Alger Centre</SelectItem>
+                <SelectItem value="Oran Métropole">Oran</SelectItem>
+                <SelectItem value="Constantine">Constantine</SelectItem>
+                <SelectItem value="Annaba">Annaba</SelectItem>
+                <SelectItem value="Sétif">Sétif</SelectItem>
+                <SelectItem value="Blida">Blida</SelectItem>
+                <SelectItem value="Tlemcen">Tlemcen</SelectItem>
+                <SelectItem value="Tizi Ouzou">Tizi Ouzou</SelectItem>
               </SelectContent>
             </Select>
             <ExportButton data={services as unknown as Record<string, any>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: 'Service Name' }, { key: 'serviceType', header: 'Type' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'qoeScore', header: 'QoE Score' }, { key: 'activeSessions', header: 'Sessions' }, { key: 'avgLatency', header: 'Avg Latency (ms)' }]} />

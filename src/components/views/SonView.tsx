@@ -39,7 +39,6 @@ import {
   Clock,
   AlertTriangle,
   ArrowRight,
-  ArrowLeftRight,
   Radio,
   Settings2,
   ShieldCheck,
@@ -47,8 +46,6 @@ import {
   TrendingUp,
   Layers,
   Network,
-  Wifi,
-  ZapOff,
 } from 'lucide-react';
 import { useAppStore } from '@/store/app';
 import { TECH_COLORS } from '@/lib/constants';
@@ -195,7 +192,7 @@ export default function SonView() {
     isLoading: modulesLoading,
   } = useQuery<{ modules: SonModuleItem[] }>({
     queryKey: ['son-modules'],
-    queryFn: () => fetch('/api/son').then((r) => r.json()),
+    queryFn: () => fetch('/api/son').then((r) => { if (!r.ok) throw new Error('SON API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -205,7 +202,7 @@ export default function SonView() {
   } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
     queryKey: ['son-actions'],
     queryFn: () =>
-      fetch('/api/son/actions?limit=50').then((r) => r.json()),
+      fetch('/api/son/actions?limit=50').then((r) => { if (!r.ok) throw new Error('SON Actions API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -215,7 +212,7 @@ export default function SonView() {
   } = useQuery<{ neighbors: NeighborRelationItem[] }>({
     queryKey: ['son-neighbors'],
     queryFn: () =>
-      fetch('/api/son/neighbors').then((r) => r.json()),
+      fetch('/api/son/neighbors').then((r) => { if (!r.ok) throw new Error('SON Neighbors API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -375,9 +372,9 @@ export default function SonView() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TECH_OPTIONS.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {TECH_OPTIONS.map((tech) => (
+                  <SelectItem key={tech} value={tech}>
+                    {tech}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -570,7 +567,7 @@ export default function SonView() {
                               <Badge
                                 className="text-[9px] px-1 py-0 mt-0.5"
                                 style={{
-                                  backgroundColor: TECH_COLORS[action.technology as Technology],
+                                  backgroundColor: TECH_COLORS[action.technology as Technology] ?? '#94A3B8',
                                   color: '#fff',
                                 }}
                               >
@@ -751,7 +748,7 @@ export default function SonView() {
                                 className="text-[9px] px-1.5 py-0"
                                 style={{
                                   backgroundColor:
-                                    TECH_COLORS[nbr.technology as Technology],
+                                    TECH_COLORS[nbr.technology as Technology] ?? '#94A3B8',
                                   color: '#fff',
                                 }}
                               >
@@ -899,7 +896,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
       <div
         className="absolute top-0 left-0 right-0 h-1"
         style={{
-          backgroundColor: TECH_COLORS[module.technology as Technology],
+          backgroundColor: TECH_COLORS[module.technology as Technology] ?? '#94A3B8',
         }}
       />
       <CardHeader className="pb-3 pt-4">
@@ -912,7 +909,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
               <Badge
                 className="text-[9px] px-1.5 py-0 shrink-0"
                 style={{
-                  backgroundColor: TECH_COLORS[module.technology as Technology],
+                  backgroundColor: TECH_COLORS[module.technology as Technology] ?? '#94A3B8',
                   color: '#fff',
                 }}
               >

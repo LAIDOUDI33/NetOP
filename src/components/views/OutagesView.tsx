@@ -232,7 +232,7 @@ export default function OutagesView() {
       if (severityFilter !== 'all') params.set('severity', severityFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/outages${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/outages${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Outages API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

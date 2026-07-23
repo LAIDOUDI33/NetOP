@@ -120,6 +120,7 @@ const fr: Record<string, string> = {
   'status.failed': 'Échoué',
   'status.rolledBack': 'Annulé',
   'status.open': 'Ouvert',
+  'status.closed': 'Fermé',
   'status.improving': 'En Amélioration',
   'status.stable': 'Stable',
   'status.degrading': 'En Dégradation',
@@ -341,6 +342,7 @@ const fr: Record<string, string> = {
   'unit.slices': 'tranches',
   'unit.users': 'utilisateurs',
   'unit.sites': 'sites',
+  'unit.min': 'min',
 
   // ========== NAV GROUPS ==========
   'nav.group.operations': 'Exploitation',
@@ -488,7 +490,7 @@ const fr: Record<string, string> = {
   'alert.result': '{n} résultat(s)',
 
   // ========== VIEW-SPECIFIC: Coverage Map ==========
-  'cov.subtitle': 'Visualisation géographique interactive de la couverture réseau à travers le Nigeria',
+  'cov.subtitle': 'Visualisation géographique interactive de la couverture réseau à travers l\'Algérie',
   'cov.sitesDisplayed': '{n} site(s) affiché(s)',
   'cov.noSitesMatch': 'Aucun site ne correspond aux filtres sélectionnés',
   'cov.tryAdjust': 'Essayez d\'ajuster le filtre de technologie ou de région',
@@ -1336,6 +1338,15 @@ const fr: Record<string, string> = {
   'svc.noData': 'Aucune Donnée de Service Disponible',
   'svc.noMatchFilter': 'Aucun service ne correspond aux filtres sélectionnés.',
   'svc.noDataYet': 'Les données de qualité de service n\'ont pas encore été collectées.',
+  'svc.uniqueTypes': 'types uniques',
+  'svc.mosScale': 'Échelle : 1 – 5',
+  'svc.slaTarget': 'Objectif : 95%',
+  'svc.activeSessions': 'Sessions Actives',
+  'svc.currentlyActive': 'Actuellement actives',
+  'svc.kpiViolations': 'Violations KPI',
+  'svc.acrossAllServices': 'À travers tous les services',
+  'svc.avgThroughput': 'Débit Moyen',
+  'svc.avgDownload': 'Téléchargement moyen',
   'svc.serviceType': 'Type de Service',
   'svc.mos': 'MOS',
   'svc.satisfaction': 'Satisfaction',

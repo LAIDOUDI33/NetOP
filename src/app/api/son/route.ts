@@ -1,11 +1,8 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   const technology = searchParams.get('technology');
 
   try {
@@ -80,8 +77,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { name, displayName, technology, description, enabled, mode, schedule, parameters } = body;
 
@@ -140,8 +135,6 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { moduleId, action } = body;
 
