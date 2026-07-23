@@ -178,7 +178,7 @@ function KpiReportTab() {
 
   const { data, isLoading } = useQuery<KpiResponse>({
     queryKey: ['kpi-report', metric],
-    queryFn: () => fetch(`/api/kpi?technology=all&metric=${metric}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/kpi?technology=all&metric=${metric}`).then(r => { if (!r.ok) throw new Error('Reports API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
@@ -377,7 +377,7 @@ function SonActivityTab() {
   const t = useT();
   const { data, isLoading } = useQuery<SonResponse>({
     queryKey: ['son-report'],
-    queryFn: () => fetch('/api/son').then(r => r.json()),
+    queryFn: () => fetch('/api/son').then(r => { if (!r.ok) throw new Error('Reports API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
@@ -538,7 +538,7 @@ function PolicyReportTab() {
   const t = useT();
   const { data, isLoading } = useQuery<PolicyResponse>({
     queryKey: ['policy-report'],
-    queryFn: () => fetch('/api/policies').then(r => r.json()),
+    queryFn: () => fetch('/api/policies').then(r => { if (!r.ok) throw new Error('Reports API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 

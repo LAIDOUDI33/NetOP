@@ -212,7 +212,7 @@ export default function EvolutionView() {
       if (targetTechFilter !== 'all') params.set('targetTech', targetTechFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/evolution${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/evolution${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Evolution API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

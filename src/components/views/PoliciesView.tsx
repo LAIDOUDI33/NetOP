@@ -699,7 +699,7 @@ export default function PoliciesView() {
     queryKey: ['policies', techFilter],
     queryFn: () =>
       fetch(`/api/policies?technology=${techFilter}`)
-        .then((r) => r.json()),
+        .then((r) => { if (!r.ok) throw new Error('Policies API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -709,7 +709,7 @@ export default function PoliciesView() {
     queryKey: ['policy-executions', techFilter],
     queryFn: () =>
       fetch(`/api/policies/executions?technology=${techFilter}`)
-        .then((r) => r.json()),
+        .then((r) => { if (!r.ok) throw new Error('Policies API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -721,7 +721,7 @@ export default function PoliciesView() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then((r) => r.json()),
+      }).then((r) => { if (!r.ok) throw new Error('Policies API error: ' + r.status); return r.json(); }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['policies'] });
       queryClient.invalidateQueries({ queryKey: ['policy-executions'] });

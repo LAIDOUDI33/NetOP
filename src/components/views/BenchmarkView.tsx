@@ -178,7 +178,7 @@ export default function BenchmarkView() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (metricFilter !== 'all') params.set('metric', metricFilter);
       const qs = params.toString();
-      return fetch(`/api/benchmark${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/benchmark${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Benchmark API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

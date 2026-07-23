@@ -228,7 +228,7 @@ export default function SlicingView() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (sliceTypeFilter !== 'all') params.set('sliceType', sliceTypeFilter);
       const qs = params.toString();
-      return fetch(`/api/slicing${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/slicing${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Slicing API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

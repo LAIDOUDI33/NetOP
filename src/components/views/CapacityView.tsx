@@ -163,7 +163,7 @@ export default function CapacityView() {
       if (techFilter !== 'all') params.set('technology', techFilter);
       if (riskFilter !== 'all') params.set('riskLevel', riskFilter);
       const qs = params.toString();
-      return fetch(`/api/capacity${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/capacity${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error("Capacity API error: " + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
@@ -273,8 +273,8 @@ export default function CapacityView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allTech')}</SelectItem>
-            {TECHNOLOGIES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+            {TECHNOLOGIES.map((tech) => (
+              <SelectItem key={tech} value={tech}>{tech}</SelectItem>
             ))}
           </SelectContent>
         </Select>

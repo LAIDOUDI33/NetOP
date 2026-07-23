@@ -44,13 +44,17 @@ export default function CoverageView() {
   const [technology, setTechnology] = useState<string>('all');
   const [region, setRegion] = useState<string>('all');
 
-  const { data, isLoading } = useQuery<CoverageData>({
+  const { data, isLoading, isError } = useQuery<CoverageData>({
     queryKey: ['coverage', technology, region],
-    queryFn: () => fetch(`/api/coverage?technology=${technology}&region=${region}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/coverage?technology=${technology}&region=${region}`).then(r => { if (!r.ok) throw new Error('Coverage API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
   const regions = data ? [...new Set(data.sites.map(s => s.region))].sort() : [];
+
+  if (isError) {
+    return <div className="text-red-500 p-4">Error loading coverage data</div>;
+  }
 
   if (isLoading || !data) {
     return (

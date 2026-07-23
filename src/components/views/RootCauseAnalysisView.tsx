@@ -100,7 +100,7 @@ export default function RootCauseAnalysisView() {
   // Fetch sites for the site selector
   const { data: coverageData, isLoading: sitesLoading } = useQuery<CoverageData>({
     queryKey: ['coverage-rca'],
-    queryFn: () => fetch('/api/coverage?technology=all&region=all').then(r => r.json()),
+    queryFn: () => fetch('/api/coverage?technology=all&region=all').then(r => { if (!r.ok) throw new Error('RCA API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
@@ -116,7 +116,7 @@ export default function RootCauseAnalysisView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then(r => r.json()),
+      }).then(r => { if (!r.ok) throw new Error('RCA API error: ' + r.status); return r.json(); }),
     onSuccess: (result) => {
       const responseText = result.response ?? result.result ?? JSON.stringify(result);
       const record: AnalysisRecord = {
@@ -354,7 +354,7 @@ Provide analysis in this format:
                       {category.items.map(item => (
                         <button
                           key={item.label}
-                          onClick={() => fillSymptom(item.description)}
+                          onClick={() => fillSymptom(t(item.description))}
                           className="w-full text-left p-2.5 rounded-lg border border-border/60 hover:bg-muted/50 hover:border-primary/30 transition-all text-xs group"
                         >
                           <div className="flex items-center gap-1.5 font-medium text-foreground group-hover:text-primary transition-colors">

@@ -54,7 +54,7 @@ export default function OptimizerView() {
 
   const { data, isLoading } = useQuery<OptimizerResponse>({
     queryKey: ['optimizer'],
-    queryFn: () => fetch('/api/optimizer').then(r => r.json()),
+    queryFn: () => fetch('/api/optimizer').then(r => { if (!r.ok) throw new Error('Optimizer API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
@@ -70,7 +70,7 @@ export default function OptimizerView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then(r => r.json()),
+      }).then(r => { if (!r.ok) throw new Error('Optimizer API error: ' + r.status); return r.json(); }),
     onSuccess: (result) => {
       setChatHistory(prev => [
         ...prev,

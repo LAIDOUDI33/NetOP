@@ -208,7 +208,7 @@ export default function SimulationsView() {
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/simulations${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/simulations${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Simulations API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

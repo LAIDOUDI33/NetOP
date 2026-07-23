@@ -201,7 +201,7 @@ export default function AuditView() {
 
   const { data, isLoading, error } = useQuery<AuditResponse>({
     queryKey: ['audit', entityType, action, category, technology],
-    queryFn: () => fetch(`/api/audit?${params.toString()}`).then((r) => r.json()),
+    queryFn: () => fetch(`/api/audit?${params.toString()}`).then((r) => { if (!r.ok) throw new Error('Audit API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
@@ -210,7 +210,7 @@ export default function AuditView() {
 
   // Count distinct requestedBy
   const uniqueActors = useMemo(() => {
-    const set = new Set(trails.map((t) => t.requestedBy));
+    const set = new Set(trails.map((trail) => trail.requestedBy));
     return set.size;
   }, [trails]);
 

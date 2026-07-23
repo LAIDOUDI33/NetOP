@@ -100,31 +100,31 @@ export default function CorrelationView() {
   const t = useT();
   const dashboardQuery = useQuery<DashboardData[]>({
     queryKey: ['dashboard'],
-    queryFn: () => fetch('/api/dashboard').then(r => r.json()),
+    queryFn: () => fetch('/api/dashboard').then(r => { if (!r.ok) throw new Error('Correlation API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
   const tech2gQuery = useQuery<MonitoringData>({
     queryKey: ['monitoring', '2G'],
-    queryFn: () => fetch('/api/monitoring?technology=2G').then(r => r.json()),
+    queryFn: () => fetch('/api/monitoring?technology=2G').then(r => { if (!r.ok) throw new Error('Correlation API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
   const tech3gQuery = useQuery<MonitoringData>({
     queryKey: ['monitoring', '3G'],
-    queryFn: () => fetch('/api/monitoring?technology=3G').then(r => r.json()),
+    queryFn: () => fetch('/api/monitoring?technology=3G').then(r => { if (!r.ok) throw new Error('Correlation API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
   const tech4gQuery = useQuery<MonitoringData>({
     queryKey: ['monitoring', '4G'],
-    queryFn: () => fetch('/api/monitoring?technology=4G').then(r => r.json()),
+    queryFn: () => fetch('/api/monitoring?technology=4G').then(r => { if (!r.ok) throw new Error('Correlation API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
   const tech5gQuery = useQuery<MonitoringData>({
     queryKey: ['monitoring', '5G'],
-    queryFn: () => fetch('/api/monitoring?technology=5G').then(r => r.json()),
+    queryFn: () => fetch('/api/monitoring?technology=5G').then(r => { if (!r.ok) throw new Error('Correlation API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 

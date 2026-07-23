@@ -253,7 +253,7 @@ function TimelineDialog({
   const t = useT();
   const { data, isLoading, error } = useQuery<QoETimelineResponse>({
     queryKey: ['qoe', 'timeline', siteId],
-    queryFn: () => fetch(`/api/qoe?siteId=${siteId}`).then((r) => r.json()),
+    queryFn: () => fetch(`/api/qoe?siteId=${siteId}`).then((r) => { if (!r.ok) throw new Error('QoE API error: ' + r.status); return r.json(); }),
     enabled: open && !!siteId,
   });
 
@@ -420,7 +420,7 @@ export default function QoEView() {
     queryKey: ['qoe', techFilter],
     queryFn: () => {
       const params = techFilter !== 'all' ? `?technology=${techFilter}` : '';
-      return fetch(`/api/qoe${params}`).then((r) => r.json());
+      return fetch(`/api/qoe${params}`).then((r) => { if (!r.ok) throw new Error('QoE API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

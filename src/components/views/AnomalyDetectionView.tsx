@@ -113,7 +113,7 @@ export default function AnomalyDetectionView() {
 
   const { data, isLoading } = useQuery<AnomalyResponse>({
     queryKey: ['anomalies', techFilter, severityFilter, statusFilter],
-    queryFn: () => fetch(`/api/anomalies${qs ? `?${qs}` : ''}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/anomalies${qs ? `?${qs}` : ''}`).then(r => { if (!r.ok) throw new Error('Anomalies API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
@@ -123,7 +123,7 @@ export default function AnomalyDetectionView() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then(r => r.json()),
+      }).then(r => { if (!r.ok) throw new Error('Anomalies API error: ' + r.status); return r.json(); }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['anomalies'] });
     },
@@ -306,7 +306,7 @@ export default function AnomalyDetectionView() {
             <Badge variant="outline" className="ml-auto">
               {t('anomaly.results', { n: anomalies.length })}
             </Badge>
-            <ExportButton data={anomalies as unknown as Record<string, any>[]} filenamePrefix="anomaly" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'severity', header: 'Severity' }, { key: 'zScore', header: 'Z-Score' }, { key: 'actualValue', header: 'Actual Value' }, { key: 'expectedRange', header: 'Expected Range' }, { key: 'status', header: 'Status' }, { key: 'createdAt', header: 'Detected At' }]} />
+            <ExportButton data={anomalies as unknown as Record<string, any>[]} filenamePrefix="anomaly" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'severity', header: 'Severity' }, { key: 'zScore', header: 'Z-Score' }, { key: 'actualValue', header: 'Actual Value' }, { key: 'expectedValue', header: 'Expected Range' }, { key: 'status', header: 'Status' }, { key: 'createdAt', header: 'Detected At' }]} />
           </div>
         </CardContent>
       </Card>
@@ -415,7 +415,7 @@ export default function AnomalyDetectionView() {
                     <TableRow key={anomaly.id}>
                       <TableCell>
                         <Badge variant={severityToBadgeVariant(anomaly.severity)}>
-                          {anomaly.severity}
+                          {severityLabels[anomaly.severity] || anomaly.severity}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">{anomaly.siteName || anomaly.siteCode || t('anomaly.unknown')}</TableCell>

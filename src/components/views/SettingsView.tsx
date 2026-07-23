@@ -79,7 +79,7 @@ function ParametersTab() {
 
   const { data, isLoading } = useQuery<ParamsResponse>({
     queryKey: ['parameters', technology, category],
-    queryFn: () => fetch(`/api/parameters?technology=${technology}&category=${category}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/parameters?technology=${technology}&category=${category}`).then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
@@ -103,7 +103,7 @@ function ParametersTab() {
           fetch('/api/parameters', {
             method: 'PATCH', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paramId, currentValue }),
-          }).then(r => r.json())
+          }).then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); })
         )
       );
     },
@@ -194,7 +194,7 @@ function ParametersTab() {
 function UsersTab() {
   const { data, isLoading } = useQuery<UsersResponse>({
     queryKey: ['settings-users'],
-    queryFn: () => fetch('/api/settings/users').then(r => r.json()),
+    queryFn: () => fetch('/api/settings/users').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
   });
 
   return (
@@ -244,7 +244,7 @@ function UsersTab() {
 function RolesTab() {
   const { data, isLoading } = useQuery<RolesResponse>({
     queryKey: ['settings-roles'],
-    queryFn: () => fetch('/api/settings/roles').then(r => r.json()),
+    queryFn: () => fetch('/api/settings/roles').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
   });
 
   return (
@@ -284,7 +284,7 @@ function RolesTab() {
 function AuditTab() {
   const { data, isLoading } = useQuery<AuditResponse>({
     queryKey: ['settings-audit'],
-    queryFn: () => fetch('/api/settings/audit?limit=50').then(r => r.json()),
+    queryFn: () => fetch('/api/settings/audit?limit=50').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
   });
 
   return (
@@ -339,7 +339,7 @@ function AuditTab() {
 function HealthTab() {
   const { data: dashboardData } = useQuery({
     queryKey: ['health-dashboard'],
-    queryFn: () => fetch('/api/dashboard').then(r => r.json()),
+    queryFn: () => fetch('/api/dashboard').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
   });
 
   const stats = [
@@ -402,7 +402,7 @@ function RetentionTab() {
           ))}
         </div>
         <div className="mt-4 flex justify-end">
-          <Button size="sm" className="h-8 text-xs" onClick={() => toast.success('Retention settings saved')}>
+          <Button size="sm" className="h-8 text-xs" onClick={() => toast.info('Retention settings updated locally (demo)')}>
             <Save className="h-3 w-3 mr-1" /> Save
           </Button>
         </div>

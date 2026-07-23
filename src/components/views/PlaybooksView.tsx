@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
@@ -240,7 +240,7 @@ export default function PlaybooksView() {
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (techFilter !== 'all') params.set('technology', techFilter);
       const qs = params.toString();
-      return fetch(`/api/playbooks${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/playbooks${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Playbooks API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
@@ -472,7 +472,7 @@ export default function PlaybooksView() {
               </TableHeader>
               <TableBody>
                 {playbooks.map((pb) => (
-                  <tbody key={pb.id}>
+                  <Fragment key={pb.id}>
                     <TableRow
                       className="cursor-pointer"
                       onClick={() => handleRowClick(pb.id)}
@@ -526,7 +526,7 @@ export default function PlaybooksView() {
                       </TableCell>
                     </TableRow>
                     {expandedId === pb.id && <PlaybookSteps steps={pb.steps} />}
-                  </tbody>
+                  </Fragment>
                 ))}
               </TableBody>
             </Table>
