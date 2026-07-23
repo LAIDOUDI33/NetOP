@@ -1,0 +1,19 @@
+[realtime-service] Installing dependencies...
+bun install v1.3.14 (0d9b296a)
+
++ @prisma/client@6.19.3
+
+2 packages installed [4.16s]
+[realtime-service] Running bun run dev...
+$ bun --hot index.ts
+38 | var clientVersion = version;
+39 | 
+40 | // src/scripts/default-index.ts
+41 | var PrismaClient = class {
+42 |   constructor() {
+43 |     throw new Error('@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.');
+                   ^
+error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+      at new PrismaClient (/home/z/my-project/mini-services/realtime-service/node_modules/.prisma/client/default.js:43:15)
+      at /home/z/my-project/mini-services/realtime-service/index.ts:7:16
+ces/realtime-service/index.ts:7:16
