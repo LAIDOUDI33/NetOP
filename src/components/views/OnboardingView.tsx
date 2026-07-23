@@ -75,7 +75,17 @@ const PIPELINE_STEPS: OnboardingStatus[] = [
 ];
 
 const TECHNOLOGIES = ['2G', '3G', '4G', '5G'] as const;
-const REGIONS = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou'] as const;
+const REGIONS = [
+  'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa', 'Biskra', 'Béchar',
+  'Blida', 'Bouira', 'Tamanrasset', 'Tébessa', 'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger',
+  'Djelfa', 'Jijel', 'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
+  'Constantine', 'Médéa', 'Mostaganem', 'M'Sila', 'Mascara', 'Ouargla', 'Oran',
+  'El Bayadh', 'Illizi', 'Bordj Bou Arréridj', 'Boumerdès', 'El Tarf', 'Tindouf',
+  'Tissemsilt', 'El Oued', 'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Aïn Defla',
+  'Naâma', 'Aïn Témouchent', 'Ghardaïa', 'Relizane', 'El M'Ghair', 'El Meniaa',
+  'Ouled Djellal', 'Bordj Badji Mokhtar', 'Béni Abbès', 'Timimoun', 'Touggourt',
+  'Djanet', 'In Salah', 'In Guezzam',
+] as const;
 const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'Samsung', 'ZTE'] as const;
 
 // ──────────────────────────── Zod Schema ────────────────────────────
