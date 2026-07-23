@@ -52,3 +52,22 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Database (generated from seed)
+/db/
+*.db
+
+# Temporary research & tool artifacts
+tool-results/
+agent-ctx/
+search*.json
+*_search.json
+piworks_*.json
+amdocs_search.json
+
+# Download artifacts
+public/*.zip
+
+# OS/editor
+.vscode/
+.idea/
