@@ -54,7 +54,10 @@ export default function AlertsView() {
     queryKey: ['alerts', severityFilter, techFilter, showResolved],
     queryFn: () =>
       fetch(`/api/alerts?severity=${severityFilter}&technology=${techFilter}&resolved=${showResolved}`)
-        .then(r => r.json()),
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        }),
     refetchInterval: 15000,
   });
 
@@ -64,7 +67,10 @@ export default function AlertsView() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then(r => r.json()),
+      }).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       toast.success(t('toast.actionCompleted'));

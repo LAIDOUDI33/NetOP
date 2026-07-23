@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
+  const authed = await checkApiAuth(request);
+  if (!authed) return authError();
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const region = searchParams.get('region');

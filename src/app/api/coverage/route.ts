@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
         bandwidth: s.bandwidth,
         vendor: s.vendor,
         maxCapacity: s.maxCapacity,
-        avgSignal: kpi?.rsrp || kpi?.rssi || kpi?.rxlev || 0,
-        avgThroughput: kpi?.downloadThroughput || 0,
-        avgUsers: kpi?.activeUsers || 0,
+        avgSignal: kpi?.rsrp ?? kpi?.rssi ?? kpi?.rxlev ?? 0,
+        avgThroughput: kpi?.downloadThroughput ?? 0,
+        avgUsers: kpi?.activeUsers ?? 0,
       };
     });
 
@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
       return {
         region: r,
         totalSites: rSites.length,
-        avgAvailability: Number((rSites.reduce((s, r) => s + (r.kpiMetrics[0]?.availability || 0), 0) / rSites.length).toFixed(2)),
-        avgSignal: Number((rSites.reduce((s, r) => s + ((r.kpiMetrics[0]?.rsrp || r.kpiMetrics[0]?.rssi || r.kpiMetrics[0]?.rxlev) || 0), 0) / rSites.length).toFixed(2)),
+        avgAvailability: Number((rSites.reduce((s, r) => s + (r.kpiMetrics[0]?.availability ?? 0), 0) / rSites.length).toFixed(2)),
+        avgSignal: Number((rSites.reduce((s, r) => s + (r.kpiMetrics[0]?.rsrp ?? r.kpiMetrics[0]?.rssi ?? r.kpiMetrics[0]?.rxlev ?? 0), 0) / rSites.length).toFixed(2)),
         techDistribution: {
           '2G': rSites.filter(s => s.technology === '2G').length,
           '3G': rSites.filter(s => s.technology === '3G').length,

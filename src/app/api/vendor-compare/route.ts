@@ -1,11 +1,23 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
+
+const VALID_TECHNOLOGIES = ['2G', '3G', '4G', '5G'];
 
 export async function GET(request: NextRequest) {
+  const authed = await checkApiAuth(request);
+  if (!authed) return authError();
+
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
 
+  // Validate technology parameter to prevent SQL injection
+  if (technology && !VALID_TECHNOLOGIES.includes(technology)) {
+    return NextResponse.json({ error: 'Invalid technology parameter. Must be one of: 2G, 3G, 4G, 5G' }, { status: 400 });
+  }
+
   try {
+    // Safe: technology is validated against whitelist above
     const techFilter = technology ? `AND s.technology = '${technology}'` : '';
 
     const rows = await db.$queryRawUnsafe<{
@@ -13,6 +25,7 @@ export async function GET(request: NextRequest) {
       vendor: string;
       avgRsrp: number | null;
       avgDownloadThroughput: number | null;
+      avgUploadThroughput: number | null;
       avgLatency: number | null;
       avgAvailability: number | null;
       avgHandoverSuccessRate: number | null;
@@ -22,6 +35,7 @@ export async function GET(request: NextRequest) {
       `SELECT s.technology, s.vendor,
         AVG(k.rsrp) as avgRsrp,
         AVG(k.downloadThroughput) as avgDownloadThroughput,
+        AVG(k.uploadThroughput) as avgUploadThroughput,
         AVG(k.latency) as avgLatency,
         AVG(k.availability) as avgAvailability,
         AVG(k.handoverSuccessRate) as avgHandoverSuccessRate,
@@ -38,6 +52,7 @@ export async function GET(request: NextRequest) {
       vendor: r.vendor,
       avgRsrp: r.avgRsrp ? Number(r.avgRsrp.toFixed(1)) : null,
       avgDownloadThroughput: r.avgDownloadThroughput ? Number(r.avgDownloadThroughput.toFixed(2)) : null,
+      avgUploadThroughput: r.avgUploadThroughput ? Number(r.avgUploadThroughput.toFixed(2)) : null,
       avgLatency: r.avgLatency ? Number(r.avgLatency.toFixed(1)) : null,
       avgAvailability: r.avgAvailability ? Number(r.avgAvailability.toFixed(2)) : null,
       avgHandoverSuccessRate: r.avgHandoverSuccessRate ? Number(r.avgHandoverSuccessRate.toFixed(2)) : null,

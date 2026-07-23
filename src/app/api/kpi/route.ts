@@ -5,6 +5,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology') || 'all';
   const metric = searchParams.get('metric') || 'downloadThroughput';
+
+  const VALID_METRICS = ['rssi','rsrp','rsrq','sinr','downloadThroughput','uploadThroughput','latency','availability','dropRate','handoverSuccessRate','prbUtilization','activeUsers','packetLoss','jitter','blockedCallRate'];
+  if (!VALID_METRICS.includes(metric)) {
+    return NextResponse.json({ error: `Invalid metric: ${metric}` }, { status: 400 });
+  }
+
   const now = new Date();
   const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
 
@@ -36,8 +42,17 @@ export async function GET(request: NextRequest) {
       byTech[tech].values.push(Number(val.toFixed(2)));
     }
 
-    // Get a unified timestamp list (union of all tech timestamps, sorted)
-    const allTimestamps = [...new Set(Object.values(byTech).flatMap(b => b.timestamps))].sort();
+    // Get a unified timestamp list (union of all tech timestamps, sorted chronologically)
+    // Sort by original Date objects to avoid lexicographic issues at midnight
+    const tsMap = new Map<string, Date>();
+    for (const kpi of kpis) {
+      const h = new Date(kpi.timestamp);
+      const key = `${h.getHours()}:${String(h.getMinutes()).padStart(2, '0')}`;
+      if (!tsMap.has(key) || h.getTime() < tsMap.get(key)!.getTime()) {
+        tsMap.set(key, h);
+      }
+    }
+    const allTimestamps = [...tsMap.entries()].sort((a, b) => a[1].getTime() - b[1].getTime()).map(([k]) => k);
 
     // Build unified data: map tech -> { values indexed to allTimestamps }
     const data: Record<string, { values: number[]; sites: any[] }> = {};

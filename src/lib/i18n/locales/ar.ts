@@ -477,7 +477,7 @@ const ar: Record<string, string> = {
 
   // ========== ALERTS ==========
   'alert.totalUnresolved': 'إجمالي غير المحلولة',
-  'alert.result': 'النتيجة',
+  'alert.result': '{n} نتيجة',
   'alert.valueVsThreshold': 'القيمة مقابل العتبة',
   'alert.showResolved': 'إظهار المحلولة',
   'alert.alertRules': 'قواعد التنبيهات',
@@ -502,7 +502,7 @@ const ar: Record<string, string> = {
 
   // ========== COVERAGE MAP ==========
   'cov.totalSites': 'إجمالي المواقع',
-  'cov.sitesDisplayed': 'المواقع المعروضة',
+  'cov.sitesDisplayed': '{n} مواقع معروضة',
   'cov.avgSignal': 'متوسط الإشارة',
   'cov.avgAvailability': 'متوسط التوفر',
   'cov.throughput': 'الإنتاجية',
@@ -525,8 +525,8 @@ const ar: Record<string, string> = {
   'cov.region': 'المنطقة',
 
   // ========== KPI ANALYTICS ==========
-  'kpi.trend': 'اتجاه',
-  'kpi.siteComparison': 'مقارنة المواقع',
+  'kpi.trend': 'اتجاه {metric}',
+  'kpi.siteComparison': 'مقارنة المواقع — {metric}',
 
   // ========== SLA ==========
   'sla.targets': 'الأهداف',
@@ -577,7 +577,7 @@ const ar: Record<string, string> = {
   'corr.crossTechDesc': 'مقارنة KPIs عبر تقنيات مختلفة',
   'corr.sameTech': 'نفس التقنية',
   'corr.trafficDist': 'توزيع حركة البيانات',
-  'corr.users': 'المستخدمون',
+  'corr.users': 'مستخدمو {name}',
   'corr.throughput': 'الإنتاجية',
   'corr.latencyInv': 'علاقة عكسية مع زمن الاستجابة',
   'corr.handover': 'التسليم',
@@ -585,7 +585,7 @@ const ar: Record<string, string> = {
   'corr.avail': 'التوفر',
   'corr.balance': 'التوازن',
   'corr.normalizedKpi': 'KPI موحد',
-  'corr.correlationScore': 'درجة الارتباط',
+  'corr.correlationScore': 'درجة الارتباط: {n}/100',
   'corr.green': 'مرتفع',
   'corr.amber': 'متوسط',
   'corr.red': 'منخفض',
@@ -1176,6 +1176,15 @@ const ar: Record<string, string> = {
   'svc.noData': 'لا توجد بيانات',
   'svc.noDataYet': 'لا توجد بيانات بعد',
   'svc.noMatchFilter': 'لا توجد خدمات تطابق الفلاتر',
+  'svc.uniqueTypes': 'أنواع فريدة',
+  'svc.mosScale': 'المقياس: 1 – 5',
+  'svc.slaTarget': 'الهدف: 95%',
+  'svc.activeSessions': 'الجلسات النشطة',
+  'svc.currentlyActive': 'نشطة حالياً',
+  'svc.kpiViolations': 'مخالفات KPI',
+  'svc.acrossAllServices': 'عبر جميع الخدمات',
+  'svc.avgThroughput': 'متوسط الإنتاجية',
+  'svc.avgDownload': 'متوسط التنزيل',
   'svc.noServiceMatch': 'لا توجد خدمات مطابقة',
 
   // ========== AUDIT ==========
@@ -1255,7 +1264,7 @@ const ar: Record<string, string> = {
   'vc.bestAvail': 'أفضل توفر',
   'vc.bestHo': 'أفضل تسليم',
   'vc.lowestDrop': 'أقل انقطاع',
-  'vc.noData': 'لا توجد بيانات',
+  'vc.noData': 'لا توجد بيانات للمورد {technology}',
   'vc.noDataYet': 'لا توجد بيانات بعد',
   'vc.noMatchFilter': 'لا توجد بيانات تطابق الفلاتر',
   'vc.noVendorMatch': 'لا يوجد موردين مطابقين',
@@ -1356,7 +1365,7 @@ const ar: Record<string, string> = {
   'view.activePredictions': 'التوقعات النشطة',
   'view.allTimeRuns': 'جميع تنفيذات الوقت',
   'view.blocking': 'حظر',
-  'view.failedLoad': 'فشل التحميل',
+  'view.failedLoad': 'فشل تحميل بيانات {entity}',
   'view.downwardTrend': 'اتجاه تنازلي',
   'view.upwardTrend': 'اتجاه تصاعدي',
   'view.noSignificantChange': 'لا يوجد تغيير كبير',
@@ -1368,7 +1377,7 @@ const ar: Record<string, string> = {
   'view.requireOffload': 'يتطلب تفريغ',
   'view.noDataConfigured': 'لم يتم تكوين بيانات',
   'view.noDataForFilter': 'لا توجد بيانات لهذا الفلتر',
-  'view.noDataYet': 'لا توجد بيانات بعد',
+  'view.noDataYet': 'لم يتم جمع {entity} بعد',
   'view.noForecastYet': 'لا توجد توقعات بعد',
   'view.noSimRun': 'لم يتم تشغيل محاكاة',
   'view.playbooksColon': 'السيناريوهات:',

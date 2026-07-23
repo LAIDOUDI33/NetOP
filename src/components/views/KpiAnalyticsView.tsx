@@ -11,7 +11,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAppStore } from '@/store/app';
 import type { Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -69,7 +68,6 @@ function formatTimestamp(ts: string) {
 
 export default function KpiAnalyticsView() {
   const t = useT();
-  const { selectedTechnology } = useAppStore();
   const [technology, setTechnology] = useState<Technology | 'all'>('all');
   const [metric, setMetric] = useState('downloadThroughput');
 
@@ -77,7 +75,10 @@ export default function KpiAnalyticsView() {
 
   const { data, isLoading } = useQuery<KpiResponse>({
     queryKey: ['kpi', techParam, metric],
-    queryFn: () => fetch(`/api/kpi?technology=${techParam}&metric=${metric}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/kpi?technology=${techParam}&metric=${metric}`).then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
     refetchInterval: 30000,
   });
 
@@ -212,13 +213,13 @@ export default function KpiAnalyticsView() {
                       <TableCell>
                         <Badge
                           className="text-xs"
-                          style={{ backgroundColor: TECH_COLORS[site.technology as Technology], color: '#fff' }}
+                          style={{ backgroundColor: TECH_COLORS[site.technology as Technology] ?? '#64748B', color: '#fff' }}
                         >
                           {site.technology}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={STATUS_VARIANT[site.status]} className="text-xs">
+                        <Badge variant={STATUS_VARIANT[site.status] ?? 'outline'} className="text-xs">
                           {site.status}
                         </Badge>
                       </TableCell>

@@ -1,7 +1,11 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
+  const authed = await checkApiAuth(request);
+  if (!authed) return authError();
+
   const { searchParams } = new URL(request.url);
   const serviceType = searchParams.get('serviceType');
   const technology = searchParams.get('technology');
@@ -46,29 +50,38 @@ export async function GET(request: NextRequest) {
     const slaBreaches = records.filter(r => !r.slaCompliant).length;
     let avgMos = 0;
     let avgLatency = 0;
+    let avgThroughput = 0;
+    let avgAvailability = 0;
     let totalSessions = 0;
+    let totalViolations = 0;
 
     for (const r of records) {
       byServiceType[r.serviceType] = (byServiceType[r.serviceType] || 0) + 1;
       byTech[r.technology] = (byTech[r.technology] || 0) + 1;
       byRegion[r.region] = (byRegion[r.region] || 0) + 1;
-      avgMos += r.mosScore;
-      avgLatency += r.latencyMs;
+      avgMos += (r.mosScore ?? 0);
+      avgLatency += (r.latencyMs ?? 0);
+      avgThroughput += (r.throughputMbps ?? 0);
+      avgAvailability += (r.availabilityPct ?? 0);
       totalSessions += r.activeSessions;
+      totalViolations += r.kpiViolations;
     }
 
     return NextResponse.json({
-      items: mapped,
+      services: mapped,
       summary: {
         total,
         byServiceType,
         byTech,
         byRegion,
         slaBreaches,
-        slaCompliancePct: total > 0 ? Number((((total - slaBreaches) / total) * 100).toFixed(1)) : 0,
+        slaComplianceRate: total > 0 ? Number((((total - slaBreaches) / total) * 100).toFixed(1)) : 0,
         avgMos: total > 0 ? Number((avgMos / total).toFixed(2)) : 0,
         avgLatency: total > 0 ? Number((avgLatency / total).toFixed(1)) : 0,
+        avgThroughput: total > 0 ? Number((avgThroughput / total).toFixed(2)) : 0,
+        avgAvailability: total > 0 ? Number((avgAvailability / total).toFixed(2)) : 0,
         totalSessions,
+        totalViolations,
       },
     });
   } catch (error: unknown) {
