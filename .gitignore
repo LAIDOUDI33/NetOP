@@ -41,5 +41,5 @@ yarn-error.log*
 .claude
 .z-ai-config
 
-# Skills directory (system-provided, not project code)
+# System skills (not project code)
 /skills/
