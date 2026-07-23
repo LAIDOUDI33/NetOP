@@ -1,0 +1,302 @@
+/home/z/my-project/src/components/views/CoverageMapView.tsx:10:  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+/home/z/my-project/src/components/views/CoverageMapView.tsx:16:import { MapPin, Signal, TrendingUp, Users, Wifi } from 'lucide-react';
+/home/z/my-project/src/components/views/CoverageMapView.tsx:17:import { TECH_COLORS, TECH_BG_CLASSES, getSignalQuality } from '@/lib/constants';
+/home/z/my-project/src/components/views/CoverageMapView.tsx:18:import type { Technology, SiteStatus, CoverageData } from '@/types';
+/home/z/my-project/src/components/views/CoverageMapView.tsx:40:// Status-based stroke colors for CircleMarker
+/home/z/my-project/src/components/views/CoverageMapView.tsx:41:const STATUS_STROKE: Record<SiteStatus, string> = {
+/home/z/my-project/src/components/views/CoverageMapView.tsx:49:const STATUS_RADIUS: Record<SiteStatus, number> = {
+/home/z/my-project/src/components/views/CoverageMapView.tsx:57:  const [technology, setTechnology] = useState<string>('all');
+/home/z/my-project/src/components/views/CoverageMapView.tsx:58:  const [region, setRegion] = useState<string>('all');
+/home/z/my-project/src/components/views/CoverageMapView.tsx:59:  const { data, isLoading } = useQuery<CoverageData>({
+/home/z/my-project/src/components/views/CoverageMapView.tsx:71:  // Technology distribution counts
+/home/z/my-project/src/components/views/CoverageMapView.tsx:72:  const techCounts: Partial<Record<Technology, number>> = {};
+/home/z/my-project/src/components/views/CoverageMapView.tsx:78:    <div className="space-y-6">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:81:        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:82:          <MapPin className="h-6 w-6 text-emerald-500" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:85:        <p className="text-sm text-muted-foreground mt-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:90:      {/* Filters */}
+/home/z/my-project/src/components/views/CoverageMapView.tsx:91:      <div className="flex flex-wrap gap-4 items-center">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:92:        <Select value={technology} onValueChange={setTechnology}>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:93:          <SelectTrigger className="w-[180px]">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:94:            <Wifi className="h-4 w-4 mr-2 text-muted-foreground" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:95:            <SelectValue placeholder="Technology" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:98:            <SelectItem value="all">All Technologies</SelectItem>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:105:        <Select value={region} onValueChange={setRegion}>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:106:          <SelectTrigger className="w-[200px]">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:107:            <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:108:            <SelectValue placeholder="Region" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:111:            <SelectItem value="all">All Regions</SelectItem>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:119:        {!isLoading && (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:120:          <span className="text-sm text-muted-foreground ml-auto">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:127:      <Card className="overflow-hidden">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:128:        <CardContent className="p-0">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:129:          {isLoading ? (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:130:            <div className="h-[400px] lg:h-[500px] flex items-center justify-center bg-muted/30">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:131:              <div className="space-y-4 w-full max-w-md px-6">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:132:                <Skeleton className="h-[400px] lg:h-[500px] w-full rounded-none" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:136:            <div className="h-[400px] lg:h-[500px]">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:138:                <div className="h-full flex items-center justify-center bg-muted/30">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:139:                  <div className="text-center space-y-2">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:140:                    <MapPin className="h-10 w-10 text-muted-foreground mx-auto" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:141:                    <p className="text-muted-foreground font-medium">No sites match the selected filters</p>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:142:                    <p className="text-sm text-muted-foreground">Try adjusting the technology or region filter</p>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:149:                  className="h-full w-full"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:169:                        <div className="space-y-2 min-w-[200px] text-sm font-sans">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:170:                          <div className="font-semibold text-base">{site.name}</div>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:171:                          <div className="text-xs text-gray-500">{site.code}</div>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:172:                          <div className="flex gap-2 flex-wrap">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:174:                              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:184:                              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:194:                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:195:                            <div className="flex items-center gap-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:196:                              <Signal className="h-3 w-3 text-gray-400" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:197:                              <span>Signal:</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:198:                              <span className="font-mono font-medium">{site.avgSignal.toFixed(1)} dBm</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:200:                            <div className="flex items-center gap-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:201:                              <TrendingUp className="h-3 w-3 text-gray-400" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:202:                              <span>Throughput:</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:203:                              <span className="font-mono font-medium">{site.avgThroughput.toFixed(1)} Mbps</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:205:                            <div className="flex items-center gap-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:206:                              <Users className="h-3 w-3 text-gray-400" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:207:                              <span>Users:</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:208:                              <span className="font-mono font-medium">{site.avgUsers}</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:211:                          <div className="text-xs text-gray-500 border-t pt-1 mt-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:212:                            <div>Region: {site.region}</div>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:227:      {!isLoading && sites.length > 0 && (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:228:        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:229:          <span className="font-medium text-foreground">Technology:</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:230:          {(Object.entries(TECH_COLORS) as [Technology, string][]).map(([tech, color]) => (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:231:            <span key={tech} className="flex items-center gap-1.5">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:233:                className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:239:          <span className="ml-4 font-medium text-foreground">Status:</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:240:          <span className="flex items-center gap-1.5">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:241:            <span className="w-3 h-3 rounded-full border-2 border-emerald-500" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:242:            Active
+/home/z/my-project/src/components/views/CoverageMapView.tsx:244:          <span className="flex items-center gap-1.5">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:245:            <span className="w-3 h-3 rounded-full border-2 border-amber-500" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:248:          <span className="flex items-center gap-1.5">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:249:            <span className="w-3 h-3 rounded-full border-2 border-red-500" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:255:      {/* Technology Distribution */}
+/home/z/my-project/src/components/views/CoverageMapView.tsx:256:      {!isLoading && sites.length > 0 && (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:258:          <CardHeader className="pb-3">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:259:            <CardTitle className="text-base font-semibold">Technology Distribution</CardTitle>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:262:            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:263:              {(Object.entries(TECH_COLORS) as [Technology, string][]).map(([tech, color]) => {
+/home/z/my-project/src/components/views/CoverageMapView.tsx:269:                    className="rounded-lg p-4 border"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:272:                    <div className="flex items-center justify-between mb-2">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:273:                      <span className="text-sm font-semibold" style={{ color }}>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:276:                      <span className="text-lg font-bold">{count}</span>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:278:                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:280:                        className="h-full rounded-full transition-all duration-500"
+/home/z/my-project/src/components/views/CoverageMapView.tsx:284:                    <p className="text-xs text-muted-foreground mt-1">{pct}% of sites</p>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:293:      {/* Region Statistics Table */}
+/home/z/my-project/src/components/views/CoverageMapView.tsx:295:        <CardHeader className="pb-3">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:296:          <CardTitle className="text-base font-semibold">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:297:            Region Statistics
+/home/z/my-project/src/components/views/CoverageMapView.tsx:298:          </CardTitle>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:300:        <CardContent className="p-0">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:301:          {isLoading ? (
+/home/z/my-project/src/components/views/CoverageMapView.tsx:302:            <div className="p-6 space-y-3">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:303:              <Skeleton className="h-10 w-full" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:304:              <Skeleton className="h-10 w-full" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:305:              <Skeleton className="h-10 w-full" />
+/home/z/my-project/src/components/views/CoverageMapView.tsx:308:            <ScrollArea className="max-h-96">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:310:                <TableHeader>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:312:                    <TableHead>Region</TableHead>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:313:                    <TableHead className="text-right">Total Sites</TableHead>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:314:                    <TableHead className="text-right">Avg Availability</TableHead>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:315:                    <TableHead className="text-right">Avg Signal</TableHead>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:316:                    <TableHead>Tech Distribution</TableHead>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:321:                    const quality = getSignalQuality(rs.avgSignal);
+/home/z/my-project/src/components/views/CoverageMapView.tsx:324:                        <TableCell className="font-medium">{rs.region}</TableCell>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:325:                        <TableCell className="text-right font-mono">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:326:                          {rs.totalSites}
+/home/z/my-project/src/components/views/CoverageMapView.tsx:328:                        <TableCell className="text-right font-mono">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:329:                          {rs.avgAvailability.toFixed(1)}%
+/home/z/my-project/src/components/views/CoverageMapView.tsx:331:                        <TableCell className="text-right">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:332:                          <span className={`font-mono text-xs ${quality.color}`}>
+/home/z/my-project/src/components/views/CoverageMapView.tsx:333:                            {rs.avgSignal.toFixed(1)} dBm
+/home/z/my-project/src/components/views/CoverageMapView.tsx:335:                          <span className="text-xs text-muted-foreground ml-1">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:340:                          <div className="flex gap-1.5 flex-wrap">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:341:                            {(Object.entries(rs.techDistribution) as [Technology, number][]).map(
+/home/z/my-project/src/components/views/CoverageMapView.tsx:346:                                    className={TECH_BG_CLASSES[tech]}
+/home/z/my-project/src/components/views/CoverageMapView.tsx:361:            <div className="p-8 text-center text-muted-foreground">
+/home/z/my-project/src/components/views/CoverageMapView.tsx:362:              <p>No region data available</p>
+/home/z/my-project/src/components/views/IncidentsView.tsx:12:  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+/home/z/my-project/src/components/views/IncidentsView.tsx:19:import { AlertTriangle, Clock, ShieldAlert, CheckCircle2, Search, BarChart3, ListChecks } from 'lucide-react';
+/home/z/my-project/src/components/views/IncidentsView.tsx:21:import type { Technology } from '@/types';
+/home/z/my-project/src/components/views/IncidentsView.tsx:23:// ─── Types ───────────────────────────────────────────────────────────
+/home/z/my-project/src/components/views/IncidentsView.tsx:25:type IncidentSeverity = 'low' | 'medium' | 'high' | 'critical';
+/home/z/my-project/src/components/views/IncidentsView.tsx:26:type IncidentStatus = 'open' | 'investigating' | 'resolved' | 'closed';
+/home/z/my-project/src/components/views/IncidentsView.tsx:33:  technology: Technology;
+/home/z/my-project/src/components/views/IncidentsView.tsx:35:  siteName: string | null;
+/home/z/my-project/src/components/views/IncidentsView.tsx:37:  severity: IncidentSeverity;
+/home/z/my-project/src/components/views/IncidentsView.tsx:38:  status: IncidentStatus;
+/home/z/my-project/src/components/views/IncidentsView.tsx:44:  mtbfValue: number;
+/home/z/my-project/src/components/views/IncidentsView.tsx:47:  affectedSites: string[];
+/home/z/my-project/src/components/views/IncidentsView.tsx:58:  bySeverity: Partial<Record<IncidentSeverity, number>>;
+/home/z/my-project/src/components/views/IncidentsView.tsx:59:  byStatus: Partial<Record<IncidentStatus, number>>;
+/home/z/my-project/src/components/views/IncidentsView.tsx:72:const STATUS_COLORS: Record<IncidentStatus, string> = {
+/home/z/my-project/src/components/views/IncidentsView.tsx:79:const SEVERITY_COLORS: Record<IncidentSeverity, string> = {
+/home/z/my-project/src/components/views/IncidentsView.tsx:106:function severityBadgeVariant(s: IncidentSeverity): 'default' | 'secondary' | 'destructive' | 'outline' {
+/home/z/my-project/src/components/views/IncidentsView.tsx:112:function statusBadgeVariant(s: IncidentStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+/home/z/my-project/src/components/views/IncidentsView.tsx:121:  const created = new Date(incident.createdAt).getTime();
+/home/z/my-project/src/components/views/IncidentsView.tsx:122:  const resolved = new Date(incident.resolvedAt).getTime();
+/home/z/my-project/src/components/views/IncidentsView.tsx:127:function formatDate(iso: string): string {
+/home/z/my-project/src/components/views/IncidentsView.tsx:128:  const d = new Date(iso);
+/home/z/my-project/src/components/views/IncidentsView.tsx:129:  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+/home/z/my-project/src/components/views/IncidentsView.tsx:137:    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
+/home/z/my-project/src/components/views/IncidentsView.tsx:138:      <p className="font-medium mb-1">{label}</p>
+/home/z/my-project/src/components/views/IncidentsView.tsx:140:        <div key={idx} className="flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:141:          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+/home/z/my-project/src/components/views/IncidentsView.tsx:142:          <span className="text-muted-foreground">{entry.name}:</span>
+/home/z/my-project/src/components/views/IncidentsView.tsx:143:          <span className="font-medium">{entry.value}</span>
+/home/z/my-project/src/components/views/IncidentsView.tsx:150:// ─── Loading Skeletons ────────────────────────────────────────────────
+/home/z/my-project/src/components/views/IncidentsView.tsx:154:    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+/home/z/my-project/src/components/views/IncidentsView.tsx:157:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:158:            <Skeleton className="h-4 w-24" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:161:            <Skeleton className="h-8 w-16" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:173:        <Skeleton className="h-5 w-48" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:176:        <Skeleton className="h-64 w-full" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:186:        <Skeleton className="h-5 w-48" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:189:        <div className="space-y-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:190:          <Skeleton className="h-8 w-full" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:192:            <Skeleton key={r} className="h-10 w-full" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:218:  const [technology, setTechnology] = useState<string>('all');
+/home/z/my-project/src/components/views/IncidentsView.tsx:219:  const [severity, setSeverity] = useState<string>('all');
+/home/z/my-project/src/components/views/IncidentsView.tsx:220:  const [status, setStatus] = useState<string>('all');
+/home/z/my-project/src/components/views/IncidentsView.tsx:223:  const { data, isLoading, isError } = useQuery<IncidentsResponse>({
+/home/z/my-project/src/components/views/IncidentsView.tsx:226:      const params = new URLSearchParams();
+/home/z/my-project/src/components/views/IncidentsView.tsx:243:    { name: 'Open', value: summary?.byStatus?.open ?? 0, fill: STATUS_COLORS.open },
+/home/z/my-project/src/components/views/IncidentsView.tsx:244:    { name: 'Investigating', value: summary?.byStatus?.investigating ?? 0, fill: STATUS_COLORS.investigating },
+/home/z/my-project/src/components/views/IncidentsView.tsx:245:    { name: 'Resolved', value: summary?.byStatus?.resolved ?? 0, fill: STATUS_COLORS.resolved },
+/home/z/my-project/src/components/views/IncidentsView.tsx:246:    { name: 'Closed', value: summary?.byStatus?.closed ?? 0, fill: STATUS_COLORS.closed },
+/home/z/my-project/src/components/views/IncidentsView.tsx:256:  const allSeverities: IncidentSeverity[] = ['low', 'medium', 'high', 'critical'];
+/home/z/my-project/src/components/views/IncidentsView.tsx:267:  // ─── Loading State ──────────────────────────────────────────────────
+/home/z/my-project/src/components/views/IncidentsView.tsx:268:  if (isLoading) {
+/home/z/my-project/src/components/views/IncidentsView.tsx:270:      <div className="space-y-6 p-6">
+/home/z/my-project/src/components/views/IncidentsView.tsx:272:          <Skeleton className="h-8 w-72 mb-2" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:273:          <Skeleton className="h-4 w-96" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:276:        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+/home/z/my-project/src/components/views/IncidentsView.tsx:286:  // ─── Error State ────────────────────────────────────────────────────
+/home/z/my-project/src/components/views/IncidentsView.tsx:287:  if (isError) {
+/home/z/my-project/src/components/views/IncidentsView.tsx:289:      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+/home/z/my-project/src/components/views/IncidentsView.tsx:290:        <AlertTriangle className="h-12 w-12 mb-4" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:291:        <p className="text-lg font-medium">Failed to load incidents data</p>
+/home/z/my-project/src/components/views/IncidentsView.tsx:292:        <p className="text-sm mt-1">Please try again later.</p>
+/home/z/my-project/src/components/views/IncidentsView.tsx:299:    <div className="space-y-6 p-6">
+/home/z/my-project/src/components/views/IncidentsView.tsx:302:        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:303:          <AlertTriangle className="h-6 w-6 text-amber-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:306:        <p className="text-muted-foreground text-sm mt-1">
+/home/z/my-project/src/components/views/IncidentsView.tsx:312:      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+/home/z/my-project/src/components/views/IncidentsView.tsx:314:        <Card className="border-red-500/50">
+/home/z/my-project/src/components/views/IncidentsView.tsx:315:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:316:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:317:              <AlertTriangle className="h-4 w-4 text-red-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:319:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:322:            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+/home/z/my-project/src/components/views/IncidentsView.tsx:323:              {summary?.byStatus?.open ?? 0}
+/home/z/my-project/src/components/views/IncidentsView.tsx:328:        {/* Investigating */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:329:        <Card className="border-amber-500/50">
+/home/z/my-project/src/components/views/IncidentsView.tsx:330:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:331:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:332:              <Search className="h-4 w-4 text-amber-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:333:              Investigating
+/home/z/my-project/src/components/views/IncidentsView.tsx:334:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:337:            <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+/home/z/my-project/src/components/views/IncidentsView.tsx:338:              {summary?.byStatus?.investigating ?? 0}
+/home/z/my-project/src/components/views/IncidentsView.tsx:343:        {/* Resolved Today */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:344:        <Card className="border-emerald-500/50">
+/home/z/my-project/src/components/views/IncidentsView.tsx:345:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:346:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:347:              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:348:              Resolved Today
+/home/z/my-project/src/components/views/IncidentsView.tsx:349:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:352:            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+/home/z/my-project/src/components/views/IncidentsView.tsx:353:              {summary?.byStatus?.resolved ?? 0}
+/home/z/my-project/src/components/views/IncidentsView.tsx:359:        <Card className="border-red-500/50">
+/home/z/my-project/src/components/views/IncidentsView.tsx:360:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:361:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:362:              <ShieldAlert className="h-4 w-4 text-red-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:364:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:367:            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+/home/z/my-project/src/components/views/IncidentsView.tsx:375:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:376:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:377:              <Clock className="h-4 w-4 text-cyan-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:379:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:382:            <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+/home/z/my-project/src/components/views/IncidentsView.tsx:385:            <span className="text-sm text-muted-foreground ml-1">min</span>
+/home/z/my-project/src/components/views/IncidentsView.tsx:389:        {/* Total Incidents */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:391:          <CardHeader className="pb-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:392:            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:393:              <ListChecks className="h-4 w-4 text-slate-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:394:              Total Incidents
+/home/z/my-project/src/components/views/IncidentsView.tsx:395:            </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:398:            <span className="text-3xl font-bold">
+/home/z/my-project/src/components/views/IncidentsView.tsx:406:      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+/home/z/my-project/src/components/views/IncidentsView.tsx:407:        {/* Status Distribution Bar Chart */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:410:            <CardTitle className="text-base">Status Distribution</CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:413:            <div className="h-64">
+/home/z/my-project/src/components/views/IncidentsView.tsx:416:                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:419:                    className="text-xs"
+/home/z/my-project/src/components/views/IncidentsView.tsx:424:                    className="text-xs"
+/home/z/my-project/src/components/views/IncidentsView.tsx:442:            <CardTitle className="text-base">Category Distribution</CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:445:            <div className="h-64">
+/home/z/my-project/src/components/views/IncidentsView.tsx:466:                    iconType="circle"
+/home/z/my-project/src/components/views/IncidentsView.tsx:469:                      <span className="text-xs text-muted-foreground">{value}</span>
+/home/z/my-project/src/components/views/IncidentsView.tsx:478:        {/* Severity by Category Stacked Bar Chart */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:481:            <CardTitle className="text-base">Severity by Category</CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:484:            <div className="h-64">
+/home/z/my-project/src/components/views/IncidentsView.tsx:487:                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:490:                    className="text-xs"
+/home/z/my-project/src/components/views/IncidentsView.tsx:495:                    className="text-xs"
+/home/z/my-project/src/components/views/IncidentsView.tsx:501:                    iconType="square"
+/home/z/my-project/src/components/views/IncidentsView.tsx:504:                      <span className="text-xs text-muted-foreground capitalize">{value}</span>
+/home/z/my-project/src/components/views/IncidentsView.tsx:510:                  <Bar dataKey="critical" stackId="sev" name="Critical" fill={SEVERITY_COLORS.critical} radius={[4, 4, 0, 0]} />
+/home/z/my-project/src/components/views/IncidentsView.tsx:520:      {/* Filters */}
+/home/z/my-project/src/components/views/IncidentsView.tsx:521:      <div className="flex flex-wrap gap-3">
+/home/z/my-project/src/components/views/IncidentsView.tsx:522:        <Select value={technology} onValueChange={setTechnology}>
+/home/z/my-project/src/components/views/IncidentsView.tsx:523:          <SelectTrigger className="w-[140px]">
+/home/z/my-project/src/components/views/IncidentsView.tsx:524:            <SelectValue placeholder="Technology" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:527:            <SelectItem value="all">All Technologies</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:534:        <Select value={severity} onValueChange={setSeverity}>
+/home/z/my-project/src/components/views/IncidentsView.tsx:535:          <SelectTrigger className="w-[130px]">
+/home/z/my-project/src/components/views/IncidentsView.tsx:536:            <SelectValue placeholder="Severity" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:539:            <SelectItem value="all">All Severities</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:543:            <SelectItem value="critical">Critical</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:547:        <Select value={status} onValueChange={setStatus}>
+/home/z/my-project/src/components/views/IncidentsView.tsx:548:          <SelectTrigger className="w-[140px]">
+/home/z/my-project/src/components/views/IncidentsView.tsx:549:            <SelectValue placeholder="Status" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:552:            <SelectItem value="all">All Statuses</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:554:            <SelectItem value="investigating">Investigating</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:555:            <SelectItem value="resolved">Resolved</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:556:            <SelectItem value="closed">Closed</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:560:        <Select value={category} onValueChange={setCategory}>
+/home/z/my-project/src/components/views/IncidentsView.tsx:561:          <SelectTrigger className="w-[150px]">
+/home/z/my-project/src/components/views/IncidentsView.tsx:562:            <SelectValue placeholder="Category" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:565:            <SelectItem value="all">All Categories</SelectItem>
+/home/z/my-project/src/components/views/IncidentsView.tsx:579:          <CardTitle className="text-base flex items-center gap-2">
+/home/z/my-project/src/components/views/IncidentsView.tsx:580:            <BarChart3 className="h-4 w-4 text-slate-500" />
+/home/z/my-project/src/components/views/IncidentsView.tsx:581:            All Incidents
+/home/z/my-project/src/components/views/IncidentsView.tsx:582:            <Badge variant="secondary" className="ml-2">{incidents.length}</Badge>
+/home/z/my-project/src/components/views/IncidentsView.tsx:583:          </CardTitle>
+/home/z/my-project/src/components/views/IncidentsView.tsx:586:          <div className="max-h-96 overflow-y-auto">
+/home/z/my-project/src/components/views/IncidentsView.tsx:588:              <TableHeader>
+/home/z/my-project/src/components/views/IncidentsView.tsx:590:                  <TableHead className="min-w-[160px]">Title</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:591:                  <TableHead>Tech</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:592:                  <TableHead>Severity</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:593:                  <TableHead>Status</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:594:                  <TableHead>Category</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:595:                  <TableHead>Priority</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:596:                  <TableHead>Site</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:597:                  <TableHead>Assigned</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:598:                  <TableHead>MTTR</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:599:                  <TableHead>SLA</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:600:                  <TableHead>Tags</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:601:                  <TableHead>Created</TableHead>
+/home/z/my-project/src/components/views/IncidentsView.tsx:607:                    <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+/home/z/my-project/src/components/views/IncidentsView.tsx:608:                      No incidents found matching the current filters.
+/home/z/my-project/src/components/views/IncidentsView.tsx:615:                    <TableCell className="font-medium min-w-[160px] max-w-[220px] truncate">
+/home/z/my-project/src/components/views/IncidentsView.tsx:621:                      <Badge variant="outline" className={TECH_BG_CLASSES[inc.technology]}>
+
+[Showing results with pagination = limit: 300]

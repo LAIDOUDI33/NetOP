@@ -1,0 +1,698 @@
+     1→'use client';
+     2→import { useT } from '@/lib/i18n';
+     3→import DataExportButton from '@/components/DataExportButton';
+     4→
+     5→import { useState } from 'react';
+     6→import { useQuery } from '@tanstack/react-query';
+     7→import {
+     8→  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
+     9→  Tooltip, Legend, ResponsiveContainer,
+    10→} from 'recharts';
+    11→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    12→import { Badge } from '@/components/ui/badge';
+    13→import {
+    14→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    15→} from '@/components/ui/select';
+    16→import {
+    17→  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
+    18→} from '@/components/ui/table';
+    19→import { Skeleton } from '@/components/ui/skeleton';
+    20→import { Separator } from '@/components/ui/separator';
+    21→import { Progress } from '@/components/ui/progress';
+    22→import {
+    23→  Brain, ShieldAlert, ShieldCheck, Frown, AlertTriangle,
+    24→} from 'lucide-react';
+    25→import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+    26→import type { Technology } from '@/types';
+    27→
+    28→// ─── API Response Types ────────────────────────────────────────────────
+    29→
+    30→interface FaultPrediction {
+    31→  id: string;
+    32→  siteId: string | null;
+    33→  siteName: string | null;
+    34→  siteCode: string | null;
+    35→  technology: Technology;
+    36→  component: string;
+    37→  faultType: string;
+    38→  probability: number;
+    39→  severity: string;
+    40→  status: string;
+    41→  confidence: number;
+    42→  indicators: string[];
+    43→  recommendedAction: string;
+    44→  estimatedTimeToFail: string;
+    45→  resolvedAt: string | null;
+    46→  createdAt: string;
+    47→  updatedAt: string;
+    48→}
+    49→
+    50→interface FaultSummary {
+    51→  total: number;
+    52→  bySeverity: Record<string, number>;
+    53→  byStatus: Record<string, number>;
+    54→  byComponent: Record<string, number>;
+    55→  avgProbability: number;
+    56→  highRiskCount: number;
+    57→}
+    58→
+    59→interface FaultsResponse {
+    60→  predictions: FaultPrediction[];
+    61→  summary: FaultSummary;
+    62→}
+    63→
+    64→// ─── Constants ─────────────────────────────────────────────────────────
+    65→
+    66→const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
+    67→const COMPONENTS = ['RRU', 'BBU', 'PSU', 'Antenna', 'Fiber', 'Transport'] as const;
+    68→const STATUSES = ['predicted', 'confirmed', 'mitigated', 'false_positive'] as const;
+    69→
+    70→const SEVERITY_BAR_COLORS: Record<string, string> = {
+    71→  low: '#64748B',
+    72→  medium: '#F59E0B',
+    73→  high: '#EF4444',
+    74→  critical: '#991B1B',
+    75→};
+    76→
+    77→const SEVERITY_HEATMAP_BG: Record<string, string> = {
+    78→  low: 'bg-slate-100 dark:bg-slate-800/50',
+    79→  medium: 'bg-amber-100 dark:bg-amber-900/30',
+    80→  high: 'bg-red-100 dark:bg-red-900/30',
+    81→  critical: 'bg-red-200 dark:bg-red-900/50',
+    82→};
+    83→
+    84→const COMPONENT_BADGE_CLASSES: Record<string, string> = {
+    85→  RRU: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    86→  BBU: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    87→  PSU: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+    88→  Antenna: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
+    89→  Fiber: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20',
+    90→  Transport: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
+    91→};
+    92→
+    93→const COMPONENT_DOT_COLORS: Record<string, string> = {
+    94→  RRU: 'bg-amber-500',
+    95→  BBU: 'bg-emerald-500',
+    96→  PSU: 'bg-red-500',
+    97→  Antenna: 'bg-cyan-500',
+    98→  Fiber: 'bg-orange-500',
+    99→  Transport: 'bg-rose-500',
+   100→};
+   101→
+   102→const SEVERITY_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+   103→  low: 'default',
+   104→  medium: 'secondary',
+   105→  high: 'destructive',
+   106→  critical: 'destructive',
+   107→};
+   108→
+   109→const STATUS_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+   110→  predicted: 'default',
+   111→  confirmed: 'destructive',
+   112→  mitigated: 'outline',
+   113→  false_positive: 'secondary',
+   114→};
+   115→
+   116→// ─── Helper Functions ──────────────────────────────────────────────────
+   117→
+   118→function probabilityBarColor(pct: number): string {
+   119→  if (pct >= 80) return 'bg-red-500';
+   120→  if (pct >= 60) return 'bg-amber-500';
+   121→  if (pct >= 40) return 'bg-amber-400';
+   122→  return 'bg-emerald-500';
+   123→}
+   124→
+   125→function probabilityProgressClass(pct: number): string {
+   126→  if (pct >= 80) return '[&>div]:bg-red-500';
+   127→  if (pct >= 60) return '[&>div]:bg-amber-500';
+   128→  if (pct >= 40) return '[&>div]:bg-amber-400';
+   129→  return '[&>div]:bg-emerald-500';
+   130→}
+   131→
+   132→function formatFaultType(ft: string): string {
+   133→  return ft.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+   134→}
+   135→
+   136→function formatStatus(s: string): string {
+   137→  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+   138→}
+   139→
+   140→function formatDate(iso: string): string {
+   141→  const d = new Date(iso);
+   142→  return d.toLocaleDateString('en-US', {
+   143→    month: 'short',
+   144→    day: 'numeric',
+   145→    hour: '2-digit',
+   146→    minute: '2-digit',
+   147→  });
+   148→}
+   149→
+   150→// ─── Loading Skeletons ────────────────────────────────────────────────
+   151→
+   152→function KpiCardsSkeleton() {
+   153→  return (
+   154→    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   155→      {Array.from({ length: 5 }).map((_, i) => (
+   156→        <Card key={i}>
+   157→          <CardHeader className="pb-2">
+   158→            <Skeleton className="h-4 w-28" />
+   159→          </CardHeader>
+   160→          <CardContent>
+   161→            <Skeleton className="h-8 w-16 mb-2" />
+   162→            <Skeleton className="h-2 w-full" />
+   163→          </CardContent>
+   164→        </Card>
+   165→      ))}
+   166→    </div>
+   167→  );
+   168→}
+   169→
+   170→function ChartSkeleton() {
+   171→  return (
+   172→    <Card>
+   173→      <CardHeader>
+   174→        <Skeleton className="h-5 w-48" />
+   175→      </CardHeader>
+   176→      <CardContent>
+   177→        <Skeleton className="h-64 w-full" />
+   178→      </CardContent>
+   179→    </Card>
+   180→  );
+   181→}
+   182→
+   183→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   184→  return (
+   185→    <Card>
+   186→      <CardHeader>
+   187→        <div className="flex items-center justify-between">
+   188→          <Skeleton className="h-5 w-40" />
+   189→          <Skeleton className="h-9 w-64" />
+   190→        </div>
+   191→      </CardHeader>
+   192→      <CardContent>
+   193→        <div className="space-y-2">
+   194→          <Skeleton className="h-8 w-full" />
+   195→          {Array.from({ length: rows }).map((_, r) => (
+   196→            <Skeleton key={r} className="h-10 w-full" />
+   197→          ))}
+   198→        </div>
+   199→      </CardContent>
+   200→    </Card>
+   201→  );
+   202→}
+   203→
+   204→// ─── Custom Chart Tooltip ─────────────────────────────────────────────
+   205→
+   206→function ChartTooltipContent({ active, payload, label }: any) {
+   207→  if (!active || !payload?.length) return null;
+   208→  return (
+   209→    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
+   210→      <p className="font-medium mb-1 capitalize">{label}</p>
+   211→      {payload.map((entry: any, idx: number) => (
+   212→        <div key={idx} className="flex items-center gap-2">
+   213→          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+   214→          <span className="text-muted-foreground">{entry.name}:</span>
+   215→          <span className="font-medium">{entry.value}</span>
+   216→        </div>
+   217→      ))}
+   218→    </div>
+   219→  );
+   220→}
+   221→
+   222→// ─── Main Component ────────────────────────────────────────────────────
+   223→
+   224→export default function FaultsView() {
+   225→  const t = useT();
+   226→  const [severityFilter, setSeverityFilter] = useState<string>('all');
+   227→  const [statusFilter, setStatusFilter] = useState<string>('all');
+   228→  const [componentFilter, setComponentFilter] = useState<string>('all');
+   229→
+   230→  const { data, isLoading, isError } = useQuery<FaultsResponse>({
+   231→    queryKey: ['faults', severityFilter, statusFilter, componentFilter],
+   232→    queryFn: () => {
+   233→      const params = new URLSearchParams();
+   234→      if (severityFilter !== 'all') params.set('severity', severityFilter);
+   235→      if (statusFilter !== 'all') params.set('status', statusFilter);
+   236→      if (componentFilter !== 'all') params.set('component', componentFilter);
+   237→      const qs = params.toString();
+   238→      return fetch(`/api/faults${qs ? `?${qs}` : ''}`).then((r) => r.json());
+   239→    },
+   240→    refetchInterval: 30000,
+   241→  });
+   242→
+   243→  const predictions = data?.predictions ?? [];
+   244→  const summary = data?.summary;
+   245→
+   246→  const severityChartData = SEVERITIES.map((s) => ({
+   247→    severity: s,
+   248→    count: summary?.bySeverity[s] ?? 0,
+   249→    fill: SEVERITY_BAR_COLORS[s],
+   250→  }));
+   251→
+   252→  const avgProbabilityPct = summary ? summary.avgProbability * 100 : 0;
+   253→
+   254→  // Build heatmap data: for each component × severity, count from predictions
+   255→  const heatmapData: Record<string, Record<string, number>> = {};
+   256→  for (const comp of COMPONENTS) {
+   257→    heatmapData[comp] = {};
+   258→    for (const sev of SEVERITIES) {
+   259→      heatmapData[comp][sev] = 0;
+   260→    }
+   261→    heatmapData[comp]._total = 0;
+   262→  }
+   263→  for (const p of predictions) {
+   264→    if (p.component in heatmapData && p.severity in heatmapData[p.component]) {
+   265→      heatmapData[p.component][p.severity]++;
+   266→      heatmapData[p.component]._total++;
+   267→    }
+   268→  }
+   269→
+   270→  // ─── Render: Loading State ──────────────────────────────────────────
+   271→  if (isLoading) {
+   272→    return (
+   273→      <div className="space-y-6 p-6">
+   274→        <div>
+   275→          <Skeleton className="h-8 w-72 mb-2" />
+   276→          <Skeleton className="h-4 w-96" />
+   277→        </div>
+   278→        <KpiCardsSkeleton />
+   279→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   280→          <ChartSkeleton />
+   281→          <ChartSkeleton />
+   282→        </div>
+   283→        <TableSkeleton rows={8} />
+   284→      </div>
+   285→    );
+   286→  }
+   287→
+   288→  // ─── Render: Error State ────────────────────────────────────────────
+   289→  if (isError) {
+   290→    return (
+   291→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   292→        <Frown className="h-12 w-12 mb-4" />
+   293→        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('flt.title') })}</p>
+   294→        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
+   295→      </div>
+   296→    );
+   297→  }
+   298→
+   299→  // ─── Render: Empty State ────────────────────────────────────────────
+   300→  if (!data || predictions.length === 0) {
+   301→    return (
+   302→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   303→        <Brain className="h-12 w-12 mb-4" />
+   304→        <p className="text-lg font-medium">No Fault Predictions Available</p>
+   305→        <p className="text-sm mt-1">
+   306→          AI fault prediction data has not been generated yet.
+   307→        </p>
+   308→      </div>
+   309→    );
+   310→  }
+   311→
+   312→  // ─── Render: Main View ─────────────────────────────────────────────
+   313→  return (
+   314→    <div className="space-y-6 p-6">
+   315→      {/* Header */}
+   316→      <div>
+   317→        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   318→          <Brain className="h-6 w-6 text-amber-500" />
+   319→          {t('flt.predictions')}
+   320→        </h1>
+   321→        <p className="text-muted-foreground text-sm mt-1">
+   322→          Predictive maintenance and failure forecasting
+   323→        </p>
+   324→      </div>
+   325→
+   326→      {/* KPI Summary Cards */}
+   327→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   328→        {/* 1. Total Predictions */}
+   329→        <Card>
+   330→          <CardHeader className="pb-2">
+   331→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   332→              <Brain className="h-4 w-4 text-amber-500" />
+   333→              Total Predictions
+   334→            </CardTitle>
+   335→          </CardHeader>
+   336→          <CardContent>
+   337→            <span className="text-3xl font-bold">
+   338→              {summary?.total ?? 0}
+   339→            </span>
+   340→            <p className="text-xs text-muted-foreground mt-1">AI-generated forecasts</p>
+   341→          </CardContent>
+   342→        </Card>
+   343→
+   344→        {/* 2. High/Critical Risk */}
+   345→        <Card className="border-red-500/40">
+   346→          <CardHeader className="pb-2">
+   347→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   348→              <ShieldAlert className="h-4 w-4 text-red-500" />
+   349→              High/Critical Risk
+   350→            </CardTitle>
+   351→          </CardHeader>
+   352→          <CardContent>
+   353→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   354→              {summary?.highRiskCount ?? 0}
+   355→            </span>
+   356→            <p className="text-xs text-muted-foreground mt-1">Requires immediate attention</p>
+   357→          </CardContent>
+   358→        </Card>
+   359→
+   360→        {/* 3. Avg Probability */}
+   361→        <Card>
+   362→          <CardHeader className="pb-2">
+   363→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   364→              <AlertTriangle className="h-4 w-4 text-amber-500" />
+   365→              Avg Probability
+   366→            </CardTitle>
+   367→          </CardHeader>
+   368→          <CardContent>
+   369→            <span className={`text-3xl font-bold ${avgProbabilityPct >= 80 ? 'text-red-600 dark:text-red-400' : avgProbabilityPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+   370→              {formatNumber(avgProbabilityPct, 0)}%
+   371→            </span>
+   372→            <Progress
+   373→              value={avgProbabilityPct}
+   374→              className={`mt-2 h-2 ${probabilityProgressClass(avgProbabilityPct)}`}
+   375→            />
+   376→          </CardContent>
+   377→        </Card>
+   378→
+   379→        {/* 4. Confirmed Faults */}
+   380→        <Card>
+   381→          <CardHeader className="pb-2">
+   382→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   383→              <ShieldAlert className="h-4 w-4 text-red-500" />
+   384→              Confirmed Faults
+   385→            </CardTitle>
+   386→          </CardHeader>
+   387→          <CardContent>
+   388→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   389→              {summary?.byStatus?.confirmed ?? 0}
+   390→            </span>
+   391→            <p className="text-xs text-muted-foreground mt-1">Verified failures</p>
+   392→          </CardContent>
+   393→        </Card>
+   394→
+   395→        {/* 5. Mitigated */}
+   396→        <Card>
+   397→          <CardHeader className="pb-2">
+   398→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   399→              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+   400→              Mitigated
+   401→            </CardTitle>
+   402→          </CardHeader>
+   403→          <CardContent>
+   404→            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+   405→              {summary?.byStatus?.mitigated ?? 0}
+   406→            </span>
+   407→            <p className="text-xs text-muted-foreground mt-1">Successfully resolved</p>
+   408→          </CardContent>
+   409→        </Card>
+   410→      </div>
+   411→
+   412→      {/* Charts Row */}
+   413→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   414→        {/* 1. Severity Distribution Bar Chart */}
+   415→        <Card>
+   416→          <CardHeader>
+   417→            <CardTitle className="text-base">{t('flt.sevDist')}</CardTitle>
+   418→          </CardHeader>
+   419→          <CardContent>
+   420→            <div className="h-64">
+   421→              <ResponsiveContainer width="100%" height="100%">
+   422→                <BarChart data={severityChartData} barSize={48}>
+   423→                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+   424→                  <XAxis
+   425→                    dataKey="severity"
+   426→                    className="text-xs"
+   427→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   428→                    tickFormatter={(v: string) => v.charAt(0).toUpperCase() + v.slice(1)}
+   429→                  />
+   430→                  <YAxis
+   431→                    className="text-xs"
+   432→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   433→                    allowDecimals={false}
+   434→                  />
+   435→                  <Tooltip content={<ChartTooltipContent />} />
+   436→                  <Bar dataKey="count" name="Count" radius={[4, 4, 0, 0]}>
+   437→                    {severityChartData.map((entry, idx) => (
+   438→                      <Cell key={idx} fill={entry.fill} />
+   439→                    ))}
+   440→                  </Bar>
+   441→                </BarChart>
+   442→              </ResponsiveContainer>
+   443→            </div>
+   444→          </CardContent>
+   445→        </Card>
+   446→
+   447→        {/* 2. Component Risk Heatmap Grid */}
+   448→        <Card>
+   449→          <CardHeader>
+   450→            <CardTitle className="text-base">{t('flt.componentHeatmap')}</CardTitle>
+   451→          </CardHeader>
+   452→          <CardContent>
+   453→            <div className="overflow-x-auto">
+   454→              <div className="min-w-[480px]">
+   455→                {/* Header Row */}
+   456→                <div className="grid grid-cols-[100px_repeat(4,1fr)_80px] gap-1 mb-1">
+   457→                  <div className="text-xs font-medium text-muted-foreground" />
+   458→                  {SEVERITIES.map((sev) => (
+   459→                    <div
+   460→                      key={sev}
+   461→                      className="text-xs font-medium text-center capitalize"
+   462→                    >
+   463→                      {sev}
+   464→                    </div>
+   465→                  ))}
+   466→                  <div className="text-xs font-medium text-center text-muted-foreground">Total</div>
+   467→                </div>
+   468→
+   469→                {/* Data Rows */}
+   470→                <div className="space-y-1">
+   471→                  {COMPONENTS.map((comp) => (
+   472→                    <div key={comp} className="grid grid-cols-[100px_repeat(4,1fr)_80px] gap-1 items-center">
+   473→                      {/* Component Label */}
+   474→                      <div className="flex items-center gap-1.5">
+   475→                        <span className={`w-2 h-2 rounded-full ${COMPONENT_DOT_COLORS[comp]}`} />
+   476→                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${COMPONENT_BADGE_CLASSES[comp]}`}>
+   477→                          {comp}
+   478→                        </Badge>
+   479→                      </div>
+   480→
+   481→                      {/* Severity Cells */}
+   482→                      {SEVERITIES.map((sev) => {
+   483→                        const count = heatmapData[comp]?.[sev] ?? 0;
+   484→                        return (
+   485→                          <div
+   486→                            key={`${comp}-${sev}`}
+   487→                            className={`rounded-md text-center text-xs font-medium py-1.5 ${SEVERITY_HEATMAP_BG[sev]} ${count === 0 ? 'text-muted-foreground/40' : ''}`}
+   488→                          >
+   489→                            {count}
+   490→                          </div>
+   491→                        );
+   492→                      })}
+   493→
+   494→                      {/* Total Cell */}
+   495→                      <div className="text-center text-xs font-bold py-1.5 bg-muted rounded-md">
+   496→                        {heatmapData[comp]?._total ?? 0}
+   497→                      </div>
+   498→                    </div>
+   499→                  ))}
+   500→                </div>
+   501→              </div>
+   502→            </div>
+   503→          </CardContent>
+   504→        </Card>
+   505→      </div>
+   506→
+   507→      {/* Full Predictions Table */}
+   508→      <Card>
+   509→        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+   510→          <CardTitle className="text-base">{t('flt.predictions')}</CardTitle>
+   511→          <div className="flex flex-wrap items-center gap-2">
+   512→            {/* Severity Filter */}
+   513→            <Select value={severityFilter} onValueChange={setSeverityFilter}>
+   514→              <SelectTrigger className="w-[130px]">
+   515→                <SelectValue placeholder={t('filter.severity')} />
+   516→              </SelectTrigger>
+   517→              <SelectContent>
+   518→                <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
+   519→                <SelectItem value="low">Low</SelectItem>
+   520→                <SelectItem value="medium">Medium</SelectItem>
+   521→                <SelectItem value="high">High</SelectItem>
+   522→                <SelectItem value="critical">{t('status.critical')}</SelectItem>
+   523→              </SelectContent>
+   524→            </Select>
+   525→
+   526→            {/* Status Filter */}
+   527→            <Select value={statusFilter} onValueChange={setStatusFilter}>
+   528→              <SelectTrigger className="w-[140px]">
+   529→                <SelectValue placeholder={t('filter.status')} />
+   530→              </SelectTrigger>
+   531→              <SelectContent>
+   532→                <SelectItem value="all">{t('filter.allStatuses')}</SelectItem>
+   533→                <SelectItem value="predicted">Predicted</SelectItem>
+   534→                <SelectItem value="confirmed">Confirmed</SelectItem>
+   535→                <SelectItem value="mitigated">Mitigated</SelectItem>
+   536→                <SelectItem value="false_positive">False Positive</SelectItem>
+   537→              </SelectContent>
+   538→            </Select>
+   539→
+   540→            {/* Component Filter */}
+   541→            <Select value={componentFilter} onValueChange={setComponentFilter}>
+   542→              <SelectTrigger className="w-[130px]">
+   543→                <SelectValue placeholder={t('filter.component')} />
+   544→              </SelectTrigger>
+   545→              <SelectContent>
+   546→                <SelectItem value="all">{t('filter.allComponents')}</SelectItem>
+   547→                {COMPONENTS.map((c) => (
+   548→                  <SelectItem key={c} value={c}>{c}</SelectItem>
+   549→                ))}
+   550→              </SelectContent>
+   551→            </Select>
+   552→            <DataExportButton data={predictions as unknown as Record<string, unknown>[]} filename="faults" />
+   553→          </div>
+   554→        </CardHeader>
+   555→        <CardContent>
+   556→          {predictions.length === 0 ? (
+   557→            <p className="text-sm text-muted-foreground py-8 text-center">
+   558→              {t('empty.noMatch')}
+   559→            </p>
+   560→          ) : (
+   561→            <div className="max-h-96 overflow-y-auto">
+   562→              <Table>
+   563→                <TableHeader>
+   564→                  <TableRow>
+   565→                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   566→                    <TableHead>{t('th.tech')}</TableHead>
+   567→                    <TableHead>{t('th.component')}</TableHead>
+   568→                    <TableHead>{t('th.type')}</TableHead>
+   569→                    <TableHead className="text-right">{t('th.probability')}</TableHead>
+   570→                    <TableHead>Severity</TableHead>
+   571→                    <TableHead>{t('th.status')}</TableHead>
+   572→                    <TableHead className="text-right">{t('th.confidence')}</TableHead>
+   573→                    <TableHead>Time to Fail</TableHead>
+   574→                    <TableHead>{t('th.action')}</TableHead>
+   575→                    <TableHead className="sticky right-0 bg-background z-10">{t('th.createdAt')}</TableHead>
+   576→                  </TableRow>
+   577→                </TableHeader>
+   578→                <TableBody>
+   579→                  {predictions.map((p) => {
+   580→                    const probPct = p.probability * 100;
+   581→                    const confPct = p.confidence * 100;
+   582→                    const isCritical = p.severity === 'critical';
+   583→
+   584→                    return (
+   585→                      <TableRow key={p.id}>
+   586→                        {/* Site */}
+   587→                        <TableCell className="font-medium text-xs max-w-[140px] sticky left-0 bg-background">
+   588→                          <div>
+   589→                            <span className="truncate block max-w-[140px]">
+   590→                              {p.siteName ?? '—'}
+   591→                            </span>
+   592→                            {p.siteCode && (
+   593→                              <span className="text-[10px] text-muted-foreground">
+   594→                                {p.siteCode}
+   595→                              </span>
+   596→                            )}
+   597→                          </div>
+   598→                        </TableCell>
+   599→
+   600→                        {/* Tech */}
+   601→                        <TableCell>
+   602→                          <Badge
+   603→                            variant="outline"
+   604→                            className={TECH_BG_CLASSES[p.technology as Technology] ?? 'bg-slate-500/10 text-slate-700 border-slate-500/20'}
+   605→                          >
+   606→                            {p.technology}
+   607→                          </Badge>
+   608→                        </TableCell>
+   609→
+   610→                        {/* Component */}
+   611→                        <TableCell>
+   612→                          <Badge
+   613→                            variant="outline"
+   614→                            className={`text-[10px] ${COMPONENT_BADGE_CLASSES[p.component] ?? 'bg-slate-500/10 text-slate-700 border-slate-500/20'}`}
+   615→                          >
+   616→                            {p.component}
+   617→                          </Badge>
+   618→                        </TableCell>
+   619→
+   620→                        {/* Fault Type */}
+   621→                        <TableCell className="text-xs">
+   622→                          {formatFaultType(p.faultType)}
+   623→                        </TableCell>
+   624→
+   625→                        {/* Probability */}
+   626→                        <TableCell className="text-right">
+   627→                          <div className="flex items-center gap-2 justify-end">
+   628→                            <div className="w-12 h-1.5 rounded-full bg-muted overflow-hidden">
+   629→                              <div
+   630→                                className={`h-full rounded-full ${probabilityBarColor(probPct)}`}
+   631→                                style={{ width: `${probPct}%` }}
+   632→                              />
+   633→                            </div>
+   634→                            <span className={`text-xs font-medium ${probPct >= 80 ? 'text-red-600 dark:text-red-400' : probPct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+   635→                              {formatNumber(probPct, 0)}%
+   636→                            </span>
+   637→                          </div>
+   638→                        </TableCell>
+   639→
+   640→                        {/* Severity */}
+   641→                        <TableCell>
+   642→                          {isCritical ? (
+   643→                            <Badge
+   644→                              variant={SEVERITY_BADGE_VARIANT[p.severity] ?? 'default'}
+   645→                              className="bg-red-800 text-white hover:bg-red-900"
+   646→                            >
+   647→                              {p.severity.charAt(0).toUpperCase() + p.severity.slice(1)}
+   648→                            </Badge>
+   649→                          ) : (
+   650→                            <Badge variant={SEVERITY_BADGE_VARIANT[p.severity] ?? 'default'}>
+   651→                              {p.severity.charAt(0).toUpperCase() + p.severity.slice(1)}
+   652→                            </Badge>
+   653→                          )}
+   654→                        </TableCell>
+   655→
+   656→                        {/* Status */}
+   657→                        <TableCell>
+   658→                          <Badge variant={STATUS_BADGE_VARIANT[p.status] ?? 'default'}>
+   659→                            {formatStatus(p.status)}
+   660→                          </Badge>
+   661→                        </TableCell>
+   662→
+   663→                        {/* Confidence */}
+   664→                        <TableCell className="text-right text-xs font-medium">
+   665→                          {formatNumber(confPct, 0)}%
+   666→                        </TableCell>
+   667→
+   668→                        {/* Time to Fail */}
+   669→                        <TableCell className="text-xs">
+   670→                          {p.estimatedTimeToFail ?? '—'}
+   671→                        </TableCell>
+   672→
+   673→                        {/* Action */}
+   674→                        <TableCell className="text-xs max-w-[160px]">
+   675→                          <span
+   676→                            className="truncate block max-w-[160px]"
+   677→                            title={p.recommendedAction}
+   678→                          >
+   679→                            {p.recommendedAction}
+   680→                          </span>
+   681→                        </TableCell>
+   682→
+   683→                        {/* Created */}
+   684→                        <TableCell className="text-xs text-muted-foreground sticky right-0 bg-background">
+   685→                          {formatDate(p.createdAt)}
+   686→                        </TableCell>
+   687→                      </TableRow>
+   688→                    );
+   689→                  })}
+   690→                </TableBody>
+   691→              </Table>
+   692→            </div>
+   693→          )}
+   694→        </CardContent>
+   695→      </Card>
+   696→    </div>
+   697→  );
+   698→}

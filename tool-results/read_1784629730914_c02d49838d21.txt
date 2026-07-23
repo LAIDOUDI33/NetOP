@@ -1,0 +1,502 @@
+     1→/home/z/my-project/src/components/views/CoverageMapView.tsx:95:            <SelectValue placeholder="Technology" />
+     2→/home/z/my-project/src/components/views/CoverageMapView.tsx:98:            <SelectItem value="all">All Technologies</SelectItem>
+     3→/home/z/my-project/src/components/views/CoverageMapView.tsx:108:            <SelectValue placeholder="Region" />
+     4→/home/z/my-project/src/components/views/CoverageMapView.tsx:111:            <SelectItem value="all">All Regions</SelectItem>
+     5→/home/z/my-project/src/components/views/CoverageMapView.tsx:141:                    <p className="text-muted-foreground font-medium">No sites match the selected filters</p>
+     6→/home/z/my-project/src/components/views/CoverageMapView.tsx:142:                    <p className="text-sm text-muted-foreground">Try adjusting the technology or region filter</p>
+     7→/home/z/my-project/src/components/views/CoverageMapView.tsx:153:                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+     8→/home/z/my-project/src/components/views/CoverageMapView.tsx:259:            <CardTitle className="text-base font-semibold">Technology Distribution</CardTitle>
+     9→/home/z/my-project/src/components/views/CoverageMapView.tsx:312:                    <TableHead>Region</TableHead>
+    10→/home/z/my-project/src/components/views/CoverageMapView.tsx:313:                    <TableHead className="text-right">Total Sites</TableHead>
+    11→/home/z/my-project/src/components/views/CoverageMapView.tsx:314:                    <TableHead className="text-right">Avg Availability</TableHead>
+    12→/home/z/my-project/src/components/views/CoverageMapView.tsx:315:                    <TableHead className="text-right">Avg Signal</TableHead>
+    13→/home/z/my-project/src/components/views/CoverageMapView.tsx:316:                    <TableHead>Tech Distribution</TableHead>
+    14→/home/z/my-project/src/components/views/CoverageMapView.tsx:362:              <p>No region data available</p>
+    15→/home/z/my-project/src/components/views/IncidentsView.tsx:96:  network: 'Network',
+    16→/home/z/my-project/src/components/views/IncidentsView.tsx:97:  hardware: 'Hardware',
+    17→/home/z/my-project/src/components/views/IncidentsView.tsx:98:  software: 'Software',
+    18→/home/z/my-project/src/components/views/IncidentsView.tsx:99:  power: 'Power',
+    19→/home/z/my-project/src/components/views/IncidentsView.tsx:100:  environmental: 'Environmental',
+    20→/home/z/my-project/src/components/views/IncidentsView.tsx:101:  third_party: 'Third Party',
+    21→/home/z/my-project/src/components/views/IncidentsView.tsx:243:    { name: 'Open', value: summary?.byStatus?.open ?? 0, fill: STATUS_COLORS.open },
+    22→/home/z/my-project/src/components/views/IncidentsView.tsx:244:    { name: 'Investigating', value: summary?.byStatus?.investigating ?? 0, fill: STATUS_COLORS.investigating },
+    23→/home/z/my-project/src/components/views/IncidentsView.tsx:245:    { name: 'Resolved', value: summary?.byStatus?.resolved ?? 0, fill: STATUS_COLORS.resolved },
+    24→/home/z/my-project/src/components/views/IncidentsView.tsx:246:    { name: 'Closed', value: summary?.byStatus?.closed ?? 0, fill: STATUS_COLORS.closed },
+    25→/home/z/my-project/src/components/views/IncidentsView.tsx:291:        <p className="text-lg font-medium">Failed to load incidents data</p>
+    26→/home/z/my-project/src/components/views/IncidentsView.tsx:410:            <CardTitle className="text-base">Status Distribution</CardTitle>
+    27→/home/z/my-project/src/components/views/IncidentsView.tsx:428:                  <Bar dataKey="value" name="Count" radius={[4, 4, 0, 0]}>
+    28→/home/z/my-project/src/components/views/IncidentsView.tsx:442:            <CardTitle className="text-base">Category Distribution</CardTitle>
+    29→/home/z/my-project/src/components/views/IncidentsView.tsx:481:            <CardTitle className="text-base">Severity by Category</CardTitle>
+    30→/home/z/my-project/src/components/views/IncidentsView.tsx:507:                  <Bar dataKey="low" stackId="sev" name="Low" fill={SEVERITY_COLORS.low} radius={[0, 0, 0, 0]} />
+    31→/home/z/my-project/src/components/views/IncidentsView.tsx:508:                  <Bar dataKey="medium" stackId="sev" name="Medium" fill={SEVERITY_COLORS.medium} />
+    32→/home/z/my-project/src/components/views/IncidentsView.tsx:509:                  <Bar dataKey="high" stackId="sev" name="High" fill={SEVERITY_COLORS.high} />
+    33→/home/z/my-project/src/components/views/IncidentsView.tsx:510:                  <Bar dataKey="critical" stackId="sev" name="Critical" fill={SEVERITY_COLORS.critical} radius={[4, 4, 0, 0]} />
+    34→/home/z/my-project/src/components/views/IncidentsView.tsx:524:            <SelectValue placeholder="Technology" />
+    35→/home/z/my-project/src/components/views/IncidentsView.tsx:527:            <SelectItem value="all">All Technologies</SelectItem>
+    36→/home/z/my-project/src/components/views/IncidentsView.tsx:536:            <SelectValue placeholder="Severity" />
+    37→/home/z/my-project/src/components/views/IncidentsView.tsx:539:            <SelectItem value="all">All Severities</SelectItem>
+    38→/home/z/my-project/src/components/views/IncidentsView.tsx:540:            <SelectItem value="low">Low</SelectItem>
+    39→/home/z/my-project/src/components/views/IncidentsView.tsx:541:            <SelectItem value="medium">Medium</SelectItem>
+    40→/home/z/my-project/src/components/views/IncidentsView.tsx:542:            <SelectItem value="high">High</SelectItem>
+    41→/home/z/my-project/src/components/views/IncidentsView.tsx:543:            <SelectItem value="critical">Critical</SelectItem>
+    42→/home/z/my-project/src/components/views/IncidentsView.tsx:549:            <SelectValue placeholder="Status" />
+    43→/home/z/my-project/src/components/views/IncidentsView.tsx:552:            <SelectItem value="all">All Statuses</SelectItem>
+    44→/home/z/my-project/src/components/views/IncidentsView.tsx:553:            <SelectItem value="open">Open</SelectItem>
+    45→/home/z/my-project/src/components/views/IncidentsView.tsx:554:            <SelectItem value="investigating">Investigating</SelectItem>
+    46→/home/z/my-project/src/components/views/IncidentsView.tsx:555:            <SelectItem value="resolved">Resolved</SelectItem>
+    47→/home/z/my-project/src/components/views/IncidentsView.tsx:556:            <SelectItem value="closed">Closed</SelectItem>
+    48→/home/z/my-project/src/components/views/IncidentsView.tsx:562:            <SelectValue placeholder="Category" />
+    49→/home/z/my-project/src/components/views/IncidentsView.tsx:565:            <SelectItem value="all">All Categories</SelectItem>
+    50→/home/z/my-project/src/components/views/IncidentsView.tsx:566:            <SelectItem value="network">Network</SelectItem>
+    51→/home/z/my-project/src/components/views/IncidentsView.tsx:567:            <SelectItem value="hardware">Hardware</SelectItem>
+    52→/home/z/my-project/src/components/views/IncidentsView.tsx:568:            <SelectItem value="software">Software</SelectItem>
+    53→/home/z/my-project/src/components/views/IncidentsView.tsx:569:            <SelectItem value="power">Power</SelectItem>
+    54→/home/z/my-project/src/components/views/IncidentsView.tsx:570:            <SelectItem value="environmental">Environmental</SelectItem>
+    55→/home/z/my-project/src/components/views/IncidentsView.tsx:571:            <SelectItem value="third_party">Third Party</SelectItem>
+    56→/home/z/my-project/src/components/views/IncidentsView.tsx:590:                  <TableHead className="min-w-[160px]">Title</TableHead>
+    57→/home/z/my-project/src/components/views/IncidentsView.tsx:591:                  <TableHead>Tech</TableHead>
+    58→/home/z/my-project/src/components/views/IncidentsView.tsx:592:                  <TableHead>Severity</TableHead>
+    59→/home/z/my-project/src/components/views/IncidentsView.tsx:593:                  <TableHead>Status</TableHead>
+    60→/home/z/my-project/src/components/views/IncidentsView.tsx:594:                  <TableHead>Category</TableHead>
+    61→/home/z/my-project/src/components/views/IncidentsView.tsx:595:                  <TableHead>Priority</TableHead>
+    62→/home/z/my-project/src/components/views/IncidentsView.tsx:596:                  <TableHead>Site</TableHead>
+    63→/home/z/my-project/src/components/views/IncidentsView.tsx:597:                  <TableHead>Assigned</TableHead>
+    64→/home/z/my-project/src/components/views/IncidentsView.tsx:598:                  <TableHead>MTTR</TableHead>
+    65→/home/z/my-project/src/components/views/IncidentsView.tsx:599:                  <TableHead>SLA</TableHead>
+    66→/home/z/my-project/src/components/views/IncidentsView.tsx:600:                  <TableHead>Tags</TableHead>
+    67→/home/z/my-project/src/components/views/IncidentsView.tsx:601:                  <TableHead>Created</TableHead>
+    68→/home/z/my-project/src/components/views/IncidentsView.tsx:665:                        <span className="text-muted-foreground italic">Unassigned</span>
+    69→/home/z/my-project/src/components/views/IncidentsView.tsx:677:                        <Badge variant="destructive">BREACH</Badge>
+    70→/home/z/my-project/src/components/views/IncidentsView.tsx:679:                        <Badge variant="outline">OK</Badge>
+    71→/home/z/my-project/src/components/views/ConfigView.tsx:116:    if (!ts) return 'Never';
+    72→/home/z/my-project/src/components/views/ConfigView.tsx:164:            <h2 className="text-2xl font-bold tracking-tight">Configuration Templates</h2>
+    73→/home/z/my-project/src/components/views/ConfigView.tsx:165:            <p className="text-sm text-muted-foreground">Network parameter templates and bulk configuration management</p>
+    74→/home/z/my-project/src/components/views/ConfigView.tsx:175:              <p className="text-sm font-medium text-muted-foreground">Total Templates</p>
+    75→/home/z/my-project/src/components/views/ConfigView.tsx:184:              <p className="text-sm font-medium text-muted-foreground">Categories</p>
+    76→/home/z/my-project/src/components/views/ConfigView.tsx:193:              <p className="text-sm font-medium text-muted-foreground">Default Templates</p>
+    77→/home/z/my-project/src/components/views/ConfigView.tsx:202:              <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
+    78→/home/z/my-project/src/components/views/ConfigView.tsx:248:            <SelectValue placeholder="Technology" />
+    79→/home/z/my-project/src/components/views/ConfigView.tsx:251:            <SelectItem value="all">All Tech</SelectItem>
+    80→/home/z/my-project/src/components/views/ConfigView.tsx:260:            <SelectValue placeholder="Category" />
+    81→/home/z/my-project/src/components/views/ConfigView.tsx:263:            <SelectItem value="all">All Categories</SelectItem>
+    82→/home/z/my-project/src/components/views/ConfigView.tsx:271:            <SelectValue placeholder="Vendor" />
+    83→/home/z/my-project/src/components/views/ConfigView.tsx:274:            <SelectItem value="all">All Vendors</SelectItem>
+    84→/home/z/my-project/src/components/views/ConfigView.tsx:342:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Name</TableHead>
+    85→/home/z/my-project/src/components/views/ConfigView.tsx:343:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Value</TableHead>
+    86→/home/z/my-project/src/components/views/ConfigView.tsx:344:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Unit</TableHead>
+    87→/home/z/my-project/src/components/views/ConfigView.tsx:345:                          <TableHead className="text-[11px] font-semibold h-8 px-3">Range</TableHead>
+    88→/home/z/my-project/src/components/views/ConfigView.tsx:375:          <p className="text-sm font-medium">No templates found</p>
+    89→/home/z/my-project/src/components/views/ConfigView.tsx:376:          <p className="text-xs mt-1">Try adjusting your filters</p>
+    90→/home/z/my-project/src/components/views/HandoverView.tsx:247:        <p className="text-lg font-medium">Failed to load handover data</p>
+    91→/home/z/my-project/src/components/views/HandoverView.tsx:258:        <p className="text-lg font-medium">No Handover Data Available</p>
+    92→/home/z/my-project/src/components/views/HandoverView.tsx:273:        <h1 className="text-2xl font-bold tracking-tight">Handover Optimization</h1>
+    93→/home/z/my-project/src/components/views/HandoverView.tsx:328:            <p className="text-xs text-muted-foreground mt-1">All HO attempts</p>
+    94→/home/z/my-project/src/components/views/HandoverView.tsx:343:            <p className="text-xs text-muted-foreground mt-1">Failed handovers</p>
+    95→/home/z/my-project/src/components/views/HandoverView.tsx:373:            <p className="text-xs text-muted-foreground mt-1">Require immediate action</p>
+    96→/home/z/my-project/src/components/views/HandoverView.tsx:383:            <CardTitle className="text-base">HO Success Rate Distribution</CardTitle>
+    97→/home/z/my-project/src/components/views/HandoverView.tsx:400:                  <Bar dataKey="count" name="Pairs" radius={[4, 4, 0, 0]}>
+    98→/home/z/my-project/src/components/views/HandoverView.tsx:414:            <CardTitle className="text-base">Relation Type Distribution</CardTitle>
+    99→/home/z/my-project/src/components/views/HandoverView.tsx:454:          <CardTitle className="text-base">Handover Pair Details</CardTitle>
+   100→/home/z/my-project/src/components/views/HandoverView.tsx:458:                <SelectValue placeholder="Technology" />
+   101→/home/z/my-project/src/components/views/HandoverView.tsx:461:                <SelectItem value="all">All Tech</SelectItem>
+   102→/home/z/my-project/src/components/views/HandoverView.tsx:470:                <SelectValue placeholder="Status" />
+   103→/home/z/my-project/src/components/views/HandoverView.tsx:473:                <SelectItem value="all">All Status</SelectItem>
+   104→/home/z/my-project/src/components/views/HandoverView.tsx:474:                <SelectItem value="normal">Normal</SelectItem>
+   105→/home/z/my-project/src/components/views/HandoverView.tsx:475:                <SelectItem value="degraded">Degraded</SelectItem>
+   106→/home/z/my-project/src/components/views/HandoverView.tsx:476:                <SelectItem value="critical">Critical</SelectItem>
+   107→/home/z/my-project/src/components/views/HandoverView.tsx:491:                    <TableHead className="sticky left-0 bg-background z-10">Serving Cell</TableHead>
+   108→/home/z/my-project/src/components/views/HandoverView.tsx:492:                    <TableHead className="sticky left-[140px] bg-background z-10">Code</TableHead>
+   109→/home/z/my-project/src/components/views/HandoverView.tsx:493:                    <TableHead className="sticky left-[200px] bg-background z-10">Neighbor</TableHead>
+   110→/home/z/my-project/src/components/views/HandoverView.tsx:494:                    <TableHead className="sticky left-[340px] bg-background z-10">Code</TableHead>
+   111→/home/z/my-project/src/components/views/HandoverView.tsx:495:                    <TableHead>Tech</TableHead>
+   112→/home/z/my-project/src/components/views/HandoverView.tsx:496:                    <TableHead>Type</TableHead>
+   113→/home/z/my-project/src/components/views/HandoverView.tsx:497:                    <TableHead className="text-right">Attempts</TableHead>
+   114→/home/z/my-project/src/components/views/HandoverView.tsx:498:                    <TableHead className="text-right">Success</TableHead>
+   115→/home/z/my-project/src/components/views/HandoverView.tsx:499:                    <TableHead className="text-right">Failures</TableHead>
+   116→/home/z/my-project/src/components/views/HandoverView.tsx:500:                    <TableHead className="text-right">Success %</TableHead>
+   117→/home/z/my-project/src/components/views/HandoverView.tsx:501:                    <TableHead className="text-right">Prep ms</TableHead>
+   118→/home/z/my-project/src/components/views/HandoverView.tsx:502:                    <TableHead className="text-right">Exec ms</TableHead>
+   119→/home/z/my-project/src/components/views/HandoverView.tsx:504:                    <TableHead>Early/Late</TableHead>
+   120→/home/z/my-project/src/components/views/HandoverView.tsx:505:                    <TableHead>Status</TableHead>
+   121→/home/z/my-project/src/components/views/HandoverView.tsx:506:                    <TableHead>Action</TableHead>
+   122→/home/z/my-project/src/components/views/HealthView.tsx:228:    { name: 'Improving', value: summary?.byTrend?.improving ?? 0, fill: TREND_COLORS.improving },
+   123→/home/z/my-project/src/components/views/HealthView.tsx:229:    { name: 'Stable', value: summary?.byTrend?.stable ?? 0, fill: TREND_COLORS.stable },
+   124→/home/z/my-project/src/components/views/HealthView.tsx:230:    { name: 'Degrading', value: summary?.byTrend?.degrading ?? 0, fill: TREND_COLORS.degrading },
+   125→/home/z/my-project/src/components/views/HealthView.tsx:278:        <p className="text-lg font-medium">Failed to load health data</p>
+   126→/home/z/my-project/src/components/views/HealthView.tsx:289:        <p className="text-lg font-medium">No Health Data Available</p>
+   127→/home/z/my-project/src/components/views/HealthView.tsx:381:            <p className="text-xs text-muted-foreground mt-1">Trending downward</p>
+   128→/home/z/my-project/src/components/views/HealthView.tsx:397:            <p className="text-xs text-muted-foreground mt-1">Critical attention needed</p>
+   129→/home/z/my-project/src/components/views/HealthView.tsx:407:            <CardTitle className="text-base">Grade Distribution</CardTitle>
+   130→/home/z/my-project/src/components/views/HealthView.tsx:428:                    <Bar dataKey="count" name="Sites" radius={[4, 4, 0, 0]}>
+   131→/home/z/my-project/src/components/views/HealthView.tsx:443:            <CardTitle className="text-base">Trend Distribution</CardTitle>
+   132→/home/z/my-project/src/components/views/HealthView.tsx:479:          <CardTitle className="text-base">Region Health Overview</CardTitle>
+   133→/home/z/my-project/src/components/views/HealthView.tsx:503:                  <Bar dataKey="score" name="Avg Overall" radius={[0, 4, 4, 0]}>
+   134→/home/z/my-project/src/components/views/HealthView.tsx:519:          <CardTitle className="text-base">Health Score Details</CardTitle>
+   135→/home/z/my-project/src/components/views/HealthView.tsx:523:                <SelectValue placeholder="Technology" />
+   136→/home/z/my-project/src/components/views/HealthView.tsx:526:                <SelectItem value="all">All Tech</SelectItem>
+   137→/home/z/my-project/src/components/views/HealthView.tsx:535:                <SelectValue placeholder="Grade" />
+   138→/home/z/my-project/src/components/views/HealthView.tsx:538:                <SelectItem value="all">All Grades</SelectItem>
+   139→/home/z/my-project/src/components/views/HealthView.tsx:549:                <SelectValue placeholder="Region" />
+   140→/home/z/my-project/src/components/views/HealthView.tsx:552:                <SelectItem value="all">All Regions</SelectItem>
+   141→/home/z/my-project/src/components/views/HealthView.tsx:570:                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+   142→/home/z/my-project/src/components/views/HealthView.tsx:571:                    <TableHead>Tech</TableHead>
+   143→/home/z/my-project/src/components/views/HealthView.tsx:572:                    <TableHead>Region</TableHead>
+   144→/home/z/my-project/src/components/views/HealthView.tsx:573:                    <TableHead className="text-right">Overall</TableHead>
+   145→/home/z/my-project/src/components/views/HealthView.tsx:574:                    <TableHead className="text-right">Coverage</TableHead>
+   146→/home/z/my-project/src/components/views/HealthView.tsx:575:                    <TableHead className="text-right">Capacity</TableHead>
+   147→/home/z/my-project/src/components/views/HealthView.tsx:576:                    <TableHead className="text-right">Quality</TableHead>
+   148→/home/z/my-project/src/components/views/HealthView.tsx:577:                    <TableHead className="text-right">Reliability</TableHead>
+   149→/home/z/my-project/src/components/views/HealthView.tsx:578:                    <TableHead className="text-right">Experience</TableHead>
+   150→/home/z/my-project/src/components/views/HealthView.tsx:579:                    <TableHead>Grade</TableHead>
+   151→/home/z/my-project/src/components/views/HealthView.tsx:580:                    <TableHead>Trend</TableHead>
+   152→/home/z/my-project/src/components/views/HealthView.tsx:581:                    <TableHead>Issues</TableHead>
+   153→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:30:  { value: 'downloadThroughput', label: 'Download Throughput (Mbps)' },
+   154→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:31:  { value: 'uploadThroughput', label: 'Upload Throughput (Mbps)' },
+   155→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:32:  { value: 'latency', label: 'Latency (ms)' },
+   156→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:33:  { value: 'availability', label: 'Availability (%)' },
+   157→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:34:  { value: 'dropRate', label: 'Drop Rate (%)' },
+   158→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:35:  { value: 'sinr', label: 'SINR (dB)' },
+   159→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:36:  { value: 'handoverSuccessRate', label: 'Handover Success Rate (%)' },
+   160→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:37:  { value: 'prbUtilization', label: 'PRB Utilization (%)' },
+   161→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:38:  { value: 'activeUsers', label: 'Active Users' },
+   162→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:115:            <SelectValue placeholder="Technology" />
+   163→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:119:              <SelectItem key={t} value={t}>{t === 'all' ? 'All Technologies' : t}</SelectItem>
+   164→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:125:            <SelectValue placeholder="Metric" />
+   165→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:183:                    <TableHead className="text-xs">Site</TableHead>
+   166→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:184:                    <TableHead className="text-xs">Technology</TableHead>
+   167→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:185:                    <TableHead className="text-xs">Status</TableHead>
+   168→/home/z/my-project/src/components/views/KpiAnalyticsView.tsx:186:                    <TableHead className="text-xs text-right">Value</TableHead>
+   169→/home/z/my-project/src/components/views/VendorsView.tsx:103:  if (!dateStr) return 'Never';
+   170→/home/z/my-project/src/components/views/VendorsView.tsx:108:  if (diffMin < 1) return 'Just now';
+   171→/home/z/my-project/src/components/views/VendorsView.tsx:143:        method: 'PATCH',
+   172→/home/z/my-project/src/components/views/VendorsView.tsx:148:      toast.success('Sync initiated successfully');
+   173→/home/z/my-project/src/components/views/VendorsView.tsx:152:      toast.error('Failed to initiate sync');
+   174→/home/z/my-project/src/components/views/VendorsView.tsx:165:        method: 'PATCH',
+   175→/home/z/my-project/src/components/views/VendorsView.tsx:172:          ? 'Vendor connection enabled'
+   176→/home/z/my-project/src/components/views/VendorsView.tsx:173:          : 'Vendor connection disabled'
+   177→/home/z/my-project/src/components/views/VendorsView.tsx:178:      toast.error('Failed to toggle vendor connection');
+   178→/home/z/my-project/src/components/views/VendorsView.tsx:191:    if (vendors.length === 0) return 'N/A';
+   179→/home/z/my-project/src/components/views/VendorsView.tsx:194:    if (synced.length === total) return 'All Synced';
+   180→/home/z/my-project/src/components/views/VendorsView.tsx:256:              <p className="text-sm text-muted-foreground">Total Vendors</p>
+   181→/home/z/my-project/src/components/views/VendorsView.tsx:298:              <p className="text-sm text-muted-foreground">Last Sync Status</p>
+   182→/home/z/my-project/src/components/views/VendorsView.tsx:443:                        {vendor.stats.syncStatus ?? 'N/A'}
+   183→/home/z/my-project/src/components/views/VendorsView.tsx:467:                      {syncingThis ? 'Syncing…' : 'Sync Now'}
+   184→/home/z/my-project/src/components/views/OnboardingView.tsx:76:const REGIONS = ['North', 'South', 'East', 'West', 'Central'] as const;
+   185→/home/z/my-project/src/components/views/OnboardingView.tsx:77:const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'Samsung', 'ZTE'] as const;
+   186→/home/z/my-project/src/components/views/OnboardingView.tsx:82:  siteName: z.string().min(1, 'Site name is required'),
+   187→/home/z/my-project/src/components/views/OnboardingView.tsx:83:  siteCode: z.string().min(1, 'Site code is required'),
+   188→/home/z/my-project/src/components/views/OnboardingView.tsx:84:  technology: z.string().min(1, 'Technology is required'),
+   189→/home/z/my-project/src/components/views/OnboardingView.tsx:85:  region: z.string().min(1, 'Region is required'),
+   190→/home/z/my-project/src/components/views/OnboardingView.tsx:86:  vendor: z.string().min(1, 'Vendor is required'),
+   191→/home/z/my-project/src/components/views/OnboardingView.tsx:265:        method: 'POST',
+   192→/home/z/my-project/src/components/views/OnboardingView.tsx:274:      toast.success('Site onboarding initiated successfully');
+   193→/home/z/my-project/src/components/views/OnboardingView.tsx:278:      toast.error(err.message || 'Failed to create onboarding');
+   194→/home/z/my-project/src/components/views/OnboardingView.tsx:287:        method: 'PATCH',
+   195→/home/z/my-project/src/components/views/OnboardingView.tsx:296:      toast.success('Pipeline advanced to next stage');
+   196→/home/z/my-project/src/components/views/OnboardingView.tsx:299:      toast.error(err.message || 'Failed to advance pipeline');
+   197→/home/z/my-project/src/components/views/OnboardingView.tsx:308:        method: 'PATCH',
+   198→/home/z/my-project/src/components/views/OnboardingView.tsx:317:      toast.success('Site onboarding retry initiated');
+   199→/home/z/my-project/src/components/views/OnboardingView.tsx:320:      toast.error(err.message || 'Failed to retry onboarding');
+   200→/home/z/my-project/src/components/views/OnboardingView.tsx:373:        <h1 className="text-2xl font-bold tracking-tight">Site Onboarding</h1>
+   201→/home/z/my-project/src/components/views/OnboardingView.tsx:383:          label="Total Sites"
+   202→/home/z/my-project/src/components/views/OnboardingView.tsx:390:          label="In Progress"
+   203→/home/z/my-project/src/components/views/OnboardingView.tsx:397:          label="Completed"
+   204→/home/z/my-project/src/components/views/OnboardingView.tsx:404:          label="Failed"
+   205→/home/z/my-project/src/components/views/OnboardingView.tsx:464:                  <Label className="text-xs font-medium">Technology</Label>
+   206→/home/z/my-project/src/components/views/OnboardingView.tsx:471:                          <SelectValue placeholder="Select" />
+   207→/home/z/my-project/src/components/views/OnboardingView.tsx:491:                  <Label className="text-xs font-medium">Region</Label>
+   208→/home/z/my-project/src/components/views/OnboardingView.tsx:498:                          <SelectValue placeholder="Select" />
+   209→/home/z/my-project/src/components/views/OnboardingView.tsx:520:                <Label className="text-xs font-medium">Vendor</Label>
+   210→/home/z/my-project/src/components/views/OnboardingView.tsx:527:                        <SelectValue placeholder="Select vendor" />
+   211→/home/z/my-project/src/components/views/OnboardingView.tsx:557:                      placeholder="Lat"
+   212→/home/z/my-project/src/components/views/OnboardingView.tsx:566:                      placeholder="Lng"
+   213→/home/z/my-project/src/components/views/OnboardingView.tsx:575:                      placeholder="Alt (m)"
+   214→/home/z/my-project/src/components/views/OnboardingView.tsx:596:                      placeholder="Freq (MHz)"
+   215→/home/z/my-project/src/components/views/OnboardingView.tsx:603:                      placeholder="BW (MHz)"
+   216→/home/z/my-project/src/components/views/OnboardingView.tsx:612:                      placeholder="Max Cap"
+   217→/home/z/my-project/src/components/views/OnboardingView.tsx:663:                <p className="text-sm font-medium">No onboarding records yet</p>
+   218→/home/z/my-project/src/components/views/OnboardingView.tsx:664:                <p className="text-xs">Create a new site to begin the provisioning pipeline</p>
+   219→/home/z/my-project/src/components/views/OnboardingView.tsx:671:                      <TableHead className="text-xs font-semibold">Site</TableHead>
+   220→/home/z/my-project/src/components/views/OnboardingView.tsx:672:                      <TableHead className="text-xs font-semibold">Code</TableHead>
+   221→/home/z/my-project/src/components/views/OnboardingView.tsx:673:                      <TableHead className="text-xs font-semibold">Tech</TableHead>
+   222→/home/z/my-project/src/components/views/OnboardingView.tsx:674:                      <TableHead className="text-xs font-semibold">Region</TableHead>
+   223→/home/z/my-project/src/components/views/OnboardingView.tsx:675:                      <TableHead className="text-xs font-semibold">Vendor</TableHead>
+   224→/home/z/my-project/src/components/views/OnboardingView.tsx:676:                      <TableHead className="text-xs font-semibold">Status</TableHead>
+   225→/home/z/my-project/src/components/views/OnboardingView.tsx:677:                      <TableHead className="text-xs font-semibold">PCI</TableHead>
+   226→/home/z/my-project/src/components/views/OnboardingView.tsx:678:                      <TableHead className="text-xs font-semibold">Neighbors</TableHead>
+   227→/home/z/my-project/src/components/views/OnboardingView.tsx:679:                      <TableHead className="text-xs font-semibold">Created</TableHead>
+   228→/home/z/my-project/src/components/views/OnboardingView.tsx:680:                      <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+   229→/home/z/my-project/src/components/views/DashboardView.tsx:94:                <p className="text-sm text-muted-foreground">Total Sites</p>
+   230→/home/z/my-project/src/components/views/DashboardView.tsx:117:                <p className="text-sm text-muted-foreground">Active Users</p>
+   231→/home/z/my-project/src/components/views/DashboardView.tsx:119:                <p className="text-xs text-muted-foreground mt-1">Across all technologies</p>
+   232→/home/z/my-project/src/components/views/DashboardView.tsx:130:                <p className="text-sm text-muted-foreground">Avg Throughput</p>
+   233→/home/z/my-project/src/components/views/DashboardView.tsx:137:                <p className="text-xs text-muted-foreground mt-1">DL / UL Average</p>
+   234→/home/z/my-project/src/components/views/DashboardView.tsx:148:                <p className="text-sm text-muted-foreground">Network Health</p>
+   235→/home/z/my-project/src/components/views/DashboardView.tsx:165:            <CardTitle className="text-base font-semibold">Technology Health Comparison</CardTitle>
+   236→/home/z/my-project/src/components/views/DashboardView.tsx:179:                  <Bar dataKey="availability" fill="#10B981" name="Availability" radius={[4, 4, 0, 0]} />
+   237→/home/z/my-project/src/components/views/DashboardView.tsx:191:            <CardTitle className="text-base font-semibold">KPI Trends</CardTitle>
+   238→/home/z/my-project/src/components/views/DashboardView.tsx:205:                  <Line type="monotone" dataKey="download" stroke="#10B981" name="DL (Mbps)" strokeWidth={2} dot={false} />
+   239→/home/z/my-project/src/components/views/DashboardView.tsx:206:                  <Line type="monotone" dataKey="upload" stroke="#06B6D4" name="UL (Mbps)" strokeWidth={2} dot={false} />
+   240→/home/z/my-project/src/components/views/DashboardView.tsx:207:                  <Line type="monotone" dataKey="latency" stroke="#F59E0B" name="Latency (ms)" strokeWidth={2} dot={false} />
+   241→/home/z/my-project/src/components/views/DashboardView.tsx:220:            <CardTitle className="text-base font-semibold">Recent Alerts</CardTitle>
+   242→/home/z/my-project/src/components/views/DashboardView.tsx:225:                <span className="text-sm text-muted-foreground">Total Alerts</span>
+   243→/home/z/my-project/src/components/views/DashboardView.tsx:229:                <span className="text-sm text-muted-foreground">Active Alerts</span>
+   244→/home/z/my-project/src/components/views/DashboardView.tsx:234:                  <p className="text-lg font-bold text-red-600">Critical</p>
+   245→/home/z/my-project/src/components/views/DashboardView.tsx:237:                  <p className="text-lg font-bold text-amber-600">Warning</p>
+   246→/home/z/my-project/src/components/views/DashboardView.tsx:240:                  <p className="text-lg font-bold text-cyan-600">Info</p>
+   247→/home/z/my-project/src/components/views/DashboardView.tsx:250:            <CardTitle className="text-base font-semibold">Technology Distribution</CardTitle>
+   248→/home/z/my-project/src/components/views/DashboardView.tsx:282:            <CardTitle className="text-base font-semibold">Technology Summary</CardTitle>
+   249→/home/z/my-project/src/components/views/EvolutionView.tsx:275:        <p className="text-lg font-medium">Failed to load Evolution data</p>
+   250→/home/z/my-project/src/components/views/EvolutionView.tsx:286:        <p className="text-lg font-medium">No Evolution Plans Found</p>
+   251→/home/z/my-project/src/components/views/EvolutionView.tsx:324:            <p className="text-xs text-muted-foreground mt-1">Active migration plans</p>
+   252→/home/z/my-project/src/components/views/EvolutionView.tsx:340:            <p className="text-xs text-muted-foreground mt-1">Across all plans</p>
+   253→/home/z/my-project/src/components/views/EvolutionView.tsx:380:            <p className="text-xs text-muted-foreground mt-1">Estimated total cost</p>
+   254→/home/z/my-project/src/components/views/EvolutionView.tsx:410:            <CardTitle className="text-base">Status Distribution</CardTitle>
+   255→/home/z/my-project/src/components/views/EvolutionView.tsx:431:                    <Bar dataKey="count" name="Plans" radius={[4, 4, 0, 0]}>
+   256→/home/z/my-project/src/components/views/EvolutionView.tsx:446:            <CardTitle className="text-base">Migration Paths</CardTitle>
+   257→/home/z/my-project/src/components/views/EvolutionView.tsx:470:                    <Bar dataKey="count" name="Plans" radius={[0, 4, 4, 0]} fill="#10B981">
+   258→/home/z/my-project/src/components/views/EvolutionView.tsx:491:          <CardTitle className="text-base">Migration Plans</CardTitle>
+   259→/home/z/my-project/src/components/views/EvolutionView.tsx:495:                <SelectValue placeholder="Source Tech" />
+   260→/home/z/my-project/src/components/views/EvolutionView.tsx:498:                <SelectItem value="all">All Source</SelectItem>
+   261→/home/z/my-project/src/components/views/EvolutionView.tsx:507:                <SelectValue placeholder="Target Tech" />
+   262→/home/z/my-project/src/components/views/EvolutionView.tsx:510:                <SelectItem value="all">All Target</SelectItem>
+   263→/home/z/my-project/src/components/views/EvolutionView.tsx:519:                <SelectValue placeholder="Status" />
+   264→/home/z/my-project/src/components/views/EvolutionView.tsx:522:                <SelectItem value="all">All Status</SelectItem>
+   265→/home/z/my-project/src/components/views/EvolutionView.tsx:523:                <SelectItem value="planned">Planned</SelectItem>
+   266→/home/z/my-project/src/components/views/EvolutionView.tsx:524:                <SelectItem value="in_progress">In Progress</SelectItem>
+   267→/home/z/my-project/src/components/views/EvolutionView.tsx:525:                <SelectItem value="completed">Completed</SelectItem>
+   268→/home/z/my-project/src/components/views/EvolutionView.tsx:526:                <SelectItem value="delayed">Delayed</SelectItem>
+   269→/home/z/my-project/src/components/views/EvolutionView.tsx:527:                <SelectItem value="cancelled">Cancelled</SelectItem>
+   270→/home/z/my-project/src/components/views/EvolutionView.tsx:542:                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
+   271→/home/z/my-project/src/components/views/EvolutionView.tsx:543:                    <TableHead>Migration</TableHead>
+   272→/home/z/my-project/src/components/views/EvolutionView.tsx:544:                    <TableHead>Region</TableHead>
+   273→/home/z/my-project/src/components/views/EvolutionView.tsx:545:                    <TableHead className="text-right">Progress</TableHead>
+   274→/home/z/my-project/src/components/views/EvolutionView.tsx:546:                    <TableHead className="text-right">Budget</TableHead>
+   275→/home/z/my-project/src/components/views/EvolutionView.tsx:547:                    <TableHead className="text-right">Cost %</TableHead>
+   276→/home/z/my-project/src/components/views/EvolutionView.tsx:548:                    <TableHead>Risk</TableHead>
+   277→/home/z/my-project/src/components/views/EvolutionView.tsx:549:                    <TableHead>Start</TableHead>
+   278→/home/z/my-project/src/components/views/EvolutionView.tsx:550:                    <TableHead>Target</TableHead>
+   279→/home/z/my-project/src/components/views/EvolutionView.tsx:551:                    <TableHead>Status</TableHead>
+   280→/home/z/my-project/src/components/views/EvolutionView.tsx:552:                    <TableHead>Notes</TableHead>
+   281→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:41:    category: 'Coverage Issues',
+   282→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:44:      { label: 'Coverage Hole', description: 'Users reporting no service or very weak signal in a specific area that should have coverage. Signal strength drops below -110 dBm intermittently during peak hours.' },
+   283→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:45:      { label: 'Pilot Pollution', description: 'Multiple cells with strong pilot signals causing poor SINR. Handover failures increased and users experience degraded throughput.' },
+   284→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:46:      { label: 'Cell Edge Degradaion', description: 'Throughput drops significantly at cell edges. Users moving between cells experience frequent service degradation.' },
+   285→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:50:    category: 'Capacity Issues',
+   286→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:53:      { label: 'PRB Exhaustion', description: 'PRB utilization consistently above 90% during peak hours. Users experiencing low throughput and high latency despite good signal conditions.' },
+   287→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:54:      { label: 'RAN Congestion', description: 'High call setup failure rate during busy hours. Multiple RRC connection rejections and E-RAB setup failures observed.' },
+   288→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:58:    category: 'Handover Issues',
+   289→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:61:      { label: 'HO Failure Spike', description: 'Sudden increase in handover failure rate from 98% to below 90%. Affected users report call drops during mobility.' },
+   290→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:62:      { label: 'Ping-Pong HO', description: 'Frequent handovers back and forth between two neighboring cells causing radio link failures and degraded user experience.' },
+   291→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:66:    category: 'Interference Issues',
+   292→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:69:      { label: 'Uplink Interference', description: 'High RSSI on uplink with low SINR. Throughput severely degraded despite good downlink signal quality.' },
+   293→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:70:      { label: 'External Interference', description: 'Sudden increase in noise floor across multiple cells in the same area. Pattern suggests external source rather than network configuration.' },
+   294→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:113:        method: 'POST',
+   295→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:183:                <Label className="text-xs font-medium">Technology</Label>
+   296→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:186:                    <SelectValue placeholder="Select technology" />
+   297→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:197:                <Label className="text-xs font-medium">Site</Label>
+   298→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:203:                      <SelectValue placeholder="Select a site" />
+   299→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:219:              <Label className="text-xs font-medium">Symptom Description</Label>
+   300→/home/z/my-project/src/components/views/RootCauseAnalysisView.tsx:314:                          <span className="text-xs text-muted-foreground">{record.site || 'All Sites'}</span>
+   301→/home/z/my-project/src/components/views/ExecutiveView.tsx:204:            <h1 className="text-2xl font-bold tracking-tight">Executive Dashboard</h1>
+   302→/home/z/my-project/src/components/views/ExecutiveView.tsx:386:                <CardTitle className="text-sm font-medium">Sites by Technology</CardTitle>
+   303→/home/z/my-project/src/components/views/ExecutiveView.tsx:425:                <CardTitle className="text-sm font-medium">Sites by Status</CardTitle>
+   304→/home/z/my-project/src/components/views/ExecutiveView.tsx:497:                    <span>Poor</span>
+   305→/home/z/my-project/src/components/views/ExecutiveView.tsx:498:                    <span>Good</span>
+   306→/home/z/my-project/src/components/views/ExecutiveView.tsx:499:                    <span>Excellent</span>
+   307→/home/z/my-project/src/components/views/ExecutiveView.tsx:533:                    <span>Cost Avoidance</span>
+   308→/home/z/my-project/src/components/views/ExecutiveView.tsx:534:                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">Savings</span>
+   309→/home/z/my-project/src/components/views/ExecutiveView.tsx:566:                    <span>Current Draw</span>
+   310→/home/z/my-project/src/components/views/ExecutiveView.tsx:606:                    {d.avgMos >= 4 ? 'Excellent voice quality' : d.avgMos >= 3 ? 'Acceptable quality' : 'Poor experience'}
+   311→/home/z/my-project/src/components/views/ReportsView.tsx:33:  { value: 'downloadThroughput', label: 'Download Throughput (Mbps)' },
+   312→/home/z/my-project/src/components/views/ReportsView.tsx:34:  { value: 'uploadThroughput', label: 'Upload Throughput (Mbps)' },
+   313→/home/z/my-project/src/components/views/ReportsView.tsx:35:  { value: 'latency', label: 'Latency (ms)' },
+   314→/home/z/my-project/src/components/views/ReportsView.tsx:36:  { value: 'availability', label: 'Availability (%)' },
+   315→/home/z/my-project/src/components/views/ReportsView.tsx:37:  { value: 'dropRate', label: 'Drop Rate (%)' },
+   316→/home/z/my-project/src/components/views/ReportsView.tsx:38:  { value: 'sinr', label: 'SINR (dB)' },
+   317→/home/z/my-project/src/components/views/ReportsView.tsx:39:  { value: 'handoverSuccessRate', label: 'Handover Success Rate (%)' },
+   318→/home/z/my-project/src/components/views/ReportsView.tsx:40:  { value: 'prbUtilization', label: 'PRB Utilization (%)' },
+   319→/home/z/my-project/src/components/views/ReportsView.tsx:41:  { value: 'activeUsers', label: 'Active Users' },
+   320→/home/z/my-project/src/components/views/ReportsView.tsx:249:            <SelectValue placeholder="Select Metric" />
+   321→/home/z/my-project/src/components/views/ReportsView.tsx:297:        <StatCard icon={ArrowDownRight} label="Minimum" value={summaryStats.min} />
+   322→/home/z/my-project/src/components/views/ReportsView.tsx:298:        <StatCard icon={ArrowUpRight} label="Maximum" value={summaryStats.max} />
+   323→/home/z/my-project/src/components/views/ReportsView.tsx:299:        <StatCard icon={TrendingUp} label="Average" value={summaryStats.avg} />
+   324→/home/z/my-project/src/components/views/ReportsView.tsx:300:        <StatCard icon={TrendingDown} label="Std Dev" value={summaryStats.stddev} />
+   325→/home/z/my-project/src/components/views/ReportsView.tsx:301:        <StatCard icon={AlertTriangle} label="Breach Count" value={summaryStats.breaches} variant={summaryStats.breaches > 0 ? 'warning' : 'default'} />
+   326→/home/z/my-project/src/components/views/ReportsView.tsx:318:                    <TableHead className="text-xs">Site</TableHead>
+   327→/home/z/my-project/src/components/views/ReportsView.tsx:319:                    <TableHead className="text-xs">Technology</TableHead>
+   328→/home/z/my-project/src/components/views/ReportsView.tsx:320:                    <TableHead className="text-xs">Status</TableHead>
+   329→/home/z/my-project/src/components/views/ReportsView.tsx:321:                    <TableHead className="text-xs text-right">Value</TableHead>
+   330→/home/z/my-project/src/components/views/ReportsView.tsx:441:        <StatCard icon={Cpu} label="Total Modules" value={summaryCards.totalModules} />
+   331→/home/z/my-project/src/components/views/ReportsView.tsx:443:        <StatCard icon={CheckCircle} label="Success Rate" value={`${summaryCards.successRate}%`} />
+   332→/home/z/my-project/src/components/views/ReportsView.tsx:444:        <StatCard icon={TrendingUp} label="Avg Impact" value={summaryCards.avgImpact} />
+   333→/home/z/my-project/src/components/views/ReportsView.tsx:452:          <CardTitle className="text-base font-semibold">Recent SON Actions</CardTitle>
+   334→/home/z/my-project/src/components/views/ReportsView.tsx:460:                    <TableHead className="text-xs">Time</TableHead>
+   335→/home/z/my-project/src/components/views/ReportsView.tsx:461:                    <TableHead className="text-xs">Module</TableHead>
+   336→/home/z/my-project/src/components/views/ReportsView.tsx:462:                    <TableHead className="text-xs">Site</TableHead>
+   337→/home/z/my-project/src/components/views/ReportsView.tsx:463:                    <TableHead className="text-xs">Action Type</TableHead>
+   338→/home/z/my-project/src/components/views/ReportsView.tsx:464:                    <TableHead className="text-xs">Parameter</TableHead>
+   339→/home/z/my-project/src/components/views/ReportsView.tsx:466:                    <TableHead className="text-xs text-right">Impact</TableHead>
+   340→/home/z/my-project/src/components/views/ReportsView.tsx:467:                    <TableHead className="text-xs">Status</TableHead>
+   341→/home/z/my-project/src/components/views/ReportsView.tsx:505:                            <Badge variant="default" className="text-xs gap-1"><CheckCircle className="h-3 w-3" />Applied</Badge>
+   342→/home/z/my-project/src/components/views/ReportsView.tsx:508:                            <Badge variant="secondary" className="text-xs gap-1"><Clock className="h-3 w-3" />Pending</Badge>
+   343→/home/z/my-project/src/components/views/ReportsView.tsx:511:                            <Badge variant="outline" className="text-xs gap-1">Rolled Back</Badge>
+   344→/home/z/my-project/src/components/views/ReportsView.tsx:514:                            <Badge variant="destructive" className="text-xs gap-1"><XCircle className="h-3 w-3" />Failed</Badge>
+   345→/home/z/my-project/src/components/views/ReportsView.tsx:577:        <StatCard icon={Shield} label="Total Policies" value={summaryCards.totalPolicies} />
+   346→/home/z/my-project/src/components/views/ReportsView.tsx:578:        <StatCard icon={Activity} label="Active Policies" value={summaryCards.activePolicies} />
+   347→/home/z/my-project/src/components/views/ReportsView.tsx:579:        <StatCard icon={Cpu} label="Total Executions" value={summaryCards.totalExecutions} />
+   348→/home/z/my-project/src/components/views/ReportsView.tsx:580:        <StatCard icon={TrendingUp} label="Avg Success Rate" value={`${summaryCards.avgSuccessRate}%`} />
+   349→/home/z/my-project/src/components/views/ReportsView.tsx:588:          <CardTitle className="text-base font-semibold">Policy Execution Summary</CardTitle>
+   350→/home/z/my-project/src/components/views/ReportsView.tsx:596:                    <TableHead className="text-xs">Name</TableHead>
+   351→/home/z/my-project/src/components/views/ReportsView.tsx:597:                    <TableHead className="text-xs">Tech</TableHead>
+   352→/home/z/my-project/src/components/views/ReportsView.tsx:598:                    <TableHead className="text-xs">Trigger</TableHead>
+   353→/home/z/my-project/src/components/views/ReportsView.tsx:599:                    <TableHead className="text-xs">Scope</TableHead>
+   354→/home/z/my-project/src/components/views/ReportsView.tsx:600:                    <TableHead className="text-xs text-center">Priority</TableHead>
+   355→/home/z/my-project/src/components/views/ReportsView.tsx:601:                    <TableHead className="text-xs text-center">Enabled</TableHead>
+   356→/home/z/my-project/src/components/views/ReportsView.tsx:602:                    <TableHead className="text-xs text-right">Total Runs</TableHead>
+   357→/home/z/my-project/src/components/views/ReportsView.tsx:603:                    <TableHead className="text-xs text-right">Success Rate</TableHead>
+   358→/home/z/my-project/src/components/views/ReportsView.tsx:604:                    <TableHead className="text-xs">Last Run</TableHead>
+   359→/home/z/my-project/src/components/views/ReportsView.tsx:708:            <h1 className="text-2xl font-bold">NetOptima Network Report</h1>
+   360→/home/z/my-project/src/components/views/ReportsView.tsx:741:            <span>NetOptima Network Optimization Platform</span>
+   361→/home/z/my-project/src/components/views/ReportsView.tsx:742:            <span>Confidential</span>
+   362→/home/z/my-project/src/components/views/AssistantView.tsx:22:  'Show sites with low RSRP',
+   363→/home/z/my-project/src/components/views/AssistantView.tsx:23:  'Handover failure root causes',
+   364→/home/z/my-project/src/components/views/AssistantView.tsx:24:  'Energy optimization tips',
+   365→/home/z/my-project/src/components/views/AssistantView.tsx:35:      <span className="ml-1">Thinking</span>
+   366→/home/z/my-project/src/components/views/AssistantView.tsx:82:        method: 'POST',
+   367→/home/z/my-project/src/components/views/AssistantView.tsx:87:      if (!res.ok) throw new Error('Failed to get response');
+   368→/home/z/my-project/src/components/views/AssistantView.tsx:111:    if (e.key === 'Enter' && !e.shiftKey) {
+   369→/home/z/my-project/src/components/views/AssistantView.tsx:148:              <h3 className="text-lg font-semibold mb-1">Welcome to NetOptima AI</h3>
+   370→/home/z/my-project/src/components/views/AssistantView.tsx:267:              <span className="sr-only">Send message</span>
+   371→/home/z/my-project/src/components/views/AuditView.tsx:257:            <SelectValue placeholder="Entity Type" />
+   372→/home/z/my-project/src/components/views/AuditView.tsx:262:                {opt === 'all' ? 'All Entity Types' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+   373→/home/z/my-project/src/components/views/AuditView.tsx:269:            <SelectValue placeholder="Action" />
+   374→/home/z/my-project/src/components/views/AuditView.tsx:274:                {opt === 'all' ? 'All Actions' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+   375→/home/z/my-project/src/components/views/AuditView.tsx:281:            <SelectValue placeholder="Category" />
+   376→/home/z/my-project/src/components/views/AuditView.tsx:286:                {opt === 'all' ? 'All Categories' : opt.charAt(0).toUpperCase() + opt.slice(1)}
+   377→/home/z/my-project/src/components/views/AuditView.tsx:293:            <SelectValue placeholder="Technology" />
+   378→/home/z/my-project/src/components/views/AuditView.tsx:296:            <SelectItem value="all">All Technologies</SelectItem>
+   379→/home/z/my-project/src/components/views/AuditView.tsx:369:              <CardTitle className="text-sm font-medium">Actions by Type</CardTitle>
+   380→/home/z/my-project/src/components/views/AuditView.tsx:388:                    <Bar dataKey="value" name="Count" radius={[4, 4, 0, 0]}>
+   381→/home/z/my-project/src/components/views/AuditView.tsx:402:              <CardTitle className="text-sm font-medium">Entries by Category</CardTitle>
+   382→/home/z/my-project/src/components/views/AuditView.tsx:465:                      <TableHead className="whitespace-nowrap text-xs">Timestamp</TableHead>
+   383→/home/z/my-project/src/components/views/AuditView.tsx:466:                      <TableHead className="whitespace-nowrap text-xs">Entity Type</TableHead>
+   384→/home/z/my-project/src/components/views/AuditView.tsx:467:                      <TableHead className="whitespace-nowrap text-xs">Entity Name</TableHead>
+   385→/home/z/my-project/src/components/views/AuditView.tsx:468:                      <TableHead className="whitespace-nowrap text-xs">Action</TableHead>
+   386→/home/z/my-project/src/components/views/AuditView.tsx:469:                      <TableHead className="whitespace-nowrap text-xs">Field</TableHead>
+   387→/home/z/my-project/src/components/views/AuditView.tsx:471:                      <TableHead className="whitespace-nowrap text-xs">Requested By</TableHead>
+   388→/home/z/my-project/src/components/views/AuditView.tsx:472:                      <TableHead className="whitespace-nowrap text-xs">Approved By</TableHead>
+   389→/home/z/my-project/src/components/views/AuditView.tsx:473:                      <TableHead className="whitespace-nowrap text-xs">Impact</TableHead>
+   390→/home/z/my-project/src/components/views/AuditView.tsx:474:                      <TableHead className="whitespace-nowrap text-xs">Tech</TableHead>
+   391→/home/z/my-project/src/components/views/SubscribersView.tsx:260:        <p className="text-lg font-medium">Failed to load subscriber data</p>
+   392→/home/z/my-project/src/components/views/SubscribersView.tsx:271:        <p className="text-lg font-medium">No Subscriber Data Available</p>
+   393→/home/z/my-project/src/components/views/SubscribersView.tsx:299:            <SelectValue placeholder="Technology" />
+   394→/home/z/my-project/src/components/views/SubscribersView.tsx:302:            <SelectItem value="all">All Technologies</SelectItem>
+   395→/home/z/my-project/src/components/views/SubscribersView.tsx:325:              {technology === 'all' ? 'All technologies' : technology + ' technology'}
+   396→/home/z/my-project/src/components/views/SubscribersView.tsx:426:            <CardTitle className="text-base">Top Services</CardTitle>
+   397→/home/z/my-project/src/components/views/SubscribersView.tsx:446:                  <Bar dataKey="count" name="Segments" radius={[4, 4, 0, 0]}>
+   398→/home/z/my-project/src/components/views/SubscribersView.tsx:460:            <CardTitle className="text-base">ARPU by Segment</CardTitle>
+   399→/home/z/my-project/src/components/views/SubscribersView.tsx:493:                  <Bar dataKey="arpu" name="ARPU" radius={[0, 4, 4, 0]}>
+   400→/home/z/my-project/src/components/views/SubscribersView.tsx:507:            <CardTitle className="text-base">Churn Risk by Segment</CardTitle>
+   401→/home/z/my-project/src/components/views/SubscribersView.tsx:540:                  <Bar dataKey="churnRisk" name="Churn Risk" radius={[4, 4, 0, 0]}>
+   402→/home/z/my-project/src/components/views/SubscribersView.tsx:566:          <CardTitle className="text-base">Subscriber Segments</CardTitle>
+   403→/home/z/my-project/src/components/views/SubscribersView.tsx:573:                  <TableHead className="min-w-[140px]">Segment Name</TableHead>
+   404→/home/z/my-project/src/components/views/SubscribersView.tsx:574:                  <TableHead>Tech</TableHead>
+   405→/home/z/my-project/src/components/views/SubscribersView.tsx:575:                  <TableHead className="text-right">Subscribers</TableHead>
+   406→/home/z/my-project/src/components/views/SubscribersView.tsx:576:                  <TableHead className="text-right">Avg Data (GB)</TableHead>
+   407→/home/z/my-project/src/components/views/SubscribersView.tsx:577:                  <TableHead className="text-right">Voice (min)</TableHead>
+   408→/home/z/my-project/src/components/views/SubscribersView.tsx:579:                  <TableHead className="text-center">Churn Risk</TableHead>
+   409→/home/z/my-project/src/components/views/SubscribersView.tsx:580:                  <TableHead className="text-right">Satisfaction</TableHead>
+   410→/home/z/my-project/src/components/views/SubscribersView.tsx:581:                  <TableHead>Peak Hour</TableHead>
+   411→/home/z/my-project/src/components/views/SubscribersView.tsx:582:                  <TableHead className="min-w-[180px]">Top Services</TableHead>
+   412→/home/z/my-project/src/components/views/OutagesView.tsx:77:  active: 'Active',
+   413→/home/z/my-project/src/components/views/OutagesView.tsx:78:  compensating: 'Compensating',
+   414→/home/z/my-project/src/components/views/OutagesView.tsx:79:  restored: 'Restored',
+   415→/home/z/my-project/src/components/views/OutagesView.tsx:80:  resolved: 'Resolved',
+   416→/home/z/my-project/src/components/views/OutagesView.tsx:97:  full: 'Full Outage',
+   417→/home/z/my-project/src/components/views/OutagesView.tsx:98:  partial: 'Partial Outage',
+   418→/home/z/my-project/src/components/views/OutagesView.tsx:99:  degradation: 'Degradation',
+   419→/home/z/my-project/src/components/views/OutagesView.tsx:276:        <p className="text-lg font-medium">Failed to load outage data</p>
+   420→/home/z/my-project/src/components/views/OutagesView.tsx:287:        <p className="text-lg font-medium">No Outage Data Available</p>
+   421→/home/z/my-project/src/components/views/OutagesView.tsx:300:        <h1 className="text-2xl font-bold tracking-tight">Outage Management</h1>
+   422→/home/z/my-project/src/components/views/OutagesView.tsx:407:            <CardTitle className="text-base">Outage Status Distribution</CardTitle>
+   423→/home/z/my-project/src/components/views/OutagesView.tsx:425:                  <Bar dataKey="count" name="Outages" radius={[4, 4, 0, 0]}>
+   424→/home/z/my-project/src/components/views/OutagesView.tsx:439:            <CardTitle className="text-base">Outage Type Distribution</CardTitle>
+   425→/home/z/my-project/src/components/views/OutagesView.tsx:479:          <CardTitle className="text-base">All Outages</CardTitle>
+   426→/home/z/my-project/src/components/views/OutagesView.tsx:483:                <SelectValue placeholder="Tech" />
+   427→/home/z/my-project/src/components/views/OutagesView.tsx:486:                <SelectItem value="all">All Tech</SelectItem>
+   428→/home/z/my-project/src/components/views/OutagesView.tsx:494:                <SelectValue placeholder="Severity" />
+   429→/home/z/my-project/src/components/views/OutagesView.tsx:497:                <SelectItem value="all">All Severity</SelectItem>
+   430→/home/z/my-project/src/components/views/OutagesView.tsx:505:                <SelectValue placeholder="Status" />
+   431→/home/z/my-project/src/components/views/OutagesView.tsx:508:                <SelectItem value="all">All Status</SelectItem>
+   432→/home/z/my-project/src/components/views/OutagesView.tsx:526:                    <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">Site</TableHead>
+   433→/home/z/my-project/src/components/views/OutagesView.tsx:527:                    <TableHead>Tech</TableHead>
+   434→/home/z/my-project/src/components/views/OutagesView.tsx:528:                    <TableHead>Type</TableHead>
+   435→/home/z/my-project/src/components/views/OutagesView.tsx:529:                    <TableHead>Severity</TableHead>
+   436→/home/z/my-project/src/components/views/OutagesView.tsx:530:                    <TableHead>Status</TableHead>
+   437→/home/z/my-project/src/components/views/OutagesView.tsx:531:                    <TableHead>Started</TableHead>
+   438→/home/z/my-project/src/components/views/OutagesView.tsx:532:                    <TableHead>Duration</TableHead>
+   439→/home/z/my-project/src/components/views/OutagesView.tsx:533:                    <TableHead className="text-right">Affected Users</TableHead>
+   440→/home/z/my-project/src/components/views/OutagesView.tsx:534:                    <TableHead>Compensation</TableHead>
+   441→/home/z/my-project/src/components/views/OutagesView.tsx:535:                    <TableHead>Root Cause</TableHead>
+   442→/home/z/my-project/src/components/views/OutagesView.tsx:536:                    <TableHead>Region</TableHead>
+   443→/home/z/my-project/src/components/views/OutagesView.tsx:537:                    <TableHead>Resolved</TableHead>
+   444→/home/z/my-project/src/components/views/OutagesView.tsx:587:                          <span className="text-muted-foreground text-xs">None</span>
+   445→/home/z/my-project/src/components/views/SimulationsView.tsx:278:        <p className="text-lg font-medium">Failed to load simulation data</p>
+   446→/home/z/my-project/src/components/views/SimulationsView.tsx:289:        <p className="text-lg font-medium">No Simulation Data Available</p>
+   447→/home/z/my-project/src/components/views/SimulationsView.tsx:325:            <p className="text-xs text-muted-foreground mt-1">Across all categories</p>
+   448→/home/z/my-project/src/components/views/SimulationsView.tsx:369:            <p className="text-xs text-muted-foreground mt-1">Simulation reliability</p>
+   449→/home/z/my-project/src/components/views/SimulationsView.tsx:397:            <CardTitle className="text-base">Category Distribution</CardTitle>
+   450→/home/z/my-project/src/components/views/SimulationsView.tsx:414:                  <Bar dataKey="count" name="Scenarios" radius={[4, 4, 0, 0]}>
+   451→/home/z/my-project/src/components/views/SimulationsView.tsx:428:            <CardTitle className="text-base">Impact vs Confidence by Category</CardTitle>
+   452→/home/z/my-project/src/components/views/SimulationsView.tsx:438:                    name="Impact"
+   453→/home/z/my-project/src/components/views/SimulationsView.tsx:442:                    label={{ value: 'Impact', position: 'insideBottom', offset: -2, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
+   454→/home/z/my-project/src/components/views/SimulationsView.tsx:447:                    name="Confidence"
+   455→/home/z/my-project/src/components/views/SimulationsView.tsx:451:                    label={{ value: 'Confidence', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 11, fill: 'hsl(var(--muted-foreground))' } }}
+   456→/home/z/my-project/src/components/views/SimulationsView.tsx:475:                  <Scatter data={scatterData} name="Simulations">
+   457→/home/z/my-project/src/components/views/SimulationsView.tsx:490:          <CardTitle className="text-base">Simulation Results</CardTitle>
+   458→/home/z/my-project/src/components/views/SimulationsView.tsx:494:                <SelectValue placeholder="Technology" />
+   459→/home/z/my-project/src/components/views/SimulationsView.tsx:497:                <SelectItem value="all">All Tech</SelectItem>
+   460→/home/z/my-project/src/components/views/SimulationsView.tsx:505:                <SelectValue placeholder="Category" />
+   461→/home/z/my-project/src/components/views/SimulationsView.tsx:508:                <SelectItem value="all">All Categories</SelectItem>
+   462→/home/z/my-project/src/components/views/SimulationsView.tsx:518:                <SelectValue placeholder="Status" />
+   463→/home/z/my-project/src/components/views/SimulationsView.tsx:523:                    {s === 'all' ? 'All Status' : s.charAt(0).toUpperCase() + s.slice(1)}
+   464→/home/z/my-project/src/components/views/SimulationsView.tsx:540:                    <TableHead className="sticky left-0 bg-background z-10">Name</TableHead>
+   465→/home/z/my-project/src/components/views/SimulationsView.tsx:541:                    <TableHead>Category</TableHead>
+   466→/home/z/my-project/src/components/views/SimulationsView.tsx:542:                    <TableHead>Tech</TableHead>
+   467→/home/z/my-project/src/components/views/SimulationsView.tsx:543:                    <TableHead>Site</TableHead>
+   468→/home/z/my-project/src/components/views/SimulationsView.tsx:544:                    <TableHead>Region</TableHead>
+   469→/home/z/my-project/src/components/views/SimulationsView.tsx:545:                    <TableHead className="text-right">Impact Score</TableHead>
+   470→/home/z/my-project/src/components/views/SimulationsView.tsx:546:                    <TableHead className="text-right">Confidence</TableHead>
+   471→/home/z/my-project/src/components/views/SimulationsView.tsx:547:                    <TableHead>Status</TableHead>
+   472→/home/z/my-project/src/components/views/SimulationsView.tsx:548:                    <TableHead>KPI Change</TableHead>
+   473→/home/z/my-project/src/components/views/SimulationsView.tsx:549:                    <TableHead>Recommendation</TableHead>
+   474→/home/z/my-project/src/components/views/SonView.tsx:71:const TECH_OPTIONS: Array<Technology | 'ALL'> = ['ALL', '2G', '3G', '4G', '5G'];
+   475→/home/z/my-project/src/components/views/SonView.tsx:73:const MODE_OPTIONS: Array<SonModuleMode | 'ALL'> = [
+   476→/home/z/my-project/src/components/views/SonView.tsx:74:  'ALL',
+   477→/home/z/my-project/src/components/views/SonView.tsx:85:    label: 'Open Loop',
+   478→/home/z/my-project/src/components/views/SonView.tsx:90:    label: 'Semi-Automated',
+   479→/home/z/my-project/src/components/views/SonView.tsx:95:    label: 'Closed Loop',
+   480→/home/z/my-project/src/components/views/SonView.tsx:106:    label: 'Pending',
+   481→/home/z/my-project/src/components/views/SonView.tsx:111:    label: 'Applied',
+   482→/home/z/my-project/src/components/views/SonView.tsx:116:    label: 'Failed',
+   483→/home/z/my-project/src/components/views/SonView.tsx:121:    label: 'Rolled Back',
+   484→/home/z/my-project/src/components/views/SonView.tsx:128:  add_neighbor: 'Add Neighbor',
+   485→/home/z/my-project/src/components/views/SonView.tsx:129:  remove_neighbor: 'Remove Neighbor',
+   486→/home/z/my-project/src/components/views/SonView.tsx:130:  modify_pci: 'Modify PCI',
+   487→/home/z/my-project/src/components/views/SonView.tsx:131:  adjust_tilt: 'Adjust Tilt',
+   488→/home/z/my-project/src/components/views/SonView.tsx:132:  adjust_power: 'Adjust Power',
+   489→/home/z/my-project/src/components/views/SonView.tsx:133:  compensate_outage: 'Compensate Outage',
+   490→/home/z/my-project/src/components/views/SonView.tsx:134:  correct_config: 'Correct Config',
+   491→/home/z/my-project/src/components/views/SonView.tsx:154:  manual: 'Manual',
+   492→/home/z/my-project/src/components/views/SonView.tsx:155:  anr_auto: 'ANR Auto',
+   493→/home/z/my-project/src/components/views/SonView.tsx:156:  pnp_auto: 'PNP Auto',
+   494→/home/z/my-project/src/components/views/SonView.tsx:182:  const [modeFilter, setModeFilter] = useState<SonModuleMode | 'ALL'>('ALL');
+   495→/home/z/my-project/src/components/views/SonView.tsx:186:    selectedTechnology === 'ALL' ? undefined : selectedTechnology;
+   496→/home/z/my-project/src/components/views/SonView.tsx:229:        method: 'PATCH',
+   497→/home/z/my-project/src/components/views/SonView.tsx:255:        method: 'PATCH',
+   498→/home/z/my-project/src/components/views/SonView.tsx:263:      toast.success('Action rolled back successfully');
+   499→/home/z/my-project/src/components/views/SonView.tsx:268:      toast.error(error.error || 'Failed to rollback action');
+   500→/home/z/my-project/src/components/views/SonView.tsx:277:    if (modeFilter === 'ALL') return modules;
+   501→
+   502→[Showing results with pagination = limit: 500]

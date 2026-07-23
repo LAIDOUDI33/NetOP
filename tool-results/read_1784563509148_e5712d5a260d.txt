@@ -1,0 +1,1241 @@
+    40→   120→    }
+    41→   121→    await db.kpiMetric.createMany({ data: batch });
+    42→   122→    kpiCount += batch.length;
+    43→   123→  }
+    44→   124→  console.log(`  KPI records: ${kpiCount}`);
+    45→   125→
+    46→   126→  // Seed alert rules
+    47→   127→  console.log('Seeding alert rules...');
+    48→   128→  const rules = [
+    49→   129→    { name: 'Low RSRP (4G)', technology: '4G', metric: 'rsrp', condition: 'lt', threshold: -105, severity: 'critical' },
+    50→   130→    { name: 'Poor SINR (4G)', technology: '4G', metric: 'sinr', condition: 'lt', threshold: 0, severity: 'warning' },
+    51→   131→    { name: 'Low RSRP (5G)', technology: '5G', metric: 'rsrp', condition: 'lt', threshold: -110, severity: 'critical' },
+    52→   132→    { name: 'High Latency (4G)', technology: '4G', metric: 'latency', condition: 'gt', threshold: 60, severity: 'warning' },
+    53→   133→    { name: 'High Latency (5G)', technology: '5G', metric: 'latency', condition: 'gt', threshold: 10, severity: 'warning' },
+    54→   134→    { name: 'High Drop Rate', technology: 'ALL', metric: 'dropRate', condition: 'gt', threshold: 2, severity: 'critical' },
+    55→   135→    { name: 'Low Availability', technology: 'ALL', metric: 'availability', condition: 'lt', threshold: 97, severity: 'critical' },
+    56→   136→    { name: 'High PRB (4G)', technology: '4G', metric: 'prbUtilization', condition: 'gt', threshold: 85, severity: 'warning' },
+    57→   137→    { name: 'High PRB (5G)', technology: '5G', metric: 'prbUtilization', condition: 'gt', threshold: 80, severity: 'warning' },
+    58→   138→    { name: 'Poor Handover (3G)', technology: '3G', metric: 'handoverSuccessRate', condition: 'lt', threshold: 92, severity: 'warning' },
+    59→   139→    { name: 'Low RX Level (2G)', technology: '2G', metric: 'rxlev', condition: 'lt', threshold: -80, severity: 'warning' },
+    60→   140→    { name: 'High Packet Loss (4G)', technology: '4G', metric: 'packetLoss', condition: 'gt', threshold: 1, severity: 'warning' },
+    61→   141→  ];
+    62→   142→  await db.alertRule.createMany({ data: rules });
+    63→   143→  console.log(`  Rules: ${rules.length}`);
+    64→   144→
+    65→   145→  // Seed alerts
+    66→   146→  console.log('Seeding alerts...');
+    67→   147→  const msgs = ['RSRP below threshold', 'SINR degradation', 'High latency detected', 'Drop rate exceeds threshold', 'Availability below SLA', 'PRB utilization high', 'Handover failure increased', 'Packet loss above normal', 'Throughput degraded', 'Signal quality deterioration'];
+    68→   148→  const alerts: any[] = [];
+    69→   149→  for (let i = 0; i < 20; i++) {
+    70→   150→    const site = pick(created);
+    71→   151→    const sev = pick(['critical', 'warning', 'info']);
+    72→   152→    alerts.push({
+    73→   153→      siteId: site.id, technology: site.technology, metric: pick(['rsrp', 'sinr', 'latency', 'dropRate', 'availability', 'prbUtilization']),
+    74→   154→      value: rand(-115, 200), threshold: rand(-105, 90), condition: pick(['lt', 'gt']),
+    75→   155→      severity: sev, message: pick(msgs), acknowledged: Math.random() > 0.5,
+    76→   156→      resolvedAt: Math.random() > 0.4 ? subHours(now, randInt(1, 48)) : null,
+    77→   157→      createdAt: subHours(now, randInt(0, 72)),
+    78→   158→    });
+    79→   159→  }
+    80→   160→  await db.alert.createMany({ data: alerts });
+    81→   161→  console.log(`  Alerts: ${alerts.length}`);
+    82→   162→
+    83→   163→  // Seed optimization logs
+    84→   164→  console.log('Seeding optimization logs...');
+    85→   165→  const optLogs = [
+    86→   166→    { tech: '4G', cat: 'coverage', issue: 'Weak RSRP coverage gap in Lagos Mainland', rec: 'Adjust antenna tilt from 6° to 4° and increase RS power by 3dB. Consider adding a small cell.', impact: 'high', status: 'implemented' },
+    87→   167→    { tech: '5G', cat: 'interference', issue: 'High interference on 3500MHz in Abuja', rec: 'PCI re-planning to eliminate conflicts. Enable ICIC and adjust power control parameters.', impact: 'high', status: 'pending' },
+    88→   168→    { tech: '4G', cat: 'capacity', issue: 'PRB utilization exceeding 85% at peak hours', rec: 'Enable carrier aggregation Band 3 + Band 7. Deploy additional carriers and optimize load balancing.', impact: 'high', status: 'pending' },
+    89→   169→    { tech: '3G', cat: 'handover', issue: 'Low handover success rate in Port Harcourt', rec: 'Increase hysteresis to 3dB, adjust time-to-trigger to 320ms. Review neighbor cell list.', impact: 'medium', status: 'implemented' },
+    90→   170→    { tech: '2G', cat: 'parameter', issue: 'High call blocking rate in Kano', rec: 'Reduce half-rate threshold for peak hours. Review frequency plan and channel allocation.', impact: 'medium', status: 'dismissed' },
+    91→   171→    { tech: '5G', cat: 'coverage', issue: '5G NR coverage limited to 200m from gNB', rec: 'Increase TX power by 2dB and review beamforming. Consider 700MHz for extended coverage.', impact: 'high', status: 'pending' },
+    92→   172→    { tech: '4G', cat: 'interference', issue: 'Co-channel interference LTE-LG-002 and LTE-LG-004', rec: 'Implement eICIC with ABS patterns. Adjust antenna azimuth to minimize overlap.', impact: 'medium', status: 'implemented' },
+    93→   173→    { tech: '3G', cat: 'capacity', issue: 'HSUPA throughput degradation in Ibadan', rec: 'Increase HSUPA channel allocation. Consider upgrading to DC-HSPA+.', impact: 'medium', status: 'pending' },
+    94→   174→    { tech: '4G', cat: 'parameter', issue: 'Suboptimal PCI assignment causing PSS/SSS conflicts', rec: 'Re-plan PCI ensuring adequate modulus-3 and modulus-30 separation.', impact: 'high', status: 'pending' },
+    95→   175→    { tech: '5G', cat: 'handover', issue: '5G to 4G inter-RAT handover failures', rec: 'Optimize A2/B2 event thresholds for NR-LTE handover. Review NSA DC config.', impact: 'high', status: 'pending' },
+    96→   176→    { tech: '4G', cat: 'coverage', issue: 'Indoor coverage deficiency in Lagos high-rises', rec: 'Deploy indoor DAS or small cells. Configure dedicated indoor carriers.', impact: 'medium', status: 'pending' },
+    97→   177→    { tech: '3G', cat: 'interference', issue: 'Pilot pollution in Kaduna city center', rec: 'Reduce pilot power by 3-6dB. Optimize antenna downtilt and azimuth.', impact: 'medium', status: 'implemented' },
+    98→   178→  ];
+    99→   179→  for (const log of optLogs) {
+   100→   180→    await db.optimizationLog.create({
+   101→   181→      data: { technology: log.tech, category: log.cat, issue: log.issue, recommendation: log.rec, impact: log.impact, status: log.status, createdAt: subHours(now, randInt(1, 168)) },
+   102→   182→    });
+   103→   183→  }
+   104→   184→  console.log(`  Optimization logs: ${optLogs.length}`);
+   105→   185→
+   106→   186→  // Seed network parameters
+   107→   187→  console.log('Seeding network parameters...');
+   108→   188→  const params = [
+   109→   189→    { tech: '2G', param: 'bsPowerMax', display: 'Max BTS Power', val: '43', unit: 'dBm', min: '30', max: '49', desc: 'Maximum transmit power of the BTS', cat: 'power' },
+   110→   190→    { tech: '2G', param: 'rxLevAccessMin', display: 'RX Level Access Min', val: '-110', unit: 'dBm', min: '-120', max: '-80', desc: 'Minimum RX level for mobile access', cat: 'rf' },
+   111→   191→    { tech: '2G', param: 'hysteresis', display: 'Handover Hysteresis', val: '4', unit: 'dB', min: '0', max: '14', desc: 'Hysteresis for cell reselection handover', cat: 'handover' },
+   112→   192→    { tech: '3G', param: 'cpichPower', display: 'CPICH Power', val: '33', unit: 'dBm', min: '20', max: '40', desc: 'Common Pilot Channel power', cat: 'power' },
+   113→   193→    { tech: '3G', param: 'qrxlevmin', display: 'QRXLEVMIN', val: '-115', unit: 'dBm', min: '-125', max: '-90', desc: 'Minimum required RX level', cat: 'rf' },
+   114→   194→    { tech: '3G', param: 'hsdpaPower', display: 'HSDPA Power', val: '12', unit: 'dB', min: '0', max: '18', desc: 'Power allocated to HSDPA', cat: 'capacity' },
+   115→   195→    { tech: '4G', param: 'rsPower', display: 'RS Power', val: '15.2', unit: 'dBm', min: '-10', max: '22', desc: 'Reference Signal power per port', cat: 'power' },
+   116→   196→    { tech: '4G', param: 'qrxlevmin', display: 'QRXLEVMIN', val: '-140', unit: 'dBm', min: '-140', max: '-110', desc: 'Minimum RSRP for cell selection', cat: 'rf' },
+   117→   197→    { tech: '4G', param: 'sIntraSearch', display: 'SIntraSearch', val: '4', unit: 'dB', min: '0', max: '31', desc: 'Intra-freq reselection threshold', cat: 'handover' },
+   118→   198→    { tech: '4G', param: 'hysteresis', display: 'Handover Hysteresis', val: '2', unit: 'dB', min: '0', max: '15', desc: 'Hysteresis for A3 handover', cat: 'handover' },
+   119→   199→    { tech: '4G', param: 'timeToTrigger', display: 'Time to Trigger', val: '256', unit: 'ms', min: '0', max: '5120', desc: 'Time to trigger for handover events', cat: 'handover' },
+   120→   200→    { tech: '4G', param: 'pdcchCfi', display: 'PDCCH CFI', val: '2', unit: '', min: '1', max: '3', desc: 'PDCCH symbol configuration', cat: 'capacity' },
+   121→   201→    { tech: '5G', param: 'ssbPower', display: 'SSB Power', val: '16', unit: 'dBm', min: '-15', max: '25', desc: 'SSB power per beam', cat: 'power' },
+   122→   202→    { tech: '5G', param: 'qrxlevmin', display: 'QRXLEVMIN', val: '-140', unit: 'dBm', min: '-140', max: '-100', desc: 'Min SS-RSRP for cell selection', cat: 'rf' },
+   123→   203→    { tech: '5G', param: 'ssbPeriodicity', display: 'SSB Periodicity', val: '20', unit: 'ms', min: '5', max: '160', desc: 'SSB transmission periodicity', cat: 'rf' },
+   124→   204→    { tech: '5G', param: 'hysteresis', display: 'Handover Hysteresis', val: '3', unit: 'dB', min: '0', max: '15', desc: 'Hysteresis for NR handover', cat: 'handover' },
+   125→   205→    { tech: '5G', param: 'bwpBandwidth', display: 'BWP Bandwidth', val: '100', unit: 'MHz', min: '20', max: '100', desc: 'Bandwidth Part configuration', cat: 'capacity' },
+   126→   206→    { tech: '5G', param: 'scs', display: 'Subcarrier Spacing', val: '30', unit: 'kHz', min: '15', max: '240', desc: 'Subcarrier spacing for NR carrier', cat: 'rf' },
+   127→   207→  ];
+   128→   208→  await db.networkParameter.createMany({ data: params.map(p => ({
+   129→   209→    technology: p.tech, parameter: p.param, displayName: p.display, currentValue: p.val,
+   130→   210→    unit: p.unit, minRange: p.min, maxRange: p.max, description: p.desc, category: p.cat,
+   131→   211→  })) });
+   132→   212→  console.log(`  Parameters: ${params.length}`);
+   133→   213→
+   134→   214→  // Seed SLA targets
+   135→   215→  console.log('Seeding SLA targets...');
+   136→   216→  const slaTargets = [
+   137→   217→    { tech: '2G', metric: 'availability', target: 97, condition: 'gte', severity: 'warning' },
+   138→   218→    { tech: '2G', metric: 'dropRate', target: 2, condition: 'lte', severity: 'warning' },
+   139→   219→    { tech: '2G', metric: 'handoverSuccessRate', target: 95, condition: 'gte', severity: 'warning' },
+   140→   220→    { tech: '3G', metric: 'availability', target: 98, condition: 'gte', severity: 'warning' },
+   141→   221→    { tech: '3G', metric: 'dropRate', target: 1.5, condition: 'lte', severity: 'warning' },
+   142→   222→    { tech: '3G', metric: 'handoverSuccessRate', target: 96, condition: 'gte', severity: 'warning' },
+   143→   223→    { tech: '4G', metric: 'availability', target: 99, condition: 'gte', severity: 'critical' },
+   144→   224→    { tech: '4G', metric: 'dropRate', target: 1, condition: 'lte', severity: 'critical' },
+   145→   225→    { tech: '4G', metric: 'latency', target: 50, condition: 'lte', severity: 'warning' },
+   146→   226→    { tech: '4G', metric: 'handoverSuccessRate', target: 98, condition: 'gte', severity: 'critical' },
+   147→   227→    { tech: '4G', metric: 'prbUtilization', target: 85, condition: 'lte', severity: 'warning' },
+   148→   228→    { tech: '5G', metric: 'availability', target: 99.5, condition: 'gte', severity: 'critical' },
+   149→   229→    { tech: '5G', metric: 'latency', target: 10, condition: 'lte', severity: 'critical' },
+   150→   230→    { tech: '5G', metric: 'dropRate', target: 0.5, condition: 'lte', severity: 'critical' },
+   151→   231→    { tech: '5G', metric: 'handoverSuccessRate', target: 99, condition: 'gte', severity: 'warning' },
+   152→   232→    { tech: '5G', metric: 'prbUtilization', target: 80, condition: 'lte', severity: 'warning' },
+   153→   233→  ];
+   154→   234→  await db.sLATarget.createMany({ data: slaTargets.map(t => ({
+   155→   235→    technology: t.tech, metric: t.metric, targetValue: t.target,
+   156→   236→    condition: t.condition, severity: t.severity, enabled: true,
+   157→   237→  })) });
+   158→   238→  console.log(`  SLA targets: ${slaTargets.length}`);
+   159→   239→
+   160→   240→  // Seed anomaly events
+   161→   241→  console.log('Seeding anomaly events...');
+   162→   242→  const anomalySeverities = ['critical', 'major', 'minor'] as const;
+   163→   243→  const anomalyStatuses = ['detected', 'investigating', 'resolved', 'false_positive'] as const;
+   164→   244→  const anomalyMetrics = ['downloadThroughput', 'latency', 'availability', 'sinr', 'dropRate', 'prbUtilization'];
+   165→   245→  const anomalyData: any[] = [];
+   166→   246→  for (let i = 0; i < 15; i++) {
+   167→   247→    const site = pick(created);
+   168→   248→    const metric = pick(anomalyMetrics);
+   169→   249→    const actual = rand(0, 200);
+   170→   250→    const expected = rand(0, 200);
+   171→   251→    const z = rand(2.6, 6);
+   172→   252→    anomalyData.push({
+   173→   253→      siteId: site.id, technology: site.technology, metric,
+   174→   254→      actualValue: Number(actual.toFixed(2)),
+   175→   255→      expectedValue: Number(expected.toFixed(2)),
+   176→   256→      zScore: Number(z.toFixed(2)),
+   177→   257→      severity: pick(anomalySeverities),
+   178→   258→      status: pick(anomalyStatuses),
+   179→   259→      description: `${metric} anomaly at ${site.name} (z=${z.toFixed(2)})`,
+   180→   260→      createdAt: subHours(now, randInt(0, 6)),
+   181→   261→      ...(Math.random() > 0.5 ? { resolvedAt: subHours(now, randInt(0, 2)) } : {}),
+   182→   262→    });
+   183→   263→  }
+   184→   264→  await db.anomalyEvent.createMany({ data: anomalyData });
+   185→   265→  console.log(`  Anomaly events: ${anomalyData.length}`);
+   186→   266→
+   187→   267→  // Seed audit logs
+   188→   268→  console.log('Seeding audit logs...');
+   189→   269→  const auditActions = ['create', 'update', 'acknowledge', 'resolve'];
+   190→   270→  const auditEntities = ['parameter', 'alert', 'site', 'anomaly'];
+   191→   271→  for (let i = 0; i < 8; i++) {
+   192→   272→    await db.auditLog.create({
+   193→   273→      data: {
+   194→   274→        entityType: pick(auditEntities),
+   195→   275→        entityId: pick(created).id,
+   196→   276→        action: pick(auditActions),
+   197→   277→        oldValue: JSON.stringify({ val: rand(0, 100) }),
+   198→   278→        newValue: JSON.stringify({ val: rand(0, 100) }),
+   199→   279→        description: `${pick(auditActions)} ${pick(auditEntities)} via platform`,
+   200→   280→        technology: pick(['2G', '3G', '4G', '5G']),
+   201→   281→        createdAt: subHours(now, randInt(0, 24)),
+   202→   282→      },
+   203→   283→    });
+   204→   284→  }
+   205→   285→  console.log('  Audit logs: 8');
+   206→   286→
+   207→   287→  // ================================================================
+   208→   288→  // PHASE A: SON & AUTOMATION SEED DATA
+   209→   289→  // ================================================================
+   210→   290→  console.log('\n--- Seeding Phase A: SON & Automation ---');
+   211→   291→
+   212→   292→  // Fetch all sites for FK lookups
+   213→   293→  const allSites = await db.networkSite.findMany();
+   214→   294→  const site4G = allSites.filter(s => s.technology === '4G');
+   215→   295→  const site5G = allSites.filter(s => s.technology === '5G');
+   216→   296→  const site3G = allSites.filter(s => s.technology === '3G');
+   217→   297→  const site2G = allSites.filter(s => s.technology === '2G');
+   218→   298→
+   219→   299→  // ------------------------------------------------------------------
+   220→   300→  // 1. SonModule (8 records)
+   221→   301→  // ------------------------------------------------------------------
+   222→   302→  console.log('Seeding SonModules...');
+   223→   303→  const sonModulesData = [
+   224→   304→    {
+   225→   305→      name: 'ANR',
+   226→   306→      displayName: 'Auto Neighbor Relations',
+   227→   307→      technology: '4G,5G',
+   228→   308→      description: 'Automatically detects and adds neighbor cell relations based on UE measurement reports. Supports intra-frequency, inter-frequency, and inter-RAT neighbor discovery.',
+   229→   309→      enabled: true,
+   230→   310→      mode: 'semi-automated',
+   231→   311→      schedule: 'every 15min',
+   232→   312→      parameters: JSON.stringify({ maxNeighbors: 32, detectionThreshold: -100, hoTriggerThreshold: -95, noRemovePeriod: 720 }),
+   233→   313→      stats: JSON.stringify({ actions24h: 15, successRate: 94.5, avgImpact: 2.3, totalNeighborsAdded: 312, falsePositiveRate: 3.2 }),
+   234→   314→    },
+   235→   315→    {
+   236→   316→      name: 'PCI',
+   237→   317→      displayName: 'PCI Optimization',
+   238→   318→      technology: '4G,5G',
+   239→   319→      description: 'Detects and resolves PCI conflicts and collisions. Ensures adequate modulus-3, modulus-6, and modulus-30 separation for LTE, and handles 5G SSB/CSI-RS PCI allocation.',
+   240→   320→      enabled: true,
+   241→   321→      mode: 'closed-loop',
+   242→   322→      schedule: 'daily',
+   243→   323→      parameters: JSON.stringify({ mod3Check: true, mod30Check: true, autoResolve: true, impactThreshold: 5.0 }),
+   244→   324→      stats: JSON.stringify({ actions24h: 8, successRate: 97.2, avgImpact: 6.1, conflictsDetected: 3, conflictsResolved: 2 }),
+   245→   325→    },
+   246→   326→    {
+   247→   327→      name: 'MRO',
+   248→   328→      displayName: 'Mobility Robustness Optimization',
+   249→   329→      technology: 'ALL',
+   250→   330→      description: 'Optimizes handover parameters (hysteresis, time-to-trigger, offsets) to minimize too-early, too-late, and ping-pong handovers across all technologies.',
+   251→   331→      enabled: true,
+   252→   332→      mode: 'semi-automated',
+   253→   333→      schedule: 'every 30min',
+   254→   334→      parameters: JSON.stringify({ targetHoSuccessRate: 98.5, maxPingPongRate: 2.0, adjustmentStep: 0.5, maxHysteresis: 12 }),
+   255→   335→      stats: JSON.stringify({ actions24h: 22, successRate: 91.8, avgImpact: 3.7, hoSuccessImprovement: 1.8 }),
+   256→   336→    },
+   257→   337→    {
+   258→   338→      name: 'CCO',
+   259→   339→      displayName: 'Coverage & Capacity Optimization',
+   260→   340→      technology: 'ALL',
+   261→   341→      description: 'Balances coverage and capacity by adjusting antenna tilt, power, and carrier configuration. Addresses coverage holes and capacity bottlenecks dynamically.',
+   262→   342→      enabled: true,
+   263→   343→      mode: 'closed-loop',
+   264→   344→      schedule: 'every 1h',
+   265→   345→      parameters: JSON.stringify({ rsrpTarget: -90, prbTarget: 75, tiltRange: [0, 12], powerRange: [5, 20] }),
+   266→   346→      stats: JSON.stringify({ actions24h: 18, successRate: 88.6, avgImpact: 4.5, coverageGain: 2.1, capacityGain: 8.3 }),
+   267→   347→    },
+   268→   348→    {
+   269→   349→      name: 'HLB',
+   270→   350→      displayName: 'Hybrid Load Balancing',
+   271→   351→      technology: '4G,5G',
+   272→   352→      description: 'Distributes user traffic across multiple carriers and layers (4G/5G) using MLB, ULB, and inter-RAT load balancing. Prevents congestion and improves user experience.',
+   273→   353→      enabled: true,
+   274→   354→      mode: 'semi-automated',
+   275→   355→      schedule: 'every 10min',
+   276→   356→      parameters: JSON.stringify({ prbHighThreshold: 80, prbLowThreshold: 40, mlbWeight: 0.6, ulbWeight: 0.4 }),
+   277→   357→      stats: JSON.stringify({ actions24h: 30, successRate: 93.1, avgImpact: 3.2, usersOffloaded: 458, avgPrbReduction: 12.5 }),
+   278→   358→    },
+   279→   359→    {
+   280→   360→      name: 'CODC',
+   281→   361→      displayName: 'Cell Outage Detection & Compensation',
+   282→   362→      technology: 'ALL',
+   283→   363→      description: 'Detects cell outages autonomously and compensates by adjusting neighboring cell parameters (power, tilt) to cover the affected area until repair.',
+   284→   364→      enabled: true,
+   285→   365→      mode: 'closed-loop',
+   286→   366→      schedule: 'always',
+   287→   367→      parameters: JSON.stringify({ detectionWindow: 300, compensationPowerBoost: 3, compensationTiltAdjust: -1, maxCompensationCells: 6 }),
+   288→   368→      stats: JSON.stringify({ actions24h: 5, successRate: 100.0, avgImpact: 7.8, outagesDetected: 1, avgCompensationTime: 42 }),
+   289→   369→    },
+   290→   370→    {
+   291→   371→      name: 'AIC',
+   292→   372→      displayName: 'Auto Inconsistency Correction',
+   293→   373→      technology: 'ALL',
+   294→   374→      description: 'Detects and corrects parameter inconsistencies across the network (e.g., mismatched neighbor lists, conflicting handover parameters, CI/PCI mismatches).',
+   295→   375→      enabled: true,
+   296→   376→      mode: 'open-loop',
+   297→   377→      schedule: 'every 6h',
+   298→   378→      parameters: JSON.stringify({ checkNeighborConsistency: true, checkParamConsistency: true, autoCorrect: false, reportOnly: true }),
+   299→   379→      stats: JSON.stringify({ actions24h: 12, successRate: 96.0, avgImpact: 2.8, inconsistenciesFound: 7, inconsistenciesCorrected: 5 }),
+   300→   380→    },
+   301→   381→    {
+   302→   382→      name: 'PnP',
+   303→   383→      displayName: 'Plug & Play',
+   304→   384→      technology: '4G,5G',
+   305→   385→      description: 'Automates the initial configuration and integration of new cells/eNodeBs/gNBs including PCI assignment, neighbor setup, power calibration, and parameter provisioning.',
+   306→   386→      enabled: true,
+   307→   387→      mode: 'closed-loop',
+   308→   388→      schedule: 'on-demand',
+   309→   389→      parameters: JSON.stringify({ autoPciAssign: true, autoNeighborSetup: true, powerCalibration: true, verificationPeriod: 60 }),
+   310→   390→      stats: JSON.stringify({ actions24h: 3, successRate: 100.0, avgImpact: 9.2, cellsOnboarded: 1, avgOnboardTime: 340 }),
+   311→   391→    },
+   312→   392→  ];
+   313→   393→
+   314→   394→  const sonModules: any[] = [];
+   315→   395→  for (const m of sonModulesData) {
+   316→   396→    const mod = await db.sonModule.create({ data: m });
+   317→   397→    sonModules.push(mod);
+   318→   398→  }
+   319→   399→  console.log(`  SonModules: ${sonModules.length}`);
+   320→   400→
+   321→   401→  // Helper: find module by name
+   322→   402→  const moduleMap = new Map(sonModules.map(m => [m.name, m]));
+   323→   403→
+   324→   404→  // ------------------------------------------------------------------
+   325→   405→  // 2. SonAction (40 records)
+   326→   406→  // ------------------------------------------------------------------
+   327→   407→  console.log('Seeding SonActions...');
+   328→   408→
+   329→   409→  // Deterministic status distribution: 70% applied, 15% pending, 10% rolled_back, 5% failed
+   330→   410→  function actionStatus(): string {
+   331→   411→    const r = Math.random();
+   332→   412→    if (r < 0.70) return 'applied';
+   333→   413→    if (r < 0.85) return 'pending';
+   334→   414→    if (r < 0.95) return 'rolled_back';
+   335→   415→    return 'failed';
+   336→   416→  }
+   337→   417→
+   338→   418→  const sonActionsData: any[] = [];
+   339→   419→  let actionId = 0;
+   340→   420→
+   341→   421→  // ANR actions (8) - add_neighbor for 4G sites
+   342→   422→  const anrModule = moduleMap.get('ANR')!;
+   343→   423→  for (let i = 0; i < 8; i++) {
+   344→   424→    const site = site4G[i % site4G.length];
+   345→   425→    const neighbor = site4G[(i + 1) % site4G.length];
+   346→   426→    const status = actionStatus();
+   347→   427→    sonActionsData.push({
+   348→   428→      moduleId: anrModule.id,
+   349→   429→      siteId: site.id,
+   350→   430→      technology: '4G',
+   351→   431→      actionType: 'add_neighbor',
+   352→   432→      parameter: 'neighborList',
+   353→   433→      previousValue: JSON.stringify({ neighbors: 6 }),
+   354→   434→      newValue: JSON.stringify({ neighbors: 7, added: neighbor.code }),
+   355→   435→      reason: `ANR detected missing neighbor ${neighbor.code} from UE measurement reports at ${site.name}. Signal strength above detection threshold.`,
+   356→   436→      status,
+   357→   437→      kpiBefore: JSON.stringify({ handoverSuccessRate: 94.2 + rand(-1, 1), rsrp: -95 + rand(-3, 3) }),
+   358→   438→      kpiAfter: status === 'applied' ? JSON.stringify({ handoverSuccessRate: 96.8 + rand(-0.5, 0.5), rsrp: -93 + rand(-2, 2) }) : null,
+   359→   439→      impactScore: status === 'applied' ? Number(rand(2, 5).toFixed(1)) : null,
+   360→   440→      rollbackReason: status === 'rolled_back' ? 'Neighbor addition caused unexpected handover ping-pong' : null,
+   361→   441→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   362→   442→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 12)) : null,
+   363→   443→      createdAt: subHours(now, randInt(1, 48)),
+   364→   444→    });
+   365→   445→    actionId++;
+   366→   446→  }
+   367→   447→
+   368→   448→  // PCI actions (5) - modify_pci for 5G sites
+   369→   449→  const pciModule = moduleMap.get('PCI')!;
+   370→   450→  const pciValues = [120, 245, 370, 501, 12, 137, 262, 387];
+   371→   451→  for (let i = 0; i < 5; i++) {
+   372→   452→    const site = site5G[i % site5G.length];
+   373→   453→    const oldPci = pciValues[i % pciValues.length];
+   374→   454→    const newPci = pciValues[(i + 3) % pciValues.length];
+   375→   455→    const status = actionStatus();
+   376→   456→    sonActionsData.push({
+   377→   457→      moduleId: pciModule.id,
+   378→   458→      siteId: site.id,
+   379→   459→      technology: '5G',
+   380→   460→      actionType: 'modify_pci',
+   381→   461→      parameter: 'physicalCellId',
+   382→   462→      previousValue: String(oldPci),
+   383→   463→      newValue: String(newPci),
+   384→   464→      reason: `PCI conflict detected: PCI ${oldPci} at ${site.name} causes modulus-3 collision with neighboring cell. Reassigned to ${newPci}.`,
+   385→   465→      status,
+   386→   466→      kpiBefore: JSON.stringify({ sinr: 8.5 + rand(-2, 2), rsrq: -10 + rand(-1, 1), conflictCount: 2 }),
+   387→   467→      kpiAfter: status === 'applied' ? JSON.stringify({ sinr: 12.3 + rand(-1, 1), rsrq: -7.5 + rand(-0.5, 0.5), conflictCount: 0 }) : null,
+   388→   468→      impactScore: status === 'applied' ? Number(rand(5, 9).toFixed(1)) : null,
+   389→   469→      rollbackReason: status === 'rolled_back' ? 'New PCI caused CSI-RS collision with adjacent cell' : null,
+   390→   470→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   391→   471→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 12)) : null,
+   392→   472→      createdAt: subHours(now, randInt(2, 48)),
+   393→   473→    });
+   394→   474→    actionId++;
+   395→   475→  }
+   396→   476→
+   397→   477→  // MRO actions (6) - adjust_tilt and adjust_power
+   398→   478→  const mroModule = moduleMap.get('MRO')!;
+   399→   479→  const mroActionTypes = ['adjust_tilt', 'adjust_power', 'adjust_tilt', 'adjust_power', 'adjust_tilt', 'adjust_tilt'];
+   400→   480→  const mroTechs = ['4G', '3G', '4G', '2G', '5G', '4G'];
+   401→   481→  const mroSites = [...site4G.slice(0, 3), site3G[0], site5G[0], site4G[3]];
+   402→   482→  for (let i = 0; i < 6; i++) {
+   403→   483→    const site = mroSites[i];
+   404→   484→    const aType = mroActionTypes[i];
+   405→   485→    const isTilt = aType === 'adjust_tilt';
+   406→   486→    const prevVal = isTilt ? '6' : '15.2';
+   407→   487→    const newVal = isTilt ? '4' : '17.5';
+   408→   488→    const status = actionStatus();
+   409→   489→    sonActionsData.push({
+   410→   490→      moduleId: mroModule.id,
+   411→   491→      siteId: site.id,
+   412→   492→      technology: mroTechs[i],
+   413→   493→      actionType: aType,
+   414→   494→      parameter: isTilt ? 'antennaTilt' : 'rsPower',
+   415→   495→      previousValue: prevVal,
+   416→   496→      newValue: newVal,
+   417→   497→      reason: `MRO detected ${isTilt ? 'too-early handovers due to aggressive tilt' : 'insufficient cell overlap causing too-late handovers'} at ${site.name}. Adjusted ${isTilt ? 'downtilt from 6° to 4°' : 'RS power from 15.2 to 17.5 dBm'}.`,
+   418→   498→      status,
+   419→   499→      kpiBefore: JSON.stringify({ handoverSuccessRate: 95.1 + rand(-2, 1), pingPongRate: 3.2 + rand(-1, 2) }),
+   420→   500→      kpiAfter: status === 'applied' ? JSON.stringify({ handoverSuccessRate: 97.8 + rand(-0.5, 0.5), pingPongRate: 1.1 + rand(-0.3, 0.5) }) : null,
+   421→   501→      impactScore: status === 'applied' ? Number(rand(3, 7).toFixed(1)) : null,
+   422→   502→      rollbackReason: status === 'rolled_back' ? 'Handover success rate degraded after parameter change' : null,
+   423→   503→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   424→   504→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 12)) : null,
+   425→   505→      createdAt: subHours(now, randInt(1, 48)),
+   426→   506→    });
+   427→   507→    actionId++;
+   428→   508→  }
+   429→   509→
+   430→   510→  // CCO actions (6) - adjust_power and adjust_tilt
+   431→   511→  const ccoModule = moduleMap.get('CCO')!;
+   432→   512→  const ccoSites = [site4G[0], site5G[1], site3G[2], site4G[4], site2G[1], site4G[7]];
+   433→   513→  const ccoTechs = ['4G', '5G', '3G', '4G', '2G', '4G'];
+   434→   514→  for (let i = 0; i < 6; i++) {
+   435→   515→    const site = ccoSites[i];
+   436→   516→    const aType = i % 2 === 0 ? 'adjust_power' : 'adjust_tilt';
+   437→   517→    const isPower = aType === 'adjust_power';
+   438→   518→    const prevVal = isPower ? '15.2' : '6';
+   439→   519→    const newVal = isPower ? '18.0' : '4';
+   440→   520→    const status = actionStatus();
+   441→   521→    sonActionsData.push({
+   442→   522→      moduleId: ccoModule.id,
+   443→   523→      siteId: site.id,
+   444→   524→      technology: ccoTechs[i],
+   445→   525→      actionType: aType,
+   446→   526→      parameter: isPower ? 'rsPower' : 'antennaTilt',
+   447→   527→      previousValue: prevVal,
+   448→   528→      newValue: newVal,
+   449→   529→      reason: `CCO identified ${isPower ? 'coverage gap' : 'capacity hotspot'} at ${site.name}. ${isPower ? 'Increased RS power by 2.8dB to extend coverage.' : 'Reduced tilt by 2° to reduce overshoot and improve capacity.'}`,
+   450→   530→      status,
+   451→   531→      kpiBefore: JSON.stringify({ rsrp: -108 + rand(-3, 3), prbUtilization: 82 + rand(-5, 8) }),
+   452→   532→      kpiAfter: status === 'applied' ? JSON.stringify({ rsrp: -97 + rand(-2, 2), prbUtilization: 71 + rand(-4, 6) }) : null,
+   453→   533→      impactScore: status === 'applied' ? Number(rand(4, 8).toFixed(1)) : null,
+   454→   534→      rollbackReason: status === 'rolled_back' ? 'Power increase caused interference to adjacent cell' : null,
+   455→   535→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   456→   536→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 12)) : null,
+   457→   537→      createdAt: subHours(now, randInt(1, 48)),
+   458→   538→    });
+   459→   539→    actionId++;
+   460→   540→  }
+   461→   541→
+   462→   542→  // HLB actions (5) - adjust_power for load balancing
+   463→   543→  const hlbModule = moduleMap.get('HLB')!;
+   464→   544→  for (let i = 0; i < 5; i++) {
+   465→   545→    const site = site4G[i % site4G.length];
+   466→   546→    const status = actionStatus();
+   467→   547→    const oldPower = (15 + rand(0, 3)).toFixed(1);
+   468→   548→    const newPower = (12 + rand(0, 2)).toFixed(1);
+   469→   549→    sonActionsData.push({
+   470→   550→      moduleId: hlbModule.id,
+   471→   551→      siteId: site.id,
+   472→   552→      technology: '4G',
+   473→   553→      actionType: 'adjust_power',
+   474→   554→      parameter: 'rsPower',
+   475→   555→      previousValue: oldPower,
+   476→   556→      newValue: newPower,
+   477→   557→      reason: `HLB: PRB utilization at ${site.name} exceeded 80% threshold (${(82 + rand(0, 10)).toFixed(1)}%). Reducing RS power to offload ${randInt(15, 60)} users to neighboring cells.`,
+   478→   558→      status,
+   479→   559→      kpiBefore: JSON.stringify({ prbUtilization: 84 + rand(0, 10), activeUsers: randInt(180, 300) }),
+   480→   560→      kpiAfter: status === 'applied' ? JSON.stringify({ prbUtilization: 68 + rand(0, 8), activeUsers: randInt(100, 180) }) : null,
+   481→   561→      impactScore: status === 'applied' ? Number(rand(2, 5).toFixed(1)) : null,
+   482→   562→      rollbackReason: status === 'rolled_back' ? 'User throughput dropped below acceptable level after power reduction' : null,
+   483→   563→      appliedAt: status === 'applied' ? subHours(now, randInt(0, 24)) : null,
+   484→   564→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 6)) : null,
+   485→   565→      createdAt: subHours(now, randInt(0, 48)),
+   486→   566→    });
+   487→   567→    actionId++;
+   488→   568→  }
+   489→   569→
+   490→   570→  // CODC actions (4) - compensate_outage
+   491→   571→  const codcModule = moduleMap.get('CODC')!;
+   492→   572→  const codcSites = [site4G[0], site3G[3], site4G[8], site5G[2]];
+   493→   573→  const codcTechs = ['4G', '3G', '4G', '5G'];
+   494→   574→  for (let i = 0; i < 4; i++) {
+   495→   575→    const site = codcSites[i];
+   496→   576→    const status = actionStatus();
+   497→   577→    sonActionsData.push({
+   498→   578→      moduleId: codcModule.id,
+   499→   579→      siteId: site.id,
+   500→   580→      technology: codcTechs[i],
+   501→   581→      actionType: 'compensate_outage',
+   502→   582→      parameter: 'rsPower',
+   503→   583→      previousValue: '15.2',
+   504→   584→      newValue: '18.2',
+   505→   585→      reason: `CODC: Adjacent cell outage detected. Compensating by boosting ${site.name} power by 3dB to cover affected area. Estimated coverage fill: ${randInt(60, 90)}%.`,
+   506→   586→      status,
+   507→   587→      kpiBefore: JSON.stringify({ coverageArea: 85 + rand(-5, 5), rsrp: -95 + rand(-3, 3) }),
+   508→   588→      kpiAfter: status === 'applied' ? JSON.stringify({ coverageArea: 93 + rand(-2, 3), rsrp: -89 + rand(-2, 2) }) : null,
+   509→   589→      impactScore: status === 'applied' ? Number(rand(6, 10).toFixed(1)) : null,
+   510→   590→      rollbackReason: status === 'rolled_back' ? 'Outage resolved; reverting compensation parameters' : null,
+   511→   591→      appliedAt: status === 'applied' ? subHours(now, randInt(0, 24)) : null,
+   512→   592→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 6)) : null,
+   513→   593→      createdAt: subHours(now, randInt(0, 48)),
+   514→   594→    });
+   515→   595→    actionId++;
+   516→   596→  }
+   517→   597→
+   518→   598→  // AIC actions (4) - correct_config
+   519→   599→  const aicModule = moduleMap.get('AIC')!;
+   520→   600→  const aicSites = [site4G[1], site3G[5], site4G[9], site2G[3]];
+   521→   601→  const aicTechs = ['4G', '3G', '4G', '2G'];
+   522→   602→  const aicParams = ['qrxlevmin', 'hysteresis', 'sIntraSearch', 'rxLevAccessMin'];
+   523→   603→  const aicOldVals = ['-130', '2', '8', '-115'];
+   524→   604→  const aicNewVals = ['-140', '3', '4', '-110'];
+   525→   605→  const aicReasons = [
+   526→   606→    'QRXLEVMIN inconsistency: -130dBm differs from regional template (-140dBm). Correcting to match.',
+   527→   607→    'Hysteresis value 2dB is inconsistent with neighboring cells (3dB). Updating for handover consistency.',
+   528→   608→    'SIntraSearch 8dB is too high for the cell density. Regional template specifies 4dB.',
+   529→   609→    'RXLEV_ACCESS_MIN -115dBm is outside expected range. Correcting to -110dBm per network plan.',
+   530→   610→  ];
+   531→   611→  for (let i = 0; i < 4; i++) {
+   532→   612→    const site = aicSites[i];
+   533→   613→    const status = actionStatus();
+   534→   614→    sonActionsData.push({
+   535→   615→      moduleId: aicModule.id,
+   536→   616→      siteId: site.id,
+   537→   617→      technology: aicTechs[i],
+   538→   618→      actionType: 'correct_config',
+   539→   619→      parameter: aicParams[i],
+   540→   620→      previousValue: aicOldVals[i],
+   541→   621→      newValue: aicNewVals[i],
+   542→   622→      reason: `AIC: ${aicReasons[i]} Site: ${site.name}.`,
+   543→   623→      status,
+   544→   624→      kpiBefore: JSON.stringify({ handoverSuccessRate: 96 + rand(-2, 1), reselectionRate: 12 + rand(-3, 5) }),
+   545→   625→      kpiAfter: status === 'applied' ? JSON.stringify({ handoverSuccessRate: 97.5 + rand(-0.5, 0.5), reselectionRate: 8 + rand(-2, 3) }) : null,
+   546→   626→      impactScore: status === 'applied' ? Number(rand(1, 4).toFixed(1)) : null,
+   547→   627→      rollbackReason: status === 'rolled_back' ? 'Correction caused edge users to lose service' : null,
+   548→   628→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   549→   629→      rolledBackAt: status === 'rolled_back' ? subHours(now, randInt(0, 12)) : null,
+   550→   630→      createdAt: subHours(now, randInt(2, 72)),
+   551→   631→    });
+   552→   632→    actionId++;
+   553→   633→  }
+   554→   634→
+   555→   635→  // PnP actions (2) - add_neighbor + adjust_power for newly onboarded 5G
+   556→   636→  const pnpModule = moduleMap.get('PnP')!;
+   557→   637→  for (let i = 0; i < 2; i++) {
+   558→   638→    const site = site5G[i % site5G.length];
+   559→   639→    const status = actionStatus();
+   560→   640→    sonActionsData.push({
+   561→   641→      moduleId: pnpModule.id,
+   562→   642→      siteId: site.id,
+   563→   643→      technology: '5G',
+   564→   644→      actionType: i === 0 ? 'add_neighbor' : 'adjust_power',
+   565→   645→      parameter: i === 0 ? 'neighborList' : 'ssbPower',
+   566→   646→      previousValue: i === 0 ? JSON.stringify({ neighbors: 0 }) : '16',
+   567→   647→      newValue: i === 0 ? JSON.stringify({ neighbors: 3, added: [site5G[(i + 1) % site5G.length].code] }) : '18',
+   568→   648→      reason: `PnP: Initial ${i === 0 ? 'neighbor setup' : 'power calibration'} for newly integrated ${site.name}. ${i === 0 ? 'Added 3 initial neighbors based on proximity and frequency.' : 'SSB power adjusted after coverage verification.'}`,
+   569→   649→      status,
+   570→   650→      kpiBefore: JSON.stringify({ coverageRadius: 200 + rand(-50, 50), handoverSuccessRate: 0 }),
+   571→   651→      kpiAfter: status === 'applied' ? JSON.stringify({ coverageRadius: 450 + rand(-50, 80), handoverSuccessRate: 97.5 + rand(-1, 1.5) }) : null,
+   572→   652→      impactScore: status === 'applied' ? Number(rand(7, 10).toFixed(1)) : null,
+   573→   653→      rollbackReason: null,
+   574→   654→      appliedAt: status === 'applied' ? subHours(now, randInt(1, 24)) : null,
+   575→   655→      rolledBackAt: null,
+   576→   656→      createdAt: subHours(now, randInt(1, 72)),
+   577→   657→    });
+   578→   658→    actionId++;
+   579→   659→  }
+   580→   660→
+   581→   661→  // Insert all SonActions in batches
+   582→   662→  const sonActions: any[] = [];
+   583→   663→  for (const a of sonActionsData) {
+   584→   664→    const action = await db.sonAction.create({ data: a });
+   585→   665→    sonActions.push(action);
+   586→   666→  }
+   587→   667→  console.log(`  SonActions: ${sonActions.length}`);
+   588→   668→
+   589→   669→  // ------------------------------------------------------------------
+   590→   670→  // 3. NeighborRelation (60 records)
+   591→   671→  // ------------------------------------------------------------------
+   592→   672→  console.log('Seeding NeighborRelations...');
+   593→   673→
+   594→   674→  // Build neighbor pairs between 4G sites
+   595→   675→  // Each of the 10 selected 4G sites gets 3-8 neighbors
+   596→   676→  const neighborPairs: { servingIdx: number; neighborIdx: number; relType: string; hoType: string }[] = [
+   597→   677→    // LG001L (idx 0) — 6 neighbors
+   598→   678→    { servingIdx: 0, neighborIdx: 1, relType: 'intra_freq', hoType: 'anr_auto' },
+   599→   679→    { servingIdx: 0, neighborIdx: 2, relType: 'intra_freq', hoType: 'manual' },
+   600→   680→    { servingIdx: 0, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
+   601→   681→    { servingIdx: 0, neighborIdx: 4, relType: 'inter_freq', hoType: 'anr_auto' },
+   602→   682→    { servingIdx: 0, neighborIdx: 6, relType: 'inter_freq', hoType: 'manual' },
+   603→   683→    { servingIdx: 0, neighborIdx: 9, relType: 'inter_freq', hoType: 'pnp_auto' },
+   604→   684→    // LG002L (idx 1) — 5 neighbors
+   605→   685→    { servingIdx: 1, neighborIdx: 0, relType: 'intra_freq', hoType: 'anr_auto' },
+   606→   686→    { servingIdx: 1, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
+   607→   687→    { servingIdx: 1, neighborIdx: 5, relType: 'inter_freq', hoType: 'manual' },
+   608→   688→    { servingIdx: 1, neighborIdx: 2, relType: 'inter_freq', hoType: 'anr_auto' },
+   609→   689→    { servingIdx: 1, neighborIdx: 4, relType: 'intra_freq', hoType: 'manual' },
+   610→   690→    // LG003L (idx 2) — 4 neighbors
+   611→   691→    { servingIdx: 2, neighborIdx: 0, relType: 'intra_freq', hoType: 'manual' },
+   612→   692→    { servingIdx: 2, neighborIdx: 1, relType: 'inter_freq', hoType: 'anr_auto' },
+   613→   693→    { servingIdx: 2, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
+   614→   694→    { servingIdx: 2, neighborIdx: 10, relType: 'intra_freq', hoType: 'pnp_auto' },
+   615→   695→    // LG004L (idx 3) — 5 neighbors
+   616→   696→    { servingIdx: 3, neighborIdx: 0, relType: 'intra_freq', hoType: 'anr_auto' },
+   617→   697→    { servingIdx: 3, neighborIdx: 1, relType: 'intra_freq', hoType: 'anr_auto' },
+   618→   698→    { servingIdx: 3, neighborIdx: 2, relType: 'intra_freq', hoType: 'anr_auto' },
+   619→   699→    { servingIdx: 3, neighborIdx: 4, relType: 'inter_freq', hoType: 'manual' },
+   620→   700→    { servingIdx: 3, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
+   621→   701→    // AB001L (idx 4) — 5 neighbors
+   622→   702→    { servingIdx: 4, neighborIdx: 0, relType: 'inter_freq', hoType: 'anr_auto' },
+   623→   703→    { servingIdx: 4, neighborIdx: 1, relType: 'intra_freq', hoType: 'manual' },
+   624→   704→    { servingIdx: 4, neighborIdx: 3, relType: 'inter_freq', hoType: 'anr_auto' },
+   625→   705→    { servingIdx: 4, neighborIdx: 5, relType: 'intra_freq', hoType: 'anr_auto' },
+   626→   706→    { servingIdx: 4, neighborIdx: 11, relType: 'intra_freq', hoType: 'manual' },
+   627→   707→    // AB002L (idx 5) — 4 neighbors
+   628→   708→    { servingIdx: 5, neighborIdx: 1, relType: 'inter_freq', hoType: 'manual' },
+   629→   709→    { servingIdx: 5, neighborIdx: 4, relType: 'intra_freq', hoType: 'anr_auto' },
+   630→   710→    { servingIdx: 5, neighborIdx: 8, relType: 'inter_freq', hoType: 'anr_auto' },
+   631→   711→    { servingIdx: 5, neighborIdx: 6, relType: 'intra_freq', hoType: 'pnp_auto' },
+   632→   712→    // PH001L (idx 6) — 4 neighbors
+   633→   713→    { servingIdx: 6, neighborIdx: 0, relType: 'inter_freq', hoType: 'manual' },
+   634→   714→    { servingIdx: 6, neighborIdx: 5, relType: 'intra_freq', hoType: 'pnp_auto' },
+   635→   715→    { servingIdx: 6, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
+   636→   716→    { servingIdx: 6, neighborIdx: 11, relType: 'inter_freq', hoType: 'anr_auto' },
+   637→   717→    // PH002L (idx 7) — 4 neighbors
+   638→   718→    { servingIdx: 7, neighborIdx: 6, relType: 'intra_freq', hoType: 'anr_auto' },
+   639→   719→    { servingIdx: 7, neighborIdx: 8, relType: 'inter_freq', hoType: 'manual' },
+   640→   720→    { servingIdx: 7, neighborIdx: 10, relType: 'intra_freq', hoType: 'anr_auto' },
+   641→   721→    { servingIdx: 7, neighborIdx: 11, relType: 'intra_freq', hoType: 'anr_auto' },
+   642→   722→    // KN001L (idx 8) — 4 neighbors
+   643→   723→    { servingIdx: 8, neighborIdx: 5, relType: 'inter_freq', hoType: 'anr_auto' },
+   644→   724→    { servingIdx: 8, neighborIdx: 7, relType: 'inter_freq', hoType: 'manual' },
+   645→   725→    { servingIdx: 8, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
+   646→   726→    { servingIdx: 8, neighborIdx: 10, relType: 'intra_freq', hoType: 'manual' },
+   647→   727→    // IB001L (idx 9) — 5 neighbors
+   648→   728→    { servingIdx: 9, neighborIdx: 0, relType: 'inter_freq', hoType: 'pnp_auto' },
+   649→   729→    { servingIdx: 9, neighborIdx: 3, relType: 'intra_freq', hoType: 'anr_auto' },
+   650→   730→    { servingIdx: 9, neighborIdx: 8, relType: 'intra_freq', hoType: 'anr_auto' },
+   651→   731→    { servingIdx: 9, neighborIdx: 10, relType: 'intra_freq', hoType: 'anr_auto' },
+   652→   732→    { servingIdx: 9, neighborIdx: 11, relType: 'inter_freq', hoType: 'manual' },
+   653→   733→    // IB002L (idx 10) — 4 neighbors
+   654→   734→    { servingIdx: 10, neighborIdx: 2, relType: 'intra_freq', hoType: 'pnp_auto' },
+   655→   735→    { servingIdx: 10, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
+   656→   736→    { servingIdx: 10, neighborIdx: 8, relType: 'intra_freq', hoType: 'manual' },
+   657→   737→    { servingIdx: 10, neighborIdx: 9, relType: 'intra_freq', hoType: 'anr_auto' },
+   658→   738→    // BN001L (idx 11) — 4 neighbors
+   659→   739→    { servingIdx: 11, neighborIdx: 4, relType: 'intra_freq', hoType: 'manual' },
+   660→   740→    { servingIdx: 11, neighborIdx: 6, relType: 'inter_freq', hoType: 'anr_auto' },
+   661→   741→    { servingIdx: 11, neighborIdx: 7, relType: 'intra_freq', hoType: 'anr_auto' },
+   662→   742→    { servingIdx: 11, neighborIdx: 9, relType: 'inter_freq', hoType: 'manual' },
+   663→   743→    // Add more inter-tech relations (4G -> 3G/2G) to reach ~60
+   664→   744→    { servingIdx: 0, neighborIdx: 1, relType: 'inter_tech', hoType: 'manual' },
+   665→   745→    { servingIdx: 1, neighborIdx: 0, relType: 'inter_tech', hoType: 'manual' },
+   666→   746→    { servingIdx: 4, neighborIdx: 2, relType: 'inter_tech', hoType: 'manual' },
+   667→   747→    { servingIdx: 6, neighborIdx: 3, relType: 'inter_tech', hoType: 'anr_auto' },
+   668→   748→    { servingIdx: 8, neighborIdx: 4, relType: 'inter_tech', hoType: 'manual' },
+   669→   749→    { servingIdx: 9, neighborIdx: 5, relType: 'inter_tech', hoType: 'anr_auto' },
+   670→   750→  ];
+   671→   751→
+   672→   752→  let neighborCount = 0;
+   673→   753→  for (const pair of neighborPairs) {
+   674→   754→    if (pair.servingIdx >= site4G.length || pair.neighborIdx >= allSites.length) continue;
+   675→   755→    const serving = site4G[pair.servingIdx];
+   676→   756→    const neighbor = allSites[pair.neighborIdx];
+   677→   757→    await db.neighborRelation.create({
+   678→   758→      data: {
+   679→   759→        servingCellId: serving.id,
+   680→   760→        neighborCellId: neighbor.id,
+   681→   761→        neighborCellName: neighbor.name,
+   682→   762→        neighborCellCode: neighbor.code,
+   683→   763→        technology: '4G',
+   684→   764→        relationType: pair.relType,
+   685→   765→        hoType: pair.hoType,
+   686→   766→        status: Math.random() > 0.05 ? 'active' : 'removed',
+   687→   767→        hoSuccessRate: Number(rand(85, 99.5).toFixed(1)),
+   688→   768→        lastUpdated: subHours(now, randInt(0, 48)),
+   689→   769→      },
+   690→   770→    });
+   691→   771→    neighborCount++;
+   692→   772→  }
+   693→   773→  console.log(`  NeighborRelations: ${neighborCount}`);
+   694→   774→
+   695→   775→  // ------------------------------------------------------------------
+   696→   776→  // 4. Policy (6 records)
+   697→   777→  // ------------------------------------------------------------------
+   698→   778→  console.log('Seeding Policies...');
+   699→   779→  const anrMod = moduleMap.get('ANR')!;
+   700→   780→  const mroMod = moduleMap.get('MRO')!;
+   701→   781→  const ccoMod = moduleMap.get('CCO')!;
+   702→   782→  const hlbMod = moduleMap.get('HLB')!;
+   703→   783→  const codcMod = moduleMap.get('CODC')!;
+   704→   784→  const aicMod = moduleMap.get('AIC')!;
+   705→   785→  const pciMod = moduleMap.get('PCI')!;
+   706→   786→
+   707→   787→  const policiesData = [
+   708→   788→    {
+   709→   789→      name: 'Auto Coverage Recovery',
+   710→   790→      description: 'Automatically triggers CCO when RSRP drops below -105dBm. Adjusts antenna tilt and power to restore coverage within the affected cell area.',
+   711→   791→      technology: '4G,5G',
+   712→   792→      triggerType: 'kpi_breach',
+   713→   793→      triggerConfig: JSON.stringify({ metric: 'rsrp', condition: 'lt', threshold: -105, evaluationPeriod: '15min', minBreaches: 2 }),
+   714→   794→      actionModules: JSON.stringify([ccoMod.id]),
+   715→   795→      scope: 'all',
+   716→   796→      priority: 3,
+   717→   797→      cooldownMins: 60,
+   718→   798→      stats: JSON.stringify({ totalRuns: 47, successRate: 89.4, lastRun: subHours(now, 2).toISOString() }),
+   719→   799→    },
+   720→   800→    {
+   721→   801→      name: 'Load Balancing Policy',
+   722→   802→      description: 'Triggers HLB when PRB utilization exceeds 80%. Redistributes traffic across carriers and neighboring cells to prevent congestion.',
+   723→   803→      technology: '4G,5G',
+   724→   804→      triggerType: 'kpi_breach',
+   725→   805→      triggerConfig: JSON.stringify({ metric: 'prbUtilization', condition: 'gt', threshold: 80, evaluationPeriod: '10min', minBreaches: 3 }),
+   726→   806→      actionModules: JSON.stringify([hlbMod.id]),
+   727→   807→      scope: 'all',
+   728→   808→      priority: 5,
+   729→   809→      cooldownMins: 30,
+   730→   810→      stats: JSON.stringify({ totalRuns: 124, successRate: 93.1, lastRun: subMinutes(now, 45).toISOString() }),
+   731→   811→    },
+   732→   812→    {
+   733→   813→      name: 'Outage Compensation Policy',
+   734→   814→      description: 'Detects cell availability drops below 95% and triggers CODC to compensate by boosting neighboring cell parameters.',
+   735→   815→      technology: 'ALL',
+   736→   816→      triggerType: 'anomaly_detected',
+   737→   817→      triggerConfig: JSON.stringify({ metric: 'availability', condition: 'lt', threshold: 95, detectionWindow: '5min', confirmWindow: '10min' }),
+   738→   818→      actionModules: JSON.stringify([codcMod.id]),
+   739→   819→      scope: 'all',
+   740→   820→      priority: 1,
+   741→   821→      cooldownMins: 15,
+   742→   822→      stats: JSON.stringify({ totalRuns: 8, successRate: 100.0, lastRun: subHours(now, 18).toISOString() }),
+   743→   823→    },
+   744→   824→    {
+   745→   825→      name: 'Neighbor Optimization Policy',
+   746→   826→      description: 'Triggers ANR and MRO when handover success rate drops below 95%. Adds missing neighbors and optimizes handover parameters.',
+   747→   827→      technology: '4G,5G',
+   748→   828→      triggerType: 'kpi_breach',
+   749→   829→      triggerConfig: JSON.stringify({ metric: 'handoverSuccessRate', condition: 'lt', threshold: 95, evaluationPeriod: '30min', minSamples: 50 }),
+   750→   830→      actionModules: JSON.stringify([anrMod.id, mroMod.id]),
+   751→   831→      scope: 'all',
+   752→   832→      priority: 4,
+   753→   833→      cooldownMins: 45,
+   754→   834→      stats: JSON.stringify({ totalRuns: 33, successRate: 91.0, lastRun: subHours(now, 6).toISOString() }),
+   755→   835→    },
+   756→   836→    {
+   757→   837→      name: 'Config Drift Correction',
+   758→   838→      description: 'Scheduled policy that runs AIC every 6 hours to detect and correct parameter inconsistencies across the network.',
+   759→   839→      technology: 'ALL',
+   760→   840→      triggerType: 'schedule',
+   761→   841→      triggerConfig: JSON.stringify({ cron: '0 */6 * * *', timezone: 'Africa/Lagos' }),
+   762→   842→      actionModules: JSON.stringify([aicMod.id]),
+   763→   843→      scope: 'all',
+   764→   844→      priority: 7,
+   765→   845→      cooldownMins: 360,
+   766→   846→      stats: JSON.stringify({ totalRuns: 156, successRate: 96.0, lastRun: subHours(now, 4).toISOString() }),
+   767→   847→    },
+   768→   848→    {
+   769→   849→      name: 'PCI Conflict Resolution',
+   770→   850→      description: 'Detects PCI conflicts via anomaly detection and triggers automatic PCI reassignment to eliminate interference.',
+   771→   851→      technology: '4G,5G',
+   772→   852→      triggerType: 'anomaly_detected',
+   773→   853→      triggerConfig: JSON.stringify({ metric: 'pci_conflict', condition: 'eq', threshold: 1, detectionMethod: 'modulus_check', frequency: 'every 1h' }),
+   774→   854→      actionModules: JSON.stringify([pciMod.id]),
+   775→   855→      scope: 'all',
+   776→   856→      priority: 2,
+   777→   857→      cooldownMins: 120,
+   778→   858→      stats: JSON.stringify({ totalRuns: 12, successRate: 97.2, lastRun: subHours(now, 24).toISOString() }),
+   779→   859→    },
+   780→   860→  ];
+   781→   861→
+   782→   862→  const policies: any[] = [];
+   783→   863→  for (const p of policiesData) {
+   784→   864→    const policy = await db.policy.create({ data: p });
+   785→   865→    policies.push(policy);
+   786→   866→  }
+   787→   867→  console.log(`  Policies: ${policies.length}`);
+   788→   868→
+   789→   869→  // ------------------------------------------------------------------
+   790→   870→  // 5. PolicyExecution (15 records)
+   791→   871→  // ------------------------------------------------------------------
+   792→   872→  console.log('Seeding PolicyExecutions...');
+   793→   873→
+   794→   874→  const execStatuses = ['completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'failed', 'failed', 'failed', 'rolled_back', 'rolled_back', 'triggered', 'triggered'];
+   795→   875→  const execData: any[] = [
+   796→   876→    {
+   797→   877→      policyId: policies[0].id, // Auto Coverage Recovery
+   798→   878→      status: 'completed',
+   799→   879→      triggerReason: 'RSRP at LTE-LG-003 dropped to -108.3dBm for 2 consecutive 15-min intervals',
+   800→   880→      affectedSites: JSON.stringify(['LG003L']),
+   801→   881→      actionsTaken: JSON.stringify(['adjusted antenna tilt 6° → 4°', 'increased RS power 15.2 → 17.0 dBm']),
+   802→   882→      kpiImpact: JSON.stringify({ before: { rsrp: -108.3, coverageArea: 82 }, after: { rsrp: -96.1, coverageArea: 91 } }),
+   803→   883→      durationMs: 18500,
+   804→   884→      createdAt: subHours(now, 2),
+   805→   885→      completedAt: subHours(now, 2),
+   806→   886→    },
+   807→   887→    {
+   808→   888→      policyId: policies[1].id, // Load Balancing
+   809→   889→      status: 'completed',
+   810→   890→      triggerReason: 'PRB utilization at LTE-LG-001 reached 87.2% for 3 consecutive intervals',
+   811→   891→      affectedSites: JSON.stringify(['LG001L', 'LG002L']),
+   812→   892→      actionsTaken: JSON.stringify(['reduced RS power 15.2 → 13.0 dBm', 'adjusted MLB offset +2dB']),
+   813→   893→      kpiImpact: JSON.stringify({ before: { prbUtilization: 87.2, activeUsers: 285 }, after: { prbUtilization: 68.4, activeUsers: 192 } }),
+   814→   894→      durationMs: 12300,
+   815→   895→      createdAt: subMinutes(now, 45),
+   816→   896→      completedAt: subMinutes(now, 45),
+   817→   897→    },
+   818→   898→    {
+   819→   899→      policyId: policies[2].id, // Outage Compensation
+   820→   900→      status: 'completed',
+   821→   901→      triggerReason: 'Cell LTE-PH-002 availability dropped to 91.3% — suspected RRU failure',
+   822→   902→      affectedSites: JSON.stringify(['PH002L', 'PH001L']),
+   823→   903→      actionsTaken: JSON.stringify(['boosted PH001L RS power by 3dB', 'reduced PH001L tilt by 1°']),
+   824→   904→      kpiImpact: JSON.stringify({ before: { availability: 91.3, affectedUsers: 145 }, after: { availability: 98.7, affectedUsers: 12 } }),
+   825→   905→      durationMs: 42000,
+   826→   906→      createdAt: subHours(now, 18),
+   827→   907→      completedAt: subHours(now, 18),
+   828→   908→    },
+   829→   909→    {
+   830→   910→      policyId: policies[3].id, // Neighbor Optimization
+   831→   911→      status: 'completed',
+   832→   912→      triggerReason: 'Handover success rate at LTE-AB-001 dropped to 93.8% over 30min window',
+   833→   913→      affectedSites: JSON.stringify(['AB001L', 'AB002L']),
+   834→   914→      actionsTaken: JSON.stringify(['added 2 missing neighbors via ANR', 'increased hysteresis 2dB → 3dB via MRO']),
+   835→   915→      kpiImpact: JSON.stringify({ before: { handoverSuccessRate: 93.8, pingPongRate: 4.1 }, after: { handoverSuccessRate: 97.2, pingPongRate: 1.8 } }),
+   836→   916→      durationMs: 55000,
+   837→   917→      createdAt: subHours(now, 6),
+   838→   918→      completedAt: subHours(now, 6),
+   839→   919→    },
+   840→   920→    {
+   841→   921→      policyId: policies[4].id, // Config Drift
+   842→   922→      status: 'completed',
+   843→   923→      triggerReason: 'Scheduled run — 6h config drift check',
+   844→   924→      affectedSites: JSON.stringify(['LG001L', 'LG002L', 'AB001L', 'KN001L', 'IB001L']),
+   845→   925→      actionsTaken: JSON.stringify(['corrected QRXLEVMIN at LG001L', 'corrected hysteresis at KN001L', 'corrected SIntraSearch at AB001L']),
+   846→   926→      kpiImpact: JSON.stringify({ before: { inconsistencies: 3, avgHoRate: 95.8 }, after: { inconsistencies: 0, avgHoRate: 97.1 } }),
+   847→   927→      durationMs: 95000,
+   848→   928→      createdAt: subHours(now, 4),
+   849→   929→      completedAt: subHours(now, 4),
+   850→   930→    },
+   851→   931→    {
+   852→   932→      policyId: policies[5].id, // PCI Conflict
+   853→   933→      status: 'completed',
+   854→   934→      triggerReason: 'PCI conflict detected: modulus-3 collision between LTE-LG-001 (PCI 504) and LTE-LG-004 (PCI 501)',
+   855→   935→      affectedSites: JSON.stringify(['LG001L', 'LG004L']),
+   856→   936→      actionsTaken: JSON.stringify(['reassigned PCI 504 → 502 at LTE-LG-001']),
+   857→   937→      kpiImpact: JSON.stringify({ before: { sinr: 7.2, conflictCount: 1 }, after: { sinr: 11.5, conflictCount: 0 } }),
+   858→   938→      durationMs: 28000,
+   859→   939→      createdAt: subHours(now, 24),
+   860→   940→      completedAt: subHours(now, 24),
+   861→   941→    },
+   862→   942→    {
+   863→   943→      policyId: policies[0].id,
+   864→   944→      status: 'completed',
+   865→   945→      triggerReason: 'RSRP at NR-LG-002 dropped to -112dBm in 5G coverage area',
+   866→   946→      affectedSites: JSON.stringify(['LG002N']),
+   867→   947→      actionsTaken: JSON.stringify(['increased SSB power 16 → 18 dBm', 'adjusted beam weight']),
+   868→   948→      kpiImpact: JSON.stringify({ before: { rsrp: -112, coverageRadius: 280 }, after: { rsrp: -99, coverageRadius: 410 } }),
+   869→   949→      durationMs: 22000,
+   870→   950→      createdAt: subHours(now, 8),
+   871→   951→      completedAt: subHours(now, 8),
+   872→   952→    },
+   873→   953→    {
+   874→   954→      policyId: policies[1].id,
+   875→   955→      status: 'completed',
+   876→   956→      triggerReason: 'PRB utilization at LTE-AB-002 sustained 83% for 30min during peak',
+   877→   957→      affectedSites: JSON.stringify(['AB002L', 'AB001L']),
+   878→   958→      actionsTaken: JSON.stringify(['adjusted MLB threshold', 'reduced AB002L RS power 15.2 → 12.5 dBm']),
+   879→   959→      kpiImpact: JSON.stringify({ before: { prbUtilization: 83.1 }, after: { prbUtilization: 71.5 } }),
+   880→   960→      durationMs: 15000,
+   881→   961→      createdAt: subHours(now, 10),
+   882→   962→      completedAt: subHours(now, 10),
+   883→   963→    },
+   884→   964→    {
+   885→   965→      policyId: policies[2].id,
+   886→   966→      status: 'failed',
+   887→   967→      triggerReason: 'Potential outage at UMTS-IB-001 — availability 94.1%',
+   888→   968→      affectedSites: JSON.stringify(['IB001U']),
+   889→   969→      actionsTaken: JSON.stringify([]),
+   890→   970→      kpiImpact: JSON.stringify({ before: { availability: 94.1 }, after: { availability: 94.1 } }),
+   891→   971→      rollbackReason: 'No adjacent cells available for compensation in Ibadan region',
+   892→   972→      durationMs: 8500,
+   893→   973→      createdAt: subHours(now, 36),
+   894→   974→      completedAt: subHours(now, 36),
+   895→   975→    },
+   896→   976→    {
+   897→   977→      policyId: policies[5].id,
+   898→   978→      status: 'failed',
+   899→   979→      triggerReason: 'PCI conflict detected at LTE-KN-001 but all alternative PCIs occupied',
+   900→   980→      affectedSites: JSON.stringify(['KN001L']),
+   901→   981→      actionsTaken: JSON.stringify(['attempted PCI reassignment to 128', 'attempted PCI reassignment to 256']),
+   902→   982→      kpiImpact: JSON.stringify({ before: { conflictCount: 1 }, after: { conflictCount: 1 } }),
+   903→   983→      rollbackReason: 'No available PCI in the neighborhood that satisfies modulus-3, modulus-6, and modulus-30 constraints',
+   904→   984→      durationMs: 45000,
+   905→   985→      createdAt: subHours(now, 12),
+   906→   986→      completedAt: subHours(now, 12),
+   907→   987→    },
+   908→   988→    {
+   909→   989→      policyId: policies[1].id,
+   910→   990→      status: 'failed',
+   911→   991→      triggerReason: 'HLB triggered for LTE-IB-002 but vendor API timeout',
+   912→   992→      affectedSites: JSON.stringify(['IB002L']),
+   913→   993→      actionsTaken: JSON.stringify(['API call to Nokia EMS timed out']),
+   914→   994→      kpiImpact: JSON.stringify({ before: { prbUtilization: 88.2 }, after: { prbUtilization: 88.2 } }),
+   915→   995→      rollbackReason: 'Nokia EMS connection timeout after 30s — no action applied',
+   916→   996→      durationMs: 32000,
+   917→   997→      createdAt: subHours(now, 5),
+   918→   998→      completedAt: subHours(now, 5),
+   919→   999→    },
+   920→  1000→    {
+   921→  1001→      policyId: policies[0].id,
+   922→  1002→      status: 'rolled_back',
+   923→  1003→      triggerReason: 'RSRP degradation at LTE-BN-001 triggered coverage recovery',
+   924→  1004→      affectedSites: JSON.stringify(['BN001L']),
+   925→  1005→      actionsTaken: JSON.stringify(['increased RS power 15.2 → 19.0 dBm', 'reduced tilt 6° → 2°']),
+   926→  1006→      kpiImpact: JSON.stringify({ before: { rsrp: -107 }, after: { rsrp: -107 } }),
+   927→  1007→      rollbackReason: 'Compensation caused interference spike at LTE-IB-001 — SINR dropped from 12 to 4 dB',
+   928→  1008→      durationMs: 120000,
+   929→  1009→      createdAt: subHours(now, 14),
+   930→  1010→      completedAt: subHours(now, 14),
+   931→  1011→    },
+   932→  1012→    {
+   933→  1013→      policyId: policies[3].id,
+   934→  1014→      status: 'rolled_back',
+   935→  1015→      triggerReason: 'Handover success rate at LTE-IB-001 dropped to 94.5%',
+   936→  1016→      affectedSites: JSON.stringify(['IB001L', 'IB002L']),
+   937→  1017→      actionsTaken: JSON.stringify(['added 3 neighbors via ANR', 'adjusted timeToTrigger 256ms → 128ms']),
+   938→  1018→      kpiImpact: JSON.stringify({ before: { handoverSuccessRate: 94.5 }, after: { handoverSuccessRate: 94.5 } }),
+   939→  1019→      rollbackReason: 'Reduced timeToTrigger caused excessive handover rate — network instability detected',
+   940→  1020→      durationMs: 67000,
+   941→  1021→      createdAt: subHours(now, 9),
+   942→  1022→      completedAt: subHours(now, 9),
+   943→  1023→    },
+   944→  1024→    {
+   945→  1025→      policyId: policies[0].id,
+   946→  1026→      status: 'triggered',
+   947→  1027→      triggerReason: 'RSRP at LTE-LG-004 dropped to -109.7dBm — evaluation in progress',
+   948→  1028→      affectedSites: JSON.stringify(['LG004L']),
+   949→  1029→      actionsTaken: JSON.stringify([]),
+   950→  1030→      kpiImpact: JSON.stringify({}),
+   951→  1031→      durationMs: null,
+   952→  1032→      createdAt: subMinutes(now, 3),
+   953→  1033→      completedAt: null,
+   954→  1034→    },
+   955→  1035→    {
+   956→  1036→      policyId: policies[1].id,
+   957→  1037→      status: 'triggered',
+   958→  1038→      triggerReason: 'PRB utilization at NR-LG-001 reached 78% — approaching threshold, monitoring',
+   959→  1039→      affectedSites: JSON.stringify(['LG001N']),
+   960→  1040→      actionsTaken: JSON.stringify([]),
+   961→  1041→      kpiImpact: JSON.stringify({}),
+   962→  1042→      durationMs: null,
+   963→  1043→      createdAt: subMinutes(now, 8),
+   964→  1044→      completedAt: null,
+   965→  1045→    },
+   966→  1046→  ];
+   967→  1047→
+   968→  1048→  for (const e of execData) {
+   969→  1049→    await db.policyExecution.create({ data: e });
+   970→  1050→  }
+   971→  1051→  console.log(`  PolicyExecutions: ${execData.length}`);
+   972→  1052→
+   973→  1053→  // ------------------------------------------------------------------
+   974→  1054→  // 6. VendorProfile (5 records)
+   975→  1055→  // ------------------------------------------------------------------
+   976→  1056→  console.log('Seeding VendorProfiles...');
+   977→  1057→  const vendorProfilesData = [
+   978→  1058→    {
+   979→  1059→      vendor: 'Ericsson',
+   980→  1060→      displayName: 'Ericsson Radio System',
+   981→  1061→      technologies: JSON.stringify(['2G', '3G', '4G', '5G']),
+   982→  1062→      apiType: 'rest',
+   983→  1063→      apiEndpoint: 'https://ericsson-ems.example.net/api/v2',
+   984→  1064→      status: 'active',
+   985→  1065→      lastSync: subMinutes(now, 15),
+   986→  1066→      stats: JSON.stringify({ sitesManaged: 9, lastActionCount: 12, syncStatus: 'healthy', firmwareVersion: 'BTS 5.3.1' }),
+   987→  1067→    },
+   988→  1068→    {
+   989→  1069→      vendor: 'Huawei',
+   990→  1070→      displayName: 'Huawei SingleRAN',
+   991→  1071→      technologies: JSON.stringify(['2G', '3G', '4G', '5G']),
+   992→  1072→      apiType: 'netconf',
+   993→  1073→      apiEndpoint: 'https://huawei-ums.example.net:830',
+   994→  1074→      status: 'active',
+   995→  1075→      lastSync: subMinutes(now, 8),
+   996→  1076→      stats: JSON.stringify({ sitesManaged: 12, lastActionCount: 8, syncStatus: 'healthy', firmwareVersion: 'SRAN18.1' }),
+   997→  1077→    },
+   998→  1078→    {
+   999→  1079→      vendor: 'Nokia',
+  1000→  1080→      displayName: 'Nokia AirScale',
+  1001→  1081→      technologies: JSON.stringify(['4G', '5G']),
+  1002→  1082→      apiType: 'rest',
+  1003→  1083→      apiEndpoint: 'https://nokia-netact.example.com/rest/v1',
+  1004→  1084→      status: 'active',
+  1005→  1085→      lastSync: subMinutes(now, 22),
+  1006→  1086→      stats: JSON.stringify({ sitesManaged: 6, lastActionCount: 5, syncStatus: 'degraded', firmwareVersion: 'ASR16.3' }),
+  1007→  1087→    },
+  1008→  1088→    {
+  1009→  1089→      vendor: 'Samsung',
+  1010→  1090→      displayName: 'Samsung 5G Compact',
+  1011→  1091→      technologies: JSON.stringify(['5G']),
+  1012→  1092→      apiType: 'rest',
+  1013→  1093→      apiEndpoint: 'https://samsung-nms.example.net/api/v1',
+  1014→  1094→      status: 'active',
+  1015→  1095→      lastSync: subMinutes(now, 5),
+  1016→  1096→      stats: JSON.stringify({ sitesManaged: 3, lastActionCount: 2, syncStatus: 'healthy', firmwareVersion: 'SNR2.1' }),
+  1017→  1097→    },
+  1018→  1098→    {
+  1019→  1099→      vendor: 'ZTE',
+  1020→  1100→      displayName: 'ZTE UniRAN',
+  1021→  1101→      technologies: JSON.stringify(['2G', '3G', '4G']),
+  1022→  1102→      apiType: 'snmp',
+  1023→  1103→      apiEndpoint: 'udp://zte-oms.example.net:161',
+  1024→  1104→      status: 'active',
+  1025→  1105→      lastSync: subMinutes(now, 30),
+  1026→  1106→      stats: JSON.stringify({ sitesManaged: 4, lastActionCount: 3, syncStatus: 'healthy', firmwareVersion: 'UR12.5' }),
+  1027→  1107→    },
+  1028→  1108→  ];
+  1029→  1109→
+  1030→  1110→  for (const v of vendorProfilesData) {
+  1031→  1111→    await db.vendorProfile.create({ data: v });
+  1032→  1112→  }
+  1033→  1113→  console.log(`  VendorProfiles: ${vendorProfilesData.length}`);
+  1034→  1114→
+  1035→  1115→  // ------------------------------------------------------------------
+  1036→  1116→  // 7. SiteOnboarding (8 records)
+  1037→  1117→  // ------------------------------------------------------------------
+  1038→  1118→  console.log('Seeding SiteOnboardings...');
+  1039→  1119→  const onboardingsData = [
+  1040→  1120→    {
+  1041→  1121→      siteName: 'NewSite-4G-001',
+  1042→  1122→      siteCode: 'NS4G001',
+  1043→  1123→      technology: '4G',
+  1044→  1124→      region: 'Lagos Mainland',
+  1045→  1125→      vendor: 'Ericsson',
+  1046→  1126→      latitude: 6.510,
+  1047→  1127→      longitude: 3.360,
+  1048→  1128→      altitude: 42,
+  1049→  1129→      frequency: '1800MHz',
+  1050→  1130→      bandwidth: 20,
+  1051→  1131→      maxCapacity: 150,
+  1052→  1132→      status: 'completed',
+  1053→  1133→      assignedPci: '502',
+  1054→  1134→      assignedFreq: 'Band 3 (1800MHz)',
+  1055→  1135→      initialNeighbors: JSON.stringify(['LG001L', 'LG002L', 'LG003L']),
+  1056→  1136→      kpiBaseline: JSON.stringify({ rsrp: -88, sinr: 14, downloadThroughput: 85, prbUtilization: 35 }),
+  1057→  1137→      completedAt: subHours(now, 48),
+  1058→  1138→      createdAt: subHours(now, 52),
+  1059→  1139→    },
+  1060→  1140→    {
+  1061→  1141→      siteName: 'NewSite-5G-001',
+  1062→  1142→      siteCode: 'NS5G001',
+  1063→  1143→      technology: '5G',
+  1064→  1144→      region: 'Abuja Central',
+  1065→  1145→      vendor: 'Huawei',
+  1066→  1146→      latitude: 9.045,
+  1067→  1147→      longitude: 7.510,
+  1068→  1148→      altitude: 58,
+  1069→  1149→      frequency: '3500MHz',
+  1070→  1150→      bandwidth: 100,
+  1071→  1151→      maxCapacity: 1000,
+  1072→  1152→      status: 'completed',
+  1073→  1153→      assignedPci: '24',
+  1074→  1154→      assignedFreq: 'n78 (3500MHz)',
+  1075→  1155→      initialNeighbors: JSON.stringify(['AB001N', 'AB002N', 'AB001L']),
+  1076→  1156→      kpiBaseline: JSON.stringify({ rsrp: -82, sinr: 18, downloadThroughput: 450, prbUtilization: 22 }),
+  1077→  1157→      completedAt: subHours(now, 24),
+  1078→  1158→      createdAt: subHours(now, 28),
+  1079→  1159→    },
+  1080→  1160→    {
+  1081→  1161→      siteName: 'NewSite-4G-002',
+  1082→  1162→      siteCode: 'NS4G002',
+  1083→  1163→      technology: '4G',
+  1084→  1164→      region: 'Port Harcourt',
+  1085→  1165→      vendor: 'Nokia',
+  1086→  1166→      latitude: 4.805,
+  1087→  1167→      longitude: 7.060,
+  1088→  1168→      altitude: 28,
+  1089→  1169→      frequency: '1800MHz',
+  1090→  1170→      bandwidth: 20,
+  1091→  1171→      maxCapacity: 150,
+  1092→  1172→      status: 'completed',
+  1093→  1173→      assignedPci: '506',
+  1094→  1174→      assignedFreq: 'Band 3 (1800MHz)',
+  1095→  1175→      initialNeighbors: JSON.stringify(['PH001L', 'PH002L']),
+  1096→  1176→      kpiBaseline: JSON.stringify({ rsrp: -91, sinr: 12, downloadThroughput: 72, prbUtilization: 41 }),
+  1097→  1177→      completedAt: subHours(now, 12),
+  1098→  1178→      createdAt: subHours(now, 16),
+  1099→  1179→    },
+  1100→  1180→    {
+  1101→  1181→      siteName: 'NewSite-4G-003',
+  1102→  1182→      siteCode: 'NS4G003',
+  1103→  1183→      technology: '4G',
+  1104→  1184→      region: 'Ibadan',
+  1105→  1185→      vendor: 'ZTE',
+  1106→  1186→      latitude: 7.385,
+  1107→  1187→      longitude: 3.935,
+  1108→  1188→      altitude: 40,
+  1109→  1189→      frequency: '800MHz',
+  1110→  1190→      bandwidth: 10,
+  1111→  1191→      maxCapacity: 75,
+  1112→  1192→      status: 'completed',
+  1113→  1193→      assignedPci: '510',
+  1114→  1194→      assignedFreq: 'Band 20 (800MHz)',
+  1115→  1195→      initialNeighbors: JSON.stringify(['IB001L', 'IB002L']),
+  1116→  1196→      kpiBaseline: JSON.stringify({ rsrp: -85, sinr: 11, downloadThroughput: 48, prbUtilization: 38 }),
+  1117→  1197→      completedAt: subHours(now, 6),
+  1118→  1198→      createdAt: subHours(now, 10),
+  1119→  1199→    },
+  1120→  1200→    {
+  1121→  1201→      siteName: 'NewSite-5G-002',
+  1122→  1202→      siteCode: 'NS5G002',
+  1123→  1203→      technology: '5G',
+  1124→  1204→      region: 'Lagos Island',
+  1125→  1205→      vendor: 'Samsung',
+  1126→  1206→      latitude: 6.445,
+  1127→  1207→      longitude: 3.405,
+  1128→  1208→      altitude: 55,
+  1129→  1209→      frequency: '3500MHz',
+  1130→  1210→      bandwidth: 100,
+  1131→  1211→      maxCapacity: 1000,
+  1132→  1212→      status: 'provisioning',
+  1133→  1213→      assignedPci: '36',
+  1134→  1214→      assignedFreq: 'n78 (3500MHz)',
+  1135→  1215→      initialNeighbors: JSON.stringify([]),
+  1136→  1216→      kpiBaseline: JSON.stringify({}),
+  1137→  1217→      completedAt: null,
+  1138→  1218→      createdAt: subHours(now, 2),
+  1139→  1219→    },
+  1140→  1220→    {
+  1141→  1221→      siteName: 'NewSite-4G-004',
+  1142→  1222→      siteCode: 'NS4G004',
+  1143→  1223→      technology: '4G',
+  1144→  1224→      region: 'Kano Metro',
+  1145→  1225→      vendor: 'Huawei',
+  1146→  1226→      latitude: 11.995,
+  1147→  1227→      longitude: 8.600,
+  1148→  1228→      altitude: 50,
+  1149→  1229→      frequency: '1800MHz',
+  1150→  1230→      bandwidth: 15,
+  1151→  1231→      maxCapacity: 120,
+  1152→  1232→      status: 'configuring',
+  1153→  1233→      assignedPci: '514',
+  1154→  1234→      assignedFreq: 'Band 3 (1800MHz)',
+  1155→  1235→      initialNeighbors: JSON.stringify(['KN001L']),
+  1156→  1236→      kpiBaseline: JSON.stringify({}),
+  1157→  1237→      completedAt: null,
+  1158→  1238→      createdAt: subHours(now, 4),
+  1159→  1239→    },
+  1160→  1240→    {
+  1161→  1241→      siteName: 'NewSite-4G-005',
+  1162→  1242→      siteCode: 'NS4G005',
+  1163→  1243→      technology: '4G',
+  1164→  1244→      region: 'Benin City',
+  1165→  1245→      vendor: 'Ericsson',
+  1166→  1246→      latitude: 6.340,
+  1167→  1247→      longitude: 5.620,
+  1168→  1248→      altitude: 38,
+  1169→  1249→      frequency: '2600MHz',
+  1170→  1250→      bandwidth: 20,
+  1171→  1251→      maxCapacity: 200,
+  1172→  1252→      status: 'pending',
+  1173→  1253→      assignedPci: null,
+  1174→  1254→      assignedFreq: null,
+  1175→  1255→      initialNeighbors: JSON.stringify([]),
+  1176→  1256→      kpiBaseline: JSON.stringify({}),
+  1177→  1257→      completedAt: null,
+  1178→  1258→      createdAt: subHours(now, 1),
+  1179→  1259→    },
+  1180→  1260→    {
+  1181→  1261→      siteName: 'NewSite-5G-003',
+  1182→  1262→      siteCode: 'NS5G003',
+  1183→  1263→      technology: '5G',
+  1184→  1264→      region: 'Kaduna',
+  1185→  1265→      vendor: 'Nokia',
+  1186→  1266→      latitude: 10.605,
+  1187→  1267→      longitude: 7.440,
+  1188→  1268→      altitude: 52,
+  1189→  1269→      frequency: '3500MHz',
+  1190→  1270→      bandwidth: 100,
+  1191→  1271→      maxCapacity: 1000,
+  1192→  1272→      status: 'pending',
+  1193→  1273→      assignedPci: null,
+  1194→  1274→      assignedFreq: null,
+  1195→  1275→      initialNeighbors: JSON.stringify([]),
+  1196→  1276→      kpiBaseline: JSON.stringify({}),
+  1197→  1277→      completedAt: null,
+  1198→  1278→      createdAt: subMinutes(now, 30),
+  1199→  1279→    },
+  1200→  1280→  ];
+  1201→  1281→
+  1202→  1282→  for (const o of onboardingsData) {
+  1203→  1283→    await db.siteOnboarding.create({ data: o });
+  1204→  1284→  }
+  1205→  1285→  console.log(`  SiteOnboardings: ${onboardingsData.length}`);
+  1206→  1286→
+  1207→  1287→  // ------------------------------------------------------------------
+  1208→  1288→  // 8. QoEMetric (120 records)
+  1209→  1289→  // ------------------------------------------------------------------
+  1210→  1290→  console.log('Seeding QoEMetrics...');
+  1211→  1291→
+  1212→  1292→  // Select 5 4G sites and 4 5G sites (using first available of each)
+  1213→  1293→  const qoeSites4G = site4G.slice(0, 5); // LG001L, LG002L, LG003L, LG004L, AB001L
+  1214→  1294→  const qoeSites5G = site5G.slice(0, 4); // LG001N, LG002N, LG003N, AB001N
+  1215→  1295→  const qoeSites = [...qoeSites4G, ...qoeSites5G]; // 9 sites
+  1216→  1296→
+  1217→  1297→  // 6 hourly points per site = 54 base records
+  1218→  1298→  // Add ~13-14 records per site to reach ~120 (some have extra 15-min interval points)
+  1219→  1299→  const qoeBatch: any[] = [];
+  1220→  1300→  for (const site of qoeSites) {
+  1221→  1301→    const is5G = site.technology === '5G';
+  1222→  1302→    // 6 hourly points
+  1223→  1303→    for (let h = 0; h < 6; h++) {
+  1224→  1304→      const ts = subHours(now, h);
+  1225→  1305→      const peakFactor = (h >= 3 && h <= 5) ? 1.0 : 0.7; // busier in recent hours
+  1226→  1306→      qoeBatch.push({
+  1227→  1307→        siteId: site.id,
+  1228→  1308→        technology: site.technology,
+  1229→  1309→        timestamp: ts,
+  1230→  1310→        createdAt: ts,
+  1231→  1311→        mosScore: Number((is5G ? rand(4.0, 4.8) : rand(3.5, 4.5)).toFixed(2)),
+  1232→  1312→        dataRateExperienced: Number((is5G ? rand(40, 120) : rand(8, 45)).toFixed(1)),
+  1233→  1313→        callSetupTime: Number((is5G ? rand(0.5, 1.5) : rand(1.0, 2.5)).toFixed(2)),
+  1234→  1314→        callDropRate: Number(rand(0, is5G ? 0.5 : 1.5).toFixed(2)),
+  1235→  1315→        webPageLoadTime: Number((is5G ? rand(0.3, 1.5) : rand(0.8, 3.5)).toFixed(2)),
+  1236→  1316→        videoStartTime: Number((is5G ? rand(0.5, 1.5) : rand(1.0, 3.0)).toFixed(2)),
+  1237→  1317→        pingLatency: Number((is5G ? rand(5, 25) : rand(20, 60)).toFixed(1)),
+  1238→  1318→        jitterExperience: Number((is5G ? rand(0.5, 3) : rand(2, 10)).toFixed(1)),
+  1239→  1319→        satisfactionIndex: Number((is5G ? rand(85, 98) : rand(70, 92)).toFixed(1)),
+  1240→  1320→        subscriberCount: Math.floor(rand(50, 500) * peakFactor),
+  1241→  1321→        complaintCount: randInt(0, Math.floor(is5G ? 3 : 6)),
+  1242→  1322→      });
+  1243→  1323→    }
+  1244→  1324→    // Add extra 15-min interval records for some sites to reach ~120
+  1245→  1325→    const extraCount = site === qoeSites[0] ? 8 : site === qoeSites[3] ? 7 : site === qoeSites[6] ? 6 : site === qoeSites[8] ? 5 : 0;
+  1246→  1326→    for (let e = 0; e < extraCount; e++) {
+  1247→  1327→      const ts = subHours(now, e * 0.25 + 0.5);
+  1248→  1328→      const is5G2 = site.technology === '5G';
+  1249→  1329→      qoeBatch.push({
+  1250→  1330→        siteId: site.id,
+  1251→  1331→        technology: site.technology,
+  1252→  1332→        timestamp: ts,
+  1253→  1333→        createdAt: ts,
+  1254→  1334→        mosScore: Number((is5G2 ? rand(3.8, 4.7) : rand(3.0, 4.3)).toFixed(2)),
+  1255→  1335→        dataRateExperienced: Number((is5G2 ? rand(35, 110) : rand(5, 40)).toFixed(1)),
+  1256→  1336→        callSetupTime: Number((is5G2 ? rand(0.5, 2.0) : rand(1.0, 3.0)).toFixed(2)),
+  1257→  1337→        callDropRate: Number(rand(0, is5G2 ? 0.8 : 2.0).toFixed(2)),
+  1258→  1338→        webPageLoadTime: Number((is5G2 ? rand(0.3, 2.0) : rand(0.8, 4.0)).toFixed(2)),
+  1259→  1339→        videoStartTime: Number((is5G2 ? rand(0.5, 2.0) : rand(1.0, 4.0)).toFixed(2)),
+  1260→  1340→        pingLatency: Number((is5G2 ? rand(5, 30) : rand(15, 80)).toFixed(1)),
+  1261→  1341→        jitterExperience: Number((is5G2 ? rand(0.5, 4) : rand(2, 12)).toFixed(1)),
+  1262→  1342→        satisfactionIndex: Number((is5G2 ? rand(82, 97) : rand(60, 90)).toFixed(1)),
+  1263→  1343→        subscriberCount: randInt(50, 500),
+  1264→  1344→        complaintCount: randInt(0, 8),
+  1265→  1345→      });
+  1266→  1346→    }
+  1267→  1347→  }
+  1268→  1348→
+  1269→  1349→  // Insert in chunks
+  1270→  1350→  const chunkSize = 50;
+  1271→  1351→  for (let i = 0; i < qoeBatch.length; i += chunkSize) {
+  1272→  1352→    await db.qoEMetric.createMany({ data: qoeBatch.slice(i, i + chunkSize) });
+  1273→  1353→  }
+  1274→  1354→  console.log(`  QoEMetrics: ${qoeBatch.length}`);
+  1275→  1355→
+  1276→  1356→  console.log('\n✅ Seed complete!');
+  1277→  1357→  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length})`);
+  1278→  1358→}
+  1279→  1359→
+  1280→  1360→main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());

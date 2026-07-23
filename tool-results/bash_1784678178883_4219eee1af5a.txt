@@ -1,0 +1,775 @@
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR Dashboard (14): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR Monitoring (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR SON_Auto (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Onboarding (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Live (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Incidents (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Outages (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Spectrum (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR KPI (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Alerts (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Coverage (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+ERROR Correlation (15): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR QoE (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Handover (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR LoadBal (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Interference (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR CovHoles (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR VendorCmp (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Services (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Slicing (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Energy (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Faults (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Subscribers (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Health (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Benchmark (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Playbooks (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Assistant (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR NPI (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Trends (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Sims (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR ROI (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Evolution (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Audit (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Executive (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Optimizer (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR RCA (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Anomaly (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+ERROR Policies (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR VendorHub (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR Reports (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR SLA (16): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+✓ Console log cleared
+✓ Done
+✓ Done
+ERROR Config (17): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+✓ Console log cleared
+✓ Done
+ERROR Parameters (17): TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+ReferenceError: t is not defined
+TypeError: Cannot read properties of null (reading 'toFixed')
+TypeError: Cannot read properties of null (reading 'toFixed')
+Error: ./src/components/views/CorrelationView.tsx:463:28
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+Error: ./src/components/views/SLADashboardView.tsx:103:66
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+ReferenceError: e is not defined
+Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+✓ Console log cleared
+
+==========================================
+VIEWS WITH ERRORS: Dashboard Monitoring SON_Auto Onboarding Live Incidents Outages Spectrum KPI Alerts Coverage Correlation QoE Handover LoadBal Interference CovHoles VendorCmp Services Slicing Energy Faults Subscribers Health Benchmark Playbooks Assistant NPI Trends Sims ROI Evolution Audit Executive Optimizer RCA Anomaly Policies VendorHub Reports SLA Config Parameters
+==========================================

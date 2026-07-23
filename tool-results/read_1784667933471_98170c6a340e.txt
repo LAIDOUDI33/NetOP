@@ -1,0 +1,659 @@
+     1→'use client';
+     2→import { useT } from '@/lib/i18n';
+     3→
+     4→import { useState } from 'react';
+     5→import { useQuery } from '@tanstack/react-query';
+     6→import {
+     7→  BarChart, Bar, Cell, PieChart, Pie, XAxis, YAxis, CartesianGrid,
+     8→  Tooltip, ResponsiveContainer,
+     9→} from 'recharts';
+    10→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+    11→import { Badge } from '@/components/ui/badge';
+    12→import {
+    13→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    14→} from '@/components/ui/select';
+    15→import {
+    16→  Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
+    17→} from '@/components/ui/table';
+    18→import { Skeleton } from '@/components/ui/skeleton';
+    19→import { Heart, Frown, Radio } from 'lucide-react';
+    20→import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+    21→import type { Technology } from '@/types';
+    22→
+    23→// ─── API Response Types ────────────────────────────────────────────────
+    24→
+    25→interface HealthScoreItem {
+    26→  id: string;
+    27→  siteId: string;
+    28→  siteName: string;
+    29→  siteCode: string;
+    30→  technology: Technology;
+    31→  region: string;
+    32→  overallScore: number;
+    33→  coverageScore: number;
+    34→  capacityScore: number;
+    35→  qualityScore: number;
+    36→  reliabilityScore: number;
+    37→  experienceScore: number;
+    38→  grade: string;
+    39→  trend: string;
+    40→  issues: string[];
+    41→  timestamp: string;
+    42→  createdAt: string;
+    43→}
+    44→
+    45→interface HealthSummary {
+    46→  total: number;
+    47→  avgOverall: number;
+    48→  byGrade: Record<string, number>;
+    49→  byRegion: Record<string, number>;
+    50→  byTrend: Record<string, number>;
+    51→}
+    52→
+    53→interface HealthResponse {
+    54→  healthScores: HealthScoreItem[];
+    55→  summary: HealthSummary;
+    56→}
+    57→
+    58→// ─── Grade & Trend Colors ─────────────────────────────────────────────
+    59→
+    60→const GRADE_COLORS: Record<string, string> = {
+    61→  'A+': '#059669',
+    62→  'A': '#34D399',
+    63→  'B': '#F59E0B',
+    64→  'C': '#F97316',
+    65→  'D': '#EF4444',
+    66→  'F': '#B91C1C',
+    67→};
+    68→
+    69→const GRADE_BG: Record<string, string> = {
+    70→  'A+': 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border-emerald-600/20',
+    71→  'A': 'bg-emerald-400/10 text-emerald-700 dark:text-emerald-300 border-emerald-400/20',
+    72→  'B': 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    73→  'C': 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20',
+    74→  'D': 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+    75→  'F': 'bg-red-700/10 text-red-700 dark:text-red-300 border-red-700/20',
+    76→};
+    77→
+    78→const GRADE_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    79→  'A+': 'default',
+    80→  'A': 'default',
+    81→  'B': 'secondary',
+    82→  'C': 'secondary',
+    83→  'D': 'destructive',
+    84→  'F': 'destructive',
+    85→};
+    86→
+    87→const TREND_COLORS: Record<string, string> = {
+    88→  improving: '#10B981',
+    89→  stable: '#F59E0B',
+    90→  degrading: '#EF4444',
+    91→};
+    92→
+    93→const TREND_BG: Record<string, string> = {
+    94→  improving: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+    95→  stable: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+    96→  degrading: 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20',
+    97→};
+    98→
+    99→function healthScoreColor(score: number): string {
+   100→  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
+   101→  if (score >= 60) return 'text-amber-600 dark:text-amber-400';
+   102→  return 'text-red-600 dark:text-red-400';
+   103→}
+   104→
+   105→function healthBarColor(score: number): string {
+   106→  if (score >= 80) return 'bg-emerald-500';
+   107→  if (score >= 60) return 'bg-amber-500';
+   108→  return 'bg-red-500';
+   109→}
+   110→
+   111→// ─── Loading Skeletons ────────────────────────────────────────────────
+   112→
+   113→function KpiCardsSkeleton() {
+   114→  return (
+   115→    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   116→      {Array.from({ length: 5 }).map((_, i) => (
+   117→        <Card key={i}>
+   118→          <CardHeader className="pb-2">
+   119→            <Skeleton className="h-4 w-28" />
+   120→          </CardHeader>
+   121→          <CardContent>
+   122→            <Skeleton className="h-8 w-16" />
+   123→          </CardContent>
+   124→        </Card>
+   125→      ))}
+   126→    </div>
+   127→  );
+   128→}
+   129→
+   130→function ChartSkeleton() {
+   131→  return (
+   132→    <Card>
+   133→      <CardHeader>
+   134→        <Skeleton className="h-5 w-48" />
+   135→      </CardHeader>
+   136→      <CardContent>
+   137→        <Skeleton className="h-64 w-full" />
+   138→      </CardContent>
+   139→    </Card>
+   140→  );
+   141→}
+   142→
+   143→function TableSkeleton() {
+   144→  return (
+   145→    <Card>
+   146→      <CardHeader>
+   147→        <Skeleton className="h-5 w-40" />
+   148→      </CardHeader>
+   149→      <CardContent>
+   150→        <div className="space-y-2">
+   151→          <Skeleton className="h-8 w-full" />
+   152→          {Array.from({ length: 5 }).map((_, r) => (
+   153→            <Skeleton key={r} className="h-10 w-full" />
+   154→          ))}
+   155→        </div>
+   156→      </CardContent>
+   157→    </Card>
+   158→  );
+   159→}
+   160→
+   161→// ─── Custom Chart Tooltip ─────────────────────────────────────────────
+   162→
+   163→function ChartTooltipContent({ active, payload, label }: any) {
+   164→  if (!active || !payload?.length) return null;
+   165→  return (
+   166→    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
+   167→      <p className="font-medium mb-1">{label}</p>
+   168→      {payload.map((entry: any, idx: number) => (
+   169→        <div key={idx} className="flex items-center gap-2">
+   170→          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+   171→          <span className="text-muted-foreground">{entry.name}:</span>
+   172→          <span className="font-medium">{formatNumber(entry.value)}</span>
+   173→        </div>
+   174→      ))}
+   175→    </div>
+   176→  );
+   177→}
+   178→
+   179→// ─── Pie Label ─────────────────────────────────────────────────────────
+   180→
+   181→const RADIAN = Math.PI / 180;
+   182→
+   183→function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) {
+   184→  const radius = innerRadius + (outerRadius - innerRadius) * 1.6;
+   185→  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+   186→  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+   187→  return (
+   188→    <text x={x} y={y} textAnchor={x > cx ? 'start' : 'end'} className="fill-muted-foreground text-xs">
+   189→      {name} ({(percent * 100).toFixed(0)}%)
+   190→    </text>
+   191→  );
+   192→}
+   193→
+   194→// ─── Main Component ───────────────────────────────────────────────────
+   195→
+   196→export default function HealthView() {
+   197→  const t = useT();
+   198→  const [techFilter, setTechFilter] = useState<string>('all');
+   199→  const [gradeFilter, setGradeFilter] = useState<string>('all');
+   200→  const [regionFilter, setRegionFilter] = useState<string>('all');
+   201→
+   202→  const { data, isLoading, isError } = useQuery<HealthResponse>({
+   203→    queryKey: ['health', techFilter, gradeFilter, regionFilter],
+   204→    queryFn: () => {
+   205→      const params = new URLSearchParams();
+   206→      if (techFilter !== 'all') params.set('technology', techFilter);
+   207→      if (gradeFilter !== 'all') params.set('grade', gradeFilter);
+   208→      if (regionFilter !== 'all') params.set('region', regionFilter);
+   209→      const qs = params.toString();
+   210→      return fetch(`/api/health${qs ? `?${qs}` : ''}`).then((r) => r.json());
+   211→    },
+   212→    refetchInterval: 30000,
+   213→  });
+   214→
+   215→  const healthScores = data?.healthScores ?? [];
+   216→  const summary = data?.summary;
+   217→
+   218→  // Grade distribution chart data
+   219→  const gradeOrder = ['A+', 'A', 'B', 'C', 'D', 'F'];
+   220→  const gradeChartData = gradeOrder
+   221→    .filter((g) => (summary?.byGrade?.[g] ?? 0) > 0)
+   222→    .map((g) => ({
+   223→      grade: g,
+   224→      count: summary?.byGrade?.[g] ?? 0,
+   225→      fill: GRADE_COLORS[g],
+   226→    }));
+   227→
+   228→  // Trend distribution pie data
+   229→  const trendPieData = [
+   230→    { name: 'Improving', value: summary?.byTrend?.improving ?? 0, fill: TREND_COLORS.improving },
+   231→    { name: 'Stable', value: summary?.byTrend?.stable ?? 0, fill: TREND_COLORS.stable },
+   232→    { name: 'Degrading', value: summary?.byTrend?.degrading ?? 0, fill: TREND_COLORS.degrading },
+   233→  ].filter((d) => d.value > 0);
+   234→
+   235→  // Region health chart data
+   236→  const regionChartData = summary?.byRegion
+   237→    ? Object.entries(summary.byRegion).map(([region, avgScore]) => {
+   238→        const regionSites = healthScores.filter((s) => s.region === region);
+   239→        const overall = regionSites.length > 0
+   240→          ? Number((regionSites.reduce((sum, s) => sum + s.overallScore, 0) / regionSites.length).toFixed(2))
+   241→          : avgScore as number;
+   242→        return { region, score: overall };
+   243→      })
+   244→    : [];
+   245→
+   246→  // KPI values
+   247→  const totalSites = summary?.total ?? 0;
+   248→  const avgOverall = summary?.avgOverall ?? 0;
+   249→  const aPlusCount = summary?.byGrade?.['A+'] ?? 0;
+   250→  const degradingCount = summary?.byTrend?.degrading ?? 0;
+   251→  const fCount = summary?.byGrade?.['F'] ?? 0;
+   252→
+   253→  // Unique regions for filter
+   254→  const regions = Array.from(new Set(healthScores.map((s) => s.region))).sort();
+   255→
+   256→  // ─── Render: Loading State ──────────────────────────────────────────
+   257→  if (isLoading) {
+   258→    return (
+   259→      <div className="space-y-6 p-6">
+   260→        <div>
+   261→          <Skeleton className="h-8 w-72 mb-2" />
+   262→          <Skeleton className="h-4 w-96" />
+   263→        </div>
+   264→        <KpiCardsSkeleton />
+   265→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   266→          <ChartSkeleton />
+   267→          <ChartSkeleton />
+   268→        </div>
+   269→        <ChartSkeleton />
+   270→        <TableSkeleton />
+   271→      </div>
+   272→    );
+   273→  }
+   274→
+   275→  // ─── Render: Error State ────────────────────────────────────────────
+   276→  if (isError) {
+   277→    return (
+   278→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   279→        <Frown className="h-12 w-12 mb-4" />
+   280→        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('helth.title') })}</p>
+   281→        <p className="text-sm mt-1">{t('view.tryAgain')}</p>
+   282→      </div>
+   283→    );
+   284→  }
+   285→
+   286→  // ─── Render: Empty State ────────────────────────────────────────────
+   287→  if (!data || healthScores.length === 0) {
+   288→    return (
+   289→      <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+   290→        <Radio className="h-12 w-12 mb-4" />
+   291→        <p className="text-lg font-medium">No Health Data Available</p>
+   292→        <p className="text-sm mt-1">
+   293→          Health scores have not been computed yet.
+   294→        </p>
+   295→      </div>
+   296→    );
+   297→  }
+   298→
+   299→  // ─── Render: Main View ─────────────────────────────────────────────
+   300→  return (
+   301→    <div className="space-y-6 p-6">
+   302→      {/* Header */}
+   303→      <div>
+   304→        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   305→          <Heart className="h-6 w-6 text-red-500" />
+   306→          {t('exec.networkHealth')}
+   307→        </h1>
+   308→        <p className="text-muted-foreground text-sm mt-1">
+   309→          Composite health index across coverage, capacity, quality, reliability, and experience
+   310→        </p>
+   311→      </div>
+   312→
+   313→      {/* KPI Cards */}
+   314→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+   315→        {/* Total Sites */}
+   316→        <Card>
+   317→          <CardHeader className="pb-2">
+   318→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   319→              <Radio className="h-4 w-4 text-cyan-500" />
+   320→              {t('exec.totalSites')}
+   321→            </CardTitle>
+   322→          </CardHeader>
+   323→          <CardContent>
+   324→            <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
+   325→              {totalSites}
+   326→            </span>
+   327→            <p className="text-xs text-muted-foreground mt-1">Health-scored sites</p>
+   328→          </CardContent>
+   329→        </Card>
+   330→
+   331→        {/* Avg Health Score */}
+   332→        <Card>
+   333→          <CardHeader className="pb-2">
+   334→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   335→              <Heart className="h-4 w-4 text-red-500" />
+   336→              {t('exec.networkHealth')}
+   337→            </CardTitle>
+   338→          </CardHeader>
+   339→          <CardContent>
+   340→            <span className={`text-3xl font-bold ${healthScoreColor(avgOverall)}`}>
+   341→              {formatNumber(avgOverall)}
+   342→            </span>
+   343→            <div className="mt-2 h-2 w-full rounded-full bg-muted overflow-hidden">
+   344→              <div
+   345→                className={`h-full rounded-full transition-all ${healthBarColor(avgOverall)}`}
+   346→                style={{ width: `${Math.min(avgOverall, 100)}%` }}
+   347→              />
+   348→            </div>
+   349→            <p className="text-xs text-muted-foreground mt-1">Scale: 0 – 100</p>
+   350→          </CardContent>
+   351→        </Card>
+   352→
+   353→        {/* A+ Grade Sites */}
+   354→        <Card>
+   355→          <CardHeader className="pb-2">
+   356→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   357→              <Heart className="h-4 w-4 text-emerald-500" />
+   358→              A+ Grade Sites
+   359→            </CardTitle>
+   360→          </CardHeader>
+   361→          <CardContent>
+   362→            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+   363→              {aPlusCount}
+   364→            </span>
+   365→            <p className="text-xs text-muted-foreground mt-1">
+   366→              {totalSites > 0 ? `${((aPlusCount / totalSites) * 100).toFixed(1)}%` : '0%'} of total
+   367→            </p>
+   368→          </CardContent>
+   369→        </Card>
+   370→
+   371→        {/* Degrading Sites */}
+   372→        <Card>
+   373→          <CardHeader className="pb-2">
+   374→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   375→              <Frown className="h-4 w-4 text-red-500" />
+   376→              Degrading Sites
+   377→            </CardTitle>
+   378→          </CardHeader>
+   379→          <CardContent>
+   380→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   381→              {degradingCount}
+   382→            </span>
+   383→            <p className="text-xs text-muted-foreground mt-1">Trending downward</p>
+   384→          </CardContent>
+   385→        </Card>
+   386→
+   387→        {/* F Grade Sites */}
+   388→        <Card>
+   389→          <CardHeader className="pb-2">
+   390→            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+   391→              <Frown className="h-4 w-4 text-red-500" />
+   392→              F Grade Sites
+   393→            </CardTitle>
+   394→          </CardHeader>
+   395→          <CardContent>
+   396→            <span className="text-3xl font-bold text-red-600 dark:text-red-400">
+   397→              {fCount}
+   398→            </span>
+   399→            <p className="text-xs text-muted-foreground mt-1">Critical attention needed</p>
+   400→          </CardContent>
+   401→        </Card>
+   402→      </div>
+   403→
+   404→      {/* Charts Row 1: Grade Distribution + Trend Distribution */}
+   405→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+   406→        {/* Grade Distribution Bar Chart */}
+   407→        <Card>
+   408→          <CardHeader>
+   409→            <CardTitle className="text-base">{t('helth.gradeDist')}</CardTitle>
+   410→          </CardHeader>
+   411→          <CardContent>
+   412→            {gradeChartData.length === 0 ? (
+   413→              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   414→            ) : (
+   415→              <div className="h-64">
+   416→                <ResponsiveContainer width="100%" height="100%">
+   417→                  <BarChart data={gradeChartData} barSize={48}>
+   418→                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+   419→                    <XAxis
+   420→                      dataKey="grade"
+   421→                      className="text-xs"
+   422→                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   423→                    />
+   424→                    <YAxis
+   425→                      className="text-xs"
+   426→                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   427→                      allowDecimals={false}
+   428→                    />
+   429→                    <Tooltip content={<ChartTooltipContent />} />
+   430→                    <Bar dataKey="count" name="Sites" radius={[4, 4, 0, 0]}>
+   431→                      {gradeChartData.map((entry, idx) => (
+   432→                        <Cell key={idx} fill={entry.fill} />
+   433→                      ))}
+   434→                    </Bar>
+   435→                  </BarChart>
+   436→                </ResponsiveContainer>
+   437→              </div>
+   438→            )}
+   439→          </CardContent>
+   440→        </Card>
+   441→
+   442→        {/* Trend Distribution Pie Chart */}
+   443→        <Card>
+   444→          <CardHeader>
+   445→            <CardTitle className="text-base">{t('helth.trendDist')}</CardTitle>
+   446→          </CardHeader>
+   447→          <CardContent>
+   448→            {trendPieData.length === 0 ? (
+   449→              <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   450→            ) : (
+   451→              <div className="h-64">
+   452→                <ResponsiveContainer width="100%" height="100%">
+   453→                  <PieChart>
+   454→                    <Pie
+   455→                      data={trendPieData}
+   456→                      cx="50%"
+   457→                      cy="50%"
+   458→                      innerRadius={50}
+   459→                      outerRadius={90}
+   460→                      dataKey="value"
+   461→                      nameKey="name"
+   462→                      label={renderPieLabel}
+   463→                      labelLine={false}
+   464→                    >
+   465→                      {trendPieData.map((entry, idx) => (
+   466→                        <Cell key={idx} fill={entry.fill} />
+   467→                      ))}
+   468→                    </Pie>
+   469→                    <Tooltip content={<ChartTooltipContent />} />
+   470→                  </PieChart>
+   471→                </ResponsiveContainer>
+   472→              </div>
+   473→            )}
+   474→          </CardContent>
+   475→        </Card>
+   476→      </div>
+   477→
+   478→      {/* Region Health Bar Chart */}
+   479→      <Card>
+   480→        <CardHeader>
+   481→          <CardTitle className="text-base">{t('helth.regionOverview')}</CardTitle>
+   482→        </CardHeader>
+   483→        <CardContent>
+   484→          {regionChartData.length === 0 ? (
+   485→            <p className="text-sm text-muted-foreground py-8 text-center">{t('helth.noGradeData')}</p>
+   486→          ) : (
+   487→            <div className="h-64">
+   488→              <ResponsiveContainer width="100%" height="100%">
+   489→                <BarChart data={regionChartData} barSize={36} layout="vertical">
+   490→                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={false} />
+   491→                  <XAxis
+   492→                    type="number"
+   493→                    domain={[0, 100]}
+   494→                    className="text-xs"
+   495→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   496→                  />
+   497→                  <YAxis
+   498→                    type="category"
+   499→                    dataKey="region"
+   500→                    className="text-xs"
+   501→                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+   502→                    width={80}
+   503→                  />
+   504→                  <Tooltip content={<ChartTooltipContent />} />
+   505→                  <Bar dataKey="score" name="Avg Overall" radius={[0, 4, 4, 0]}>
+   506→                    {regionChartData.map((entry) => {
+   507→                      const tech = healthScores.find((s) => s.region === entry.region)?.technology ?? '4G';
+   508→                      return <Cell key={entry.region} fill={TECH_COLORS[tech as Technology] ?? '#10B981'} />;
+   509→                    })}
+   510→                  </Bar>
+   511→                </BarChart>
+   512→              </ResponsiveContainer>
+   513→            </div>
+   514→          )}
+   515→        </CardContent>
+   516→      </Card>
+   517→
+   518→      {/* Full Table */}
+   519→      <Card>
+   520→        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+   521→          <CardTitle className="text-base">{t('helth.details')}</CardTitle>
+   522→          <div className="flex items-center gap-2 flex-wrap">
+   523→            <Select value={techFilter} onValueChange={setTechFilter}>
+   524→              <SelectTrigger className="w-32">
+   525→                <SelectValue placeholder={t('filter.technology')} />
+   526→              </SelectTrigger>
+   527→              <SelectContent>
+   528→                <SelectItem value="all">{t('filter.allTechShort')}</SelectItem>
+   529→                <SelectItem value="2G">2G</SelectItem>
+   530→                <SelectItem value="3G">3G</SelectItem>
+   531→                <SelectItem value="4G">4G</SelectItem>
+   532→                <SelectItem value="5G">5G</SelectItem>
+   533→              </SelectContent>
+   534→            </Select>
+   535→            <Select value={gradeFilter} onValueChange={setGradeFilter}>
+   536→              <SelectTrigger className="w-28">
+   537→                <SelectValue placeholder={t('filter.grade')} />
+   538→              </SelectTrigger>
+   539→              <SelectContent>
+   540→                <SelectItem value="all">{t('filter.allGrades')}</SelectItem>
+   541→                <SelectItem value="A+">A+</SelectItem>
+   542→                <SelectItem value="A">A</SelectItem>
+   543→                <SelectItem value="B">B</SelectItem>
+   544→                <SelectItem value="C">C</SelectItem>
+   545→                <SelectItem value="D">D</SelectItem>
+   546→                <SelectItem value="F">F</SelectItem>
+   547→              </SelectContent>
+   548→            </Select>
+   549→            <Select value={regionFilter} onValueChange={setRegionFilter}>
+   550→              <SelectTrigger className="w-36">
+   551→                <SelectValue placeholder={t('filter.region')} />
+   552→              </SelectTrigger>
+   553→              <SelectContent>
+   554→                <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
+   555→                {regions.map((r) => (
+   556→                  <SelectItem key={r} value={r}>{r}</SelectItem>
+   557→                ))}
+   558→              </SelectContent>
+   559→            </Select>
+   560→          </div>
+   561→        </CardHeader>
+   562→        <CardContent>
+   563→          {healthScores.length === 0 ? (
+   564→            <p className="text-sm text-muted-foreground py-8 text-center">
+   565→              {t('helth.noSiteMatch')}
+   566→            </p>
+   567→          ) : (
+   568→            <div className="max-h-96 overflow-y-auto">
+   569→              <Table>
+   570→                <TableHeader>
+   571→                  <TableRow>
+   572→                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
+   573→                    <TableHead>{t('th.tech')}</TableHead>
+   574→                    <TableHead>{t('th.region')}</TableHead>
+   575→                    <TableHead className="text-right">Overall</TableHead>
+   576→                    <TableHead className="text-right">Coverage</TableHead>
+   577→                    <TableHead className="text-right">Capacity</TableHead>
+   578→                    <TableHead className="text-right">Quality</TableHead>
+   579→                    <TableHead className="text-right">Reliability</TableHead>
+   580→                    <TableHead className="text-right">Experience</TableHead>
+   581→                    <TableHead>{t('th.grade')}</TableHead>
+   582→                    <TableHead>Trend</TableHead>
+   583→                    <TableHead>Issues</TableHead>
+   584→                  </TableRow>
+   585→                </TableHeader>
+   586→                <TableBody>
+   587→                  {healthScores.map((item) => (
+   588→                    <TableRow key={item.id}>
+   589→                      <TableCell className="font-medium text-xs max-w-[160px] truncate sticky left-0 bg-background">
+   590→                        {item.siteName}
+   591→                      </TableCell>
+   592→                      <TableCell>
+   593→                        <Badge variant="outline" className={TECH_BG_CLASSES[item.technology]}>
+   594→                          {item.technology}
+   595→                        </Badge>
+   596→                      </TableCell>
+   597→                      <TableCell className="text-xs">{item.region}</TableCell>
+   598→                      <TableCell className="text-right">
+   599→                        <div className="flex items-center gap-2 justify-end">
+   600→                          <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
+   601→                            <div
+   602→                              className={`h-full rounded-full ${healthBarColor(item.overallScore)}`}
+   603→                              style={{ width: `${Math.min(item.overallScore, 100)}%` }}
+   604→                            />
+   605→                          </div>
+   606→                          <span className={`text-xs font-medium ${healthScoreColor(item.overallScore)}`}>
+   607→                            {formatNumber(item.overallScore)}
+   608→                          </span>
+   609→                        </div>
+   610→                      </TableCell>
+   611→                      <TableCell className="text-right text-xs font-medium">
+   612→                        {formatNumber(item.coverageScore)}
+   613→                      </TableCell>
+   614→                      <TableCell className="text-right text-xs font-medium">
+   615→                        {formatNumber(item.capacityScore)}
+   616→                      </TableCell>
+   617→                      <TableCell className="text-right text-xs font-medium">
+   618→                        {formatNumber(item.qualityScore)}
+   619→                      </TableCell>
+   620→                      <TableCell className="text-right text-xs font-medium">
+   621→                        {formatNumber(item.reliabilityScore)}
+   622→                      </TableCell>
+   623→                      <TableCell className="text-right text-xs font-medium">
+   624→                        {formatNumber(item.experienceScore)}
+   625→                      </TableCell>
+   626→                      <TableCell>
+   627→                        <Badge variant={GRADE_VARIANT[item.grade] ?? 'outline'} className={GRADE_BG[item.grade] ?? ''}>
+   628→                          {item.grade}
+   629→                        </Badge>
+   630→                      </TableCell>
+   631→                      <TableCell>
+   632→                        <Badge variant="outline" className={TREND_BG[item.trend] ?? 'bg-muted'}>
+   633→                          {item.trend}
+   634→                        </Badge>
+   635→                      </TableCell>
+   636→                      <TableCell>
+   637→                        <div className="flex flex-wrap gap-1 max-w-[180px]">
+   638→                          {item.issues.length === 0 ? (
+   639→                            <span className="text-xs text-muted-foreground">—</span>
+   640→                          ) : (
+   641→                            item.issues.map((issue, idx) => (
+   642→                              <Badge key={idx} variant="secondary" className="text-[10px] px-1.5 py-0">
+   643→                                {issue}
+   644→                              </Badge>
+   645→                            ))
+   646→                          )}
+   647→                        </div>
+   648→                      </TableCell>
+   649→                    </TableRow>
+   650→                  ))}
+   651→                </TableBody>
+   652→              </Table>
+   653→            </div>
+   654→          )}
+   655→        </CardContent>
+   656→      </Card>
+   657→    </div>
+   658→  );
+   659→}

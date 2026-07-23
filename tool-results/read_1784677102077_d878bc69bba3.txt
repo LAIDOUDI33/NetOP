@@ -1,0 +1,968 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+     5→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     6→import { Badge } from '@/components/ui/badge';
+     7→import { Button } from '@/components/ui/button';
+     8→import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+     9→import { Switch } from '@/components/ui/switch';
+    10→import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+    11→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    12→import { Skeleton } from '@/components/ui/skeleton';
+    13→import { ScrollArea } from '@/components/ui/scroll-area';
+    14→import { Separator } from '@/components/ui/separator';
+    15→import {
+    16→  Dialog,
+    17→  DialogContent,
+    18→  DialogHeader,
+    19→  DialogTitle,
+    20→  DialogFooter,
+    21→  DialogTrigger,
+    22→} from '@/components/ui/dialog';
+    23→import {
+    24→  Tooltip,
+    25→  TooltipContent,
+    26→  TooltipProvider,
+    27→  TooltipTrigger,
+    28→} from '@/components/ui/tooltip';
+    29→import {
+    30→  Play,
+    31→  Pause,
+    32→  RotateCcw,
+    33→  Zap,
+    34→  Clock,
+    35→  Target,
+    36→  CheckCircle,
+    37→  XCircle,
+    38→  AlertTriangle,
+    39→  Activity,
+    40→  RefreshCw,
+    41→  Shield,
+    42→  Calendar,
+    43→} from 'lucide-react';
+    44→import type {
+    45→  PolicyItem,
+    46→  PolicyExecutionItem,
+    47→  PolicyTriggerType,
+    48→  PolicyScope,
+    49→  PolicyExecutionStatus,
+    50→  Technology,
+    51→} from '@/types';
+    52→import { useAppStore } from '@/store/app';
+    53→import { useT } from '@/lib/i18n';
+    54→import { ExportButton } from '@/components/ExportButton';
+    55→import { toast } from 'sonner';
+    56→
+    57→// ──────────────────────────────────────────────
+    58→// Constants
+    59→// ──────────────────────────────────────────────
+    60→
+    61→const TECH_COLORS: Record<string, string> = {
+    62→  '2G': '#94A3B8',
+    63→  '3G': '#06B6D4',
+    64→  '4G': '#10B981',
+    65→  '5G': '#F59E0B',
+    66→};
+    67→
+    68→const TRIGGER_CONFIG: Record<PolicyTriggerType, { label: string; color: string; bgClass: string; icon: typeof Zap }> = {
+    69→  kpi_breach: { label: 'KPI Breach', color: 'text-red-600 dark:text-red-400', bgClass: 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-300', icon: AlertTriangle },
+    70→  anomaly_detected: { label: 'Anomaly', color: 'text-amber-600 dark:text-amber-400', bgClass: 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300', icon: Activity },
+    71→  schedule: { label: 'Schedule', color: 'text-sky-600 dark:text-sky-400', bgClass: 'bg-sky-500/10 border-sky-500/20 text-sky-700 dark:text-sky-300', icon: Calendar },
+    72→  manual: { label: 'Manual', color: 'text-slate-600 dark:text-slate-400', bgClass: 'bg-slate-500/10 border-slate-500/20 text-slate-700 dark:text-slate-300', icon: Target },
+    73→};
+    74→
+    75→const STATUS_CONFIG: Record<PolicyExecutionStatus, { label: string; color: string; bgClass: string; icon: typeof CheckCircle }> = {
+    76→  completed: { label: 'Completed', color: 'text-emerald-600', bgClass: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-300', icon: CheckCircle },
+    77→  running: { label: 'Running', color: 'text-sky-600', bgClass: 'bg-sky-500/10 border-sky-500/20 text-sky-700 dark:text-sky-300', icon: RefreshCw },
+    78→  triggered: { label: 'Triggered', color: 'text-amber-600', bgClass: 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-300', icon: Zap },
+    79→  failed: { label: 'Failed', color: 'text-red-600', bgClass: 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-300', icon: XCircle },
+    80→  rolled_back: { label: 'Rolled Back', color: 'text-slate-600', bgClass: 'bg-slate-500/10 border-slate-500/20 text-slate-700 dark:text-slate-300', icon: RotateCcw },
+    81→};
+    82→
+    83→// SCOPE_LABELS moved to component-level to support i18n
+    84→const SCOPE_KEYS: Record<PolicyScope, string> = {
+    85→  all: 'pol.allSites',
+    86→  region: 'pol.region',
+    87→  site: 'son.site',
+    88→  cluster: 'pol.cluster',
+    89→};
+    90→
+    91→// ──────────────────────────────────────────────
+    92→// Helpers
+    93→// ──────────────────────────────────────────────
+    94→
+    95→function formatTime(ts: string | null | undefined): string {
+    96→  if (!ts) return '—';
+    97→  try {
+    98→    const d = new Date(ts);
+    99→    return d.toLocaleString(undefined, {
+   100→      month: 'short',
+   101→      day: 'numeric',
+   102→      hour: '2-digit',
+   103→      minute: '2-digit',
+   104→    });
+   105→  } catch {
+   106→    return '—';
+   107→  }
+   108→}
+   109→
+   110→function formatDuration(ms: number | null): string {
+   111→  if (!ms) return '—';
+   112→  if (ms < 1000) return `${ms}ms`;
+   113→  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+   114→  return `${(ms / 60000).toFixed(1)}m`;
+   115→}
+   116→
+   117→function getTechBadgeClass(tech: string): string {
+   118→  const map: Record<string, string> = {
+   119→    '2G': 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
+   120→    '3G': 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
+   121→    '4G': 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
+   122→    '5G': 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+   123→  };
+   124→  return map[tech] ?? 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20';
+   125→}
+   126→
+   127→// ──────────────────────────────────────────────
+   128→// Sub-components
+   129→// ──────────────────────────────────────────────
+   130→
+   131→function StatCard({
+   132→  title,
+   133→  value,
+   134→  icon: Icon,
+   135→  color,
+   136→  sub,
+   137→}: {
+   138→  title: string;
+   139→  value: string | number;
+   140→  icon: typeof Shield;
+   141→  color: string;
+   142→  sub?: string;
+   143→}) {
+   144→  return (
+   145→    <Card>
+   146→      <CardContent className="p-4">
+   147→        <div className="flex items-center justify-between">
+   148→          <div className="space-y-1">
+   149→            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+   150→            <p className="text-2xl font-bold tracking-tight">{value}</p>
+   151→            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+   152→          </div>
+   153→          <div className={`rounded-lg p-2.5 ${color}`}>
+   154→            <Icon className="h-5 w-5" />
+   155→          </div>
+   156→        </div>
+   157→      </CardContent>
+   158→    </Card>
+   159→  );
+   160→}
+   161→
+   162→const TRIGGER_LABEL_KEYS: Record<PolicyTriggerType, string> = {
+   163→  kpi_breach: 'pol.kpiBreach',
+   164→  anomaly_detected: 'pol.anomaly',
+   165→  schedule: 'pol.schedule',
+   166→  manual: 'pol.manual',
+   167→};
+   168→
+   169→const STATUS_LABEL_KEYS: Record<PolicyExecutionStatus, string> = {
+   170→  completed: 'status.completed',
+   171→  running: 'status.running',
+   172→  triggered: 'status.triggered',
+   173→  failed: 'status.failed',
+   174→  rolled_back: 'status.rolledBack',
+   175→};
+   176→
+   177→function TriggerTypeBadge({ type }: { type: PolicyTriggerType }) {
+   178→  const t = useT();
+   179→  const cfg = TRIGGER_CONFIG[type];
+   180→  const Icon = cfg.icon;
+   181→  const label = t(TRIGGER_LABEL_KEYS[type] ?? 'pol.manual');
+   182→  return (
+   183→    <TooltipProvider>
+   184→      <Tooltip>
+   185→        <TooltipTrigger asChild>
+   186→          <Badge variant="outline" className={`${cfg.bgClass} gap-1 text-xs font-medium`}>
+   187→            <Icon className="h-3 w-3" />
+   188→            {label}
+   189→          </Badge>
+   190→        </TooltipTrigger>
+   191→        <TooltipContent>
+   192→          <p>{t('pol.triggerLabel', { name: label })}</p>
+   193→        </TooltipContent>
+   194→      </Tooltip>
+   195→    </TooltipProvider>
+   196→  );
+   197→}
+   198→
+   199→function StatusBadge({ status }: { status: PolicyExecutionStatus }) {
+   200→  const t = useT();
+   201→  const cfg = STATUS_CONFIG[status];
+   202→  const Icon = cfg.icon;
+   203→  return (
+   204→    <Badge variant="outline" className={`${cfg.bgClass} gap-1 text-xs font-medium`}>
+   205→      <Icon className="h-3 w-3" />
+   206→      {t(STATUS_LABEL_KEYS[status] ?? 'status.unknown')}
+   207→    </Badge>
+   208→  );
+   209→}
+   210→
+   211→function PolicyCard({
+   212→  policy,
+   213→  onToggle,
+   214→  onTrigger,
+   215→  isMutating,
+   216→}: {
+   217→  policy: PolicyItem;
+   218→  onToggle: (id: string) => void;
+   219→  onTrigger: (id: string) => void;
+   220→  isMutating: boolean;
+   221→}) {
+   222→  const t = useT();
+   223→  const [expandedSites, setExpandedSites] = useState(false);
+   224→
+   225→  return (
+   226→    <Card className="flex flex-col">
+   227→      <CardHeader className="pb-3">
+   228→        <div className="flex items-start justify-between gap-3">
+   229→          <div className="min-w-0 flex-1 space-y-1.5">
+   230→            <div className="flex flex-wrap items-center gap-2">
+   231→              <CardTitle className="text-base font-semibold leading-tight truncate">
+   232→                {policy.name}
+   233→              </CardTitle>
+   234→              <Badge
+   235→                variant="outline"
+   236→                className={getTechBadgeClass(policy.technology)}
+   237→              >
+   238→                {policy.technology}
+   239→              </Badge>
+   240→            </div>
+   241→            {policy.description && (
+   242→              <p className="text-sm text-muted-foreground line-clamp-2">
+   243→                {policy.description}
+   244→              </p>
+   245→            )}
+   246→          </div>
+   247→          <TooltipProvider>
+   248→            <Tooltip>
+   249→              <TooltipTrigger asChild>
+   250→                <div>
+   251→                  <Switch
+   252→                    checked={policy.enabled}
+   253→                    disabled={isMutating}
+   254→                    onCheckedChange={() => onToggle(policy.id)}
+   255→                  />
+   256→                </div>
+   257→              </TooltipTrigger>
+   258→              <TooltipContent>
+   259→                <p>{policy.enabled ? t('pol.disablePolicy') : t('pol.enablePolicy')}</p>
+   260→              </TooltipContent>
+   261→            </Tooltip>
+   262→          </TooltipProvider>
+   263→        </div>
+   264→      </CardHeader>
+   265→
+   266→      <CardContent className="flex flex-1 flex-col gap-4 pt-0">
+   267→        {/* Badges row */}
+   268→        <div className="flex flex-wrap items-center gap-2">
+   269→          <TriggerTypeBadge type={policy.triggerType} />
+   270→          <Badge variant="outline" className="text-xs">
+   271→            {t(SCOPE_KEYS[policy.scope] ?? 'pol.allSites')}
+   272→            {policy.scopeValue ? `: ${policy.scopeValue}` : ''}
+   273→          </Badge>
+   274→          <Badge
+   275→            variant="outline"
+   276→            className={`text-xs ${
+   277→              policy.priority >= 8
+   278→                ? 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20'
+   279→                : policy.priority >= 5
+   280→                  ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
+   281→                  : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20'
+   282→            }`}
+   283→          >
+   284→            P{policy.priority}
+   285→          </Badge>
+   286→          <TooltipProvider>
+   287→            <Tooltip>
+   288→              <TooltipTrigger asChild>
+   289→                <Badge variant="outline" className="text-xs gap-1">
+   290→                  <Clock className="h-3 w-3" />
+   291→                  {policy.cooldownMins}m
+   292→                </Badge>
+   293→              </TooltipTrigger>
+   294→              <TooltipContent>
+   295→                <p>Cooldown period: {policy.cooldownMins} minutes</p>
+   296→              </TooltipContent>
+   297→            </Tooltip>
+   298→          </TooltipProvider>
+   299→        </div>
+   300→
+   301→        {/* Action modules */}
+   302→        {policy.actionModules.length > 0 && (
+   303→          <div className="flex flex-wrap items-center gap-1.5">
+   304→            <span className="text-xs font-medium text-muted-foreground mr-1">Actions:</span>
+   305→            {policy.actionModules.map((mod) => (
+   306→              <Badge key={mod} variant="secondary" className="text-[11px] px-1.5 py-0 font-normal">
+   307→                {mod}
+   308→              </Badge>
+   309→            ))}
+   310→          </div>
+   311→        )}
+   312→
+   313→        <Separator />
+   314→
+   315→        {/* Execution stats */}
+   316→        <div className="grid grid-cols-3 gap-3 text-center">
+   317→          <div>
+   318→            <p className="text-lg font-bold">{policy.executionStats.totalRuns}</p>
+   319→            <p className="text-[11px] text-muted-foreground">Total Runs</p>
+   320→          </div>
+   321→          <div>
+   322→            <p className={`text-lg font-bold ${policy.executionStats.successRate >= 80 ? 'text-emerald-600 dark:text-emerald-400' : policy.executionStats.successRate >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+   323→              {policy.executionStats.successRate}%
+   324→            </p>
+   325→            <p className="text-[11px] text-muted-foreground">Success Rate</p>
+   326→          </div>
+   327→          <div>
+   328→            <p className="text-sm font-semibold leading-tight mt-0.5">
+   329→              {formatTime(policy.executionStats.lastRun)}
+   330→            </p>
+   331→            <p className="text-[11px] text-muted-foreground">Last Run</p>
+   332→          </div>
+   333→        </div>
+   334→
+   335→        {/* Trigger config preview */}
+   336→        {policy.triggerConfig && Object.keys(policy.triggerConfig).length > 0 && (
+   337→          <>
+   338→            <Separator />
+   339→            <div className="space-y-1">
+   340→              <p className="text-xs font-medium text-muted-foreground">Trigger Configuration</p>
+   341→              <div className="flex flex-wrap gap-1.5">
+   342→                {Object.entries(policy.triggerConfig).map(([key, val]) => (
+   343→                  <Badge key={key} variant="outline" className="text-[11px] px-1.5 py-0 font-normal">
+   344→                    {key}: {String(val)}
+   345→                  </Badge>
+   346→                ))}
+   347→              </div>
+   348→            </div>
+   349→          </>
+   350→        )}
+   351→
+   352→        {/* Recent executions */}
+   353→        {policy.recentExecutions.length > 0 && (
+   354→          <>
+   355→            <Separator />
+   356→            <div className="space-y-2">
+   357→              <p className="text-xs font-medium text-muted-foreground">Recent Executions</p>
+   358→              <div className="space-y-1.5">
+   359→                {policy.recentExecutions.slice(0, 3).map((exec) => {
+   360→                  const cfg = STATUS_CONFIG[exec.status];
+   361→                  const ExecIcon = cfg.icon;
+   362→                  return (
+   363→                    <div
+   364→                      key={exec.id}
+   365→                      className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-xs"
+   366→                    >
+   367→                      <div className="flex items-center gap-2 min-w-0">
+   368→                        <ExecIcon className={`h-3.5 w-3.5 shrink-0 ${cfg.color}`} />
+   369→                        <span className="truncate">{exec.triggerReason || exec.status}</span>
+   370→                      </div>
+   371→                      <span className="text-muted-foreground shrink-0">
+   372→                        {formatDuration(exec.durationMs)}
+   373→                      </span>
+   374→                    </div>
+   375→                  );
+   376→                })}
+   377→              </div>
+   378→            </div>
+   379→          </>
+   380→        )}
+   381→
+   382→        {/* Trigger button */}
+   383→        <div className="mt-auto pt-2">
+   384→          <Dialog>
+   385→            <DialogTrigger asChild>
+   386→              <Button
+   387→                variant="outline"
+   388→                size="sm"
+   389→                className="w-full gap-2"
+   390→                disabled={isMutating || !policy.enabled}
+   391→              >
+   392→                <Play className="h-3.5 w-3.5" />
+   393→                {t('pol.triggerNow')}
+   394→              </Button>
+   395→            </DialogTrigger>
+   396→            <DialogContent>
+   397→              <DialogHeader>
+   398→                <DialogTitle>{t('pol.triggerPolicy', { name: policy.name })}</DialogTitle>
+   399→              </DialogHeader>
+   400→              <p className="text-sm text-muted-foreground">
+   401→                {t('pol.triggerConfirm', { name: policy.name })}
+   402→              </p>
+   403→              <DialogFooter>
+   404→                <Button
+   405→                  variant="outline"
+   406→                  onClick={(e) => {
+   407→                    // Close dialog by finding the closest dialog element
+   408→                    const dialog = (e.target as HTMLElement).closest('[data-state]');
+   409→                    if (dialog) {
+   410→                      const closeBtn = dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]');
+   411→                      closeBtn?.click();
+   412→                    }
+   413→                  }}
+   414→                >
+   415→                  {t('pol.cancel')}
+   416→                </Button>
+   417→                <Button
+   418→                  onClick={() => {
+   419→                    onTrigger(policy.id);
+   420→                    // Close dialog
+   421→                    const dialogEl = document.querySelector('[role="dialog"][data-state="open"]');
+   422→                    if (dialogEl) {
+   423→                      const closeBtn = dialogEl.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]');
+   424→                      closeBtn?.click();
+   425→                    }
+   426→                  }}
+   427→                  disabled={isMutating}
+   428→                  className="gap-2"
+   429→                >
+   430→                  <Zap className="h-4 w-4" />
+   431→                  {t('pol.execute')}
+   432→                </Button>
+   433→              </DialogFooter>
+   434→            </DialogContent>
+   435→          </Dialog>
+   436→        </div>
+   437→      </CardContent>
+   438→    </Card>
+   439→  );
+   440→}
+   441→
+   442→function ExecutionRow({ execution }: { execution: PolicyExecutionItem }) {
+   443→  const [expanded, setExpanded] = useState(false);
+   444→
+   445→  const kpiImpactEntries = execution.kpiImpact
+   446→    ? Object.entries(execution.kpiImpact)
+   447→    : [];
+   448→
+   449→  return (
+   450→    <TableRow className="group">
+   451→      {/* Time */}
+   452→      <TableCell className="whitespace-nowrap text-xs">
+   453→        {formatTime(execution.createdAt)}
+   454→      </TableCell>
+   455→
+   456→      {/* Policy Name */}
+   457→      <TableCell className="font-medium text-sm">{execution.policyName ?? '—'}</TableCell>
+   458→
+   459→      {/* Technology */}
+   460→      <TableCell>
+   461→        <Badge variant="outline" className={getTechBadgeClass(execution.policyTechnology ?? '')}>
+   462→          {execution.policyTechnology ?? '—'}
+   463→        </Badge>
+   464→      </TableCell>
+   465→
+   466→      {/* Trigger */}
+   467→      <TableCell>
+   468→        {execution.policyTriggerType && (
+   469→          <TriggerTypeBadge type={execution.policyTriggerType as PolicyTriggerType} />
+   470→        )}
+   471→      </TableCell>
+   472→
+   473→      {/* Status */}
+   474→      <TableCell>
+   475→        <StatusBadge status={execution.status} />
+   476→      </TableCell>
+   477→
+   478→      {/* Sites Affected */}
+   479→      <TableCell>
+   480→        <button
+   481→          onClick={() => setExpanded(!expanded)}
+   482→          className="flex items-center gap-1 text-xs hover:underline cursor-pointer"
+   483→        >
+   484→          <Badge variant="secondary" className="text-xs">
+   485→            {execution.affectedSites.length} site{execution.affectedSites.length !== 1 ? 's' : ''}
+   486→          </Badge>
+   487→        </button>
+   488→        {expanded && execution.affectedSites.length > 0 && (
+   489→          <div className="mt-1.5 rounded-md bg-muted/50 p-2 max-w-[200px]">
+   490→            <ScrollArea className="max-h-24">
+   491→              <div className="space-y-0.5">
+   492→                {execution.affectedSites.map((site) => (
+   493→                  <p key={site} className="text-[11px] text-muted-foreground truncate">
+   494→                    {site}
+   495→                  </p>
+   496→                ))}
+   497→              </div>
+   498→            </ScrollArea>
+   499→          </div>
+   500→        )}
+   501→      </TableCell>
+   502→
+   503→      {/* Actions Taken */}
+   504→      <TableCell>
+   505→        <div className="flex flex-wrap gap-1 max-w-[200px]">
+   506→          {execution.actionsTaken.slice(0, 2).map((action) => (
+   507→            <Badge key={action} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+   508→              {action}
+   509→            </Badge>
+   510→          ))}
+   511→          {execution.actionsTaken.length > 2 && (
+   512→            <TooltipProvider>
+   513→              <Tooltip>
+   514→                <TooltipTrigger asChild>
+   515→                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 cursor-default">
+   516→                    +{execution.actionsTaken.length - 2}
+   517→                  </Badge>
+   518→                </TooltipTrigger>
+   519→                <TooltipContent className="max-w-[250px]">
+   520→                  <div className="space-y-1">
+   521→                    {execution.actionsTaken.slice(2).map((action) => (
+   522→                      <p key={action} className="text-xs">{action}</p>
+   523→                    ))}
+   524→                  </div>
+   525→                </TooltipContent>
+   526→              </Tooltip>
+   527→            </TooltipProvider>
+   528→          )}
+   529→        </div>
+   530→      </TableCell>
+   531→
+   532→      {/* Duration */}
+   533→      <TableCell className="whitespace-nowrap text-xs">
+   534→        {formatDuration(execution.durationMs)}
+   535→      </TableCell>
+   536→
+   537→      {/* KPI Impact */}
+   538→      <TableCell>
+   539→        {kpiImpactEntries.length > 0 ? (
+   540→          <TooltipProvider>
+   541→            <Tooltip>
+   542→              <TooltipTrigger asChild>
+   543→                <Badge
+   544→                  variant="outline"
+   545→                  className={`text-xs gap-1 cursor-default ${
+   546→                    kpiImpactEntries.some(([, v]) => Number(v) > 0)
+   547→                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
+   548→                      : kpiImpactEntries.some(([, v]) => Number(v) < 0)
+   549→                        ? 'bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20'
+   550→                        : 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20'
+   551→                  }`}
+   552→                >
+   553→                  <Activity className="h-3 w-3" />
+   554→                  {kpiImpactEntries.length} KPI{kpiImpactEntries.length !== 1 ? 's' : ''}
+   555→                </Badge>
+   556→              </TooltipTrigger>
+   557→              <TooltipContent>
+   558→                <div className="space-y-1">
+   559→                  {kpiImpactEntries.map(([k, v]) => (
+   560→                    <p key={k} className="text-xs">
+   561→                      {k}: <span className={Number(v) > 0 ? 'text-emerald-500' : Number(v) < 0 ? 'text-red-500' : ''}>{String(v)}</span>
+   562→                    </p>
+   563→                  ))}
+   564→                </div>
+   565→              </TooltipContent>
+   566→            </Tooltip>
+   567→          </TooltipProvider>
+   568→        ) : (
+   569→          <span className="text-xs text-muted-foreground">—</span>
+   570→        )}
+   571→      </TableCell>
+   572→
+   573→      {/* Rollback */}
+   574→      <TableCell className="max-w-[150px]">
+   575→        {execution.status === 'rolled_back' && execution.rollbackReason ? (
+   576→          <TooltipProvider>
+   577→            <Tooltip>
+   578→              <TooltipTrigger asChild>
+   579→                <Badge variant="outline" className="text-xs gap-1 bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20 cursor-default">
+   580→                  <RotateCcw className="h-3 w-3" />
+   581→                  {t('status.rolledBack')}
+   582→                </Badge>
+   583→              </TooltipTrigger>
+   584→              <TooltipContent className="max-w-[250px]">
+   585→                <p className="text-xs">{execution.rollbackReason}</p>
+   586→              </TooltipContent>
+   587→            </Tooltip>
+   588→          </TooltipProvider>
+   589→        ) : (
+   590→          <span className="text-xs text-muted-foreground">—</span>
+   591→        )}
+   592→      </TableCell>
+   593→    </TableRow>
+   594→  );
+   595→}
+   596→
+   597→// ──────────────────────────────────────────────
+   598→// Skeletons
+   599→// ──────────────────────────────────────────────
+   600→
+   601→function StatCardsSkeleton() {
+   602→  return (
+   603→    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   604→      {[1, 2, 3, 4].map((i) => (
+   605→        <Card key={i}>
+   606→          <CardContent className="p-4">
+   607→            <div className="flex items-center justify-between">
+   608→              <div className="space-y-2">
+   609→                <Skeleton className="h-4 w-24" />
+   610→                <Skeleton className="h-8 w-16" />
+   611→              </div>
+   612→              <Skeleton className="h-10 w-10 rounded-lg" />
+   613→            </div>
+   614→          </CardContent>
+   615→        </Card>
+   616→      ))}
+   617→    </div>
+   618→  );
+   619→}
+   620→
+   621→function PolicyCardSkeleton() {
+   622→  return (
+   623→    <Card>
+   624→      <CardHeader className="pb-3">
+   625→        <div className="flex items-start justify-between gap-3">
+   626→          <div className="flex-1 space-y-2">
+   627→            <div className="flex gap-2">
+   628→              <Skeleton className="h-5 w-36" />
+   629→              <Skeleton className="h-5 w-10 rounded-full" />
+   630→            </div>
+   631→            <Skeleton className="h-4 w-full" />
+   632→            <Skeleton className="h-4 w-3/4" />
+   633→          </div>
+   634→          <Skeleton className="h-5 w-9 rounded-full" />
+   635→        </div>
+   636→      </CardHeader>
+   637→      <CardContent className="space-y-4 pt-0">
+   638→        <div className="flex gap-2">
+   639→          <Skeleton className="h-5 w-20 rounded-full" />
+   640→          <Skeleton className="h-5 w-16 rounded-full" />
+   641→          <Skeleton className="h-5 w-10 rounded-full" />
+   642→        </div>
+   643→        <Separator />
+   644→        <div className="grid grid-cols-3 gap-3 text-center">
+   645→          <div className="space-y-1">
+   646→            <Skeleton className="mx-auto h-6 w-10" />
+   647→            <Skeleton className="mx-auto h-3 w-16" />
+   648→          </div>
+   649→          <div className="space-y-1">
+   650→            <Skeleton className="mx-auto h-6 w-10" />
+   651→            <Skeleton className="mx-auto h-3 w-16" />
+   652→          </div>
+   653→          <div className="space-y-1">
+   654→            <Skeleton className="mx-auto h-5 w-20" />
+   655→            <Skeleton className="mx-auto h-3 w-12" />
+   656→          </div>
+   657→        </div>
+   658→        <Skeleton className="h-9 w-full" />
+   659→      </CardContent>
+   660→    </Card>
+   661→  );
+   662→}
+   663→
+   664→function ExecutionTableSkeleton() {
+   665→  return (
+   666→    <div className="space-y-3">
+   667→      {Array.from({ length: 6 }).map((_, i) => (
+   668→        <div key={i} className="flex items-center gap-4 px-2">
+   669→          <Skeleton className="h-4 w-24" />
+   670→          <Skeleton className="h-4 w-32" />
+   671→          <Skeleton className="h-4 w-10 rounded-full" />
+   672→          <Skeleton className="h-4 w-20 rounded-full" />
+   673→          <Skeleton className="h-4 w-20 rounded-full" />
+   674→          <Skeleton className="h-4 w-12" />
+   675→          <Skeleton className="h-4 w-24" />
+   676→          <Skeleton className="h-4 w-16" />
+   677→        </div>
+   678→      ))}
+   679→    </div>
+   680→  );
+   681→}
+   682→
+   683→// ──────────────────────────────────────────────
+   684→// Main Component
+   685→// ──────────────────────────────────────────────
+   686→
+   687→export default function PoliciesView() {
+   688→  const t = useT();
+   689→  const queryClient = useQueryClient();
+   690→  const { selectedTechnology } = useAppStore();
+   691→  const [techFilter, setTechFilter] = useState<string>(selectedTechnology);
+   692→
+   693→  // ── Queries ──
+   694→
+   695→  const { data: policiesData, isLoading: policiesLoading } = useQuery<{
+   696→    policies: PolicyItem[];
+   697→  }>({
+   698→    queryKey: ['policies', techFilter],
+   699→    queryFn: () =>
+   700→      fetch(`/api/policies?technology=${techFilter}`)
+   701→        .then((r) => r.json()),
+   702→    refetchInterval: 15000,
+   703→  });
+   704→
+   705→  const { data: executionsData, isLoading: executionsLoading } = useQuery<{
+   706→    executions: PolicyExecutionItem[];
+   707→  }>({
+   708→    queryKey: ['policy-executions', techFilter],
+   709→    queryFn: () =>
+   710→      fetch(`/api/policies/executions?technology=${techFilter}`)
+   711→        .then((r) => r.json()),
+   712→    refetchInterval: 15000,
+   713→  });
+   714→
+   715→  // ── Mutations ──
+   716→
+   717→  const patchMutation = useMutation({
+   718→    mutationFn: (body: { policyId: string; action: 'toggle' | 'trigger'; triggerReason?: string }) =>
+   719→      fetch('/api/policies', {
+   720→        method: 'PATCH',
+   721→        headers: { 'Content-Type': 'application/json' },
+   722→        body: JSON.stringify(body),
+   723→      }).then((r) => r.json()),
+   724→    onSuccess: (_data, variables) => {
+   725→      queryClient.invalidateQueries({ queryKey: ['policies'] });
+   726→      queryClient.invalidateQueries({ queryKey: ['policy-executions'] });
+   727→      if (variables.action === 'toggle') {
+   728→        toast.success(t('toast.policyToggled'));
+   729→      } else {
+   730→        toast.success(t('toast.policyTriggered'));
+   731→      }
+   732→    },
+   733→    onError: () => {
+   734→      toast.error(t('toast.policyActionFailed'));
+   735→    },
+   736→  });
+   737→
+   738→  const handleToggle = (id: string) => {
+   739→    patchMutation.mutate({ policyId: id, action: 'toggle' });
+   740→  };
+   741→
+   742→  const handleTrigger = (id: string) => {
+   743→    patchMutation.mutate({
+   744→      policyId: id,
+   745→      action: 'trigger',
+   746→      triggerReason: t('pol.manualTrigger'),
+   747→    });
+   748→  };
+   749→
+   750→  // ── Derived data ──
+   751→
+   752→  const policies = policiesData?.policies ?? [];
+   753→  const executions = executionsData?.executions ?? [];
+   754→
+   755→  const filteredPolicies =
+   756→    techFilter === 'all' ? policies : policies.filter((p) => p.technology === techFilter);
+   757→
+   758→  const filteredExecutions =
+   759→    techFilter === 'all'
+   760→      ? executions
+   761→      : executions.filter((e) => e.policyTechnology === techFilter);
+   762→
+   763→  const totalPolicies = filteredPolicies.length;
+   764→  const activePolicies = filteredPolicies.filter((p) => p.enabled).length;
+   765→  const totalExecutions = filteredExecutions.length;
+   766→  const avgSuccessRate =
+   767→    filteredPolicies.length > 0
+   768→      ? (
+   769→          filteredPolicies.reduce((sum, p) => sum + p.executionStats.successRate, 0) /
+   770→          filteredPolicies.length
+   771→        ).toFixed(1)
+   772→      : '0.0';
+   773→
+   774→  const isMutating = patchMutation.isPending;
+   775→
+   776→  return (
+   777→    <TooltipProvider>
+   778→      <div className="space-y-6">
+   779→        {/* ── Header ── */}
+   780→        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+   781→          <div className="space-y-1">
+   782→            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+   783→              <Shield className="h-6 w-6" />
+   784→              Automation Policies
+   785→            </h1>
+   786→            <p className="text-sm text-muted-foreground">
+   787→              {t('pol.subtitle')}
+   788→            </p>
+   789→          </div>
+   790→          <div className="flex items-center gap-3">
+   791→            <Select value={techFilter} onValueChange={setTechFilter}>
+   792→              <SelectTrigger className="w-[140px]">
+   793→                <SelectValue placeholder="Filter by tech" />
+   794→              </SelectTrigger>
+   795→              <SelectContent>
+   796→                <SelectItem value="all">All Technologies</SelectItem>
+   797→                <SelectItem value="2G">2G</SelectItem>
+   798→                <SelectItem value="3G">3G</SelectItem>
+   799→                <SelectItem value="4G">4G</SelectItem>
+   800→                <SelectItem value="5G">5G</SelectItem>
+   801→              </SelectContent>
+   802→            </Select>
+   803→            <Button
+   804→              variant="outline"
+   805→              size="icon"
+   806→              onClick={() => {
+   807→                queryClient.invalidateQueries({ queryKey: ['policies'] });
+   808→                queryClient.invalidateQueries({ queryKey: ['policy-executions'] });
+   809→                toast.success('Data refreshed');
+   810→              }}
+   811→            >
+   812→              <RefreshCw className="h-4 w-4" />
+   813→            </Button>
+   814→            <ExportButton data={filteredPolicies as unknown as Record<string, any>[]} filenamePrefix="policies" columns={[{ key: 'name', header: 'Name' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'enabled', header: 'Enabled' }, { key: 'executionStats.totalRuns', header: 'Total Runs' }, { key: 'executionStats.successRate', header: 'Success Rate (%)' }, { key: 'lastExecution.status', header: 'Last Status' }]} />
+   815→          </div>
+   816→        </div>
+   817→
+   818→        {/* ── Stats Cards ── */}
+   819→        {policiesLoading ? (
+   820→          <StatCardsSkeleton />
+   821→        ) : (
+   822→          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+   823→            <StatCard
+   824→              title={t('pol.totalPolicies')}
+   825→              value={totalPolicies}
+   826→              icon={Shield}
+   827→              color="bg-slate-500/10 text-slate-600 dark:text-slate-400"
+   828→              sub={t('pol.acrossAllScopes')}
+   829→            />
+   830→            <StatCard
+   831→              title={t('pol.activePolicies')}
+   832→              value={activePolicies}
+   833→              icon={Play}
+   834→              color="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+   835→              sub={t('pol.enabled', { n: totalPolicies > 0 ? ((activePolicies / totalPolicies) * 100).toFixed(0) : 0 })}
+   836→            />
+   837→            <StatCard
+   838→              title={t('pol.totalExecutions')}
+   839→              value={totalExecutions}
+   840→              icon={Activity}
+   841→              color="bg-sky-500/10 text-sky-600 dark:text-sky-400"
+   842→              sub={t('pol.allTime')}
+   843→            />
+   844→            <StatCard
+   845→              title={t('pol.avgSuccessRate')}
+   846→              value={`${avgSuccessRate}%`}
+   847→              icon={Target}
+   848→              color={
+   849→                Number(avgSuccessRate) >= 80
+   850→                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+   851→                  : Number(avgSuccessRate) >= 50
+   852→                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+   853→                    : 'bg-red-500/10 text-red-600 dark:text-red-400'
+   854→              }
+   855→              sub={t('pol.acrossAllPol')}
+   856→            />
+   857→          </div>
+   858→        )}
+   859→
+   860→        {/* ── Tabs ── */}
+   861→        <Tabs defaultValue="policies" className="space-y-4">
+   862→          <TabsList>
+   863→            <TabsTrigger value="policies" className="gap-2">
+   864→              <Shield className="h-4 w-4" />
+   865→              {t('pol.policies')}
+   866→              {!policiesLoading && (
+   867→                <Badge variant="secondary" className="ml-1 text-[11px] px-1.5">
+   868→                  {filteredPolicies.length}
+   869→                </Badge>
+   870→              )}
+   871→            </TabsTrigger>
+   872→            <TabsTrigger value="executions" className="gap-2">
+   873→              <Activity className="h-4 w-4" />
+   874→              {t('pol.executionHistory')}
+   875→              {!executionsLoading && (
+   876→                <Badge variant="secondary" className="ml-1 text-[11px] px-1.5">
+   877→                  {filteredExecutions.length}
+   878→                </Badge>
+   879→              )}
+   880→            </TabsTrigger>
+   881→          </TabsList>
+   882→
+   883→          {/* ── Policies Tab ── */}
+   884→          <TabsContent value="policies" className="space-y-4">
+   885→            {policiesLoading ? (
+   886→              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+   887→                {Array.from({ length: 4 }).map((_, i) => (
+   888→                  <PolicyCardSkeleton key={i} />
+   889→                ))}
+   890→              </div>
+   891→            ) : filteredPolicies.length === 0 ? (
+   892→              <Card>
+   893→                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+   894→                  <Shield className="h-12 w-12 text-muted-foreground/40 mb-4" />
+   895→                  <p className="text-sm font-medium text-muted-foreground">{t('pol.noPolicies')}</p>
+   896→                  <p className="text-xs text-muted-foreground/70 mt-1">
+   897→                    {techFilter !== 'all'
+   898→                      ? t('pol.noPoliciesTech', { tech: techFilter })
+   899→                      : t('pol.noPoliciesYet')}
+   900→                  </p>
+   901→                </CardContent>
+   902→              </Card>
+   903→            ) : (
+   904→              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+   905→                {filteredPolicies.map((policy) => (
+   906→                  <PolicyCard
+   907→                    key={policy.id}
+   908→                    policy={policy}
+   909→                    onToggle={handleToggle}
+   910→                    onTrigger={handleTrigger}
+   911→                    isMutating={isMutating}
+   912→                  />
+   913→                ))}
+   914→              </div>
+   915→            )}
+   916→          </TabsContent>
+   917→
+   918→          {/* ── Execution History Tab ── */}
+   919→          <TabsContent value="executions" className="space-y-4">
+   920→            <Card>
+   921→              <CardContent className="p-0">
+   922→                {executionsLoading ? (
+   923→                  <div className="p-6">
+   924→                    <ExecutionTableSkeleton />
+   925→                  </div>
+   926→                ) : filteredExecutions.length === 0 ? (
+   927→                  <div className="flex flex-col items-center justify-center py-16 text-center">
+   928→                    <Activity className="h-12 w-12 text-muted-foreground/40 mb-4" />
+   929→                    <p className="text-sm font-medium text-muted-foreground">{t('pol.noExec')}</p>
+   930→                    <p className="text-xs text-muted-foreground/70 mt-1">
+   931→                      {techFilter !== 'all'
+   932→                        ? t('pol.noExecTech', { tech: techFilter })
+   933→                        : t('pol.noExecYet')}
+   934→                    </p>
+   935→                  </div>
+   936→                ) : (
+   937→                  <ScrollArea className="max-h-[600px]">
+   938→                    <Table>
+   939→                      <TableHeader>
+   940→                        <TableRow>
+   941→                          <TableHead className="text-xs">{t('th.time')}</TableHead>
+   942→                          <TableHead className="text-xs">{t('th.policyName')}</TableHead>
+   943→                          <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   944→                          <TableHead className="text-xs">{t('th.trigger')}</TableHead>
+   945→                          <TableHead className="text-xs">{t('th.status')}</TableHead>
+   946→                          <TableHead className="text-xs">{t('th.sitesAffected')}</TableHead>
+   947→                          <TableHead className="text-xs">{t('th.actionsTaken')}</TableHead>
+   948→                          <TableHead className="text-xs">{t('th.duration')}</TableHead>
+   949→                          <TableHead className="text-xs">{t('pol.kpiImpact')}</TableHead>
+   950→                          <TableHead className="text-xs">{t('th.rollback')}</TableHead>
+   951→                        </TableRow>
+   952→                      </TableHeader>
+   953→                      <TableBody>
+   954→                        {filteredExecutions.map((exec) => (
+   955→                          <ExecutionRow key={exec.id} execution={exec} />
+   956→                        ))}
+   957→                      </TableBody>
+   958→                    </Table>
+   959→                  </ScrollArea>
+   960→                )}
+   961→              </CardContent>
+   962→            </Card>
+   963→          </TabsContent>
+   964→        </Tabs>
+   965→      </div>
+   966→    </TooltipProvider>
+   967→  );
+   968→}
