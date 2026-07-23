@@ -1,0 +1,1023 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useMemo } from 'react';
+     4→     4→import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+     5→     5→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     6→     6→import { Badge } from '@/components/ui/badge';
+     7→     7→import { Button } from '@/components/ui/button';
+     8→     8→import { Switch } from '@/components/ui/switch';
+     9→     9→import { Skeleton } from '@/components/ui/skeleton';
+    10→    10→import { ScrollArea } from '@/components/ui/scroll-area';
+    11→    11→import { Separator } from '@/components/ui/separator';
+    12→    12→import {
+    13→    13→  Select,
+    14→    14→  SelectContent,
+    15→    15→  SelectItem,
+    16→    16→  SelectTrigger,
+    17→    17→  SelectValue,
+    18→    18→} from '@/components/ui/select';
+    19→    19→import {
+    20→    20→  Table,
+    21→    21→  TableHeader,
+    22→    22→  TableBody,
+    23→    23→  TableRow,
+    24→    24→  TableHead,
+    25→    25→  TableCell,
+    26→    26→} from '@/components/ui/table';
+    27→    27→import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+    28→    28→import {
+    29→    29→  Cpu,
+    30→    30→  Zap,
+    31→    31→  Activity,
+    32→    32→  ArrowRightLeft,
+    33→    33→  RotateCcw,
+    34→    34→  Play,
+    35→    35→  Filter,
+    36→    36→  RefreshCw,
+    37→    37→  CheckCircle2,
+    38→    38→  XCircle,
+    39→    39→  Clock,
+    40→    40→  AlertTriangle,
+    41→    41→  ArrowRight,
+    42→    42→  ArrowLeftRight,
+    43→    43→  Radio,
+    44→    44→  Settings2,
+    45→    45→  ShieldCheck,
+    46→    46→  Gauge,
+    47→    47→  TrendingUp,
+    48→    48→  Layers,
+    49→    49→  Network,
+    50→    50→  Wifi,
+    51→    51→  ZapOff,
+    52→    52→} from 'lucide-react';
+    53→    53→import { useAppStore } from '@/store/app';
+    54→    54→import { TECH_COLORS } from '@/lib/constants';
+    55→    55→import { toast } from 'sonner';
+    56→    56→import { useT } from '@/lib/i18n';
+    57→    57→import { ExportButton } from '@/components/ExportButton';
+    58→    58→import type {
+    59→    59→  Technology,
+    60→    60→  SonModuleMode,
+    61→    61→  SonActionStatus,
+    62→    62→  SonActionType,
+    63→    63→  SonModuleItem,
+    64→    64→  SonActionItem,
+    65→    65→  NeighborRelationItem,
+    66→    66→  NeighborRelationType,
+    67→    67→  NeighborHoType,
+    68→    68→  NeighborStatus,
+    69→    69→} from '@/types';
+    70→    70→
+    71→    71→// ─── Constants ───────────────────────────────────────────────────────
+    72→    72→
+    73→    73→const TECH_OPTIONS: Array<Technology | 'ALL'> = ['ALL', '2G', '3G', '4G', '5G'];
+    74→    74→
+    75→    75→const MODE_OPTIONS: Array<SonModuleMode | 'ALL'> = [
+    76→    76→  'ALL',
+    77→    77→  'open-loop',
+    78→    78→  'semi-automated',
+    79→    79→  'closed-loop',
+    80→    80→];
+    81→    81→
+    82→    82→const MODE_BADGE_CONFIG: Record<
+    83→    83→  SonModuleMode,
+    84→    84→  { label: string; className: string }
+    85→    85→> = {
+    86→    86→  'open-loop': {
+    87→    87→    label: 'Open Loop',
+    88→    88→    className:
+    89→    89→      'border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:bg-blue-950/40',
+    90→    90→  },
+    91→    91→  'semi-automated': {
+    92→    92→    label: 'Semi-Automated',
+    93→    93→    className:
+    94→    94→      'border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:bg-amber-950/40',
+    95→    95→  },
+    96→    96→  'closed-loop': {
+    97→    97→    label: 'Closed Loop',
+    98→    98→    className:
+    99→    99→      'border-emerald-300 text-emerald-700 bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:bg-emerald-950/40',
+   100→   100→  },
+   101→   101→};
+   102→   102→
+   103→   103→const ACTION_STATUS_BADGE: Record<
+   104→   104→  SonActionStatus,
+   105→   105→  { label: string; className: string }
+   106→   106→> = {
+   107→   107→  pending: {
+   108→   108→    label: 'Pending',
+   109→   109→    className:
+   110→   110→      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+   111→   111→  },
+   112→   112→  applied: {
+   113→   113→    label: 'Applied',
+   114→   114→    className:
+   115→   115→      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   116→   116→  },
+   117→   117→  failed: {
+   118→   118→    label: 'Failed',
+   119→   119→    className:
+   120→   120→      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   121→   121→  },
+   122→   122→  rolled_back: {
+   123→   123→    label: 'Rolled Back',
+   124→   124→    className:
+   125→   125→      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+   126→   126→  },
+   127→   127→};
+   128→   128→
+   129→   129→const ACTION_TYPE_LABEL: Record<SonActionType, string> = {
+   130→   130→  add_neighbor: 'Add Neighbor',
+   131→   131→  remove_neighbor: 'Remove Neighbor',
+   132→   132→  modify_pci: 'Modify PCI',
+   133→   133→  adjust_tilt: 'Adjust Tilt',
+   134→   134→  adjust_power: 'Adjust Power',
+   135→   135→  compensate_outage: 'Compensate Outage',
+   136→   136→  correct_config: 'Correct Config',
+   137→   137→};
+   138→   138→
+   139→   139→const ACTION_TYPE_ICON: Record<SonActionType, React.ReactNode> = {
+   140→   140→  add_neighbor: <Network className="h-3.5 w-3.5" />,
+   141→   141→  remove_neighbor: <XCircle className="h-3.5 w-3.5" />,
+   142→   142→  modify_pci: <Settings2 className="h-3.5 w-3.5" />,
+   143→   143→  adjust_tilt: <Radio className="h-3.5 w-3.5" />,
+   144→   144→  adjust_power: <Zap className="h-3.5 w-3.5" />,
+   145→   145→  compensate_outage: <ShieldCheck className="h-3.5 w-3.5" />,
+   146→   146→  correct_config: <Settings2 className="h-3.5 w-3.5" />,
+   147→   147→};
+   148→   148→
+   149→   149→const RELATION_TYPE_LABEL: Record<NeighborRelationType, string> = {
+   150→   150→  intra_freq: 'Intra-Freq',
+   151→   151→  inter_freq: 'Inter-Freq',
+   152→   152→  inter_tech: 'Inter-Tech',
+   153→   153→};
+   154→   154→
+   155→   155→const HO_TYPE_LABEL: Record<NeighborHoType, string> = {
+   156→   156→  manual: 'Manual',
+   157→   157→  anr_auto: 'ANR Auto',
+   158→   158→  pnp_auto: 'PNP Auto',
+   159→   159→};
+   160→   160→
+   161→   161→const NEIGHBOR_STATUS_BADGE: Record<
+   162→   162→  NeighborStatus,
+   163→   163→  { className: string }
+   164→   164→> = {
+   165→   165→  active: {
+   166→   166→    className:
+   167→   167→      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   168→   168→  },
+   169→   169→  removed: {
+   170→   170→    className:
+   171→   171→      'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+   172→   172→  },
+   173→   173→  blacklisted: {
+   174→   174→    className:
+   175→   175→      'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   176→   176→  },
+   177→   177→};
+   178→   178→
+   179→   179→// ─── Component ───────────────────────────────────────────────────────
+   180→   180→
+   181→   181→export default function SonView() {
+   182→   182→  const t = useT();
+   183→   183→  const queryClient = useQueryClient();
+   184→   184→  const selectedTechnology = useAppStore((s) => s.selectedTechnology);
+   185→   185→  const [modeFilter, setModeFilter] = useState<SonModuleMode | 'ALL'>('ALL');
+   186→   186→  const [activeTab, setActiveTab] = useState('actions');
+   187→   187→
+   188→   188→
+   189→   189→  // ─── Queries ──────────────────────────────────────────────────────
+   190→   190→  // Note: SON modules use compound technology (e.g. "4G,5G"), so we
+   191→   191→  // fetch all modules without technology filter.
+   192→   192→
+   193→   193→  const {
+   194→   194→    data: modulesData,
+   195→   195→    isLoading: modulesLoading,
+   196→   196→  } = useQuery<{ modules: SonModuleItem[] }>({
+   197→   197→    queryKey: ['son-modules'],
+   198→   198→    queryFn: () => fetch('/api/son').then((r) => { if (!r.ok) throw new Error('SON API error: ' + r.status); return r.json(); }),
+   199→   199→    refetchInterval: 15000,
+   200→   200→  });
+   201→   201→
+   202→   202→  const {
+   203→   203→    data: actionsData,
+   204→   204→    isLoading: actionsLoading,
+   205→   205→  } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
+   206→   206→    queryKey: ['son-actions'],
+   207→   207→    queryFn: () =>
+   208→   208→      fetch('/api/son/actions?limit=50').then((r) => { if (!r.ok) throw new Error('SON Actions API error: ' + r.status); return r.json(); }),
+   209→   209→    refetchInterval: 15000,
+   210→   210→  });
+   211→   211→
+   212→   212→  const {
+   213→   213→    data: neighborsData,
+   214→   214→    isLoading: neighborsLoading,
+   215→   215→  } = useQuery<{ neighbors: NeighborRelationItem[] }>({
+   216→   216→    queryKey: ['son-neighbors'],
+   217→   217→    queryFn: () =>
+   218→   218→      fetch('/api/son/neighbors').then((r) => { if (!r.ok) throw new Error('SON Neighbors API error: ' + r.status); return r.json(); }),
+   219→   219→    refetchInterval: 15000,
+   220→   220→  });
+   221→   221→
+   222→   222→  // ─── Mutations ────────────────────────────────────────────────────
+   223→   223→
+   224→   224→  const moduleMutation = useMutation({
+   225→   225→    mutationFn: (body: {
+   226→   226→      moduleId: string;
+   227→   227→      action: 'toggle' | 'execute' | 'rollback';
+   228→   228→    }) =>
+   229→   229→      fetch('/api/son', {
+   230→   230→        method: 'PATCH',
+   231→   231→        headers: { 'Content-Type': 'application/json' },
+   232→   232→        body: JSON.stringify(body),
+   233→   233→      }).then((r) => {
+   234→   234→        if (!r.ok) return r.json().then((e) => Promise.reject(e));
+   235→   235→        return r.json();
+   236→   236→      }),
+   237→   237→    onSuccess: (_data, variables) => {
+   238→   238→      const actionLabel =
+   239→   239→        variables.action === 'toggle'
+   240→   240→          ? t('son.toggled')
+   241→   241→          : variables.action === 'execute'
+   242→   242→          ? t('son.executed')
+   243→   243→          : t('son.rolledBack');
+   244→   244→      toast.success(t('son.moduleToggled', { action: actionLabel }));
+   245→   245→      queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   246→   246→      queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   247→   247→    },
+   248→   248→    onError: (error: any, variables: any) => {
+   249→   249→      toast.error(error.error || t('son.failedToAction', { action: error.action || variables.action }));
+   250→   250→    },
+   251→   251→  });
+   252→   252→
+   253→   253→  const rollbackActionMutation = useMutation({
+   254→   254→    mutationFn: (actionId: string) =>
+   255→   255→      fetch('/api/son/actions', {
+   256→   256→        method: 'PATCH',
+   257→   257→        headers: { 'Content-Type': 'application/json' },
+   258→   258→        body: JSON.stringify({ actionId, action: 'rollback' }),
+   259→   259→      }).then((r) => {
+   260→   260→        if (!r.ok) return r.json().then((e) => Promise.reject(e));
+   261→   261→        return r.json();
+   262→   262→      }),
+   263→   263→    onSuccess: () => {
+   264→   264→      toast.success(t('son.actionRolledBack'));
+   265→   265→      queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   266→   266→      queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   267→   267→    },
+   268→   268→    onError: (error: any) => {
+   269→   269→      toast.error(error.error || t('son.failedToRollback'));
+   270→   270→    },
+   271→   271→  });
+   272→   272→
+   273→   273→  // ─── Derived Data ─────────────────────────────────────────────────
+   274→   274→
+   275→   275→  const modules = modulesData?.modules ?? [];
+   276→   276→
+   277→   277→  const filteredModules = useMemo(() => {
+   278→   278→    if (modeFilter === 'ALL') return modules;
+   279→   279→    return modules.filter((m) => m.mode === modeFilter);
+   280→   280→  }, [modules, modeFilter]);
+   281→   281→
+   282→   282→  const stats = useMemo(() => {
+   283→   283→    const totalModules = modules.length;
+   284→   284→    const activeModules = modules.filter((m) => m.enabled).length;
+   285→   285→    const totalActions = modules.reduce(
+   286→   286→      (sum, m) => sum + (m.actionCount ?? 0),
+   287→   287→      0
+   288→   288→    );
+   289→   289→    const allImpactScores = (actionsData?.actions ?? [])
+   290→   290→      .map((a) => a.impactScore)
+   291→   291→      .filter((s): s is number => s !== null && s !== undefined);
+   292→   292→    const avgImpact =
+   293→   293→      allImpactScores.length > 0
+   294→   294→        ? allImpactScores.reduce((a, b) => a + b, 0) / allImpactScores.length
+   295→   295→        : 0;
+   296→   296→
+   297→   297→    return { totalModules, activeModules, totalActions, avgImpact };
+   298→   298→  }, [modules, actionsData]);
+   299→   299→
+   300→   300→  const actions = actionsData?.actions ?? [];
+   301→   301→  const neighbors = neighborsData?.neighbors ?? [];
+   302→   302→
+   303→   303→  // ─── Handlers ─────────────────────────────────────────────────────
+   304→   304→
+   305→   305→  const handleToggleModule = (moduleId: string) => {
+   306→   306→    moduleMutation.mutate({ moduleId, action: 'toggle' });
+   307→   307→  };
+   308→   308→
+   309→   309→  const handleExecuteModule = (moduleId: string, displayName: string) => {
+   310→   310→    moduleMutation.mutate(
+   311→   311→      { moduleId, action: 'execute' },
+   312→   312→      {
+   313→   313→        onSuccess: () => {
+   314→   314→          toast.success(t('son.moduleExecuted', { name: displayName }));
+   315→   315→          queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   316→   316→          queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   317→   317→        },
+   318→   318→      }
+   319→   319→    );
+   320→   320→  };
+   321→   321→
+   322→   322→  const handleRollbackAction = (actionId: string) => {
+   323→   323→    rollbackActionMutation.mutate(actionId);
+   324→   324→  };
+   325→   325→
+   326→   326→  const handleRefresh = () => {
+   327→   327→    queryClient.invalidateQueries({ queryKey: ['son-modules'] });
+   328→   328→    queryClient.invalidateQueries({ queryKey: ['son-actions'] });
+   329→   329→    queryClient.invalidateQueries({ queryKey: ['son-neighbors'] });
+   330→   330→    toast.success(t('toast.dataRefreshed'));
+   331→   331→  };
+   332→   332→
+   333→   333→  const formatTime = (ts: string) => {
+   334→   334→    try {
+   335→   335→      return new Date(ts).toLocaleString(undefined, {
+   336→   336→        month: 'short',
+   337→   337→        day: 'numeric',
+   338→   338→        hour: '2-digit',
+   339→   339→        minute: '2-digit',
+   340→   340→      });
+   341→   341→    } catch {
+   342→   342→      return ts;
+   343→   343→    }
+   344→   344→  };
+   345→   345→
+   346→   346→  // ─── Render ───────────────────────────────────────────────────────
+   347→   347→
+   348→   348→  return (
+   349→   349→    <div className="space-y-6">
+   350→   350→      {/* ─── Header ───────────────────────────────────────────────── */}
+   351→   351→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   352→   352→        <div className="flex items-center gap-3">
+   353→   353→          <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10">
+   354→   354→            <Cpu className="h-5 w-5 text-primary" />
+   355→   355→          </div>
+   356→   356→          <div>
+   357→   357→            <h1 className="text-2xl font-bold tracking-tight">
+   358→   358→              {t('title.sonAutomation', { defaultValue: 'SON Automation' })}
+   359→   359→            </h1>
+   360→   360→            <p className="text-sm text-muted-foreground">
+   361→   361→              {t('son.subtitle')}
+   362→   362→            </p>
+   363→   363→          </div>
+   364→   364→        </div>
+   365→   365→        <div className="flex items-center gap-3">
+   366→   366→          <div className="flex items-center gap-2">
+   367→   367→            <Filter className="h-4 w-4 text-muted-foreground" />
+   368→   368→            <Select
+   369→   369→              value={selectedTechnology}
+   370→   370→              onValueChange={(v) =>
+   371→   371→                useAppStore.getState().setSelectedTechnology(v as Technology)
+   372→   372→              }
+   373→   373→            >
+   374→   374→              <SelectTrigger size="sm" className="w-[90px]">
+   375→   375→                <SelectValue />
+   376→   376→              </SelectTrigger>
+   377→   377→              <SelectContent>
+   378→   378→                {TECH_OPTIONS.map((tech) => (
+   379→   379→                  <SelectItem key={tech} value={tech}>
+   380→   380→                    {tech}
+   381→   381→                  </SelectItem>
+   382→   382→                ))}
+   383→   383→              </SelectContent>
+   384→   384→            </Select>
+   385→   385→          </div>
+   386→   386→          <Select
+   387→   387→            value={modeFilter}
+   388→   388→            onValueChange={(v) =>
+   389→   389→              setModeFilter(v as SonModuleMode | 'ALL')
+   390→   390→            }
+   391→   391→          >
+   392→   392→            <SelectTrigger size="sm" className="w-[170px]">
+   393→   393→              <SelectValue placeholder="Mode" />
+   394→   394→            </SelectTrigger>
+   395→   395→            <SelectContent>
+   396→   396→              {MODE_OPTIONS.map((m) => (
+   397→   397→                <SelectItem key={m} value={m}>
+   398→   398→                  {m === 'ALL'
+   399→   399→                    ? t('filter.allModes')
+   400→   400→                    : MODE_BADGE_CONFIG[m as SonModuleMode].label}
+   401→   401→                </SelectItem>
+   402→   402→              ))}
+   403→   403→            </SelectContent>
+   404→   404→          </Select>
+   405→   405→          <Button
+   406→   406→            variant="outline"
+   407→   407→            size="sm"
+   408→   408→            onClick={handleRefresh}
+   409→   409→            className="h-8"
+   410→   410→          >
+   411→   411→            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+   412→   412→            Refresh
+   413→   413→          </Button>
+   414→   414→        </div>
+   415→   415→      </div>
+   416→   416→
+   417→   417→      {/* ─── Stats Cards ─────────────────────────────────────────── */}
+   418→   418→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   419→   419→        <StatsCard
+   420→   420→          title={t('son.totalModules')}
+   421→   421→          value={stats.totalModules}
+   422→   422→          icon={<Layers className="h-5 w-5" />}
+   423→   423→          iconColor="text-slate-500"
+   424→   424→          iconBg="bg-slate-500/10"
+   425→   425→          loading={modulesLoading}
+   426→   426→        />
+   427→   427→        <StatsCard
+   428→   428→          title={t('son.activeModules')}
+   429→   429→          value={stats.activeModules}
+   430→   430→          subtitle={t('son.ofTotal', { n: stats.totalModules })}
+   431→   431→          icon={<Zap className="h-5 w-5" />}
+   432→   432→          iconColor="text-emerald-500"
+   433→   433→          iconBg="bg-emerald-500/10"
+   434→   434→          loading={modulesLoading}
+   435→   435→        />
+   436→   436→        <StatsCard
+   437→   437→          title={t('son.totalActions')}
+   438→   438→          value={stats.totalActions}
+   439→   439→          icon={<Activity className="h-5 w-5" />}
+   440→   440→          iconColor="text-amber-500"
+   441→   441→          iconBg="bg-amber-500/10"
+   442→   442→          loading={actionsLoading}
+   443→   443→        />
+   444→   444→        <StatsCard
+   445→   445→          title={t('son.avgImpact')}
+   446→   446→          value={stats.avgImpact}
+   447→   447→          isDecimal
+   448→   448→          icon={<Gauge className="h-5 w-5" />}
+   449→   449→          iconColor="text-cyan-500"
+   450→   450→          iconBg="bg-cyan-500/10"
+   451→   451→          loading={actionsLoading}
+   452→   452→        />
+   453→   453→      </div>
+   454→   454→
+   455→   455→      {/* ─── Module Cards Grid ────────────────────────────────────── */}
+   456→   456→      <div>
+   457→   457→        <h2 className="text-lg font-semibold mb-4">{t('son.modules')}</h2>
+   458→   458→        {modulesLoading ? (
+   459→   459→          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   460→   460→            {Array.from({ length: 6 }).map((_, i) => (
+   461→   461→              <Skeleton key={i} className="h-72 rounded-xl" />
+   462→   462→            ))}
+   463→   463→          </div>
+   464→   464→        ) : filteredModules.length === 0 ? (
+   465→   465→          <Card className="py-16">
+   466→   466→            <CardContent className="flex flex-col items-center justify-center text-center gap-2">
+   467→   467→              <Cpu className="h-10 w-10 text-muted-foreground/50" />
+   468→   468→              <p className="text-sm text-muted-foreground">
+   469→   469→                {t('son.noModules')}
+   470→   470→              </p>
+   471→   471→            </CardContent>
+   472→   472→          </Card>
+   473→   473→        ) : (
+   474→   474→          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+   475→   475→            {filteredModules.map((mod) => (
+   476→   476→              <ModuleCard
+   477→   477→                key={mod.id}
+   478→   478→                module={mod}
+   479→   479→                onToggle={handleToggleModule}
+   480→   480→                onExecute={handleExecuteModule}
+   481→   481→                isMutating={moduleMutation.isPending}
+   482→   482→              />
+   483→   483→            ))}
+   484→   484→          </div>
+   485→   485→        )}
+   486→   486→      </div>
+   487→   487→
+   488→   488→      {/* ─── Tabs: Actions & Neighbors ────────────────────────────── */}
+   489→   489→      <Tabs value={activeTab} onValueChange={setActiveTab}>
+   490→   490→        <TabsList className="grid w-full grid-cols-2 max-w-md">
+   491→   491→          <TabsTrigger value="actions" className="flex items-center gap-2">
+   492→   492→            <ArrowRightLeft className="h-3.5 w-3.5" />
+   493→   493→            {t('son.actionHistory')}
+   494→   494→            {!actionsLoading && actions.length > 0 && (
+   495→   495→              <Badge
+   496→   496→                variant="secondary"
+   497→   497→                className="ml-1 h-5 px-1.5 text-[10px] font-mono"
+   498→   498→              >
+   499→   499→                {actions.length}
+   500→   500→              </Badge>
+   501→   501→            )}
+   502→   502→          </TabsTrigger>
+   503→   503→          <TabsTrigger value="neighbors" className="flex items-center gap-2">
+   504→   504→            <Network className="h-3.5 w-3.5" />
+   505→   505→            {t('son.neighborRelations')}
+   506→   506→            {!neighborsLoading && neighbors.length > 0 && (
+   507→   507→              <Badge
+   508→   508→                variant="secondary"
+   509→   509→                className="ml-1 h-5 px-1.5 text-[10px] font-mono"
+   510→   510→              >
+   511→   511→                {neighbors.length}
+   512→   512→              </Badge>
+   513→   513→            )}
+   514→   514→          </TabsTrigger>
+   515→   515→        </TabsList>
+   516→   516→
+   517→   517→        {/* ── Action History Tab ──────────────────────────────────── */}
+   518→   518→        <TabsContent value="actions" className="mt-4">
+   519→   519→          <Card>
+   520→   520→            <CardHeader className="pb-3">
+   521→   521→              <CardTitle className="text-base font-semibold flex items-center gap-2">
+   522→   522→                <Activity className="h-4 w-4 text-muted-foreground" />
+   523→   523→                {t('son.recentActions')}
+   524→   524→              </CardTitle>
+   525→   525→              <ExportButton data={actions} filenamePrefix="son" columns={[{ key: 'createdAt', header: 'Time' }, { key: 'moduleName', header: 'Module' }, { key: 'siteName', header: 'Site' }, { key: 'actionType', header: 'Action Type' }, { key: 'parameter', header: 'Parameter' }, { key: 'oldValue', header: 'Old Value' }, { key: 'newValue', header: 'New Value' }, { key: 'status', header: 'Status' }]} />
+   526→   526→            </CardHeader>
+   527→   527→            <CardContent className="p-0">
+   528→   528→              {actionsLoading ? (
+   529→   529→                <div className="p-6 space-y-3">
+   530→   530→                  {Array.from({ length: 5 }).map((_, i) => (
+   531→   531→                    <Skeleton key={i} className="h-12 w-full" />
+   532→   532→                  ))}
+   533→   533→                </div>
+   534→   534→              ) : actions.length === 0 ? (
+   535→   535→                <div className="py-12 text-center text-sm text-muted-foreground">
+   536→   536→                  {t('son.noActions')}
+   537→   537→                </div>
+   538→   538→              ) : (
+   539→   539→                <ScrollArea className="max-h-96">
+   540→   540→                  <Table>
+   541→   541→                    <TableHeader>
+   542→   542→                      <TableRow className="hover:bg-transparent">
+   543→   543→                        <TableHead className="w-[150px] text-xs">{t('son.time')}</TableHead>
+   544→   544→                        <TableHead className="text-xs">{t('son.module')}</TableHead>
+   545→   545→                        <TableHead className="text-xs">{t('son.site')}</TableHead>
+   546→   546→                        <TableHead className="text-xs">{t('son.actionType')}</TableHead>
+   547→   547→                        <TableHead className="text-xs">{t('son.parameter')}</TableHead>
+   548→   548→                        <TableHead className="text-xs">{t('son.change')}</TableHead>
+   549→   549→                        <TableHead className="text-xs">{t('th.status')}</TableHead>
+   550→   550→                        <TableHead className="text-xs text-right">{t('son.impact')}</TableHead>
+   551→   551→                        <TableHead className="text-xs text-right w-[80px]">
+   552→   552→                          {t('th.rollback')}
+   553→   553→                        </TableHead>
+   554→   554→                      </TableRow>
+   555→   555→                    </TableHeader>
+   556→   556→                    <TableBody>
+   557→   557→                      {actions.map((action) => {
+   558→   558→                        const statusCfg =
+   559→   559→                          ACTION_STATUS_BADGE[action.status];
+   560→   560→                        return (
+   561→   561→                          <TableRow key={action.id}>
+   562→   562→                            <TableCell className="text-xs text-muted-foreground py-3">
+   563→   563→                              {formatTime(action.createdAt)}
+   564→   564→                            </TableCell>
+   565→   565→                            <TableCell className="py-3">
+   566→   566→                              <div className="text-xs font-medium">
+   567→   567→                                {action.moduleDisplayName ||
+   568→   568→                                  action.moduleName}
+   569→   569→                              </div>
+   570→   570→                              <Badge
+   571→   571→                                className="text-[9px] px-1 py-0 mt-0.5"
+   572→   572→                                style={{
+   573→   573→                                  backgroundColor: TECH_COLORS[action.technology as Technology],
+   574→   574→                                  color: '#fff',
+   575→   575→                                }}
+   576→   576→                              >
+   577→   577→                                {action.technology}
+   578→   578→                              </Badge>
+   579→   579→                            </TableCell>
+   580→   580→                            <TableCell className="text-xs py-3">
+   581→   581→                              <div className="font-medium">
+   582→   582→                                {action.siteName || '—'}
+   583→   583→                              </div>
+   584→   584→                              {action.siteCode && (
+   585→   585→                                <div className="text-[10px] text-muted-foreground">
+   586→   586→                                  {action.siteCode}
+   587→   587→                                </div>
+   588→   588→                              )}
+   589→   589→                            </TableCell>
+   590→   590→                            <TableCell className="py-3">
+   591→   591→                              <div className="flex items-center gap-1.5 text-xs">
+   592→   592→                                {ACTION_TYPE_ICON[action.actionType]}
+   593→   593→                                <span>
+   594→   594→                                  {ACTION_TYPE_LABEL[action.actionType]}
+   595→   595→                                </span>
+   596→   596→                              </div>
+   597→   597→                            </TableCell>
+   598→   598→                            <TableCell className="text-xs font-mono py-3">
+   599→   599→                              {action.parameter}
+   600→   600→                            </TableCell>
+   601→   601→                            <TableCell className="text-xs py-3">
+   602→   602→                              <div className="flex items-center gap-1.5">
+   603→   603→                                <span className="text-red-600 dark:text-red-400 line-through">
+   604→   604→                                  {action.previousValue}
+   605→   605→                                </span>
+   606→   606→                                <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+   607→   607→                                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+   608→   608→                                  {action.newValue}
+   609→   609→                                </span>
+   610→   610→                              </div>
+   611→   611→                            </TableCell>
+   612→   612→                            <TableCell className="py-3">
+   613→   613→                              <Badge
+   614→   614→                                className={`text-[10px] px-1.5 py-0 ${statusCfg.className}`}
+   615→   615→                              >
+   616→   616→                                {statusCfg.label}
+   617→   617→                              </Badge>
+   618→   618→                            </TableCell>
+   619→   619→                            <TableCell className="text-xs text-right py-3">
+   620→   620→                              {action.impactScore !== null &&
+   621→   621→                              action.impactScore !== undefined ? (
+   622→   622→                                <span
+   623→   623→                                  className={
+   624→   624→                                    action.impactScore >= 0.7
+   625→   625→                                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+   626→   626→                                      : action.impactScore >= 0.4
+   627→   627→                                      ? 'text-amber-600 dark:text-amber-400'
+   628→   628→                                      : 'text-red-600 dark:text-red-400'
+   629→   629→                                  }
+   630→   630→                                >
+   631→   631→                                  {(action.impactScore * 100).toFixed(0)}%
+   632→   632→                                </span>
+   633→   633→                              ) : (
+   634→   634→                                <span className="text-muted-foreground">
+   635→   635→                                  —
+   636→   636→                                </span>
+   637→   637→                              )}
+   638→   638→                            </TableCell>
+   639→   639→                            <TableCell className="text-right py-3">
+   640→   640→                              {action.status === 'applied' && (
+   641→   641→                                <Button
+   642→   642→                                  size="sm"
+   643→   643→                                  variant="ghost"
+   644→   644→                                  className="h-7 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/30"
+   645→   645→                                  onClick={() =>
+   646→   646→                                    handleRollbackAction(action.id)
+   647→   647→                                  }
+   648→   648→                                  disabled={
+   649→   649→                                    rollbackActionMutation.isPending
+   650→   650→                                  }
+   651→   651→                                >
+   652→   652→                                  <RotateCcw className="h-3 w-3 mr-1" />
+   653→   653→                                  Rollback
+   654→   654→                                </Button>
+   655→   655→                              )}
+   656→   656→                            </TableCell>
+   657→   657→                          </TableRow>
+   658→   658→                        );
+   659→   659→                      })}
+   660→   660→                    </TableBody>
+   661→   661→                  </Table>
+   662→   662→                </ScrollArea>
+   663→   663→              )}
+   664→   664→            </CardContent>
+   665→   665→          </Card>
+   666→   666→        </TabsContent>
+   667→   667→
+   668→   668→        {/* ── Neighbor Relations Tab ──────────────────────────────── */}
+   669→   669→        <TabsContent value="neighbors" className="mt-4">
+   670→   670→          <Card>
+   671→   671→            <CardHeader className="pb-3">
+   672→   672→              <CardTitle className="text-base font-semibold flex items-center gap-2">
+   673→   673→                <Network className="h-4 w-4 text-muted-foreground" />
+   674→   674→                {t('son.neighborRelations')}
+   675→   675→              </CardTitle>
+   676→   676→            </CardHeader>
+   677→   677→            <CardContent className="p-0">
+   678→   678→              {neighborsLoading ? (
+   679→   679→                <div className="p-6 space-y-3">
+   680→   680→                  {Array.from({ length: 5 }).map((_, i) => (
+   681→   681→                    <Skeleton key={i} className="h-12 w-full" />
+   682→   682→                  ))}
+   683→   683→                </div>
+   684→   684→              ) : neighbors.length === 0 ? (
+   685→   685→                <div className="py-12 text-center text-sm text-muted-foreground">
+   686→   686→                  {t('son.noNeighbors')}
+   687→   687→                </div>
+   688→   688→              ) : (
+   689→   689→                <ScrollArea className="max-h-96">
+   690→   690→                  <Table>
+   691→   691→                    <TableHeader>
+   692→   692→                      <TableRow className="hover:bg-transparent">
+   693→   693→                        <TableHead className="text-xs">{t('son.servingCell')}</TableHead>
+   694→   694→                        <TableHead className="text-xs">{t('son.neighborCell')}</TableHead>
+   695→   695→                        <TableHead className="text-xs">{t('th.technology')}</TableHead>
+   696→   696→                        <TableHead className="text-xs">
+   697→   697→                          {t('son.relationType')}
+   698→   698→                        </TableHead>
+   699→   699→                        <TableHead className="text-xs">{t('son.hoType')}</TableHead>
+   700→   700→                        <TableHead className="text-xs text-right">
+   701→   701→                          {t('son.hoSuccessRate')}
+   702→   702→                        </TableHead>
+   703→   703→                        <TableHead className="text-xs">{t('th.status')}</TableHead>
+   704→   704→                        <TableHead className="text-xs text-right">
+   705→   705→                          {t('son.lastUpdated')}
+   706→   706→                        </TableHead>
+   707→   707→                      </TableRow>
+   708→   708→                    </TableHeader>
+   709→   709→                    <TableBody>
+   710→   710→                      {neighbors.map((nbr) => {
+   711→   711→                        const statusCfg = NEIGHBOR_STATUS_BADGE[nbr.status];
+   712→   712→                        return (
+   713→   713→                          <TableRow key={nbr.id}>
+   714→   714→                            <TableCell className="py-3">
+   715→   715→                              <div className="flex items-center gap-2">
+   716→   716→                                <div
+   717→   717→                                  className="h-2 w-2 rounded-full shrink-0"
+   718→   718→                                  style={{
+   719→   719→                                    backgroundColor:
+   720→   720→                                      TECH_COLORS[
+   721→   721→                                        nbr.servingCell.technology as Technology
+   722→   722→                                      ] ?? '#94A3B8',
+   723→   723→                                  }}
+   724→   724→                                />
+   725→   725→                                <div>
+   726→   726→                                  <div className="text-xs font-medium">
+   727→   727→                                    {nbr.servingCell.name}
+   728→   728→                                  </div>
+   729→   729→                                  <div className="text-[10px] text-muted-foreground">
+   730→   730→                                    {nbr.servingCell.code} &middot;{' '}
+   731→   731→                                    {nbr.servingCell.region}
+   732→   732→                                  </div>
+   733→   733→                                </div>
+   734→   734→                              </div>
+   735→   735→                            </TableCell>
+   736→   736→                            <TableCell className="py-3">
+   737→   737→                              <div className="flex items-center gap-2">
+   738→   738→                                <ArrowRightLeft className="h-3 w-3 text-muted-foreground shrink-0" />
+   739→   739→                                <div>
+   740→   740→                                  <div className="text-xs font-medium">
+   741→   741→                                    {nbr.neighborCellName}
+   742→   742→                                  </div>
+   743→   743→                                  <div className="text-[10px] text-muted-foreground">
+   744→   744→                                    {nbr.neighborCellCode}
+   745→   745→                                  </div>
+   746→   746→                                </div>
+   747→   747→                              </div>
+   748→   748→                            </TableCell>
+   749→   749→                            <TableCell className="py-3">
+   750→   750→                              <Badge
+   751→   751→                                className="text-[9px] px-1.5 py-0"
+   752→   752→                                style={{
+   753→   753→                                  backgroundColor:
+   754→   754→                                    TECH_COLORS[nbr.technology as Technology],
+   755→   755→                                  color: '#fff',
+   756→   756→                                }}
+   757→   757→                              >
+   758→   758→                                {nbr.technology}
+   759→   759→                              </Badge>
+   760→   760→                            </TableCell>
+   761→   761→                            <TableCell className="text-xs py-3">
+   762→   762→                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+   763→   763→                                {RELATION_TYPE_LABEL[nbr.relationType]}
+   764→   764→                              </Badge>
+   765→   765→                            </TableCell>
+   766→   766→                            <TableCell className="text-xs py-3">
+   767→   767→                              <span className="text-muted-foreground">
+   768→   768→                                {HO_TYPE_LABEL[nbr.hoType]}
+   769→   769→                              </span>
+   770→   770→                            </TableCell>
+   771→   771→                            <TableCell className="text-xs text-right py-3">
+   772→   772→                              {nbr.hoSuccessRate !== null &&
+   773→   773→                              nbr.hoSuccessRate !== undefined ? (
+   774→   774→                                <span
+   775→   775→                                  className={
+   776→   776→                                    nbr.hoSuccessRate >= 95
+   777→   777→                                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+   778→   778→                                      : nbr.hoSuccessRate >= 85
+   779→   779→                                      ? 'text-amber-600 dark:text-amber-400'
+   780→   780→                                      : 'text-red-600 dark:text-red-400'
+   781→   781→                                  }
+   782→   782→                                >
+   783→   783→                                  {nbr.hoSuccessRate.toFixed(1)}%
+   784→   784→                                </span>
+   785→   785→                              ) : (
+   786→   786→                                <span className="text-muted-foreground">
+   787→   787→                                  —
+   788→   788→                                </span>
+   789→   789→                              )}
+   790→   790→                            </TableCell>
+   791→   791→                            <TableCell className="py-3">
+   792→   792→                              <Badge
+   793→   793→                                className={`text-[10px] px-1.5 py-0 capitalize ${statusCfg.className}`}
+   794→   794→                              >
+   795→   795→                                {nbr.status}
+   796→   796→                              </Badge>
+   797→   797→                            </TableCell>
+   798→   798→                            <TableCell className="text-xs text-muted-foreground text-right py-3">
+   799→   799→                              {formatTime(nbr.lastUpdated)}
+   800→   800→                            </TableCell>
+   801→   801→                          </TableRow>
+   802→   802→                        );
+   803→   803→                      })}
+   804→   804→                    </TableBody>
+   805→   805→                  </Table>
+   806→   806→                </ScrollArea>
+   807→   807→              )}
+   808→   808→            </CardContent>
+   809→   809→          </Card>
+   810→   810→        </TabsContent>
+   811→   811→      </Tabs>
+   812→   812→    </div>
+   813→   813→  );
+   814→   814→}
+   815→   815→
+   816→   816→// ─── Sub-Components ──────────────────────────────────────────────────
+   817→   817→
+   818→   818→interface StatsCardProps {
+   819→   819→  title: string;
+   820→   820→  value: number;
+   821→   821→  subtitle?: string;
+   822→   822→  icon: React.ReactNode;
+   823→   823→  iconColor: string;
+   824→   824→  iconBg: string;
+   825→   825→  isDecimal?: boolean;
+   826→   826→  loading?: boolean;
+   827→   827→}
+   828→   828→
+   829→   829→function StatsCard({
+   830→   830→  title,
+   831→   831→  value,
+   832→   832→  subtitle,
+   833→   833→  icon,
+   834→   834→  iconColor,
+   835→   835→  iconBg,
+   836→   836→  isDecimal = false,
+   837→   837→  loading = false,
+   838→   838→}: StatsCardProps) {
+   839→   839→  return (
+   840→   840→    <Card className="relative overflow-hidden">
+   841→   841→      <CardContent className="p-4">
+   842→   842→        <div className="flex items-center justify-between">
+   843→   843→          <div className="space-y-1">
+   844→   844→            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+   845→   845→              {title}
+   846→   846→            </p>
+   847→   847→            {loading ? (
+   848→   848→              <Skeleton className="h-8 w-20" />
+   849→   849→            ) : (
+   850→   850→              <>
+   851→   851→                <p className="text-2xl font-bold tracking-tight">
+   852→   852→                  {isDecimal ? (value ?? 0).toFixed(1) : value.toLocaleString()}
+   853→   853→                  {isDecimal && (
+   854→   854→                    <span className="text-sm font-normal text-muted-foreground ml-1">
+   855→   855→                      %
+   856→   856→                    </span>
+   857→   857→                  )}
+   858→   858→                </p>
+   859→   859→                {subtitle && (
+   860→   860→                  <p className="text-xs text-muted-foreground">{subtitle}</p>
+   861→   861→                )}
+   862→   862→              </>
+   863→   863→            )}
+   864→   864→          </div>
+   865→   865→          <div
+   866→   866→            className={`flex items-center justify-center h-10 w-10 rounded-lg ${iconBg} ${iconColor}`}
+   867→   867→          >
+   868→   868→            {icon}
+   869→   869→          </div>
+   870→   870→        </div>
+   871→   871→      </CardContent>
+   872→   872→    </Card>
+   873→   873→  );
+   874→   874→}
+   875→   875→
+   876→   876→// ─────────────────────────────────────────────────────────────────────
+   877→   877→
+   878→   878→interface ModuleCardProps {
+   879→   879→  module: SonModuleItem;
+   880→   880→  onToggle: (moduleId: string) => void;
+   881→   881→  onExecute: (moduleId: string, displayName: string) => void;
+   882→   882→  isMutating: boolean;
+   883→   883→}
+   884→   884→
+   885→   885→function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps) {
+   886→   886→  const t = useT();
+   887→   887→  const modeCfg = MODE_BADGE_CONFIG[module.mode];
+   888→   888→  const successRate = module.stats?.successRate;
+   889→   889→  const totalActions = module.stats?.totalActions ?? module.actionCount ?? 0;
+   890→   890→  const failCount = module.stats?.failCount ?? 0;
+   891→   891→
+   892→   892→  return (
+   893→   893→    <Card
+   894→   894→      className={`relative overflow-hidden transition-all hover:shadow-md ${
+   895→   895→        !module.enabled ? 'opacity-70' : ''
+   896→   896→      }`}
+   897→   897→    >
+   898→   898→      {/* Top accent bar */}
+   899→   899→      <div
+   900→   900→        className="absolute top-0 left-0 right-0 h-1"
+   901→   901→        style={{
+   902→   902→          backgroundColor: TECH_COLORS[module.technology as Technology],
+   903→   903→        }}
+   904→   904→      />
+   905→   905→      <CardHeader className="pb-3 pt-4">
+   906→   906→        <div className="flex items-start justify-between gap-2">
+   907→   907→          <div className="flex-1 min-w-0">
+   908→   908→            <div className="flex items-center gap-2 flex-wrap">
+   909→   909→              <CardTitle className="text-sm font-semibold truncate">
+   910→   910→                {module.displayName}
+   911→   911→              </CardTitle>
+   912→   912→              <Badge
+   913→   913→                className="text-[9px] px-1.5 py-0 shrink-0"
+   914→   914→                style={{
+   915→   915→                  backgroundColor: TECH_COLORS[module.technology as Technology],
+   916→   916→                  color: '#fff',
+   917→   917→                }}
+   918→   918→              >
+   919→   919→                {module.technology}
+   920→   920→              </Badge>
+   921→   921→            </div>
+   922→   922→            <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
+   923→   923→              {module.name}
+   924→   924→            </p>
+   925→   925→          </div>
+   926→   926→          <div className="flex items-center gap-2 shrink-0">
+   927→   927→            <Badge
+   928→   928→              variant="outline"
+   929→   929→              className={`text-[10px] px-1.5 py-0 ${modeCfg.className}`}
+   930→   930→            >
+   931→   931→              {modeCfg.label}
+   932→   932→            </Badge>
+   933→   933→            <Switch
+   934→   934→              checked={module.enabled}
+   935→   935→              onCheckedChange={() => onToggle(module.id)}
+   936→   936→              disabled={isMutating}
+   937→   937→              aria-label={`Toggle ${module.displayName}`}
+   938→   938→            />
+   939→   939→          </div>
+   940→   940→        </div>
+   941→   941→        {module.description && (
+   942→   942→          <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+   943→   943→            {module.description}
+   944→   944→          </p>
+   945→   945→        )}
+   946→   946→      </CardHeader>
+   947→   947→      <Separator />
+   948→   948→      <CardContent className="p-4 space-y-3">
+   949→   949→        {/* Stats Row */}
+   950→   950→        <div className="grid grid-cols-3 gap-2">
+   951→   951→          <div className="text-center">
+   952→   952→            <p className="text-lg font-bold">{totalActions}</p>
+   953→   953→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   954→   954→              {t('son.actions')}
+   955→   955→            </p>
+   956→   956→          </div>
+   957→   957→          <div className="text-center">
+   958→   958→            <p className="text-lg font-bold">
+   959→   959→              {successRate !== undefined
+   960→   960→                ? `${successRate.toFixed(0)}%`
+   961→   961→                : '—'}
+   962→   962→            </p>
+   963→   963→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   964→   964→              {t('son.success')}
+   965→   965→            </p>
+   966→   966→          </div>
+   967→   967→          <div className="text-center">
+   968→   968→            <p className="text-lg font-bold text-red-500">{failCount}</p>
+   969→   969→            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+   970→   970→              {t('son.failed')}
+   971→   971→            </p>
+   972→   972→          </div>
+   973→   973→        </div>
+   974→   974→
+   975→   975→        {/* Recent Actions */}
+   976→   976→        {module.recentActions && module.recentActions.length > 0 && (
+   977→   977→          <>
+   978→   978→            <Separator />
+   979→   979→            <div className="space-y-1.5">
+   980→   980→              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+   981→   981→                {t('son.recentActions')}
+   982→   982→              </p>
+   983→   983→              {module.recentActions.slice(0, 3).map((action) => {
+   984→   984→                const statusCfg = ACTION_STATUS_BADGE[action.status];
+   985→   985→                return (
+   986→   986→                  <div
+   987→   987→                    key={action.id}
+   988→   988→                    className="flex items-center justify-between gap-2 py-1"
+   989→   989→                  >
+   990→   990→                    <div className="flex items-center gap-1.5 min-w-0">
+   991→   991→                      {ACTION_TYPE_ICON[action.actionType]}
+   992→   992→                      <span className="text-[11px] truncate">
+   993→   993→                        {action.siteName
+   994→   994→                          ? `${ACTION_TYPE_LABEL[action.actionType]} on ${action.siteName}`
+   995→   995→                          : ACTION_TYPE_LABEL[action.actionType]}
+   996→   996→                      </span>
+   997→   997→                    </div>
+   998→   998→                    <Badge
+   999→   999→                      className={`text-[9px] px-1 py-0 shrink-0 ${statusCfg.className}`}
+  1000→  1000→                    >
+  1001→  1001→                      {statusCfg.label}
+  1002→  1002→                    </Badge>
+  1003→  1003→                  </div>
+  1004→  1004→                );
+  1005→  1005→              })}
+  1006→  1006→            </div>
+  1007→  1007→          </>
+  1008→  1008→        )}
+  1009→  1009→
+  1010→  1010→        {/* Execute Button */}
+  1011→  1011→        <Button
+  1012→  1012→          size="sm"
+  1013→  1013→          className="w-full h-8 text-xs"
+  1014→  1014→          disabled={!module.enabled || isMutating}
+  1015→  1015→          onClick={() => onExecute(module.id, module.displayName)}
+  1016→  1016→        >
+  1017→  1017→          <Play className="h-3 w-3 mr-1.5" />
+  1018→  1018→          {t('son.executeModule')}
+  1019→  1019→        </Button>
+  1020→  1020→      </CardContent>
+  1021→  1021→    </Card>
+  1022→  1022→  );
+  1023→  1023→}

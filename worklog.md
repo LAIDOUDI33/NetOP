@@ -406,3 +406,25 @@ Stage Summary:
 - ESLint: 0 errors after all fixes
 - Arabic i18n: 9 placeholder bugs fixed
 - All 3 locale files synchronized for new keys
+
+---
+Task ID: ops-high-bugs
+Agent: Sub-agent (general-purpose)
+Task: Fix all remaining HIGH-priority bugs in the Operations module
+
+Work Log:
+- Audited all 8 Operations module views for the specified bugs
+- Bug #1 (Missing error handling in 8 queryFn fetch calls): Already fixed in prior sessions. All 8 fetches (DashboardView, MonitoringView, OnboardingView, SonView×3, LiveView, IncidentsView, OutagesView, SpectrumView) already contain `if (!r.ok) throw new Error(...)` guards.
+- Bug #2 (Arabic i18n 9 missing placeholders): Already fixed in prior sessions. All 9 keys (dash.activeAlerts, dash.sitesActive, mon.kpiTrends, mon.siteDetails, son.moduleToggled, son.moduleExecuted, son.failedToAction, son.ofTotal, son.onSite) already have correct {placeholder} tokens in ar.ts.
+- Bug #3 (Variable shadowing `t` in 3 views): Already fixed in prior sessions. OnboardingView, IncidentsView, SonView all use `(tech)` instead of `(t)` in their .map() callbacks.
+- Bug #4 (IncidentsView MTTR unit mismatch): Already fixed. Already uses `t('unit.min')` and `unit.min` key exists in all 3 locales.
+- Bug #5 (LiveView ExportButton data shape): Already fixed. ExportButton already references `prbUtilization` and `activeUsers`.
+- Bug #6 (OnboardingView REGIONS generic): Already fixed. REGIONS already set to 8 Algerian wilayas with `as const`.
+- Bug #7 (Monitoring API division by zero): FIXED. Added `if (!arr.length) return 0;` guard to `avg()` helper in /api/monitoring/route.ts to prevent NaN from dividing by zero when no KPI data exists.
+- Bug #8 (Live API unbounded queries): FIXED. Added `where: { timestamp: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }` time filter to both `db.kpiMetric.findMany` and `db.energyMetric.findMany` in /api/live/route.ts, limiting queries to last 24 hours.
+
+Stage Summary:
+- 6 of 8 bugs were already fixed in prior sessions (confirmed via code audit)
+- 2 new fixes applied: Monitoring API division-by-zero guard, Live API 24h time bounds
+- ESLint: 0 errors after all changes
+- 2 files modified: src/app/api/monitoring/route.ts, src/app/api/live/route.ts

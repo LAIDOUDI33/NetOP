@@ -36,7 +36,6 @@ import {
   TrendingDown,
   Minus,
   Leaf,
-  AlertCircle,
   Clock,
   CheckCircle2,
   ShieldAlert,

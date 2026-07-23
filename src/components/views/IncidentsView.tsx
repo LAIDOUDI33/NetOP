@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
-import DataExportButton from '@/components/DataExportButton';
+import { useAppStore } from '@/store/app';
 import { ExportButton } from '@/components/ExportButton';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -129,7 +129,9 @@ function computeMTTR(incident: Incident): string {
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const locale = useAppStore.getState().locale;
+  const dateLocale = locale === 'ar' ? 'ar-DZ' : locale === 'fr' ? 'fr-FR' : 'en-US';
+  return d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // ─── Custom Tooltip ──────────────────────────────────────────────────
@@ -557,7 +559,7 @@ export default function IncidentsView() {
             <SelectItem value="open">{t('status.open')}</SelectItem>
             <SelectItem value="investigating">{t('status.investigating')}</SelectItem>
             <SelectItem value="resolved">{t('status.resolved')}</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
+            <SelectItem value="closed">{t('status.closed')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -575,7 +577,6 @@ export default function IncidentsView() {
             <SelectItem value="third_party">Third Party</SelectItem>
           </SelectContent>
         </Select>
-        <DataExportButton data={incidents as unknown as Record<string, unknown>[]} filename="incidents" />
         <ExportButton data={incidents} filenamePrefix="incidents" columns={[{ key: 'title', header: 'Title' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'category', header: 'Category' }, { key: 'assignedTo', header: 'Assigned To' }, { key: 'reportedBy', header: 'Reported By' }]} />
       </div>
 

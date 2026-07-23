@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     }
 
     const timestamps = Object.keys(buckets);
-    const avg = (arr: number[]) => Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2));
+    const avg = (arr: number[]) => { if (!arr.length) return 0; return Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)); };
 
     const summary = {
       totalSites: sites.length,

@@ -120,6 +120,7 @@ const ar: Record<string, string> = {
   'status.failed': 'فشل',
   'status.rolledBack': 'تم التراجع',
   'status.open': 'مفتوح',
+  'status.closed': 'مغلق',
   'status.improving': 'يتحسن',
   'status.stable': 'مستقر',
   'status.degrading': 'يتدهور',

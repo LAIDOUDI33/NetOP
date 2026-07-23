@@ -16,10 +16,9 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RadioTower, Frown, Radio, DollarSign, Repeat2, Signal } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
-import DataExportButton from '@/components/DataExportButton';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -541,8 +540,7 @@ export default function SpectrumView() {
                 <SelectItem value="reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
-            <DataExportButton data={items as unknown as Record<string, unknown>[]} filename="spectrum" />
-            <ExportButton data={items as unknown as Record<string, any>[]} filenamePrefix="spectrum" columns={[{ key: 'band', header: 'Band' }, { key: 'bandwidth', header: 'Bandwidth (MHz)' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'utilization', header: 'Utilization (%)' }, { key: 'cost', header: 'Cost ($)' }, { key: 'renewalDate', header: 'Renewal Date' }]} />
+            <ExportButton data={items as unknown as Record<string, any>[]} filenamePrefix="spectrum" columns={[{ key: 'band', header: 'Band' }, { key: 'bandwidth', header: 'Bandwidth (MHz)' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'utilizationPct', header: 'Utilization (%)' }]} />
           </div>
         </CardHeader>
         <CardContent>

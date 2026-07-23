@@ -120,6 +120,7 @@ const fr: Record<string, string> = {
   'status.failed': 'Échoué',
   'status.rolledBack': 'Annulé',
   'status.open': 'Ouvert',
+  'status.closed': 'Fermé',
   'status.improving': 'En Amélioration',
   'status.stable': 'Stable',
   'status.degrading': 'En Dégradation',
