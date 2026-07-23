@@ -195,7 +195,7 @@ export default function SonView() {
     isLoading: modulesLoading,
   } = useQuery<{ modules: SonModuleItem[] }>({
     queryKey: ['son-modules'],
-    queryFn: () => fetch('/api/son').then((r) => r.json()),
+    queryFn: () => fetch('/api/son').then((r) => { if (!r.ok) throw new Error('SON API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -205,7 +205,7 @@ export default function SonView() {
   } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
     queryKey: ['son-actions'],
     queryFn: () =>
-      fetch('/api/son/actions?limit=50').then((r) => r.json()),
+      fetch('/api/son/actions?limit=50').then((r) => { if (!r.ok) throw new Error('SON Actions API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -215,7 +215,7 @@ export default function SonView() {
   } = useQuery<{ neighbors: NeighborRelationItem[] }>({
     queryKey: ['son-neighbors'],
     queryFn: () =>
-      fetch('/api/son/neighbors').then((r) => r.json()),
+      fetch('/api/son/neighbors').then((r) => { if (!r.ok) throw new Error('SON Neighbors API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -375,9 +375,9 @@ export default function SonView() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TECH_OPTIONS.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {TECH_OPTIONS.map((tech) => (
+                  <SelectItem key={tech} value={tech}>
+                    {tech}
                   </SelectItem>
                 ))}
               </SelectContent>

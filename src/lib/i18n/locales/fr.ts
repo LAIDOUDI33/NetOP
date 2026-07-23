@@ -341,6 +341,7 @@ const fr: Record<string, string> = {
   'unit.slices': 'tranches',
   'unit.users': 'utilisateurs',
   'unit.sites': 'sites',
+  'unit.min': 'min',
 
   // ========== NAV GROUPS ==========
   'nav.group.operations': 'Exploitation',

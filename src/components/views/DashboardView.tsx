@@ -45,7 +45,7 @@ export default function DashboardView() {
   const t = useT();
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ['dashboard'],
-    queryFn: () => fetch('/api/dashboard').then(r => r.json()),
+    queryFn: () => fetch('/api/dashboard').then(r => { if (!r.ok) throw new Error('Dashboard API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 

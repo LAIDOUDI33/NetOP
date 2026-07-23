@@ -75,7 +75,7 @@ const PIPELINE_STEPS: OnboardingStatus[] = [
 ];
 
 const TECHNOLOGIES = ['2G', '3G', '4G', '5G'] as const;
-const REGIONS = ['North', 'South', 'East', 'West', 'Central'] as const;
+const REGIONS = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou'] as const;
 const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'Samsung', 'ZTE'] as const;
 
 // ──────────────────────────── Zod Schema ────────────────────────────
@@ -245,7 +245,7 @@ export default function OnboardingView() {
 
   const { data, isLoading } = useQuery<OnboardingApiResponse>({
     queryKey: ['onboarding'],
-    queryFn: () => fetch('/api/onboarding').then((r) => r.json()),
+    queryFn: () => fetch('/api/onboarding').then((r) => { if (!r.ok) throw new Error('Onboarding API error: ' + r.status); return r.json(); }),
     refetchInterval: 15000,
   });
 
@@ -474,9 +474,9 @@ export default function OnboardingView() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          {TECHNOLOGIES.map((t) => (
-                            <SelectItem key={t} value={t}>
-                              {t}
+                          {TECHNOLOGIES.map((tech) => (
+                            <SelectItem key={tech} value={tech}>
+                              {tech}
                             </SelectItem>
                           ))}
                         </SelectContent>

@@ -209,7 +209,7 @@ export default function SpectrumView() {
       if (regionFilter !== 'all') params.set('region', regionFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/spectrum${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/spectrum${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Spectrum API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
