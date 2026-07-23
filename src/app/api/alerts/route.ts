@@ -1,11 +1,8 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   const severity = searchParams.get('severity');
   const technology = searchParams.get('technology');
   const showResolved = searchParams.get('resolved') === 'true';
@@ -74,8 +71,6 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { alertId, action, ruleId, enabled } = body;
 

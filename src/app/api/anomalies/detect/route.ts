@@ -1,10 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   try {
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);

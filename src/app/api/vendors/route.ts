@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET() {
   try {
@@ -30,8 +29,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { vendor, displayName, technologies, apiType, apiEndpoint, credentials, status } = body;
 
@@ -90,8 +87,6 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
     const body = await request.json();
     const { vendorId, action, status: newStatus, ...rest } = body;
 

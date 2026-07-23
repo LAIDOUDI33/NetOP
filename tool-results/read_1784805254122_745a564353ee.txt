@@ -1,0 +1,595 @@
+     1→'use client';
+     2→
+     3→import { useState, lazy, Suspense, useEffect, useMemo } from 'react';
+     4→import { useTheme } from 'next-themes';
+     5→import { useSession, signIn, signOut } from 'next-auth/react';
+     6→import { AnimatePresence, motion } from 'framer-motion';
+     7→import { useAppStore } from '@/store/app';
+     8→import { Button } from '@/components/ui/button';
+     9→import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
+    10→import { ScrollArea } from '@/components/ui/scroll-area';
+    11→import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+    12→import { Skeleton } from '@/components/ui/skeleton';
+    13→import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+    14→import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+    15→import { Badge } from '@/components/ui/badge';
+    16→import { Input } from '@/components/ui/input';
+    17→import { NotificationCenter } from '@/components/NotificationCenter';
+    18→import { CommandPalette } from '@/components/CommandPalette';
+    19→import { MODULE_VIEW_MAP, usePermissions } from '@/lib/auth-client';
+    20→import { ErrorBoundary } from '@/components/ErrorBoundary';
+    21→import {
+    22→  LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
+    23→  MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
+    24→  Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
+    25→  Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
+    26→  Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
+    27→  FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare,
+    28→  Languages, LogOut, UserCircle, Eye, EyeOff, Loader2,
+    29→} from 'lucide-react';
+    30→import type { ViewType } from '@/types';
+    31→import { useT } from '@/lib/i18n';
+    32→
+    33→import DashboardView from '@/components/views/DashboardView';
+    34→import MonitoringView from '@/components/views/MonitoringView';
+    35→import KpiAnalyticsView from '@/components/views/KpiAnalyticsView';
+    36→import AlertsView from '@/components/views/AlertsView';
+    37→import OptimizerView from '@/components/views/OptimizerView';
+    38→import CoverageMapView from '@/components/views/CoverageMapView';
+    39→import ReportsView from '@/components/views/ReportsView';
+    40→import SettingsView from '@/components/views/SettingsView';
+    41→
+    42→// Enterprise views - dynamic import to reduce initial bundle
+    43→const SLADashboardView = lazy(() => import('@/components/views/SLADashboardView'));
+    44→const AnomalyDetectionView = lazy(() => import('@/components/views/AnomalyDetectionView'));
+    45→const CorrelationView = lazy(() => import('@/components/views/CorrelationView'));
+    46→const RootCauseAnalysisView = lazy(() => import('@/components/views/RootCauseAnalysisView'));
+    47→const SonView = lazy(() => import('@/components/views/SonView'));
+    48→const PoliciesView = lazy(() => import('@/components/views/PoliciesView'));
+    49→const OnboardingView = lazy(() => import('@/components/views/OnboardingView'));
+    50→const VendorsView = lazy(() => import('@/components/views/VendorsView'));
+    51→const QoEView = lazy(() => import('@/components/views/QoEView'));
+    52→const CapacityView = lazy(() => import('@/components/views/CapacityView'));
+    53→const SlicingView = lazy(() => import('@/components/views/SlicingView'));
+    54→const EnergyView = lazy(() => import('@/components/views/EnergyView'));
+    55→const FaultsView = lazy(() => import('@/components/views/FaultsView'));
+    56→const SubscribersView = lazy(() => import('@/components/views/SubscribersView'));
+    57→const IncidentsView = lazy(() => import('@/components/views/IncidentsView'));
+    58→const ConfigView = lazy(() => import('@/components/views/ConfigView'));
+    59→const LiveView = lazy(() => import('@/components/views/LiveView'));
+    60→const HealthView = lazy(() => import('@/components/views/HealthView'));
+    61→const BenchmarkView = lazy(() => import('@/components/views/BenchmarkView'));
+    62→const HandoverView = lazy(() => import('@/components/views/HandoverView'));
+    63→const LoadBalancingView = lazy(() => import('@/components/views/LoadBalancingView'));
+    64→const InterferenceView = lazy(() => import('@/components/views/InterferenceView'));
+    65→const CoverageHolesView = lazy(() => import('@/components/views/CoverageHolesView'));
+    66→const ChangesView = lazy(() => import('@/components/views/ChangesView'));
+    67→const OutagesView = lazy(() => import('@/components/views/OutagesView'));
+    68→const PlaybooksView = lazy(() => import('@/components/views/PlaybooksView'));
+    69→const AssistantView = lazy(() => import('@/components/views/AssistantView'));
+    70→const SimulationsView = lazy(() => import('@/components/views/SimulationsView'));
+    71→const TrendsView = lazy(() => import('@/components/views/TrendsView'));
+    72→const RoiView = lazy(() => import('@/components/views/RoiView'));
+    73→const SpectrumView = lazy(() => import('@/components/views/SpectrumView'));
+    74→const EvolutionView = lazy(() => import('@/components/views/EvolutionView'));
+    75→const NpiView = lazy(() => import('@/components/views/NpiView'));
+    76→const ServicesView = lazy(() => import('@/components/views/ServicesView'));
+    77→const AuditView = lazy(() => import('@/components/views/AuditView'));
+    78→const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
+    79→const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
+    80→
+    81→const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
+    82→  // Operations
+    83→  { view: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard, group: 'Operations' },
+    84→  { view: 'monitoring', labelKey: 'nav.monitoring', icon: Activity, group: 'Operations' },
+    85→  { view: 'son', labelKey: 'nav.son', icon: Cpu, group: 'Operations' },
+    86→  { view: 'onboarding', labelKey: 'nav.onboarding', icon: PlusCircle, group: 'Operations' },
+    87→  { view: 'live', labelKey: 'nav.live', icon: Activity, group: 'Operations' },
+    88→  { view: 'incidents', labelKey: 'nav.incidents', icon: AlertTriangle, group: 'Operations' },
+    89→  { view: 'outages', labelKey: 'nav.outages', icon: PowerOff, group: 'Operations' },
+    90→  { view: 'spectrum', labelKey: 'nav.spectrum', icon: RadioTower, group: 'Operations' },
+    91→  // Analytics
+    92→  { view: 'kpi', labelKey: 'nav.kpi', icon: BarChart3, group: 'Analytics' },
+    93→  { view: 'alerts', labelKey: 'nav.alerts', icon: Bell, group: 'Analytics' },
+    94→  { view: 'coverage', labelKey: 'nav.coverage', icon: MapPin, group: 'Analytics' },
+    95→  { view: 'correlation', labelKey: 'nav.correlation', icon: ArrowLeftRight, group: 'Analytics' },
+    96→  { view: 'qoe', labelKey: 'nav.qoe', icon: HeartPulse, group: 'Analytics' },
+    97→  { view: 'capacity', labelKey: 'nav.capacity', icon: TrendingUp, group: 'Analytics' },
+    98→  { view: 'handover', labelKey: 'nav.handover', icon: ArrowSwap, group: 'Analytics' },
+    99→  { view: 'load', labelKey: 'nav.load', icon: Scale, group: 'Analytics' },
+   100→  { view: 'interference', labelKey: 'nav.interference', icon: Radio, group: 'Analytics' },
+   101→  { view: 'coverage-holes', labelKey: 'nav.coverageHoles', icon: MapPinOff, group: 'Analytics' },
+   102→  { view: 'vendor-compare', labelKey: 'nav.vendorCompare', icon: GitCompare, group: 'Analytics' },
+   103→  { view: 'services', labelKey: 'nav.services', icon: Globe, group: 'Analytics' },
+   104→  // Intelligence
+   105→  { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
+   106→  { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
+   107→  { view: 'faults', labelKey: 'nav.faults', icon: Brain, group: 'Intelligence' },
+   108→  { view: 'subscribers', labelKey: 'nav.subscribers', icon: Users, group: 'Intelligence' },
+   109→  { view: 'health', labelKey: 'nav.health', icon: Heart, group: 'Intelligence' },
+   110→  { view: 'benchmark', labelKey: 'nav.benchmark', icon: Target, group: 'Intelligence' },
+   111→  { view: 'playbooks', labelKey: 'nav.playbooks', icon: BookOpen, group: 'Intelligence' },
+   112→  { view: 'assistant', labelKey: 'nav.assistant', icon: MessageSquare, group: 'Intelligence' },
+   113→  { view: 'npi', labelKey: 'nav.npi', icon: Gauge, group: 'Intelligence' },
+   114→  { view: 'trends', labelKey: 'nav.trends', icon: TrendingUp, group: 'Intelligence' },
+   115→  { view: 'simulations', labelKey: 'nav.simulations', icon: FlaskConical, group: 'Intelligence' },
+   116→  { view: 'roi', labelKey: 'nav.roi', icon: DollarSign, group: 'Intelligence' },
+   117→  { view: 'evolution', labelKey: 'nav.evolution', icon: ArrowSwap, group: 'Intelligence' },
+   118→  { view: 'audit', labelKey: 'nav.audit', icon: FileSearch, group: 'Intelligence' },
+   119→  { view: 'executive', labelKey: 'nav.executive', icon: Crown, group: 'Intelligence' },
+   120→  // AI Engine
+   121→  { view: 'optimizer', labelKey: 'nav.optimizer', icon: Sparkles, group: 'AI Engine' },
+   122→  { view: 'rca', labelKey: 'nav.rca', icon: Search, group: 'AI Engine' },
+   123→  { view: 'anomaly', labelKey: 'nav.anomaly', icon: Brain, group: 'AI Engine' },
+   124→  // Automation
+   125→  { view: 'policies', labelKey: 'nav.policies', icon: Shield, group: 'Automation' },
+   126→  { view: 'changes', labelKey: 'nav.changes', icon: GitBranch, group: 'Automation' },
+   127→  { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
+   128→  // System
+   129→  { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
+   130→  { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
+   131→  { view: 'config', labelKey: 'nav.config', icon: Settings2, group: 'System' },
+   132→  { view: 'settings', labelKey: 'nav.settings', icon: Settings, group: 'System' },
+   133→];
+   134→
+   135→const VIEW_TITLE_KEYS: Record<ViewType, string> = {
+   136→  dashboard: 'title.dashboard',
+   137→  monitoring: 'title.monitoring',
+   138→  son: 'title.son',
+   139→  onboarding: 'title.onboarding',
+   140→  kpi: 'title.kpi',
+   141→  alerts: 'title.alerts',
+   142→  optimizer: 'title.optimizer',
+   143→  rca: 'title.rca',
+   144→  coverage: 'title.coverage',
+   145→  reports: 'title.reports',
+   146→  settings: 'title.settings',
+   147→  sla: 'title.sla',
+   148→  anomaly: 'title.anomaly',
+   149→  correlation: 'title.correlation',
+   150→  policies: 'title.policies',
+   151→  vendors: 'title.vendors',
+   152→  qoe: 'title.qoe',
+   153→  capacity: 'title.capacity',
+   154→  slicing: 'title.slicing',
+   155→  energy: 'title.energy',
+   156→  faults: 'title.faults',
+   157→  subscribers: 'title.subscribers',
+   158→  incidents: 'title.incidents',
+   159→  config: 'title.config',
+   160→  live: 'title.live',
+   161→  health: 'title.health',
+   162→  benchmark: 'title.benchmark',
+   163→  handover: 'title.handover',
+   164→  load: 'title.load',
+   165→  interference: 'title.interference',
+   166→  'coverage-holes': 'title.coverageHoles',
+   167→  changes: 'title.changes',
+   168→  outages: 'title.outages',
+   169→  playbooks: 'title.playbooks',
+   170→  assistant: 'title.assistant',
+   171→  simulations: 'title.simulations',
+   172→  trends: 'title.trends',
+   173→  roi: 'title.roi',
+   174→  spectrum: 'title.spectrum',
+   175→  evolution: 'title.evolution',
+   176→  npi: 'title.npi',
+   177→  services: 'title.services',
+   178→  audit: 'title.audit',
+   179→  executive: 'title.executive',
+   180→  'vendor-compare': 'title.vendorCompare',
+   181→};
+   182→
+   183→function ViewFallback() {
+   184→  return (
+   185→    <div className="space-y-6">
+   186→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   187→        {Array.from({ length: 4 }).map((_, i) => (
+   188→          <div key={i} className="rounded-lg border bg-card p-6">
+   189→            <Skeleton className="h-4 w-24 mb-3" />
+   190→            <Skeleton className="h-8 w-16 mb-2" />
+   191→            <Skeleton className="h-3 w-32" />
+   192→          </div>
+   193→        ))}
+   194→      </div>
+   195→      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   196→        <div className="rounded-lg border bg-card p-6"><Skeleton className="h-72 w-full" /></div>
+   197→        <div className="rounded-lg border bg-card p-6"><Skeleton className="h-72 w-full" /></div>
+   198→      </div>
+   199→    </div>
+   200→  );
+   201→}
+   202→
+   203→function ThemeToggle() {
+   204→  const { theme, setTheme } = useTheme();
+   205→  const t = useT();
+   206→  return (
+   207→    <TooltipProvider>
+   208→      <Tooltip>
+   209→        <TooltipTrigger asChild>
+   210→          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+   211→            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+   212→            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+   213→            <span className="sr-only">{t('app.toggleTheme')}</span>
+   214→          </Button>
+   215→        </TooltipTrigger>
+   216→        <TooltipContent><p>{t('app.toggleTheme')}</p></TooltipContent>
+   217→      </Tooltip>
+   218→    </TooltipProvider>
+   219→  );
+   220→}
+   221→
+   222→function LocaleToggle() {
+   223→  const { locale, setLocale } = useAppStore();
+   224→  const t = useT();
+   225→  const locales: Array<'en' | 'fr' | 'ar'> = ['en', 'fr', 'ar'];
+   226→  const idx = locales.indexOf(locale as any);
+   227→  const next = locales[(idx + 1) % locales.length];
+   228→  return (
+   229→    <TooltipProvider>
+   230→      <Tooltip>
+   231→        <TooltipTrigger asChild>
+   232→          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as any)}>
+   233→            <Languages className="h-4 w-4" />
+   234→            <span className="sr-only">{t(`lang.${locale}`)}</span>
+   235→          </Button>
+   236→        </TooltipTrigger>
+   237→        <TooltipContent><p>{t(`lang.${locale}`)} → {t(`lang.${next}`)}</p></TooltipContent>
+   238→      </Tooltip>
+   239→    </TooltipProvider>
+   240→  );
+   241→}
+   242→
+   243→const NAV_GROUP_KEYS: Record<string, string> = {
+   244→  'Operations': 'nav.group.operations',
+   245→  'Analytics': 'nav.group.analytics',
+   246→  'Intelligence': 'nav.group.intelligence',
+   247→  'AI Engine': 'nav.group.aiEngine',
+   248→  'Automation': 'nav.group.automation',
+   249→  'System': 'nav.group.system',
+   250→};
+   251→
+   252→function SidebarNav({ collapsed, onNavigate, allowedViews }: { collapsed: boolean; onNavigate: (view: ViewType) => void; allowedViews: Set<string> }) {
+   253→  const { currentView, setCurrentView } = useAppStore();
+   254→  const t = useT();
+   255→  const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
+   256→
+   257→  const renderGroup = (items: typeof NAV_ITEMS, label: string) => {
+   258→    if (items.length === 0) return null;
+   259→    return (
+   260→      <div className="space-y-0.5">
+   261→        {!collapsed && <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t(NAV_GROUP_KEYS[label] ?? label)}</p>}
+   262→        {items.map((item) => {
+   263→          const Icon = item.icon;
+   264→          const isActive = currentView === item.view;
+   265→          const label = t(item.labelKey);
+   266→          return (
+   267→            <TooltipProvider key={item.view} delayDuration={0}>
+   268→              <Tooltip>
+   269→                <TooltipTrigger asChild>
+   270→                  <button
+   271→                    onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
+   272→                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-left
+   273→                      ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
+   274→                      ${collapsed ? 'justify-center px-2' : ''}`}
+   275→                    aria-current={isActive ? 'page' : undefined}
+   276→                  >
+   277→                    <Icon className="h-4 w-4 shrink-0" />
+   278→                    {!collapsed && <span>{label}</span>}
+   279→                  </button>
+   280→                </TooltipTrigger>
+   281→                {collapsed && <TooltipContent side="right"><p>{label}</p></TooltipContent>}
+   282→              </Tooltip>
+   283→            </TooltipProvider>
+   284→          );
+   285→        })}
+   286→      </div>
+   287→    );
+   288→  };
+   289→
+   290→  return (
+   291→    <nav className="flex flex-col gap-3 px-2 py-4" role="navigation" aria-label={t('app.mainNav')}>
+   292→      {groups.map(g => {
+   293→        const items = NAV_ITEMS.filter(n => n.group === g && allowedViews.has(n.view));
+   294→        return items.length > 0 ? <div key={g}>{renderGroup(items, g)}</div> : null;
+   295→      })}
+   296→    </nav>
+   297→  );
+   298→}
+   299→
+   300→function ViewRenderer() {
+   301→  const { currentView } = useAppStore();
+   302→  const variants = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 } };
+   303→
+   304→  return (
+   305→    <AnimatePresence mode="wait">
+   306→      <motion.div key={currentView} variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
+   307→        <Suspense fallback={<ViewFallback />}>
+   308→          <ErrorBoundary>
+   309→          {currentView === 'dashboard' && <DashboardView />}
+   310→          {currentView === 'monitoring' && <MonitoringView />}
+   311→          {currentView === 'kpi' && <KpiAnalyticsView />}
+   312→          {currentView === 'alerts' && <AlertsView />}
+   313→          {currentView === 'optimizer' && <OptimizerView />}
+   314→          {currentView === 'rca' && <RootCauseAnalysisView />}
+   315→          {currentView === 'coverage' && <CoverageMapView />}
+   316→          {currentView === 'reports' && <ReportsView />}
+   317→          {currentView === 'settings' && <SettingsView />}
+   318→          {currentView === 'sla' && <SLADashboardView />}
+   319→          {currentView === 'anomaly' && <AnomalyDetectionView />}
+   320→          {currentView === 'correlation' && <CorrelationView />}
+   321→          {currentView === 'son' && <SonView />}
+   322→          {currentView === 'policies' && <PoliciesView />}
+   323→          {currentView === 'onboarding' && <OnboardingView />}
+   324→          {currentView === 'vendors' && <VendorsView />}
+   325→          {currentView === 'qoe' && <QoEView />}
+   326→          {currentView === 'capacity' && <CapacityView />}
+   327→          {currentView === 'slicing' && <SlicingView />}
+   328→          {currentView === 'energy' && <EnergyView />}
+   329→          {currentView === 'faults' && <FaultsView />}
+   330→          {currentView === 'subscribers' && <SubscribersView />}
+   331→          {currentView === 'incidents' && <IncidentsView />}
+   332→          {currentView === 'config' && <ConfigView />}
+   333→          {currentView === 'live' && <LiveView />}
+   334→          {currentView === 'health' && <HealthView />}
+   335→          {currentView === 'benchmark' && <BenchmarkView />}
+   336→          {currentView === 'handover' && <HandoverView />}
+   337→          {currentView === 'load' && <LoadBalancingView />}
+   338→          {currentView === 'interference' && <InterferenceView />}
+   339→          {currentView === 'coverage-holes' && <CoverageHolesView />}
+   340→          {currentView === 'changes' && <ChangesView />}
+   341→          {currentView === 'outages' && <OutagesView />}
+   342→          {currentView === 'playbooks' && <PlaybooksView />}
+   343→          {currentView === 'assistant' && <AssistantView />}
+   344→          {currentView === 'simulations' && <SimulationsView />}
+   345→          {currentView === 'trends' && <TrendsView />}
+   346→          {currentView === 'roi' && <RoiView />}
+   347→          {currentView === 'spectrum' && <SpectrumView />}
+   348→          {currentView === 'evolution' && <EvolutionView />}
+   349→          {currentView === 'npi' && <NpiView />}
+   350→          {currentView === 'services' && <ServicesView />}
+   351→          {currentView === 'audit' && <AuditView />}
+   352→          {currentView === 'executive' && <ExecutiveView />}
+   353→          {currentView === 'vendor-compare' && <VendorCompareView />}
+   354→          </ErrorBoundary>
+   355→        </Suspense>
+   356→      </motion.div>
+   357→    </AnimatePresence>
+   358→  );
+   359→}
+   360→
+   361→function LoginView() {
+   362→  const [email, setEmail] = useState('');
+   363→  const [password, setPassword] = useState('');
+   364→  const [showPassword, setShowPassword] = useState(false);
+   365→  const [error, setError] = useState('');
+   366→  const [loading, setLoading] = useState(false);
+   367→  const t = useT();
+   368→
+   369→  const handleSubmit = async (e: React.FormEvent) => {
+   370→    e.preventDefault();
+   371→    setError('');
+   372→    setLoading(true);
+   373→    try {
+   374→      const result = await signIn('credentials', { email, password, redirect: false });
+   375→      if (result?.error) {
+   376→        setError(t('auth.invalidCredentials'));
+   377→      }
+   378→    } catch {
+   379→      setError(t('auth.error'));
+   380→    } finally {
+   381→      setLoading(false);
+   382→    }
+   383→  };
+   384→
+   385→  return (
+   386→    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+   387→      <div className="absolute inset-0 opacity-5">
+   388→        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+   389→      </div>
+   390→      <div className="w-full max-w-md relative z-10 rounded-xl border border-slate-700 bg-slate-800/90 backdrop-blur-xl shadow-2xl p-8">
+   391→        <div className="text-center space-y-3 mb-6">
+   392→          <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+   393→            <Shield className="h-7 w-7 text-emerald-500" />
+   394→          </div>
+   395→          <div>
+   396→            <h1 className="text-2xl font-bold text-white">NetOptima Algérie</h1>
+   397→            <p className="text-slate-400 mt-1">{t('auth.subtitle')}</p>
+   398→          </div>
+   399→        </div>
+   400→        <form onSubmit={handleSubmit} className="space-y-4">
+   401→          {error && <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">{error}</div>}
+   402→          <div className="space-y-2">
+   403→            <label htmlFor="login-email" className="text-sm text-slate-300">{t('auth.email')}</label>
+   404→            <Input id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@netoptima-dz.local" required className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500" autoComplete="email" />
+   405→          </div>
+   406→          <div className="space-y-2">
+   407→            <label htmlFor="login-password" className="text-sm text-slate-300">{t('auth.password')}</label>
+   408→            <div className="relative">
+   409→              <Input id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 pr-10" autoComplete="current-password" />
+   410→              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+   411→                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+   412→              </button>
+   413→            </div>
+   414→          </div>
+   415→          <Button type="submit" disabled={loading || !email || !password} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium h-11">
+   416→            {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('auth.signingIn')}</> : t('auth.signIn')}
+   417→          </Button>
+   418→        </form>
+   419→        <div className="mt-6 p-3 rounded-lg bg-slate-700/30 border border-slate-600/50">
+   420→          <p className="text-xs text-slate-400 font-medium mb-2">{t('auth.demoAccounts')}</p>
+   421→          <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-500">
+   422→            <div><span className="text-emerald-400 font-medium">admin</span>@netoptima-dz.local</div><div className="text-slate-600">admin123</div>
+   423→            <div><span className="text-cyan-400 font-medium">noc</span>@netoptima-dz.local</div><div className="text-slate-600">demo123</div>
+   424→            <div><span className="text-amber-400 font-medium">rf</span>@netoptima-dz.local</div><div className="text-slate-600">demo123</div>
+   425→            <div><span className="text-violet-400 font-medium">viewer</span>@netoptima-dz.local</div><div className="text-slate-600">demo123</div>
+   426→          </div>
+   427→        </div>
+   428→      </div>
+   429→    </div>
+   430→  );
+   431→}
+   432→
+   433→function UserMenu() {
+   434→  const { data: session } = useSession();
+   435→  const { isSuperAdmin, roles } = usePermissions();
+   436→  const t = useT();
+   437→  const user = session?.user;
+   438→
+   439→  if (!user) return null;
+   440→
+   441→  const initials = ((user as any).name ?? user.email ?? 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+   442→
+   443→  return (
+   444→    <DropdownMenu>
+   445→      <DropdownMenuTrigger asChild>
+   446→      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+   447→        <Avatar className="h-8 w-8">
+   448→          <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials}</AvatarFallback>
+   449→        </Avatar>
+   450→      </Button>
+   451→    </DropdownMenuTrigger>
+   452→    <DropdownMenuContent className="w-56" align="end" forceMount>
+   453→      <DropdownMenuLabel className="font-normal">
+   454→        <div className="flex flex-col space-y-1">
+   455→          <p className="text-sm font-medium">{(user as any).name ?? user.email}</p>
+   456→          <p className="text-xs text-muted-foreground">{user.email}</p>
+   457→          {roles.length > 0 && (
+   458→            <div className="flex flex-wrap gap-1 pt-1">
+   459→              {roles.map((r: string) => (
+   460→                <Badge key={r} variant={isSuperAdmin ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">{r}</Badge>
+   461→              ))}
+   462→            </div>
+   463→          )}
+   464→        </div>
+   465→      </DropdownMenuLabel>
+   466→      <DropdownMenuSeparator />
+   467→      <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })} className="text-red-600 focus:text-red-600 cursor-pointer">
+   468→        <LogOut className="mr-2 h-4 w-4" />
+   469→        {t('auth.signOut')}
+   470→      </DropdownMenuItem>
+   471→    </DropdownMenuContent>
+   472→    </DropdownMenu>
+   473→  );
+   474→}
+   475→
+   476→export default function Home() {
+   477→  const { sidebarOpen, toggleSidebar } = useAppStore();
+   478→  const { currentView } = useAppStore();
+   479→  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+   480→  const { data: session, status } = useSession();
+   481→  const { permissions, hasPermission } = usePermissions();
+   482→  const t = useT();
+   483→
+   484→  // Compute allowed views from permissions (reactive)
+   485→  const allowedViews = useMemo(() => {
+   486→    const views = new Set<string>();
+   487→    const perms = permissions;
+   488→    for (const [mod, viewList] of Object.entries(MODULE_VIEW_MAP)) {
+   489→      if (perms.includes('*:*') || perms.includes(`${mod}:*`) || perms.includes(`${mod}:view`)) {
+   490→        viewList.forEach(v => views.add(v));
+   491→      }
+   492→    }
+   493→    // Always allow settings for authenticated users
+   494→    views.add('settings');
+   495→    return views;
+   496→  }, [permissions]);
+   497→
+   498→  const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
+   499→
+   500→  // Show loading while checking session
+   501→  if (status === 'loading') {
+   502→    return (
+   503→      <div className="min-h-screen flex items-center justify-center bg-background">
+   504→        <div className="text-center space-y-4">
+   505→          <Radio className="h-10 w-10 text-primary mx-auto animate-pulse" />
+   506→          <p className="text-muted-foreground text-sm">Loading...</p>
+   507→        </div>
+   508→      </div>
+   509→    );
+   510→  }
+   511→
+   512→  // Show login page if not authenticated
+   513→  if (!session) {
+   514→    // Dynamically render login page inline
+   515→    return <LoginView />;
+   516→  }
+   517→
+   518→  return (
+   519→    <div className="min-h-screen flex flex-col bg-background text-foreground">
+   520→      <CommandPalette />
+   521→
+   522→      {/* Mobile Header */}
+   523→      <header className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+   524→        <div className="flex items-center justify-between h-14 px-4">
+   525→          <div className="flex items-center gap-3">
+   526→            <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+   527→              <SheetTrigger asChild>
+   528→                <Button variant="ghost" size="icon" className="h-8 w-8"><Menu className="h-5 w-5" /></Button>
+   529→              </SheetTrigger>
+   530→              <SheetContent side="left" className="w-64 p-0 bg-slate-50 dark:bg-slate-900">
+   531→                <SheetTitle className="sr-only">{t('app.navigation')}</SheetTitle>
+   532→                <div className="flex items-center gap-2 px-4 py-3 border-b">
+   533→                  <Radio className="h-5 w-5 text-primary" />
+   534→                  <span className="font-bold text-sm">{t('app.brand')}</span>
+   535→                </div>
+   536→                <SidebarNav collapsed={false} onNavigate={handleNavigate} allowedViews={allowedViews} />
+   537→              </SheetContent>
+   538→            </Sheet>
+   539→            <div className="flex items-center gap-2">
+   540→              <Radio className="h-5 w-5 text-primary" />
+   541→              <span className="font-bold">{t('app.brand')}</span>
+   542→            </div>
+   543→          </div>
+   544→          <div className="flex items-center gap-1">
+   545→            <NotificationCenter />
+   546→            <LocaleToggle />
+   547→            <ThemeToggle />
+   548→            <UserMenu />
+   549→          </div>
+   550→        </div>
+   551→      </header>
+   552→
+   553→      <div className="flex flex-1 min-h-0">
+   554→        {/* Desktop Sidebar */}
+   555→        <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-r transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
+   556→          <div className={`flex items-center gap-2 px-4 h-14 border-b shrink-0 ${sidebarOpen ? '' : 'justify-center px-2'}`}>
+   557→            <Radio className="h-5 w-5 text-primary shrink-0" />
+   558→            {sidebarOpen && <span className="font-bold text-sm">{t('app.brand')}</span>}
+   559→          </div>
+   560→          <ScrollArea className="flex-1">
+   561→            <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate} allowedViews={allowedViews} />
+   562→          </ScrollArea>
+   563→          <div className="border-t p-2 shrink-0 flex items-center gap-1">
+   564→            {sidebarOpen && <UserMenu />}
+   565→            <Button variant="ghost" size="icon" className={`h-8 ${sidebarOpen ? 'w-8 ml-auto' : 'w-full'}`} onClick={toggleSidebar} aria-label={sidebarOpen ? t('app.collapseSidebar') : t('app.expandSidebar')}>
+   566→              <ChevronLeft className={`h-4 w-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`} />
+   567→            </Button>
+   568→          </div>
+   569→        </aside>
+   570→
+   571→        {/* Main Content */}
+   572→        <main className="flex-1 flex flex-col min-w-0">
+   573→          <header className="hidden lg:flex items-center justify-between h-14 px-6 border-b shrink-0">
+   574→            <div>
+   575→              <h1 className="text-lg font-bold leading-tight">{t(VIEW_TITLE_KEYS[currentView])}</h1>
+   576→              <p className="text-xs text-muted-foreground">{t('app.tagline')}</p>
+   577→            </div>
+   578→            <div className="flex items-center gap-2">
+   579→              <NotificationCenter />
+   580→              <LocaleToggle />
+   581→              <ThemeToggle />
+   582→              <UserMenu />
+   583→            </div>
+   584→          </header>
+   585→
+   586→          <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
+   587→            <ViewRenderer />
+   588→          </div>
+   589→
+   590→          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background" dangerouslySetInnerHTML={{ __html: t('app.footer') }} />
+   591→        </main>
+   592→      </div>
+   593→    </div>
+   594→  );
+   595→}

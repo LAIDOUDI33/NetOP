@@ -1,10 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   try {
     // 1. KPI metrics - latest per site
     const allKpis = await db.kpiMetric.findMany({

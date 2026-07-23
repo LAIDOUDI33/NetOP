@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: Request) {
-  const auth = await checkApiAuth(request);
-  if (!auth) return authError();
 
   try {
     const users = await db.user.findMany({

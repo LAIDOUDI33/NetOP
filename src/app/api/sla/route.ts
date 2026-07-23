@@ -1,10 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
-  const _auth = await checkApiAuth(request);
-  if (!_auth) return authError();
   try {
     const targets = await db.sLATarget.findMany({ where: { enabled: true } });
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
