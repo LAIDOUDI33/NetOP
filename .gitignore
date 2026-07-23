@@ -34,6 +34,7 @@ yarn-error.log*
 
 # TypeScript cache
 *.tsbuildinfo
+next-env.d.ts
 
 # IDE
 .vscode/
@@ -43,3 +44,22 @@ yarn-error.log*
 
 # System skills (not project code)
 /skills/
+
+# Environment files (keep .env.example)
+.env*
+!.env.example
+
+# Tool artifacts
+/tool-results/
+/agent-ctx/
+*.zip
+.zscripts/
+
+# Dev artifacts
+dev.log
+dev.out.log
+server.log
+test
+prompt
+local-*
+worklog.md
