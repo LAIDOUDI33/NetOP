@@ -225,7 +225,7 @@ export default function TrendsView() {
       if (metricFilter !== 'all') params.set('metric', metricFilter);
       if (regionFilter !== 'all') params.set('region', regionFilter);
       const qs = params.toString();
-      return fetch(`/api/trends${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/trends${qs ? `?${qs}` : ''}`).then(r => { if (!r.ok) throw new Error('Trends API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
@@ -491,14 +491,14 @@ export default function TrendsView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
-                <SelectItem value="Lagos">Lagos</SelectItem>
-                <SelectItem value="Abuja">Abuja</SelectItem>
-                <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
-                <SelectItem value="Kano">Kano</SelectItem>
-                <SelectItem value="Ibadan">Ibadan</SelectItem>
+                <SelectItem value="Alger">Alger</SelectItem>
+                <SelectItem value="Oran">Oran</SelectItem>
+                <SelectItem value="Constantine">Constantine</SelectItem>
+                <SelectItem value="Annaba">Annaba</SelectItem>
+                <SelectItem value="Tamanrasset">Tamanrasset</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={trends as unknown as Record<string, any>[]} filenamePrefix="trends" columns={[{ key: 'metric', header: 'Metric' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'currentValue', header: 'Current Value' }, { key: 'forecastedValue', header: 'Forecasted Value' }, { key: 'trendDirection', header: 'Trend' }, { key: 'confidenceInterval', header: 'Confidence (%)' }, { key: 'forecastDate', header: 'Forecast Date' }]} />
+            <ExportButton data={trends as unknown as Record<string, any>[]} filenamePrefix="trends" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'metric', header: t('th.metric') }, { key: 'region', header: t('filter.region') }, { key: 'horizon', header: t('trd.horizon') }, { key: 'trendDirection', header: t('trd.direction') }, { key: 'confidence', header: t('trd.confidence') }, { key: 'recommendation', header: t('trd.recommendation') }]} />
           </div>
         </CardHeader>
         <CardContent>
@@ -511,14 +511,14 @@ export default function TrendsView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
                     <TableHead>{t('filter.tech')}</TableHead>
                     <TableHead>{t('filter.metric')}</TableHead>
                     <TableHead>{t('trd.horizon')}</TableHead>
                     <TableHead>{t('trd.direction')}</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
+                    <TableHead className="text-right">{t('trd.confidence')}</TableHead>
                     <TableHead>{t('trd.trend')}</TableHead>
-                    <TableHead>Recommendation</TableHead>
+                    <TableHead>{t('trd.recommendation')}</TableHead>
                     <TableHead>{t('filter.region')}</TableHead>
                   </TableRow>
                 </TableHeader>

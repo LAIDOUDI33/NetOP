@@ -81,17 +81,17 @@ const MODE_BADGE_CONFIG: Record<
   { label: string; className: string }
 > = {
   'open-loop': {
-    label: 'Open Loop',
+    label: 'son.mode.openLoop',
     className:
       'border-blue-300 text-blue-700 bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:bg-blue-950/40',
   },
   'semi-automated': {
-    label: 'Semi-Automated',
+    label: 'son.mode.semiAutomated',
     className:
       'border-amber-300 text-amber-700 bg-amber-50 dark:border-amber-700 dark:text-amber-300 dark:bg-amber-950/40',
   },
   'closed-loop': {
-    label: 'Closed Loop',
+    label: 'son.mode.closedLoop',
     className:
       'border-emerald-300 text-emerald-700 bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 dark:bg-emerald-950/40',
   },
@@ -102,35 +102,35 @@ const ACTION_STATUS_BADGE: Record<
   { label: string; className: string }
 > = {
   pending: {
-    label: 'Pending',
+    label: 'son.status.pending',
     className:
       'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   },
   applied: {
-    label: 'Applied',
+    label: 'son.status.applied',
     className:
       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   },
   failed: {
-    label: 'Failed',
+    label: 'son.status.failed',
     className:
       'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   },
   rolled_back: {
-    label: 'Rolled Back',
+    label: 'son.status.rolledBack',
     className:
       'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
   },
 };
 
 const ACTION_TYPE_LABEL: Record<SonActionType, string> = {
-  add_neighbor: 'Add Neighbor',
-  remove_neighbor: 'Remove Neighbor',
-  modify_pci: 'Modify PCI',
-  adjust_tilt: 'Adjust Tilt',
-  adjust_power: 'Adjust Power',
-  compensate_outage: 'Compensate Outage',
-  correct_config: 'Correct Config',
+  add_neighbor: 'son.actionType.addNeighbor',
+  remove_neighbor: 'son.actionType.removeNeighbor',
+  modify_pci: 'son.actionType.modifyPci',
+  adjust_tilt: 'son.actionType.adjustTilt',
+  adjust_power: 'son.actionType.adjustPower',
+  compensate_outage: 'son.actionType.compensateOutage',
+  correct_config: 'son.actionType.correctConfig',
 };
 
 const ACTION_TYPE_ICON: Record<SonActionType, React.ReactNode> = {
@@ -144,15 +144,15 @@ const ACTION_TYPE_ICON: Record<SonActionType, React.ReactNode> = {
 };
 
 const RELATION_TYPE_LABEL: Record<NeighborRelationType, string> = {
-  intra_freq: 'Intra-Freq',
-  inter_freq: 'Inter-Freq',
-  inter_tech: 'Inter-Tech',
+  intra_freq: 'son.relation.intraFreq',
+  inter_freq: 'son.relation.interFreq',
+  inter_tech: 'son.relation.interTech',
 };
 
 const HO_TYPE_LABEL: Record<NeighborHoType, string> = {
-  manual: 'Manual',
-  anr_auto: 'ANR Auto',
-  pnp_auto: 'PNP Auto',
+  manual: 'son.hoType.manual',
+  anr_auto: 'son.hoType.anrAuto',
+  pnp_auto: 'son.hoType.pnpAuto',
 };
 
 const NEIGHBOR_STATUS_BADGE: Record<
@@ -394,7 +394,7 @@ export default function SonView() {
                 <SelectItem key={m} value={m}>
                   {m === 'ALL'
                     ? t('filter.allModes')
-                    : MODE_BADGE_CONFIG[m as SonModuleMode].label}
+                    : t(MODE_BADGE_CONFIG[m as SonModuleMode].label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -588,7 +588,7 @@ export default function SonView() {
                               <div className="flex items-center gap-1.5 text-xs">
                                 {ACTION_TYPE_ICON[action.actionType]}
                                 <span>
-                                  {ACTION_TYPE_LABEL[action.actionType]}
+                                  {t(ACTION_TYPE_LABEL[action.actionType])}
                                 </span>
                               </div>
                             </TableCell>
@@ -610,7 +610,7 @@ export default function SonView() {
                               <Badge
                                 className={`text-[10px] px-1.5 py-0 ${statusCfg.className}`}
                               >
-                                {statusCfg.label}
+                                {t(statusCfg.label)}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs text-right py-3">
@@ -757,12 +757,12 @@ export default function SonView() {
                             </TableCell>
                             <TableCell className="text-xs py-3">
                               <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                {RELATION_TYPE_LABEL[nbr.relationType]}
+                                {t(RELATION_TYPE_LABEL[nbr.relationType])}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-xs py-3">
                               <span className="text-muted-foreground">
-                                {HO_TYPE_LABEL[nbr.hoType]}
+                                {t(HO_TYPE_LABEL[nbr.hoType])}
                               </span>
                             </TableCell>
                             <TableCell className="text-xs text-right py-3">
@@ -925,7 +925,7 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
               variant="outline"
               className={`text-[10px] px-1.5 py-0 ${modeCfg.className}`}
             >
-              {modeCfg.label}
+              {t(modeCfg.label)}
             </Badge>
             <Switch
               checked={module.enabled}
@@ -988,14 +988,14 @@ function ModuleCard({ module, onToggle, onExecute, isMutating }: ModuleCardProps
                       {ACTION_TYPE_ICON[action.actionType]}
                       <span className="text-[11px] truncate">
                         {action.siteName
-                          ? `${ACTION_TYPE_LABEL[action.actionType]} on ${action.siteName}`
-                          : ACTION_TYPE_LABEL[action.actionType]}
+                          ? `${t(ACTION_TYPE_LABEL[action.actionType])} on ${action.siteName}`
+                          : t(ACTION_TYPE_LABEL[action.actionType])}
                       </span>
                     </div>
                     <Badge
                       className={`text-[9px] px-1 py-0 shrink-0 ${statusCfg.className}`}
                     >
-                      {statusCfg.label}
+                      {t(statusCfg.label)}
                     </Badge>
                   </div>
                 );

@@ -173,7 +173,7 @@ export default function LoadBalancingView() {
       if (techFilter !== 'all') params.set('technology', techFilter);
       if (congestionFilter !== 'all') params.set('congestionLevel', congestionFilter);
       const qs = params.toString();
-      return fetch(`/api/load${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/load${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

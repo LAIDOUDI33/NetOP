@@ -90,7 +90,7 @@ export default function ConfigView() {
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (vendorFilter !== 'all') params.set('vendor', vendorFilter);
       const qs = params.toString() ? `?${params.toString()}` : '';
-      return fetch(`/api/config${qs}`).then(r => r.json());
+      return fetch(`/api/config${qs}`).then(r => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); });
     },
   });
 

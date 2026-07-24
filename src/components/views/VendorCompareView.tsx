@@ -159,12 +159,11 @@ export default function VendorCompareView() {
 
   const { data, isLoading, error } = useQuery<VendorCompareResponse>({
     queryKey: ['vendor-compare', technology],
-    queryFn: () => fetch(`/api/vendor-compare?technology=${technology}`).then((r) => r.json()),
+    queryFn: () => fetch(`/api/vendor-compare?technology=${technology}`).then(r => { if (!r.ok) throw new Error('Vendor compare API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 
-  const rawMatches = (data as any)?.matches ?? [];
-  const comparisons = rawMatches;
+  const comparisons = data?.comparisons ?? [];
 
   // Compute best-vendor summary from comparisons
   const summary = useMemo(() => {

@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Send, RefreshCw, Sparkles, Activity, TrendingUp, Clock, Users, AlertTriangle } from 'lucide-react';
 import type { OptimizationItem, OptimizationStatus, Technology } from '@/types';
@@ -22,10 +21,10 @@ const TECH_COLORS: Record<Technology, string> = {
   '5G': '#F59E0B',
 };
 
-const STATUS_CONFIG: Record<OptimizationStatus, { color: string; label: string }> = {
-  pending: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: t('opt.pending') },
-  implemented: { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', label: t('opt.implemented') },
-  dismissed: { color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400', label: t('opt.dismissed') },
+const STATUS_COLORS: Record<OptimizationStatus, string> = {
+  pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  implemented: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  dismissed: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
 };
 
 interface OptimizerResponse {
@@ -115,7 +114,7 @@ export default function OptimizerView() {
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['optimizer'] })}
               >
                 <RefreshCw className="h-3 w-3 mr-1" />
-                Refresh
+                {t('btn.refresh')}
               </Button>
               {data?.optimizations && (
                 <ExportButton data={data.optimizations} filenamePrefix="optimizer" columns={[{ key: 'technology', header: t('th.technology') }, { key: 'category', header: t('th.category') }, { key: 'status', header: t('th.status') }, { key: 'issue', header: t('th.issue') }, { key: 'recommendation', header: t('th.recommendation') }, { key: 'impact', header: t('th.impact') }]} />
@@ -132,7 +131,7 @@ export default function OptimizerView() {
               </div>
             ) : (
               data?.optimizations.map((opt) => {
-                const statusCfg = STATUS_CONFIG[opt.status];
+                const statusColor = STATUS_COLORS[opt.status];
                 return (
                   <div key={opt.id} className="border rounded-lg p-4 space-y-2">
                     <div className="flex items-center justify-between flex-wrap gap-2">
@@ -144,7 +143,7 @@ export default function OptimizerView() {
                           {opt.technology}
                         </Badge>
                         <span className="text-xs text-muted-foreground">{opt.category}</span>
-                        <Badge className={`text-xs ${statusCfg.color}`}>{statusCfg.label}</Badge>
+                        <Badge className={`text-xs ${statusColor}`}>{t('opt.' + opt.status)}</Badge>
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {new Date(opt.createdAt).toLocaleString()}

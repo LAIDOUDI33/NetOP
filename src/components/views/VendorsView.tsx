@@ -134,7 +134,7 @@ export default function VendorsView() {
 
   const { data, isLoading } = useQuery<VendorsResponse>({
     queryKey: ['vendors'],
-    queryFn: () => fetch('/api/vendors').then((r) => r.json()),
+    queryFn: () => fetch('/api/vendors').then((r) => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 
@@ -146,7 +146,7 @@ export default function VendorsView() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vendorId, action: 'sync' }),
-      }).then((r) => r.json()),
+      }).then((r) => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); }),
     onSuccess: () => {
       toast.success(t('toast.syncOk'));
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
@@ -168,7 +168,7 @@ export default function VendorsView() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vendorId, action: 'toggle', enabled }),
-      }).then((r) => r.json()),
+      }).then((r) => { if (!r.ok) throw new Error('API error: ' + r.status); return r.json(); }),
     onSuccess: (_data, variables) => {
       toast.success(
         variables.enabled
