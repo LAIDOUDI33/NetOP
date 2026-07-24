@@ -184,7 +184,7 @@ export default function SubscribersView() {
     queryKey: ['subscribers', technology],
     queryFn: () => {
       const params = technology !== 'all' ? `?technology=${technology}` : '';
-      return fetch(`/api/subscribers${params}`).then((r) => r.json());
+      return fetch(`/api/subscribers${params}`).then((r) => { if (!r.ok) throw new Error('Subscribers API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

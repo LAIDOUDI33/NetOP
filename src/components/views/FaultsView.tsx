@@ -236,7 +236,7 @@ export default function FaultsView() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (componentFilter !== 'all') params.set('component', componentFilter);
       const qs = params.toString();
-      return fetch(`/api/faults${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/faults${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Faults API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

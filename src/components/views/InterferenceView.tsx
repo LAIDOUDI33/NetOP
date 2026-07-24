@@ -253,7 +253,7 @@ export default function InterferenceView() {
       if (severityFilter !== 'all') params.set('severity', severityFilter);
       if (typeFilter !== 'all') params.set('interferenceType', typeFilter);
       const qs = params.toString();
-      return fetch(`/api/interference${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/interference${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Interference API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

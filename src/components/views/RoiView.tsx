@@ -221,7 +221,7 @@ export default function RoiView() {
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/roi${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/roi${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('ROI API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

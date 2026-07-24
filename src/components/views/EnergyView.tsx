@@ -168,7 +168,7 @@ export default function EnergyView() {
       if (techFilter !== 'all') params.set('technology', techFilter);
       if (modeFilter !== 'all') params.set('mode', modeFilter);
       const qs = params.toString();
-      return fetch(`/api/energy${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/energy${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Energy API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

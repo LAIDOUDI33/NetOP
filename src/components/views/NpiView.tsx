@@ -204,7 +204,7 @@ export default function NpiView() {
   const { data, isLoading, error } = useQuery<NpiResponse>({
     queryKey: ['npi', technology, region],
     queryFn: () =>
-      fetch(`/api/npi?technology=${technology}&region=${region}`).then((r) => r.json()),
+      fetch(`/api/npi?technology=${technology}&region=${region}`).then((r) => { if (!r.ok) throw new Error('NPI API error: ' + r.status); return r.json(); }),
     refetchInterval: 30000,
   });
 

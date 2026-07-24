@@ -227,7 +227,7 @@ export default function CoverageHolesView() {
       if (severityFilter !== 'all') params.set('severity', severityFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/coverage-holes${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/coverage-holes${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Coverage Holes API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

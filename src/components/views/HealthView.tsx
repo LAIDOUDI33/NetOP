@@ -208,7 +208,7 @@ export default function HealthView() {
       if (gradeFilter !== 'all') params.set('grade', gradeFilter);
       if (regionFilter !== 'all') params.set('region', regionFilter);
       const qs = params.toString();
-      return fetch(`/api/health${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/health${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Health API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

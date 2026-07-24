@@ -197,7 +197,7 @@ export default function HandoverView() {
       if (techFilter !== 'all') params.set('technology', techFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/handover${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/handover${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Handover API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });

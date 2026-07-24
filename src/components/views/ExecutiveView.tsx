@@ -160,7 +160,7 @@ export default function ExecutiveView() {
   const t = useT();
   const { data, isLoading, error } = useQuery<ExecutiveData>({
     queryKey: ['executive'],
-    queryFn: () => fetch('/api/executive').then((r) => r.json()),
+    queryFn: () => fetch('/api/executive').then((r) => { if (!r.ok) throw new Error('Executive API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 

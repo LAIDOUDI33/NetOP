@@ -133,7 +133,7 @@ export default function SLADashboardView() {
   const t = useT();
   const { data, isLoading } = useQuery<SLAResponse>({
     queryKey: ['sla'],
-    queryFn: () => fetch('/api/sla').then(r => r.json()),
+    queryFn: () => fetch('/api/sla').then(r => { if (!r.ok) throw new Error('SLA API error: ' + r.status); return r.json(); }),
     refetchInterval: 60000,
   });
 

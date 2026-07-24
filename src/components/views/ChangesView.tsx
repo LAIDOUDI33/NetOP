@@ -232,7 +232,7 @@ export default function ChangesView() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       const qs = params.toString();
-      return fetch(`/api/changes${qs ? `?${qs}` : ''}`).then((r) => r.json());
+      return fetch(`/api/changes${qs ? `?${qs}` : ''}`).then((r) => { if (!r.ok) throw new Error('Changes API error: ' + r.status); return r.json(); });
     },
     refetchInterval: 30000,
   });
