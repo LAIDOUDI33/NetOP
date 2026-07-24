@@ -1512,7 +1512,6 @@ const ar: Record<string, string> = {
   'avgHandoverSuccessRate': 'متوسط معدل نجاح التسليم',
   'avgLatency': 'متوسط زمن الاستجابة',
   'avgRsrp': 'متوسط RSRP',
-  'pb.playbooks': 'السيناريوهات',
   'rpt.availability': 'تقرير التوفر',
   'rpt.latency': 'تقرير زمن الاستجابة',
   'set.action': 'إجراء',
