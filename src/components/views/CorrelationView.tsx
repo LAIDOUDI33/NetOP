@@ -194,7 +194,7 @@ export default function CorrelationView() {
       });
       return point;
     });
-  }, [monitoringCache, techHealth]);
+  }, [monitoringCache, techHealth, METRIC_LABELS, dashboard]);
 
   // ── Performance matrix data ─────────────────────────────────────────
   const techNorms = useMemo(() => {
@@ -211,7 +211,7 @@ export default function CorrelationView() {
       };
     });
     return norms;
-  }, [monitoringCache, techHealth]);
+  }, [monitoringCache, techHealth, dashboard]);
 
   const matrixPairs: { a: Technology; b: Technology; score: number }[] = useMemo(() => {
     const pairs: { a: Technology; b: Technology; score: number }[] = [];
