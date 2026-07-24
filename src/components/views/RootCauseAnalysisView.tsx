@@ -176,9 +176,9 @@ Provide analysis in this format:
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Brain className="h-5 w-5 text-primary" />
-              Root Cause Analysis
+              {t('rca.title')}
             </CardTitle>
-            <ExportButton data={history as unknown as Record<string, any>[]} filenamePrefix="rca" columns={[{ key: 'timestamp', header: 'Time' }, { key: 'technology', header: 'Technology' }, { key: 'site', header: 'Site' }, { key: 'symptom', header: 'Symptom' }, { key: 'response', header: 'Analysis' }]} />
+            <ExportButton data={history as unknown as Record<string, any>[]} filenamePrefix="rca" columns={[{ key: 'timestamp', header: t('th.time') }, { key: 'technology', header: t('th.technology') }, { key: 'site', header: t('th.site') }, { key: 'symptom', header: t('rca.symptom') }, { key: 'response', header: t('rca.analysis') }]} />
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Row: Tech + Site */}
@@ -187,7 +187,7 @@ Provide analysis in this format:
                 <Label className="text-xs font-medium">{t('filter.technology')}</Label>
                 <Select value={technology} onValueChange={v => { setTechnology(v); setSiteCode(''); }}>
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Select technology" />
+                    <SelectValue placeholder={t('filter.selectTech')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="2G">2G</SelectItem>
@@ -204,7 +204,7 @@ Provide analysis in this format:
                 ) : (
                   <Select value={siteCode} onValueChange={setSiteCode}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Select a site" />
+                      <SelectValue placeholder={t('filter.selectSite')} />
                     </SelectTrigger>
                     <SelectContent>
                       {filteredSites.map(s => (

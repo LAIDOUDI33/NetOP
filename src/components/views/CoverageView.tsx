@@ -123,21 +123,21 @@ export default function CoverageView() {
                     <Server className="h-3 w-3 text-muted-foreground" />
                   </div>
                   <p className="text-lg font-bold">{rs.totalSites}</p>
-                  <p className="text-[10px] text-muted-foreground">Sites</p>
+                  <p className="text-[10px] text-muted-foreground">{t('unit.sites')}</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-center gap-1">
                     <Wifi className="h-3 w-3 text-muted-foreground" />
                   </div>
                   <p className="text-lg font-bold">{(rs.avgAvailability ?? 0).toFixed(1)}%</p>
-                  <p className="text-[10px] text-muted-foreground">Avail</p>
+                  <p className="text-[10px] text-muted-foreground">{t('th.availability')}</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-center gap-1">
                     <Signal className="h-3 w-3 text-muted-foreground" />
                   </div>
                   <p className="text-lg font-bold">{(rs.avgSignal ?? 0).toFixed(0)}</p>
-                  <p className="text-[10px] text-muted-foreground">Signal</p>
+                  <p className="text-[10px] text-muted-foreground">{t('th.signal')}</p>
                 </div>
               </div>
               <div className="flex gap-1 flex-wrap">
@@ -159,7 +159,7 @@ export default function CoverageView() {
       {/* Sites Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Sites ({data.sites.length})</CardTitle>
+          <CardTitle className="text-base font-semibold">{t('unit.sites')} ({data.sites.length})</CardTitle>
           <ExportButton data={data.sites} filenamePrefix="coverage" columns={[{ key: 'name', header: 'Site' }, { key: 'code', header: 'Code' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'avgSignal', header: 'Signal (dBm)' }, { key: 'avgThroughput', header: 'Throughput (Mbps)' }, { key: 'avgUsers', header: 'Users' }]} />
         </CardHeader>
         <CardContent className="p-4">
@@ -173,8 +173,8 @@ export default function CoverageView() {
                     <TableHead className="text-xs">{t('th.technology')}</TableHead>
                     <TableHead className="text-xs">{t('th.region')}</TableHead>
                     <TableHead className="text-xs">{t('th.status')}</TableHead>
-                    <TableHead className="text-xs text-right">Signal</TableHead>
-                    <TableHead className="text-xs text-right">Throughput</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.signal')}</TableHead>
+                    <TableHead className="text-xs text-right">{t('th.throughput')}</TableHead>
                     <TableHead className="text-xs text-right">{t('th.users')}</TableHead>
                   </TableRow>
                 </TableHeader>

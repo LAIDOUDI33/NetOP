@@ -154,11 +154,19 @@ export default function CorrelationView() {
     }).filter(d => d.value > 0);
   }, [dashboard, techHealth]);
 
+  const METRIC_LABELS: Record<string, string> = {
+    throughput: t('corr.throughput'),
+    latency: t('corr.latencyInv'),
+    availability: t('corr.avail'),
+    handover: t('corr.handover'),
+    signal: t('corr.signalQuality'),
+  };
+
   // ── Radar chart data ────────────────────────────────────────────────
   const radarData = useMemo(() => {
     if (!dashboard) return [];
     return RADAR_METRICS.map(metric => {
-      const point: Record<string, string | number> = { metric: metric.label };
+      const point: Record<string, string | number> = { metric: METRIC_LABELS[metric.key] };
       TECHNOLOGIES.forEach(tech => {
         const mon = monitoringCache[tech];
         const health = techHealth.find(h => h.technology === tech);
@@ -442,7 +450,7 @@ export default function CorrelationView() {
             <CardTitle className="text-base font-semibold">{t('corr.vendorComp')}</CardTitle>
           </div>
           <CardDescription className="text-xs">{t('corr.vendorDesc')}</CardDescription>
-          <ExportButton data={vendorData} filenamePrefix="correlation" columns={[{ key: 'vendor', header: 'Vendor' }, { key: 'availability', header: 'Availability (%)' }, { key: 'throughput', header: 'Throughput' }, { key: 'latency', header: 'Latency (inv.)' }, { key: 'handoverSuccess', header: 'Handover' }, { key: 'signalQuality', header: 'Signal' }]} />
+          <ExportButton data={vendorData} filenamePrefix="correlation" columns={[{ key: 'vendor', header: t('corr.vendor') }, { key: 'availability', header: t('corr.availPct') }, { key: 'throughput', header: t('corr.throughput') }, { key: 'latency', header: t('corr.latencyInv') }, { key: 'handoverSuccess', header: t('corr.handover') }, { key: 'signalQuality', header: t('corr.signal') }]} />
         </CardHeader>
         <CardContent className="p-4">
           {vendorData.length === 0 ? (
@@ -463,11 +471,11 @@ export default function CorrelationView() {
                     formatter={(value: number, name: string) => [`${(value ?? 0).toFixed(1)}%`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  <Bar dataKey="availability" fill="#10B981" name="Availability" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="throughput" fill="#06B6D4" name="Throughput" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="latency" fill="#F59E0B" name="Latency (inv.)" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="handoverSuccess" fill="#8B5CF6" name="Handover" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="signalQuality" fill="#EC4899" name="Signal" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="availability" fill="#10B981" name={t('corr.avail')} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="throughput" fill="#06B6D4" name={t('corr.throughput')} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="latency" fill="#F59E0B" name={t('corr.latencyInv')} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="handoverSuccess" fill="#8B5CF6" name={t('corr.handover')} radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="signalQuality" fill="#EC4899" name={t('corr.signal')} radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

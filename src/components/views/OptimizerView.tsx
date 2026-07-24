@@ -23,9 +23,9 @@ const TECH_COLORS: Record<Technology, string> = {
 };
 
 const STATUS_CONFIG: Record<OptimizationStatus, { color: string; label: string }> = {
-  pending: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: 'Pending' },
-  implemented: { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', label: 'Implemented' },
-  dismissed: { color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400', label: 'Dismissed' },
+  pending: { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: t('opt.pending') },
+  implemented: { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', label: t('opt.implemented') },
+  dismissed: { color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400', label: t('opt.dismissed') },
 };
 
 interface OptimizerResponse {
@@ -118,7 +118,7 @@ export default function OptimizerView() {
                 Refresh
               </Button>
               {data?.optimizations && (
-                <ExportButton data={data.optimizations} filenamePrefix="optimizer" columns={[{ key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'issue', header: 'Issue' }, { key: 'recommendation', header: 'Recommendation' }, { key: 'impact', header: 'Impact' }]} />
+                <ExportButton data={data.optimizations} filenamePrefix="optimizer" columns={[{ key: 'technology', header: t('th.technology') }, { key: 'category', header: t('th.category') }, { key: 'status', header: t('th.status') }, { key: 'issue', header: t('th.issue') }, { key: 'recommendation', header: t('th.recommendation') }, { key: 'impact', header: t('th.impact') }]} />
               )}
             </div>
           </CardHeader>

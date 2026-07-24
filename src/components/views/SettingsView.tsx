@@ -39,11 +39,11 @@ export default function SettingsView() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="w-full sm:w-auto flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="parameters" className="text-xs gap-1.5"><Settings2 className="h-3.5 w-3.5" /> {t('set.params', { tech: '' }).replace(/\s*$/, '') || 'Parameters'}</TabsTrigger>
-          <TabsTrigger value="users" className="text-xs gap-1.5"><Users className="h-3.5 w-3.5" /> Users</TabsTrigger>
-          <TabsTrigger value="roles" className="text-xs gap-1.5"><Shield className="h-3.5 w-3.5" /> Roles</TabsTrigger>
-          <TabsTrigger value="audit" className="text-xs gap-1.5"><FileSearch className="h-3.5 w-3.5" /> Audit</TabsTrigger>
-          <TabsTrigger value="health" className="text-xs gap-1.5"><HeartPulse className="h-3.5 w-3.5" /> Health</TabsTrigger>
-          <TabsTrigger value="retention" className="text-xs gap-1.5"><Clock className="h-3.5 w-3.5" /> Retention</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs gap-1.5"><Users className="h-3.5 w-3.5" /> {t('set.users')}</TabsTrigger>
+          <TabsTrigger value="roles" className="text-xs gap-1.5"><Shield className="h-3.5 w-3.5" /> {t('set.roles')}</TabsTrigger>
+          <TabsTrigger value="audit" className="text-xs gap-1.5"><FileSearch className="h-3.5 w-3.5" /> {t('set.audit')}</TabsTrigger>
+          <TabsTrigger value="health" className="text-xs gap-1.5"><HeartPulse className="h-3.5 w-3.5" /> {t('set.health')}</TabsTrigger>
+          <TabsTrigger value="retention" className="text-xs gap-1.5"><Clock className="h-3.5 w-3.5" /> {t('set.retention')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="parameters" className="mt-4">
@@ -140,12 +140,12 @@ function ParametersTab() {
             </CardTitle>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => queryClient.invalidateQueries({ queryKey: ['parameters'] })}>
-                <RefreshCw className="h-3 w-3 mr-1" /> Refresh
+                <RefreshCw className="h-3 w-3 mr-1" /> {t('set.refresh')}
               </Button>
               <Button size="sm" className="h-8 text-xs" disabled={!hasChanges || saveMutation.isPending} onClick={() => saveMutation.mutate(filteredEdits)}>
-                <Save className="h-3 w-3 mr-1" /> Save ({Object.keys(filteredEdits).length})
+                <Save className="h-3 w-3 mr-1" /> {t('set.save')} ({Object.keys(filteredEdits).length})
               </Button>
-              <ExportButton data={(data?.parameters ?? []) as unknown as Record<string, any>[]} filenamePrefix="settings" columns={[{ key: 'displayName', header: 'Parameter' }, { key: 'category', header: 'Category' }, { key: 'currentValue', header: 'Current Value' }, { key: 'minRange', header: 'Min' }, { key: 'maxRange', header: 'Max' }, { key: 'unit', header: 'Unit' }]} />
+              <ExportButton data={(data?.parameters ?? []) as unknown as Record<string, any>[]} filenamePrefix="settings" columns={[{ key: 'displayName', header: t('set.exportParameter') }, { key: 'category', header: t('set.exportCategory') }, { key: 'currentValue', header: t('set.exportCurrentValue') }, { key: 'minRange', header: t('set.exportMin') }, { key: 'maxRange', header: t('set.exportMax') }, { key: 'unit', header: t('set.exportUnit') }]} />
             </div>
           </div>
         </CardHeader>
@@ -192,6 +192,7 @@ function ParametersTab() {
 
 /* =================== USERS TAB =================== */
 function UsersTab() {
+  const t = useT();
   const { data, isLoading } = useQuery<UsersResponse>({
     queryKey: ['settings-users'],
     queryFn: () => fetch('/api/settings/users').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
@@ -199,7 +200,7 @@ function UsersTab() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">User Management</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">{t('set.userManagement')}</CardTitle></CardHeader>
       <CardContent className="p-4">
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
@@ -207,11 +208,11 @@ function UsersTab() {
           <ScrollArea className="max-h-96">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Name</TableHead>
-                <TableHead className="text-xs">Email</TableHead>
-                <TableHead className="text-xs">Roles</TableHead>
-                <TableHead className="text-xs">Status</TableHead>
-                <TableHead className="text-xs">Created</TableHead>
+                <TableHead className="text-xs">{t('set.name')}</TableHead>
+                <TableHead className="text-xs">{t('set.email')}</TableHead>
+                <TableHead className="text-xs">{t('set.roles')}</TableHead>
+                <TableHead className="text-xs">{t('set.status')}</TableHead>
+                <TableHead className="text-xs">{t('set.created')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {data?.users.map((u) => (
@@ -225,7 +226,7 @@ function UsersTab() {
                     </TableCell>
                     <TableCell className="text-xs">
                       <Badge variant={u.active ? 'default' : 'outline'} className="text-[10px]">
-                        {u.active ? 'Active' : 'Inactive'}
+                        {u.active ? t('set.active') : t('set.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(u.createdAt).toLocaleDateString('fr-DZ')}</TableCell>
@@ -242,6 +243,7 @@ function UsersTab() {
 
 /* =================== ROLES TAB =================== */
 function RolesTab() {
+  const t = useT();
   const { data, isLoading } = useQuery<RolesResponse>({
     queryKey: ['settings-roles'],
     queryFn: () => fetch('/api/settings/roles').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
@@ -249,7 +251,7 @@ function RolesTab() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Role Management</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">{t('set.roleManagement')}</CardTitle></CardHeader>
       <CardContent className="p-4">
         {isLoading ? (
           <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
@@ -257,18 +259,18 @@ function RolesTab() {
           <ScrollArea className="max-h-96">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Role</TableHead>
-                <TableHead className="text-xs">Description</TableHead>
-                <TableHead className="text-xs">Users</TableHead>
-                <TableHead className="text-xs">Permissions</TableHead>
+                <TableHead className="text-xs">{t('set.role')}</TableHead>
+                <TableHead className="text-xs">{t('set.description')}</TableHead>
+                <TableHead className="text-xs">{t('set.users')}</TableHead>
+                <TableHead className="text-xs">{t('set.permissions')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {data?.roles.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="text-xs font-medium">{r.name}</TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-[300px] truncate">{r.description}</TableCell>
-                    <TableCell className="text-xs"><Badge variant="secondary" className="text-[10px]">{r.userCount} users</Badge></TableCell>
-                    <TableCell className="text-xs"><Badge variant="outline" className="text-[10px]">{r.permissionCount} perms</Badge></TableCell>
+                    <TableCell className="text-xs"><Badge variant="secondary" className="text-[10px]">{t('set.usersCount', { n: r.userCount })}</Badge></TableCell>
+                    <TableCell className="text-xs"><Badge variant="outline" className="text-[10px]">{t('set.permsCount', { n: r.permissionCount })}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -282,6 +284,7 @@ function RolesTab() {
 
 /* =================== AUDIT TAB =================== */
 function AuditTab() {
+  const t = useT();
   const { data, isLoading } = useQuery<AuditResponse>({
     queryKey: ['settings-audit'],
     queryFn: () => fetch('/api/settings/audit?limit=50').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
@@ -291,8 +294,8 @@ function AuditTab() {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Audit Log</CardTitle>
-          {data && <p className="text-xs text-muted-foreground">{data.total} total entries</p>}
+          <CardTitle className="text-base">{t('set.auditLog')}</CardTitle>
+          {data && <p className="text-xs text-muted-foreground">{t('set.totalEntries', { n: data.total })}</p>}
         </div>
       </CardHeader>
       <CardContent className="p-4">
@@ -302,12 +305,12 @@ function AuditTab() {
           <ScrollArea className="max-h-96">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Time</TableHead>
-                <TableHead className="text-xs">Action</TableHead>
-                <TableHead className="text-xs">Site</TableHead>
-                <TableHead className="text-xs">Tech</TableHead>
-                <TableHead className="text-xs">Change</TableHead>
-                <TableHead className="text-xs">Status</TableHead>
+                <TableHead className="text-xs">{t('set.time')}</TableHead>
+                <TableHead className="text-xs">{t('set.action')}</TableHead>
+                <TableHead className="text-xs">{t('set.site')}</TableHead>
+                <TableHead className="text-xs">{t('set.tech')}</TableHead>
+                <TableHead className="text-xs">{t('set.change')}</TableHead>
+                <TableHead className="text-xs">{t('set.status')}</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {data?.actions.map((a) => (
@@ -337,25 +340,26 @@ function AuditTab() {
 
 /* =================== SYSTEM HEALTH TAB =================== */
 function HealthTab() {
+  const t = useT();
   const { data: dashboardData } = useQuery({
     queryKey: ['health-dashboard'],
     queryFn: () => fetch('/api/dashboard').then(r => { if (!r.ok) throw new Error('Settings API error: ' + r.status); return r.json(); }),
   });
 
   const stats = [
-    { label: 'Platform', value: 'NetOptima Algérie v0.2.0', icon: Radio },
-    { label: 'Framework', value: 'Next.js 16 + Prisma', icon: Radio },
-    { label: 'Database', value: 'SQLite', icon: Radio },
-    { label: 'Auth', value: 'NextAuth.js v4', icon: Radio },
-    { label: 'Timezone', value: 'Africa/Algiers (CET)', icon: Radio },
-    { label: 'Total Sites', value: dashboardData?.totalSites ?? '—', icon: Radio },
-    { label: 'Active Users', value: dashboardData?.totalActiveUsers ?? '—', icon: Radio },
-    { label: 'Avg Availability', value: dashboardData ? `${(dashboardData.avgAvailability ?? 0).toFixed(1)}%` : '—', icon: Radio },
+    { label: t('set.platform'), value: 'NetOptima Algérie v0.2.0', icon: Radio },
+    { label: t('set.framework'), value: 'Next.js 16 + Prisma', icon: Radio },
+    { label: t('set.database'), value: 'SQLite', icon: Radio },
+    { label: t('set.auth'), value: 'NextAuth.js v4', icon: Radio },
+    { label: t('set.timezone'), value: 'Africa/Algiers (CET)', icon: Radio },
+    { label: t('set.totalSites'), value: dashboardData?.totalSites ?? '—', icon: Radio },
+    { label: t('set.activeUsers'), value: dashboardData?.totalActiveUsers ?? '—', icon: Radio },
+    { label: t('set.avgAvailability'), value: dashboardData ? `${(dashboardData.avgAvailability ?? 0).toFixed(1)}%` : '—', icon: Radio },
   ];
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">System Health</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">{t('set.systemHealth')}</CardTitle></CardHeader>
       <CardContent className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {stats.map((s) => (
@@ -372,6 +376,7 @@ function HealthTab() {
 
 /* =================== DATA RETENTION TAB =================== */
 function RetentionTab() {
+  const t = useT();
   const [retention, setRetention] = useState({
     kpiMetrics: 30,
     alerts: 90,
@@ -381,15 +386,15 @@ function RetentionTab() {
 
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">Data Retention Settings</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">{t('set.dataRetentionSettings')}</CardTitle></CardHeader>
       <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground mb-4">Configure how long different types of data are kept in the system.</p>
+        <p className="text-sm text-muted-foreground mb-4">{t('set.dataRetentionDesc')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {(Object.entries(retention) as [keyof typeof retention, number][]).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="text-sm font-medium">{key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</p>
-                <p className="text-xs text-muted-foreground">Days to retain</p>
+                <p className="text-xs text-muted-foreground">{t('set.daysToRetain')}</p>
               </div>
               <Input
                 type="number"
@@ -402,8 +407,8 @@ function RetentionTab() {
           ))}
         </div>
         <div className="mt-4 flex justify-end">
-          <Button size="sm" className="h-8 text-xs" onClick={() => toast.info('Retention settings updated locally (demo)')}>
-            <Save className="h-3 w-3 mr-1" /> Save
+          <Button size="sm" className="h-8 text-xs" onClick={() => toast.info(t('set.retentionUpdated'))}>
+            <Save className="h-3 w-3 mr-1" /> {t('set.save')}
           </Button>
         </div>
       </CardContent>

@@ -176,9 +176,9 @@ export default function CapacityView() {
   // Risk distribution chart data
   const riskDistData = summary
     ? [
-        { name: 'Low', count: summary.byRisk.low ?? 0, fill: RISK_COLORS.low },
-        { name: 'Medium', count: summary.byRisk.medium ?? 0, fill: RISK_COLORS.medium },
-        { name: 'High', count: summary.byRisk.high ?? 0, fill: RISK_COLORS.high },
+        { name: t('cap.riskLow'), count: summary.byRisk.low ?? 0, fill: RISK_COLORS.low },
+        { name: t('cap.riskMedium'), count: summary.byRisk.medium ?? 0, fill: RISK_COLORS.medium },
+        { name: t('cap.riskHigh'), count: summary.byRisk.high ?? 0, fill: RISK_COLORS.high },
         { name: t('status.critical'), count: summary.byRisk.critical ?? 0, fill: RISK_COLORS.critical },
       ]
     : [];
@@ -258,10 +258,10 @@ export default function CapacityView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-emerald-500" />
-          Capacity Planning & Forecasting
+          {t('cap.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Predict resource exhaustion and plan infrastructure upgrades
+          {t('cap.subtitle')}
         </p>
       </div>
 
@@ -285,9 +285,9 @@ export default function CapacityView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allLevels')}</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="low">{t('cap.riskLow')}</SelectItem>
+            <SelectItem value="medium">{t('cap.riskMedium')}</SelectItem>
+            <SelectItem value="high">{t('cap.riskHigh')}</SelectItem>
             <SelectItem value="critical">{t('status.critical')}</SelectItem>
           </SelectContent>
         </Select>
@@ -300,14 +300,14 @@ export default function CapacityView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-slate-500" />
-              Total Forecasts
+              {t('cap.totalForecasts')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-slate-700 dark:text-slate-200">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all sites</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('cap.acrossAllSites')}</p>
           </CardContent>
         </Card>
 
@@ -316,14 +316,14 @@ export default function CapacityView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-red-500" />
-              Sites at Risk
+              {t('cap.sitesAtRisk')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className={`text-3xl font-bold ${summary && summary.sitesAtRisk > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-200'}`}>
               {summary?.sitesAtRisk ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">High & critical risk sites</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('cap.highCriticalRisk')}</p>
           </CardContent>
         </Card>
 
@@ -332,14 +332,14 @@ export default function CapacityView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-amber-500" />
-              Avg Growth Rate
+              {t('cap.avgGrowthRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className={`text-3xl font-bold ${growthColor(summary?.avgGrowthRate ?? 0)}`}>
               {formatNumber(summary?.avgGrowthRate ?? 0)}%
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Resource consumption trend</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('cap.resourceTrend')}</p>
           </CardContent>
         </Card>
 
@@ -348,14 +348,14 @@ export default function CapacityView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
-              Avg Confidence
+              {t('cap.avgConfidence')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {formatNumber(avgConfidence, 1)}%
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Forecast model accuracy</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('cap.forecastAccuracy')}</p>
           </CardContent>
         </Card>
       </div>

@@ -287,7 +287,7 @@ export default function SlicingView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Layers className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'Network Slices' })}</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('sli.networkSlices') })}</p>
         <p className="text-sm mt-1">
           {statusFilter !== 'all' || sliceTypeFilter !== 'all'
             ? t('sli.noMatch')
@@ -304,10 +304,10 @@ export default function SlicingView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Layers className="h-6 w-6 text-amber-500" />
-          Network Slicing (5G NR)
+          {t('sli.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          S-NSSAI slice lifecycle and QoS management
+          {t('sli.subtitle')}
         </p>
       </div>
 
@@ -317,12 +317,12 @@ export default function SlicingView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Slices
+              {t('sli.totalSlices')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold">{summary?.total ?? 0}</span>
-            <p className="text-xs text-muted-foreground mt-1">Configured slices</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('sli.configuredSlices')}</p>
           </CardContent>
         </Card>
 
@@ -330,14 +330,14 @@ export default function SlicingView() {
         <Card className="border-emerald-500/40">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Slices
+              {t('sli.activeSlices')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {summary?.active ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Currently running</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('sli.currentlyRunning')}</p>
           </CardContent>
         </Card>
 
@@ -345,7 +345,7 @@ export default function SlicingView() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg Load
+              {t('sli.avgLoad')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -369,14 +369,14 @@ export default function SlicingView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-cyan-500" />
-              Total Active Users
+              {t('sli.totalActiveUsers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {totalActiveUsers.toLocaleString()}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all slices</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('sli.acrossAllSlices')}</p>
           </CardContent>
         </Card>
 
@@ -385,14 +385,14 @@ export default function SlicingView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-amber-500" />
-              URLLC Slices
+              {t('sli.urllcSlices')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {urlccCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Ultra-reliable low-latency</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('sli.urllcDesc')}</p>
           </CardContent>
         </Card>
       </div>
@@ -411,7 +411,7 @@ export default function SlicingView() {
                   eMBB
                 </p>
                 <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
-                  Enhanced Mobile Broadband
+                  {t('sli.embbDesc')}
                 </p>
               </div>
             </div>
@@ -419,11 +419,11 @@ export default function SlicingView() {
               <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                 {embBStats.count}
               </span>
-              <span className="text-xs text-muted-foreground">slices</span>
+              <span className="text-xs text-muted-foreground">{t('sli.slices')}</span>
             </div>
             <div className="mb-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Avg Load</span>
+                <span className="text-muted-foreground">{t('sli.avgLoad')}</span>
                 <span className="font-medium text-emerald-600 dark:text-emerald-400">
                   {formatNumber(embBStats.avgLoad, 1)}%
                 </span>
@@ -437,7 +437,7 @@ export default function SlicingView() {
             </div>
             <p className="text-xs text-muted-foreground">
               <Users className="h-3 w-3 inline mr-1" />
-              {embBStats.totalUsers.toLocaleString()} active users
+              {embBStats.totalUsers.toLocaleString()} {t('sli.activeUsers')}
             </p>
           </CardContent>
         </Card>
@@ -454,7 +454,7 @@ export default function SlicingView() {
                   URLLC
                 </p>
                 <p className="text-xs text-amber-600/70 dark:text-amber-400/70">
-                  Ultra-Reliable Low-Latency
+                  {t('sli.urllcFullDesc')}
                 </p>
               </div>
             </div>
@@ -462,11 +462,11 @@ export default function SlicingView() {
               <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
                 {urllcStats.count}
               </span>
-              <span className="text-xs text-muted-foreground">slices</span>
+              <span className="text-xs text-muted-foreground">{t('sli.slices')}</span>
             </div>
             <div className="mb-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Avg Load</span>
+                <span className="text-muted-foreground">{t('sli.avgLoad')}</span>
                 <span className="font-medium text-amber-600 dark:text-amber-400">
                   {formatNumber(urllcStats.avgLoad, 1)}%
                 </span>
@@ -480,7 +480,7 @@ export default function SlicingView() {
             </div>
             <p className="text-xs text-muted-foreground">
               <Users className="h-3 w-3 inline mr-1" />
-              {urllcStats.totalUsers.toLocaleString()} active users
+              {urllcStats.totalUsers.toLocaleString()} {t('sli.activeUsers')}
             </p>
           </CardContent>
         </Card>
@@ -497,7 +497,7 @@ export default function SlicingView() {
                   mMTC
                 </p>
                 <p className="text-xs text-cyan-600/70 dark:text-cyan-400/70">
-                  Massive Machine-Type Comm
+                  {t('sli.mmtcDesc')}
                 </p>
               </div>
             </div>
@@ -505,11 +505,11 @@ export default function SlicingView() {
               <span className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
                 {mmtcStats.count}
               </span>
-              <span className="text-xs text-muted-foreground">slices</span>
+              <span className="text-xs text-muted-foreground">{t('sli.slices')}</span>
             </div>
             <div className="mb-2">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Avg Load</span>
+                <span className="text-muted-foreground">{t('sli.avgLoad')}</span>
                 <span className="font-medium text-cyan-600 dark:text-cyan-400">
                   {formatNumber(mmtcStats.avgLoad, 1)}%
                 </span>
@@ -523,7 +523,7 @@ export default function SlicingView() {
             </div>
             <p className="text-xs text-muted-foreground">
               <Users className="h-3 w-3 inline mr-1" />
-              {mmtcStats.totalUsers.toLocaleString()} active users
+              {mmtcStats.totalUsers.toLocaleString()} {t('sli.activeUsers')}
             </p>
           </CardContent>
         </Card>
@@ -571,13 +571,13 @@ export default function SlicingView() {
                   strokeDasharray="6 4"
                   strokeWidth={1.5}
                   label={{
-                    value: 'Threshold (80%)',
+                    value: t('sli.threshold80'),
                     position: 'insideTopRight',
                     fill: '#EF4444',
                     fontSize: 11,
                   }}
                 />
-                <Bar dataKey="currentLoad" name="Current Load (%)" radius={[4, 4, 0, 0]} barSize={32}>
+                <Bar dataKey="currentLoad" name={t('sli.currentLoadPct')} radius={[4, 4, 0, 0]} barSize={32}>
                   {barChartData.map((entry, idx) => (
                     <Cell key={idx} fill={entry.color} />
                   ))}
@@ -595,7 +595,7 @@ export default function SlicingView() {
             ))}
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <div className="w-3 h-0.5 border-t-2 border-dashed border-red-500" />
-              <span>Threshold</span>
+              <span>{t('sli.threshold')}</span>
             </div>
           </div>
         </CardContent>
@@ -615,8 +615,8 @@ export default function SlicingView() {
               <SelectContent>
                 <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
                 <SelectItem value="active">{t('status.active')}</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-                <SelectItem value="deactivated">Deactivated</SelectItem>
+                <SelectItem value="suspended">{t('status.suspended')}</SelectItem>
+                <SelectItem value="deactivated">{t('status.deactivated')}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sliceTypeFilter} onValueChange={setSliceTypeFilter}>
@@ -630,7 +630,7 @@ export default function SlicingView() {
                 <SelectItem value="mMTC">mMTC</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={slices} filenamePrefix="slicing" columns={[{ key: 'name', header: 'Slice Name' }, { key: 'sliceType', header: 'Type' }, { key: 'status', header: 'Status' }, { key: 'technology', header: 'Technology' }, { key: 'currentLoad', header: 'Load (%)' }, { key: 'activeUsers', header: 'Users' }, { key: 'avgThroughput', header: 'Avg Throughput' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'priorityLevel', header: 'Priority' }]} />
+            <ExportButton data={slices} filenamePrefix="slicing" columns={[{ key: 'name', header: t('sli.exportSliceName') }, { key: 'sliceType', header: t('sli.exportType') }, { key: 'status', header: t('sli.exportStatus') }, { key: 'technology', header: t('sli.exportTechnology') }, { key: 'currentLoad', header: t('sli.exportLoad') }, { key: 'activeUsers', header: t('sli.exportUsers') }, { key: 'avgThroughput', header: t('sli.exportAvgThroughput') }, { key: 'avgLatency', header: t('sli.exportLatency') }, { key: 'priorityLevel', header: t('sli.exportPriority') }]} />
           </div>
         </CardHeader>
         <CardContent>
@@ -646,16 +646,16 @@ export default function SlicingView() {
                     <TableHead className="sticky left-0 bg-background z-10 min-w-[160px]">{t('th.name')}</TableHead>
                     <TableHead className="min-w-[80px]">{t('th.type')}</TableHead>
                     <TableHead className="min-w-[120px]">{t('th.site')}</TableHead>
-                    <TableHead className="min-w-[80px]">SST/SD</TableHead>
+                    <TableHead className="min-w-[80px]">{t('th.sstSd')}</TableHead>
                     <TableHead className="text-right min-w-[80px]">{t('th.bandwidth')}</TableHead>
-                    <TableHead className="text-right min-w-[100px]">Guaranteed BW</TableHead>
+                    <TableHead className="text-right min-w-[100px]">{t('th.guaranteedBw')}</TableHead>
                     <TableHead className="min-w-[70px]">{t('th.priority')}</TableHead>
                     <TableHead className="text-right min-w-[80px]">{t('th.latencyTarget')}</TableHead>
                     <TableHead className="min-w-[140px]">{t('th.currentLoad')}</TableHead>
                     <TableHead className="text-right min-w-[60px]">{t('th.users')}</TableHead>
                     <TableHead className="text-right min-w-[90px]">{t('th.dlThroughput')}</TableHead>
                     <TableHead className="min-w-[90px]">{t('th.status')}</TableHead>
-                    <TableHead className="min-w-[70px]">QCI/5QI</TableHead>
+                    <TableHead className="min-w-[70px]">{t('th.qci5qi')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -669,7 +669,7 @@ export default function SlicingView() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={SLICE_TYPE_BG[slice.sliceType]}
+                          className={SLICE_TYPE_BG[slice.sliceType] ?? 'bg-muted border-border'}
                         >
                           {slice.sliceType}
                         </Badge>
@@ -693,11 +693,11 @@ export default function SlicingView() {
                       </TableCell>
                       {/* Max BW */}
                       <TableCell className="text-right text-xs">
-                        {slice.maxBandwidth} Mbps
+                        {slice.maxBandwidth} {t('sli.unitMbps')}
                       </TableCell>
                       {/* Guaranteed BW */}
                       <TableCell className="text-right text-xs">
-                        {slice.guaranteedBw} Mbps
+                        {slice.guaranteedBw} {t('sli.unitMbps')}
                       </TableCell>
                       {/* Priority */}
                       <TableCell>
@@ -707,7 +707,7 @@ export default function SlicingView() {
                       </TableCell>
                       {/* Latency Target */}
                       <TableCell className="text-right text-xs">
-                        {formatNumber(slice.latencyTarget, 1)} ms
+                        {formatNumber(slice.latencyTarget, 1)} {t('sli.unitMs')}
                       </TableCell>
                       {/* Current Load */}
                       <TableCell>
@@ -727,12 +727,12 @@ export default function SlicingView() {
                       </TableCell>
                       {/* Throughput */}
                       <TableCell className="text-right text-xs">
-                        {formatNumber(slice.avgThroughput, 1)} Mbps
+                        {formatNumber(slice.avgThroughput, 1)} {t('sli.unitMbps')}
                       </TableCell>
                       {/* Status */}
                       <TableCell>
                         <Badge variant={STATUS_BADGE_VARIANT[slice.status]}>
-                          {STATUS_LABEL[slice.status]}
+                          {t(`status.${slice.status}`)}
                         </Badge>
                       </TableCell>
                       {/* QCI/FiveQI */}

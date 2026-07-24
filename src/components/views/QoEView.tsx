@@ -265,10 +265,10 @@ function TimelineDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5 text-emerald-500" />
-            {siteName} — QoE Timeline
+            {siteName} — {t('qoe.timelineTitle')}
           </DialogTitle>
           <DialogDescription>
-            Last 6 hours of quality of experience metrics (hourly buckets)
+            {t('qoe.timelineDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -297,7 +297,7 @@ function TimelineDialog({
             {/* MOS Timeline */}
             <div>
               <h4 className="text-sm font-medium mb-2 text-emerald-600 dark:text-emerald-400">
-                MOS Score Over Time
+                {t('qoe.mosOverTime')}
               </h4>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
@@ -334,7 +334,7 @@ function TimelineDialog({
             {/* Satisfaction Timeline */}
             <div>
               <h4 className="text-sm font-medium mb-2 text-amber-600 dark:text-amber-400">
-                Satisfaction Index Over Time
+                {t('qoe.satisfactionOverTime')}
               </h4>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
@@ -371,7 +371,7 @@ function TimelineDialog({
             {/* Data Rate Timeline */}
             <div>
               <h4 className="text-sm font-medium mb-2 text-cyan-600 dark:text-cyan-400">
-                Data Rate Over Time
+                {t('qoe.dataRateOverTime')}
               </h4>
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
@@ -494,8 +494,8 @@ export default function QoEView() {
         <p className="text-lg font-medium">{t('empty.noDataFor', { entity: 'QoE' })}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all'
-            ? `No sites found for ${techFilter} technology.`
-            : 'QoE metrics have not been collected yet.'}
+            ? t('qoe.noSiteTech', { tech: techFilter })
+            : t('qoe.noQoEData')}
         </p>
       </div>
     );
@@ -508,7 +508,7 @@ export default function QoEView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t('title.qoe')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Real-time subscriber quality tracking across all technologies
+          {t('qoe.subtitle')}
         </p>
       </div>
 
@@ -519,7 +519,7 @@ export default function QoEView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-emerald-500" />
-              Avg MOS Score
+              {t('qoe.avgMos')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -528,7 +528,7 @@ export default function QoEView() {
                 <span className={`text-3xl font-bold ${mosColor(overallMos)}`}>
                   {formatNumber(overallMos)}
                 </span>
-                <p className="text-xs text-muted-foreground mt-1">Scale: 1 – 5</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('qoe.mosScale')}</p>
               </div>
               <MosGauge value={overallMos} />
             </div>
@@ -540,7 +540,7 @@ export default function QoEView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Frown className="h-4 w-4 text-amber-500" />
-              Avg Satisfaction Index
+              {t('qoe.avgSatisfaction')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -553,7 +553,7 @@ export default function QoEView() {
                 style={{ width: `${Math.min(overallSatisfaction, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Scale: 0 – 100</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('qoe.satisfactionScale')}</p>
           </CardContent>
         </Card>
 
@@ -562,14 +562,14 @@ export default function QoEView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MessageSquareWarning className="h-4 w-4 text-red-500" />
-              Total Complaints
+              {t('qoe.totalComplaints')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {summary?.totalComplaints ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all tracked sites</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('qoe.acrossAllSites')}</p>
           </CardContent>
         </Card>
 
@@ -578,7 +578,7 @@ export default function QoEView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Radio className="h-4 w-4 text-cyan-500" />
-              Sites Tracked
+              {t('qoe.sitesTracked')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -586,7 +586,7 @@ export default function QoEView() {
               {summary?.totalSites ?? 0}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              {techFilter === 'all' ? 'All technologies' : techFilter + ' technology'}
+              {techFilter === 'all' ? t('qoe.allTechnologies') : t('qoe.techSuffix', { tech: techFilter })}
             </p>
           </CardContent>
         </Card>
@@ -631,7 +631,7 @@ export default function QoEView() {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Frown className="h-4 w-4 text-red-500" />
-              Worst Performing Sites
+              {t('qoe.worstSites')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -648,7 +648,7 @@ export default function QoEView() {
                       <TableHead>{t('th.tech')}</TableHead>
                       <TableHead className="text-right">{t('svc.mos')}</TableHead>
                       <TableHead className="text-right">{t('svc.satisfaction')}</TableHead>
-                      <TableHead className="text-right">Complaints</TableHead>
+                      <TableHead className="text-right">{t('th.complaints')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -759,20 +759,20 @@ export default function QoEView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Site</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
                     <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
-                    <TableHead>Tech</TableHead>
+                    <TableHead>{t('th.tech')}</TableHead>
                     <TableHead>{t('th.region')}</TableHead>
-                    <TableHead className="text-right">MOS</TableHead>
+                    <TableHead className="text-right">{t('svc.mos')}</TableHead>
                     <TableHead className="text-right">{t('th.dataRate')}</TableHead>
                     <TableHead className="text-right">{t('th.callSetup')}</TableHead>
                     <TableHead className="text-right">{t('th.pageLoad')}</TableHead>
                     <TableHead className="text-right">{t('th.videoStart')}</TableHead>
                     <TableHead className="text-right">{t('th.latency')}</TableHead>
                     <TableHead className="text-right">{t('svc.jitter')}</TableHead>
-                    <TableHead className="text-right">Satisfaction</TableHead>
+                    <TableHead className="text-right">{t('svc.satisfaction')}</TableHead>
                     <TableHead className="text-right">{t('th.users')}</TableHead>
-                    <TableHead className="text-right">Complaints</TableHead>
+                    <TableHead className="text-right">{t('th.complaints')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

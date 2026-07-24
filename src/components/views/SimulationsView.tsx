@@ -278,7 +278,7 @@ export default function SimulationsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'simulation' })}</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: t('sim.entity') })}</p>
         <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
@@ -528,7 +528,7 @@ export default function SimulationsView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={simulations as unknown as Record<string, any>[]} filenamePrefix="simulations" columns={[{ key: 'name', header: 'Name' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'confidence', header: 'Confidence (%)' }, { key: 'impactScore', header: 'Impact Score' }, { key: 'estimatedSaving', header: 'Est. Saving' }, { key: 'createdAt', header: 'Created At' }]} />
+            <ExportButton data={simulations as unknown as Record<string, any>[]} filenamePrefix="simulations" columns={[{ key: 'name', header: t('th.name') }, { key: 'technology', header: t('th.technology') }, { key: 'category', header: t('th.category') }, { key: 'status', header: t('th.status') }, { key: 'confidence', header: t('th.confidence') }, { key: 'impactScore', header: t('th.impactScore') }, { key: 'estimatedSaving', header: t('th.estimatedSaving') }, { key: 'createdAt', header: t('th.createdAt') }]} />
           </div>
         </CardHeader>
         <CardContent>
@@ -550,7 +550,7 @@ export default function SimulationsView() {
                     <TableHead className="text-right">{t('sim.avgConfidence')}</TableHead>
                     <TableHead>{t('filter.status')}</TableHead>
                     <TableHead>{t('sim.kpiChange')}</TableHead>
-                    <TableHead>Recommendation</TableHead>
+                    <TableHead>{t('sim.recommendation')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

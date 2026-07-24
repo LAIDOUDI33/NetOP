@@ -280,7 +280,7 @@ export default function PlaybooksView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Frown className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">{t('view.failedLoad', { entity: 'playbooks' })}</p>
+        <p className="text-lg font-medium">{t('view.failedLoad', { entity: t('pb.playbooks') })}</p>
         <p className="text-sm mt-1">{t('view.tryAgain')}</p>
       </div>
     );
@@ -435,7 +435,7 @@ export default function PlaybooksView() {
                 <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
                 {CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
+                    {t('pb.' + c)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -452,7 +452,7 @@ export default function PlaybooksView() {
                 <SelectItem value="5G">5G</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={playbooks as unknown as Record<string, any>[]} filenamePrefix="playbooks" columns={[{ key: 'name', header: 'Name' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'estimatedTime', header: 'Est. Time' }, { key: 'steps', header: 'Steps' }, { key: 'successRate', header: 'Success Rate (%)' }, { key: 'usageCount', header: 'Usage' }, { key: 'enabled', header: 'Enabled' }]} />
+            <ExportButton data={playbooks as unknown as Record<string, any>[]} filenamePrefix="playbooks" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'severity', header: t('th.severity') }, { key: 'estimatedTime', header: t('th.estimatedTime') }, { key: 'steps', header: t('pb.steps') }, { key: 'successRate', header: t('th.successRate') }, { key: 'usageCount', header: t('th.usage') }, { key: 'enabled', header: t('th.enabled') }]} />
           </div>
         </CardHeader>
         <CardContent>

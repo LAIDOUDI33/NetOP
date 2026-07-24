@@ -175,7 +175,7 @@ function truncate(str: string, maxLen = 24): string {
 function formatTimestamp(ts: string): string {
   try {
     const d = new Date(ts);
-    return d.toLocaleString('en-US', {
+    return d.toLocaleString('fr-DZ', {
       month: 'short', day: 'numeric',
       hour: '2-digit', minute: '2-digit',
     });
@@ -251,7 +251,7 @@ export default function AuditView() {
             {t('aud.subtitle')}
           </p>
         </div>
-        <ExportButton data={trails as unknown as Record<string, any>[]} filenamePrefix="audit" columns={[{ key: 'entityType', header: 'Entity Type' }, { key: 'entityName', header: 'Entity' }, { key: 'action', header: 'Action' }, { key: 'user', header: 'User' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'details', header: 'Details' }, { key: 'createdAt', header: 'Timestamp' }]} />
+        <ExportButton data={trails as unknown as Record<string, any>[]} filenamePrefix="audit" columns={[{ key: 'entityType', header: t('th.entityType') }, { key: 'entityName', header: t('aud.entityName') }, { key: 'action', header: t('aud.actionCol') }, { key: 'user', header: t('aud.user') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'details', header: t('aud.details') }, { key: 'createdAt', header: t('th.time') }]} />
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────── */}

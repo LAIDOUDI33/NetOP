@@ -89,7 +89,7 @@ export default function DashboardView() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <ExportButton data={healthData} filenamePrefix="dashboard" columns={[{ key: 'technology', header: 'Technology' }, { key: 'availability', header: 'Availability (%)' }, { key: 'throughput', header: 'Throughput (÷10)' }, { key: 'latency', header: 'Latency (÷5)' }]} />
+        <ExportButton data={healthData} filenamePrefix="dashboard" columns={[{ key: 'technology', header: t('th.technology') }, { key: 'availability', header: t('rpt.availability') }, { key: 'throughput', header: t('th.throughput') }, { key: 'latency', header: t('rpt.latency') }]} />
       </div>
 
       {/* KPI Summary Cards */}

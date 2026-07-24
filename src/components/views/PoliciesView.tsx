@@ -292,7 +292,7 @@ function PolicyCard({
                 </Badge>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Cooldown period: {policy.cooldownMins} minutes</p>
+                <p>{t('pol.cooldown', { n: policy.cooldownMins })}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -301,7 +301,7 @@ function PolicyCard({
         {/* Action modules */}
         {policy.actionModules.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground mr-1">Actions:</span>
+            <span className="text-xs font-medium text-muted-foreground mr-1">{t('pol.actionsLabel')}</span>
             {policy.actionModules.map((mod) => (
               <Badge key={mod} variant="secondary" className="text-[11px] px-1.5 py-0 font-normal">
                 {mod}
@@ -316,19 +316,19 @@ function PolicyCard({
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
             <p className="text-lg font-bold">{policy.executionStats.totalRuns}</p>
-            <p className="text-[11px] text-muted-foreground">Total Runs</p>
+            <p className="text-[11px] text-muted-foreground">{t('pol.totalRuns')}</p>
           </div>
           <div>
             <p className={`text-lg font-bold ${policy.executionStats.successRate >= 80 ? 'text-emerald-600 dark:text-emerald-400' : policy.executionStats.successRate >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
               {policy.executionStats.successRate}%
             </p>
-            <p className="text-[11px] text-muted-foreground">Success Rate</p>
+            <p className="text-[11px] text-muted-foreground">{t('pol.successRate')}</p>
           </div>
           <div>
             <p className="text-sm font-semibold leading-tight mt-0.5">
               {formatTime(policy.executionStats.lastRun)}
             </p>
-            <p className="text-[11px] text-muted-foreground">Last Run</p>
+            <p className="text-[11px] text-muted-foreground">{t('pol.lastRun')}</p>
           </div>
         </div>
 
@@ -337,7 +337,7 @@ function PolicyCard({
           <>
             <Separator />
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Trigger Configuration</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('pol.triggerConfig')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(policy.triggerConfig).map(([key, val]) => (
                   <Badge key={key} variant="outline" className="text-[11px] px-1.5 py-0 font-normal">
@@ -354,7 +354,7 @@ function PolicyCard({
           <>
             <Separator />
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Recent Executions</p>
+              <p className="text-xs font-medium text-muted-foreground">{t('pol.recentExec')}</p>
               <div className="space-y-1.5">
                 {policy.recentExecutions.slice(0, 3).map((exec) => {
                   const cfg = STATUS_CONFIG[exec.status];
@@ -782,7 +782,7 @@ export default function PoliciesView() {
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
               <Shield className="h-6 w-6" />
-              Automation Policies
+              {t('pol.title')}
             </h1>
             <p className="text-sm text-muted-foreground">
               {t('pol.subtitle')}
@@ -791,10 +791,10 @@ export default function PoliciesView() {
           <div className="flex items-center gap-3">
             <Select value={techFilter} onValueChange={setTechFilter}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Filter by tech" />
+                <SelectValue placeholder={t('pol.filterByTech')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Technologies</SelectItem>
+                <SelectItem value="all">{t('filter.allTech')}</SelectItem>
                 <SelectItem value="2G">2G</SelectItem>
                 <SelectItem value="3G">3G</SelectItem>
                 <SelectItem value="4G">4G</SelectItem>
@@ -807,12 +807,12 @@ export default function PoliciesView() {
               onClick={() => {
                 queryClient.invalidateQueries({ queryKey: ['policies'] });
                 queryClient.invalidateQueries({ queryKey: ['policy-executions'] });
-                toast.success('Data refreshed');
+                toast.success(t('pol.dataRefreshed'));
               }}
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <ExportButton data={filteredPolicies as unknown as Record<string, any>[]} filenamePrefix="policies" columns={[{ key: 'name', header: 'Name' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'enabled', header: 'Enabled' }, { key: 'executionStats.totalRuns', header: 'Total Runs' }, { key: 'executionStats.successRate', header: 'Success Rate (%)' }, { key: 'lastExecution.status', header: 'Last Status' }]} />
+            <ExportButton data={filteredPolicies as unknown as Record<string, any>[]} filenamePrefix="policies" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'enabled', header: t('th.enabled') }, { key: 'executionStats.totalRuns', header: t('pol.totalRuns') }, { key: 'executionStats.successRate', header: t('pol.successRatePct') }, { key: 'lastExecution.status', header: t('pol.lastStatus') }]} />
           </div>
         </div>
 

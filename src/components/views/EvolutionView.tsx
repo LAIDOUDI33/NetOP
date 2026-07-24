@@ -324,7 +324,7 @@ export default function EvolutionView() {
             <span className="text-3xl font-bold text-slate-700 dark:text-slate-200">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Active migration plans</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('evo.activePlans')}</p>
           </CardContent>
         </Card>
 
@@ -333,7 +333,7 @@ export default function EvolutionView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-cyan-500" />
-              Total Sites
+              {t('evo.totalSites')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -349,7 +349,7 @@ export default function EvolutionView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-emerald-500" />
-              Overall Progress
+              {t('evo.overallProgress')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -373,14 +373,14 @@ export default function EvolutionView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-amber-500" />
-              Total Budget
+              {t('evo.totalBudget')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {formatCurrency(summary?.totalBudget ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Estimated total cost</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('evo.estimatedCost')}</p>
           </CardContent>
         </Card>
 
@@ -389,7 +389,7 @@ export default function EvolutionView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-rose-500" />
-              Total Spent
+              {t('evo.totalSpent')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -523,11 +523,11 @@ export default function EvolutionView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
-                <SelectItem value="planned">Planned</SelectItem>
+                <SelectItem value="planned">{t('status.planned')}</SelectItem>
                 <SelectItem value="in_progress">{t('status.inProgress')}</SelectItem>
                 <SelectItem value="completed">{t('status.completed')}</SelectItem>
-                <SelectItem value="delayed">Delayed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="delayed">{t('status.delayed')}</SelectItem>
+                <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
             <ExportButton data={plans as unknown as Record<string, any>[]} filenamePrefix="evolution" columns={[{ key: 'name', header: 'Name' }, { key: 'sourceTech', header: 'Source Tech' }, { key: 'targetTech', header: 'Target Tech' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'sitesAffected', header: 'Sites' }, { key: 'budget', header: 'Budget ($)' }, { key: 'progress', header: 'Progress (%)' }]} />
@@ -544,16 +544,16 @@ export default function EvolutionView() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 bg-background z-10">{t('th.name')}</TableHead>
-                    <TableHead>Migration</TableHead>
+                    <TableHead>{t('th.migration')}</TableHead>
                     <TableHead>{t('th.region')}</TableHead>
-                    <TableHead className="text-right">Progress</TableHead>
-                    <TableHead className="text-right">Budget</TableHead>
-                    <TableHead className="text-right">Cost %</TableHead>
-                    <TableHead>Risk</TableHead>
+                    <TableHead className="text-right">{t('th.progress')}</TableHead>
+                    <TableHead className="text-right">{t('th.budget')}</TableHead>
+                    <TableHead className="text-right">{t('th.costPct')}</TableHead>
+                    <TableHead>{t('th.risk')}</TableHead>
                     <TableHead>{t('th.startTime')}</TableHead>
                     <TableHead>{t('th.target')}</TableHead>
                     <TableHead>{t('th.status')}</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>{t('th.notes')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

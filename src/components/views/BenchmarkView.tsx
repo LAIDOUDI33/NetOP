@@ -188,7 +188,7 @@ export default function BenchmarkView() {
 
   // Status label mapping
   const statusLabels: Record<string, string> = {
-    exceeding: 'Exceeding',
+    exceeding: t('status.exceeding'),
     on_track: t('status.onTrack'),
     below_target: t('status.belowTarget'),
     critical: t('status.critical'),
@@ -307,14 +307,14 @@ export default function BenchmarkView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-emerald-500" />
-              Above Target
+              {t('bmk.aboveTarget')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {aboveTarget}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Meeting or exceeding targets</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('bmk.meetingExceeding')}</p>
           </CardContent>
         </Card>
 
@@ -323,7 +323,7 @@ export default function BenchmarkView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-amber-500" />
-              Avg Gap
+              {t('bmk.avgGapCard')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -341,7 +341,7 @@ export default function BenchmarkView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Target className="h-4 w-4 text-emerald-500" />
-              Above Target %
+              {t('bmk.aboveTargetPct')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -354,7 +354,7 @@ export default function BenchmarkView() {
                 style={{ width: `${Math.min(Number(aboveTargetPct), 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Compliance rate</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('bmk.complianceRate')}</p>
           </CardContent>
         </Card>
       </div>
@@ -462,7 +462,7 @@ export default function BenchmarkView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filter.allStatus')}</SelectItem>
-                <SelectItem value="exceeding">Exceeding</SelectItem>
+                <SelectItem value="exceeding">{t('status.exceeding')}</SelectItem>
                 <SelectItem value="on_track">{t('status.onTrack')}</SelectItem>
                 <SelectItem value="below_target">{t('status.belowTarget')}</SelectItem>
                 <SelectItem value="critical">{t('status.critical')}</SelectItem>
@@ -496,10 +496,10 @@ export default function BenchmarkView() {
                     <TableHead>{t('th.tech')}</TableHead>
                     <TableHead>{t('th.metric')}</TableHead>
                     <TableHead className="text-right">{t('th.actual')}</TableHead>
-                    <TableHead className="text-right">Benchmark</TableHead>
+                    <TableHead className="text-right">{t('th.benchmark')}</TableHead>
                     <TableHead className="text-right">{t('th.target')}</TableHead>
-                    <TableHead className="text-right">Percentile</TableHead>
-                    <TableHead className="text-right">Gap</TableHead>
+                    <TableHead className="text-right">{t('th.percentile')}</TableHead>
+                    <TableHead className="text-right">{t('th.gap')}</TableHead>
                     <TableHead>{t('th.status')}</TableHead>
                     <TableHead>{t('th.region')}</TableHead>
                   </TableRow>
