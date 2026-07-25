@@ -33,6 +33,40 @@ model User {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
+  // LDAP/Active Directory Integration
+  ldapDN            String?          @map("ldap_dn")           // Full Distinguished Name
+  ldapGUID          String?          @map("ldap_guid")         // Globally Unique Identifier (objectGuid)
+  ldapSID           String?          @map("ldap_sid")          // Security Identifier
+  employeeId        String?          @map("employee_id")       // Corporate employee ID
+  department        String?                              // Department from LDAP/AD
+  title             String?                               // Job title
+  managerDN         String?          @map("manager_dn")       // Manager's DN
+  lastLDAPSyncAt    DateTime?        @map("last_ldap_sync_at")// Last sync timestamp
+
+  // SAML SSO Integration
+  samlNameID        String?          @map("saml_name_id")     // Persistent NameID from IdP
+  samlSessionIndex  String?          @map("saml_session_index")// Session index for SLO
+  lastSAMLLoginAt   DateTime?        @map("last_saml_login_at")// Last SSO login time
+  preferredIdP      String?          @map("preferred_idp")    // Preferred Identity Provider
+  
+  // Authentication Method Tracking
+  authMethod        String           @default("local")        // local | ldap | saml
+  lastAuthMethod    String?          @map("last_auth_method") // Last used auth method
+  loginCount        Int              @default(0)              // Total successful logins
+  failedLoginCount  Int              @default(0) @map("failed_login_count")
+  lastFailedLoginAt DateTime?       @map("last_failed_login_at")
+
+  // Security Flags
+  isPasswordExpired Boolean          @default(false) @map("is_password_expired")
+  isAccountLocked  Boolean          @default(false) @map("is_account_locked")
+  mustChangePassword Boolean        @default(false) @map("must_change_password")
+  
+  // Djezzy-Specific Fields
+  djezzyCostCenter  String?          @map("djezzy_cost_center")
+  djezzyLocation    String?          @map("djezzy_location")
+  djezzyBadgeNumber String?          @map("djezzy_badge_number")
+  djezzyClearanceLevel String?       @map("djezzy_clearance_level")
+
   // Relations
   role              Role             @relation(fields: [roleId], references: [id])
   sessions          Session[]
@@ -43,6 +77,9 @@ model User {
   @@index([email])
   @@index([username])
   @@index([roleId])
+  @@index([authMethod])
+  @@index([samlNameID])
+  @@index([ldapGUID])
 }
 
 model Role {
@@ -1175,8 +1212,8 @@ model FraudCase {
   subscriberId      String?
   
   // Evidence & Impact
-  evidence          String?          @db.Text // JSON array of evidence items
-  estimatedLossDZD  Decimal?         @db.Decimal(12,2) // Estimated financial loss in Dinar
+  evidence          String?                              // JSON array of evidence items
+  estimatedLossDZD  Float?                                 // Estimated financial loss in Dinar
   
   // ARTP Compliance
   artpReportable    Boolean          @default(false)
@@ -1186,7 +1223,7 @@ model FraudCase {
   assignedTo        String?
   resolvedAt        DateTime?
   resolutionNotes   String?
-  metadata          String?          @db.Text // Additional metadata as JSON
+  metadata          String?                               // Additional metadata as JSON
   
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -1206,8 +1243,8 @@ model FraudRule {
   fraudType         String           // Maps to FraudCase.type
   enabled           Boolean          @default(true)
   severity          String           // LOW, MEDIUM, HIGH, CRITICAL
-  conditions        String?          @db.Text // JSON array of rule conditions
-  actions           String?          @db.Text // JSON array of actions to take
+  conditions        String?                               // JSON array of rule conditions
+  actions           String?                                // JSON array of actions to take
   artpReportable    Boolean          @default(false)
   cooldownMinutes   Int              @default(60)
   hitCount          Int              @default(0)
