@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      items: mapped,
+      simulations: mapped,
       summary: {
         total,
         byCategory,

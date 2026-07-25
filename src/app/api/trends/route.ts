@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      items: mapped,
+      trends: mapped,
       summary: {
         total,
         byMetric,

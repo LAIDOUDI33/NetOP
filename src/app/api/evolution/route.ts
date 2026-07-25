@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      items: mapped,
+      plans: mapped,
       summary: {
         total,
         totalSites,

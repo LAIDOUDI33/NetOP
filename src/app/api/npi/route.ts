@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      items: mapped,
+      npis: mapped,
       summary: {
         total,
         avgOverallNpi: total > 0 ? Number((sumOverall / total).toFixed(1)) : 0,
