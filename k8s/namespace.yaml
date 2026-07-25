@@ -1,0 +1,18 @@
+# ============================================================
+# National SOC Platform - Kubernetes Namespace
+# Djezzy Production Environment
+# ============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/part-of: national-soc
+    environment: production
+    managed-by: djezzy-ops
+    security.djezzy.dz/classification: confidential
+  annotations:
+    description: "National SOC Platform - Security Operations Center for Djezzy"
+    contact: "soc-ops@djezzy.dz"

@@ -1,0 +1,63 @@
+{{/*
+============================================================
+National SOC Platform - Persistent Volume Claims
+============================================================*/}}
+
+{{- if .Values.persistence.logs.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "soc-platform.fullname" . }}-logs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    purpose: logs
+spec:
+  accessModes:
+    - {{ .Values.persistence.logs.accessMode | quote }}
+  storageClassName: {{ .Values.persistence.logs.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.logs.size }}
+{{- end }}
+
+---
+{{- if .Values.persistence.database.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "soc-platform.fullname" . }}-database
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    purpose: database
+spec:
+  accessModes:
+    - {{ .Values.persistence.database.accessMode | quote }}
+  storageClassName: {{ .Values.persistence.database.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.database.size }}
+{{- end }}
+
+---
+{{- if .Values.persistence.backups.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "soc-platform.fullname" . }}-backups
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storage
+    purpose: backups
+spec:
+  accessModes:
+    - {{ .Values.persistence.backups.accessMode | quote }}
+  storageClassName: {{ .Values.persistence.backups.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.backups.size }}
+{{- end }}

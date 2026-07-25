@@ -1,0 +1,83 @@
+# ============================================================
+# National SOC Platform - ConfigMap
+# Non-sensitive configuration for Djezzy Production
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: soc-platform-config
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: config
+data:
+  # Node.js Configuration
+  NODE_ENV: "production"
+  PORT: "3000"
+  HOSTNAME: "0.0.0.0"
+  TZ: "Africa/Algiers"
+  
+  # Application Configuration
+  DJEZZY_ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  
+  # Database (PostgreSQL connection details - password in Secret)
+  POSTGRES_HOST: "postgres-service.soc-platform.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "soc_admin"
+  POSTGRES_DB: "soc_platform"
+  
+  # Redis Configuration
+  REDIS_HOST: "redis-master.soc-platform.svc.cluster.local"
+  REDIS_PORT: "6379"
+  
+  # JWT Settings
+  JWT_EXPIRES_IN: "15m"
+  JWT_REFRESH_EXPIRES_IN: "7d"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"  # 15 minutes
+  RATE_LIMIT_MAX_ATTEMPTS: "5"
+  RATE_LIMIT_LOCKOUT_DURATION: "900000"  # 15 minutes
+  
+  # SSE Configuration
+  SSE_HEARTBEAT_INTERVAL: "30000"  # 30 seconds
+  SSE_ALERTS_POLL_INTERVAL: "2000"  # 2 seconds
+  SSE_INCIDENTS_POLL_INTERVAL: "5000"  # 5 seconds
+  
+  # External Service URLs (configure for Djezzy infrastructure)
+  LDAP_URL: "ldap://ad.djezzy.dz:389"
+  ELASTICSEARCH_URL: "http://elasticsearch.logging.svc.cluster.local:9200"
+  
+  # NextAuth / Application URLs
+  NEXTAUTH_URL: "https://soc.djezzy.dz"
+---
+# ============================================================
+# Additional ConfigMap for Nginx/Ingress Configuration
+# ============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: ingress
+data:
+  # Rate limiting definitions
+  rate-limit-general: "10r/s"
+  rate-limit-api: "30r/s"
+  rate-limit-auth: "5r/s"
+  rate-limit-sse-connections: "5"
+  
+  # Security headers
+  hsts-max-age: "63072000"
+  x-frame-options: "SAMEORIGIN"
+  content-security-policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+  
+  # Timeouts
+  proxy-connect-timeout: "60"
+  proxy-send-timeout: "300"
+  proxy-read-timeout: "86400"  # For SSE

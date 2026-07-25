@@ -1,0 +1,82 @@
+{{/*
+============================================================
+National SOC Platform - Ingress Template
+============================================================*/}}
+{{- if .Values.app.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "soc-platform.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingress
+  annotations:
+    # NGINX Ingress Controller annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    
+    # Security Headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Strict-Transport-Security max-age=63072000; includeSubDomains; preload";
+      more_set_headers "X-Frame-Options SAMEORIGIN";
+      more_set_headers "X-Content-Type-Options nosniff";
+      more_set_headers "X-XSS-Protection 1; mode=block";
+      more_set_headers "Referrer-Policy strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy camera=(), microphone=(), geolocation=()";
+    
+    # Rate Limiting
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-connections: "100"
+    
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    
+    # SSE Support
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    
+    # Real IP
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+    
+    # Ingress Class
+    kubernetes.io/ingress.class: "{{ .Values.app.ingress.className }}"
+    
+    # Cert-manager (if enabled)
+    {{- if and .Values.app.ingress.tls.enabled .Values.app.ingress.tls.certManager.enabled }}
+    cert-manager.io/cluster-issuer: "{{ .Values.app.ingress.tls.certManager.issuer }}"
+    {{- end }}
+    
+    # Custom annotations from values
+    {{- with .Values.app.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+
+spec:
+  {{- if .Values.app.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        {{- range .Values.app.ingress.hostnames }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .Values.app.ingress.tls.secretName }}
+  {{- end }}
+  
+  rules:
+    {{- range .Values.app.ingress.hostnames }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          {{- range $.Values.app.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "soc-platform.fullname" $ }}
+                port:
+                  number: {{ $.Values.app.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,58 @@
+# ============================================================
+# National SOC Platform - Service
+# Exposes the application within the cluster
+# ============================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: soc-platform-service
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: service
+  annotations:
+    description: "Main service for SOC Platform application"
+spec:
+  type: ClusterIP  # Use LoadBalancer or NodePort for external access
+  
+  # Selector must match Deployment pod labels
+  selector:
+    app.kubernetes.io/name: soc-platform
+  
+  ports:
+    - name: http
+      port: 80          # Service port (internal)
+      targetPort: 3000  # Container port
+      protocol: TCP
+    
+    # Optional: metrics port for Prometheus scraping
+    - name: metrics
+      port: 9090
+      targetPort: 3000
+      protocol: TCP
+
+---
+# ============================================================
+# Headless Service for StatefulSet (if needed)
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: soc-platform-headless
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: headless-service
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  
+  selector:
+    app.kubernetes.io/name: soc-platform
+  
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP

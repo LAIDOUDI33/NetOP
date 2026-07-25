@@ -1,0 +1,234 @@
+# ============================================================
+# National SOC Platform - Kubernetes Deployment
+# Djezzy Production Deployment with Healthchecks
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soc-platform
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: national-soc
+    environment: production
+    version: "1.0.0"
+  annotations:
+    description: "National SOC Platform - Main Application"
+    deployment.kubernetes.io/revision: "1"
+    # Rollback configuration
+    kubernetes.io/change-cause: "Initial production deployment for Djezzy"
+spec:
+  # Number of replicas (adjust based on load)
+  replicas: 3
+  
+  # Strategy for rolling updates
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # Add 1 pod at a time
+      maxUnavailable: 0    # No downtime during updates
+  
+  # Pod selector - must match template labels
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: soc-platform
+  
+  # Pod template specification
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: soc-platform
+        app.kubernetes.io/component: application
+        app.kubernetes.io/version: "1.0.0"
+      annotations:
+        # Prometheus scraping
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/api/metrics"
+    
+    spec:
+      # Security context for the pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001   # nextjs user from Dockerfile
+        runAsGroup: 1001
+        fsGroup: 1001
+      
+      # Service account (if needed)
+      serviceAccountName: default
+      
+      # Graceful termination
+      terminationGracePeriodSeconds: 60
+      
+      # Affinity rules - spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - soc-platform
+                topologyKey: kubernetes.io/hostname
+        
+        # Prefer nodes with specific labels (if available)
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: nodepool.djezzy.dz/type
+                    operator: In
+                    values:
+                      - application
+      
+      # Tolerations for dedicated node pools
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "soc-platform"
+          effect: "NoSchedule"
+      
+      # Container specifications
+      containers:
+        - name: soc-platform
+          image: soc.djezzy.dz/soc-platform:${VERSION:-latest}
+          imagePullPolicy: Always
+          
+          # Ports
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          
+          # Environment variables from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: soc-platform-config
+            
+            # Secrets (sensitive data)
+            - secretRef:
+                name: soc-platform-secrets
+                optional: false
+          
+          # Additional environment variable construction
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: soc-platform-secrets
+                  key: postgres-password
+            - name: REDIS_URL
+              value: "redis://:$(redis-password)@$(REDIS_HOST):$(REDIS_PORT)"
+            
+            # Resource requests and limits (Djezzy production)
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          
+          # Liveness Probe - Is the app running?
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Readiness Probe - Is the app ready to serve traffic?
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+          
+          # Startup Probe - Allow extra time for slow starts
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
+          
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 15"]  # Allow connections to drain
+          
+          # Volume mounts
+          volumeMounts:
+            - name: app-logs
+              mountPath: /app/logs
+            - name: db-data
+              mountPath: /app/db
+            - name: tmp-dir
+              mountPath: /tmp
+          
+          # Security context for container
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+                # Keep only what's needed
+                add:
+                  - NET_BIND_SERVICE
+      
+      # Volumes
+      volumes:
+        - name: app-logs
+          persistentVolumeClaim:
+            claimName: soc-logs-pvc
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: soc-db-pvc
+        - name: tmp-dir
+          emptyDir:
+            sizeLimit: 1Gi
+      
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        searches:
+          - soc-platform.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+
+---
+# ============================================================
+# Sidecar Container Option: Log Forwarder
+# Uncomment to forward logs to ELK stack
+# ============================================================
+# spec.template.spec.containers:
+#   - name: fluent-bit
+#     image: fluent/fluent-bit:latest
+#     volumeMounts:
+#       - name: app-logs
+#         mountPath: /app/logs
+#         readOnly: true
+#       - name: fluent-config
+#         mountPath: /fluent-bit/etc
+#         readOnly: true

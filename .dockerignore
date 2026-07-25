@@ -1,0 +1,101 @@
+# ============================================================
+# National SOC Platform - Docker Ignore Rules
+# Optimizes build context for faster builds
+# ============================================================
+
+# Dependencies (installed in container)
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output (regenerated during build)
+.next
+out
+
+# Development files
+.git
+.gitignore
+.github
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation (not needed in image)
+docs
+*.md
+README.md
+LICENSE
+
+# Test files (not needed in production)
+tests
+__tests__
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage
+jest.config.*
+playwright.config.*
+
+# Environment files (secrets should be injected via secrets)
+.env
+.env.local
+.env.development
+.env.test
+.env.production.local
+.devenv
+
+# Database files (mounted as volume)
+db/*.db
+db/*.db-journal
+db/*.sqlite
+db/*.sqlite-journal
+
+# Logs (mounted as volume)
+logs
+*.log
+
+# Download artifacts (not needed in image)
+download
+upload
+tool-results
+
+# Docker files (recursive protection)
+Dockerfile*
+docker-compose*
+.docker
+
+# CI/CD files
+.github
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
+
+# Scripts (development utilities)
+scripts/migration-*.ts
+scripts/generate_*.py
+
+# Examples (not needed)
+examples
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+.turbo

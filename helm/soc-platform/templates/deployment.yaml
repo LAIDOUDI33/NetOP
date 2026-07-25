@@ -1,0 +1,163 @@
+{{/*
+============================================================
+National SOC Platform - Main Deployment Template
+Djezzy Production Helm Chart
+============================================================*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "soc-platform.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: application
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubernetes.io/change-cause: "Deployed via Helm chart version {{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.app.replicaCount }}
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  
+  selector:
+    matchLabels:
+      {{- include "soc-platform.selectorLabels" . | nindent 6 }}
+  
+  template:
+    metadata:
+      labels:
+        {{- include "soc-platform.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/version: {{ .Values.app.image.tag | default .Chart.AppVersion }}
+      annotations:
+        prometheus.io/scrape: "{{ .Values.monitoring.prometheus.enabled }}"
+        prometheus.io/port: "{{ .Values.app.service.targetPort }}"
+        prometheus.io/path: "{{ .Values.monitoring.prometheus.path }}"
+    
+    spec:
+      {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      serviceAccountName: {{ .Values.serviceAccount.name | default "default" }}
+      
+      terminationGracePeriodSeconds: 60
+      
+      {{- with .Values.app.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      {{- with .Values.app.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      {{- with .Values.app.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.global.imageRegistry | default "" }}/{{ .Values.app.image.repository }}:{{ .Values.app.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+          
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.service.targetPort }}
+              protocol: TCP
+          
+          envFrom:
+            - configMapRef:
+                name: {{ include "soc-platform.fullname" . }}-config
+            {{- if not .Values.secrets.create }}
+            - secretRef:
+                name: {{ .Values.secrets.existingSecret }}
+                optional: false
+            {{- end }}
+          
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.existingSecret }}
+                  key: {{ .Values.secrets.keys.postgresPassword }}
+            - name: REDIS_URL
+              value: "redis://:$(redis-password)@$(REDIS_HOST):$(REDIS_PORT)"
+            
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+            {{- end }}
+          
+          resources:
+            {{- toYaml .Values.app.resources | nindent 12 }}
+          
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
+          
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 15"]
+          
+          volumeMounts:
+            {{- if .Values.persistence.logs.enabled }}
+            - name: logs
+              mountPath: /app/logs
+            {{- end }}
+            {{- if .Values.persistence.database.enabled }}
+            - name: database
+              mountPath: /app/db
+            {{- end }}
+            - name: tmp
+              mountPath: /tmp
+          
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      
+      volumes:
+        {{- if .Values.persistence.logs.enabled }}
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ include "soc-platform.fullname" . }}-logs
+        {{- end }}
+        {{- if .Values.persistence.database.enabled }}
+        - name: database
+          persistentVolumeClaim:
+            claimName: {{ include "soc-platform.fullname" . }}-database
+        {{- end }}
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
