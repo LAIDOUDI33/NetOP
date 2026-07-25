@@ -1,8 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ============================================================
+// National SOC Platform - Enterprise Database Schema
+// Version: 2.0.0
+// Last Updated: 2026-07-26
+// Models: 27 | Domains: Auth, Core SOC, Threat Intel, Telecom, Compliance
+// ============================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +14,1194 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// DOMAIN 1: AUTHENTICATION & AUTHORIZATION
+// ============================================================
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String           @id @default(cuid())
+  email             String           @unique
+  username          String           @unique
+  passwordHash      String
+  name              String
+  avatarUrl         String?
+  isActive          Boolean          @default(true)
+  isMfaEnabled      Boolean          @default(false)
+  mfaSecret         String?
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime         @default(now())
+  roleId            String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  role              Role             @relation(fields: [roleId], references: [id])
+  sessions          Session[]
+  auditLogs         AuditLog[]
+  tasks             Task[]
+  incidentUpdates   IncidentUpdate[]
+
+  @@index([email])
+  @@index([username])
+  @@index([roleId])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Role {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  description   String
+  permissions   Permission[]  // Many-to-Many via relation table
+  users         User[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String    @id @default(cuid())
+  resource    String
+  action      String
+  description String?
+  roles       Role[]    // Many-to-Many via relation table
+
+  @@unique([resource, action])
+  @@map("permissions")
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  token         String    @unique
+  refreshToken  String?    @unique
+  ipAddress     String?
+  userAgent     String?
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ============================================================
+// DOMAIN 2: CORE SOC - ALERTS & INCIDENTS
+// ============================================================
+
+model Alert {
+  id                  String           @id @default(cuid())
+  title               String
+  description         String?
+  severity            AlertSeverity    @default(MEDIUM)
+  status              AlertStatus      @default(NEW)
+  alertType           AlertType        @default(DETECTION)
+  source              String           // SIEM, EDR, NDR, etc.
+  rawEvent            String?          // JSON payload of original event
+  sourceIp            String?
+  destIp              String?
+  sourcePort          Int?
+  destPort            Int?
+  protocol            String?
+  mitreTactics        String?          // JSON array of MITRE ATT&CK tactics
+  mitreTechniques     String?          // JSON array of MITRE ATT&CK techniques
+  iocIds              String?          // JSON array of related IOC IDs
+  incidentId          String?          // Linked incident if escalated
+  assignedToId        String?
+  escalationCount     Int              @default(0)
+  suppressionRuleId   String?
+  isSuppressed        Boolean          @default(false)
+  resolvedAt          DateTime?
+  firstSeen           DateTime         @default(now())
+  lastSeen           DateTime         @default(now())
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  // Relations
+  incident            Incident?        @relation(fields: [incidentId], references: [id])
+  assignedTo          User?            @relation(fields: [assignedToId], references: [id])
+
+  @@index([status])
+  @@index([severity])
+  @@index([alertType])
+  @@index([incidentId])
+  @@index([assignedToId])
+  @@index([firstSeen])
+  @@index([sourceIp])
+  @@index([isSuppressed])
+}
+
+enum AlertSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum AlertStatus {
+  NEW
+  ACKNOWLEDGED
+  IN_PROGRESS
+  ESCALATED
+  RESOLVED
+  FALSE_POSITIVE
+  SUPPRESSED
+}
+
+enum AlertType {
+  DETECTION
+  CORRELATION
+  ANOMALY
+  THREAT_FEED
+  COMPLIANCE
+  MANUAL
+}
+
+model Incident {
+  id                  String           @id @default(cuid())
+  title               String
+  description         String?
+  incidentType        IncidentType     @default(SECURITY)
+  severity            IncidentSeverity @default(HIGH)
+  status              IncidentStatus   @default(OPEN)
+  priority            Int              @default(3) // 1=Critical, 5=Low
+  phase               IncidentPhase    @default(DETECTION)
+  tatcCode            String?          // Telecom Africa Threat Classification
+  impactScore         Float            @default(0.0) // 0-10 business impact
+  confidenceScore     Float            @default(0.0) // 0-100 confidence level
+  assignedToId        String?
+  reportedBy          String?
+  rootCauseAnalysis   String?
+  lessonsLearned      String?
+  communicationLog    String?          // JSON array of communications
+  affectedAssets      String?          // JSON array of affected asset IDs
+  affectedServices    String?          // JSON array of affected services
+  blastRadius         String?          // Description of potential spread
+  containmentStrategy String?
+  eradicationSteps    String?
+  recoverySteps       String?
+  detectedAt          DateTime         @default(now())
+  resolvedAt          DateTime?
+  targetResolution    DateTime?
+  slaBreach           Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  // Relations
+  alerts              Alert[]
+  updates             IncidentUpdate[]
+  evidence            Evidence[]
+  tasks               Task[]
+  assignedTo          User?            @relation(fields: [assignedToId], references: [id])
+
+  @@index([status])
+  @@index([severity])
+  @@index([incidentType])
+  @@index([assignedToId])
+  @@index([detectedAt])
+  @@index([slaBreach])
+}
+
+enum IncidentType {
+  SECURITY
+  FRAUD
+  DATA_BREACH
+  DDoS
+  MALWARE
+  PHISHING
+  INSIDER_THREAT
+  THIRD_PARTY
+  TELECOM_FRAUD
+  INTERCEPTION
+  NETWORK_INTRUSION
+  APT
+}
+
+enum IncidentSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  CONTAINED
+  ERADICATED
+  RECOVERING
+  RESOLVED
+  CLOSED
+  POST_MORTEM
+}
+
+enum IncidentPhase {
+  DETECTION
+  ANALYSIS
+  CONTAINMENT
+  ERADICATION
+  RECOVERY
+  LESSONS_LEARNED
+  CLOSED
+}
+
+model IncidentUpdate {
+  id          String    @id @default(cuid())
+  incidentId  String
+  authorId    String
+  message     String
+  status      IncidentStatus?
+  phase       IncidentPhase?
+  isInternal  Boolean   @default(false)
+  attachments String?   // JSON array of attachment URLs
+  createdAt   DateTime  @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  author   User    @relation(fields: [authorId], references: [id])
+
+  @@index([incidentId])
+  @@index([authorId])
+  @@map("incident_updates")
+}
+
+model Evidence {
+  id          String        @id @default(cuid())
+  incidentId  String
+  title       String
+  description String?
+  type        EvidenceType  @default(FILE)
+  filePath    String?
+  fileHash    String?       // SHA256 hash for integrity
+  fileSize    Int?          // in bytes
+  mimeType    String?
+  collectedBy String?
+  collectedAt DateTime     @default(now())
+  metadata    String?       // JSON metadata
+  createdAt   DateTime      @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@index([type])
+  @@map("evidence")
+}
+
+enum EvidenceType {
+  FILE
+  LOG
+  MEMORY_DUMP
+  NETWORK_CAPTURE
+  SCREENSHOT
+  EMAIL
+  MALWARE_SAMPLE
+  CONFIGURATION
+  OTHER
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(PENDING)
+  priority    Int        @default(3) // 1=High, 5=Low
+  assigneeId  String?
+  incidentId  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  assignee  User?     @relation(fields: [assigneeId], references: [id])
+  incident Incident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([assigneeId])
+  @@index([incidentId])
+  @@index([dueDate])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================
+// DOMAIN 3: THREAT INTELLIGENCE
+// ============================================================
+
+model ThreatIndicator {
+  id                String              @id @default(cuid())
+  type              IndicatorType
+  value             String
+  confidence        Float               @default(50.0) // 0-100
+  source            String?             // Source feed name
+  threatActor       String?             // Associated threat actor
+  malwareFamily     String?             // Associated malware family
+  campaignId        String?
+  isFirstSeen      Boolean             @default(true)
+  isActive          Boolean             @default(true)
+  ttl               DateTime?           // Time to live / expiration
+  lastSeen          DateTime            @default(now())
+  firstSeen         DateTime            @default(now())
+  tags              String?             // JSON array of tags
+  context           String?             // Additional context JSON
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@unique([type, value]) // Prevent duplicate indicators
+  @@index([type])
+  @@index([isActive])
+  @@index([threatActor])
+  @@map("threat_indicators")
+}
+
+enum IndicatorType {
+  IPV4
+  IPV6
+  DOMAIN
+  URL
+  EMAIL
+  FILE_HASH_MD5
+  FILE_HASH_SHA1
+  FILE_HASH_SHA256
+  MUTEX
+  REGISTRY_KEY
+  USER_AGENT
+  SS7_GT
+  SS7_IMSI
+  IMSI
+  IMEI
+  MSISDN
+  PHONE_NUMBER
+}
+
+model IOC {
+  id                String           @id @default(cuid())
+  iocId             String           @unique // External IOC identifier
+  type              IndicatorType
+  value             String
+  threatLevel       ThreatLevel      @default(MEDIUM)
+  description       String?
+  source            String?
+  sourceUrl         String?
+  confidence        Int              @default(50) // 0-100
+  createdBy         String?
+  killChainPhases   String?          // JSON array of kill chain phases
+  labels            String?          // JSON array of labels
+  isValidated       Boolean          @default(false)
+  falsePositiveRate Float            @default(0.0) // 0-100 percentage
+  lastObserved      DateTime?
+  expiration        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([type])
+  @@index([threatLevel])
+  @@index([isValidated])
+}
+
+enum ThreatLevel {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  UNKNOWN
+}
+
+model TIPLv2 {
+  // Trusted Intelligence Exchange Platform (TIP) v2 Schema
+  id                  String           @id @default(cuid())
+  tipId               String           @unique
+  title               String
+  type                TIPLv2Type
+  description         String?
+  confidence          Float            @default(50.0)
+  severity            TIPSeverity      @default(MEDIUM)
+  sourceOrg           String?          // Originating organization
+  tlp                 TLPMarking       @default(AMBER) // Traffic Light Protocol
+  iocIds              String?          // JSON array of referenced IOC IDs
+  indicatorIds        String?          // JSON array of indicator IDs
+  productIds          String?          // JSON array of affected products
+  affectedCountries   String?          // JSON array of ISO country codes
+  affectedSectors     String?          // JSON array of critical sectors
+  telecomSpecific     String?          // JSON - telecom-specific data (SS7, Diameter, etc.)
+  isActionable        Boolean          @default(false)
+  actionTaken         String?
+  distributionScope   DistributionScope @default(NATIONAL_SOC)
+  publishedAt         DateTime?
+  validFrom           DateTime         @default(now())
+  validUntil         DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([type])
+  @@index([severity])
+  @@index([tlp])
+  @@index([isActionable])
+  @@map("tipl_v2")
+}
+
+enum TIPLv2Type {
+  INDICATOR
+  OBSERVABLE
+  CAMPAIGN
+  THREAT_ACTOR
+  MALWARE
+  VULNERABILITY
+  ATTACK_PATTERN
+  COURSE_OF_ACTION
+  INFRASTRUCTURE
+  TELECOM_THREAT
+}
+
+enum TIPSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum TLPMarking {
+  RED           // Not for disclosure, restricted to participants only
+  AMBER         // Limited disclosure, restrict to organization
+  GREEN         // Limited disclosure, restrict to community
+  WHITE         // Disclosure is not limited
+  CLEAR         // Legacy alias for WHITE
+}
+
+enum DistributionScope {
+  NATIONAL_SOC
+  SECTOR_CSIRTs
+  CRITICAL_INFRASTRUCTURE
+  ALL_STAKEHOLDERS
+  INTERNATIONAL_PARTNERS
+  PUBLIC
+}
+
+model Campaign {
+  id                String           @id @default(cuid())
+  name              String           @unique
+  alias             String?          // Alternative names
+  description       String?
+  threatActor       String?          // Attribution (confidence-based)
+  attributionConfidence Float        @default(0.0) // 0-100
+  status            CampaignStatus   @ACTIVE
+  startDate         DateTime?
+  endDate           DateTime?
+  targetSector      String?          // Primary target sector
+  targetRegion      String?          // Geographic focus
+  objectives        String?          // JSON array of campaign objectives
+  techniques        String?          // JSON array of MITRE techniques used
+  indicators        ThreatIndicator[]
+  milestones        String?          // JSON timeline of campaign activity
+  financialImpact   Float?           // Estimated financial damage
+  isActive          Boolean          @default(true)
+  firstSeen         DateTime         @default(now())
+  lastSeen         DateTime         @default(now())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([status])
+  @@index([threatActor])
+  @@index([isActive])
+}
+
+enum CampaignStatus {
+  ACTIVE
+  DORMANT
+  CONCLUDED
+  ATTRIBUTED
+  ONGOING
+}
+
+// ============================================================
+// DOMAIN 4: TELECOM-SPECIFIC MODELS
+// ============================================================
+
+model Subscriber {
+  id                String           @id @default(cuid())
+  imsi              String           @unique
+  msisdn            String           @unique
+  imei              String?
+  imsiType          IMSIType         @default(POSTPAID)
+  subscriberStatus  SubscriberStatus @default(ACTIVE)
+  roamingStatus     RoamingStatus    @default(HOME)
+  homeCountry       String?          // ISO 3166-1 alpha-2
+  visitedCountry    String?          // When roaming
+  visitedNetwork    String?          // PLMN when roaming
+  profile           String?          // JSON - subscriber profile data
+  riskScore         Float            @default(0.0) // Fraud/risk score
+  lastLocationUpdate DateTime?
+  lastActivityAt    DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  gtpSessions       GTPSession[]
+  diameterSessions  DiameterSession[]
+  radiusSessions    RadiusSession[]
+  sipSessions       SIPSession[]
+
+  @@index([imsi])
+  @@index([msisdn])
+  @@index([subscriberStatus])
+  @@index([riskScore])
+}
+
+enum IMSIType {
+  PREPAID
+  POSTPAID
+  MVNO
+  ROAMING
+  IoT
+  MACHINE
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+  FRAUD_LOCKED
+  BARRED
+  PENDING_ACTIVATION
+}
+
+enum RoamingStatus {
+  HOME
+  INTERNATIONAL_ROAMING
+  NATIONAL_ROAMING
+  UNKNOWN
+}
+
+model NetworkElement {
+  id                String           @id @default(cuid())
+  elementType       NetworkElementType
+  hostname          String
+  ipAddress         String           @unique
+  vendor            String?
+  softwareVersion   String?
+  status            NEStatus         @default(OPERATIONAL)
+  capacity          Float?           // Percentage utilization
+  location          String?          // Data center/site
+  redundancyGroup   String?          // HA pair/cluster ID
+  protocols         String?          // JSON array of supported protocols
+  securityZone      String?          // DMZ, Internal, etc.
+  lastHeartbeat     DateTime?
+  configHash        String?          // For change detection
+  metadata          String?          // JSON additional attributes
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  ss7Messages       SS7Message[]
+  gtpSessions       GTPSession[]
+  diameterSessions DiameterSession[]
+  sipSessions       SIPSession[]
+
+  @@index([elementType])
+  @@index([status])
+  @@index([ipAddress])
+  @@map("network_elements")
+}
+
+enum NetworkElementType {
+  HLR_HSS
+  MSC
+  SGSN
+  GGSN_PGW
+  MME
+  SMSC
+  STP
+  SIGTRAN_GATEWAY
+  GTP_PROXY
+  DIAMETER_AGENT
+  SIP_PROXY
+  CSCF_P_CSCF
+  CSCF_I_CSCF
+  CSCF_S_CSCF
+  PCRF_OCS
+  CDR_COLLECTOR
+  PROBE_SENSOR
+  FIREWALL
+  IDS_IPS
+  LOAD_BALANCER
+}
+
+enum NEStatus {
+  OPERATIONAL
+  DEGRADED
+  MAINTENANCE
+  FAILED
+  OFFLINE
+  UNKNOWN
+}
+
+model SS7Message {
+  id                String           @id @default(cuid())
+  messageType       SS7MessageType
+  opc               Int              // Originating point code
+  dpc               Int              // Destination point code
+  globalTitle       String?          // Called/calling party GT
+  imsi              String?
+  msisdn            String?
+  sriResult         String?          // SRI result code
+  isRoaming         Boolean          @default(false)
+  isInternational   Boolean          @default(false)
+  anomalyScore      Float            @default(0.0) // 0-100 anomaly score
+  anomalyReason     String?          // Reason for high anomaly score
+  isBlocked         Boolean          @default(false)
+  rawMessage        String?          // Hex-encoded or base64 raw message
+  protocolDetails   String?          // JSON with TCAP/MAP parameters
+  sourceNeId        String?
+  destNeId          String?
+  timestamp         DateTime         @default(now())
+  processedAt       DateTime?
+
+  sourceNe NetworkElement? @relation(fields: [sourceNeId], references: [id])
+  destNe   NetworkElement? @relation(fields: [destNeId], references: [id])
+
+  @@index([messageType])
+  @@index([opc, dpc])
+  @@index([timestamp])
+  @@index([anomalyScore])
+  @@index([isBlocked])
+  @@map("ss7_messages")
+}
+
+enum SS7MessageType {
+  SRI_REQ           // SendRoutingInfo Request
+  SRI_RESP          // SendRoutingInfo Response
+  ISI_REQ           // ProvideSubscriberInfo Request
+  ISI_RESP          // ProvideSubscriberInfo Response
+  MAP_INSERT_SUB_DATA
+  MAP_UPDATE_LOCATION
+  MAP_CANCEL_LOCATION
+  MAP_PURGE_MS
+  MAP_NOTIFY_FWD_SHORT_MSG
+  MAP_FWD_SHORT_MSG
+  MAP_DEL_SM_REQ
+  MAP_DEL_SM_RESP
+  MAP_ALERT_SERVICE
+  MAP_PROCESS_SS_REQ
+  MAP_REGISTER_SS
+  MAP_ERASE_SS
+  USSD_REQUEST
+  OTHER
+}
+
+model GTPSession {
+  id                String           @id @default(cuid())
+  sessionType       GTPSessionType
+  imsi              String?
+  msisdn            String?
+  imei              String?
+  sourceIp          String
+  destIp            String
+  sourceTeid        UInt            // Tunnel endpoint ID
+  destTeid          UInt
+  apn               String?
+  rai               String?          // Routing area identity
+  cellId            String?
+  lac               Int?
+  mcc               String?          // Mobile country code
+  mnc               String?          // Mobile network code
+  qosProfile        String?          // JSON QoS parameters
+  bytesUp           BigInt           @default(0)
+  bytesDown         BigInt           @default(0)
+  durationSeconds   Int              @default(0)
+  chargingId        String?
+  pdnType           PDNType          @default(IPV4)
+  sessionStatus     SessionStatus    @default(ACTIVE)
+  ratType           RATType?         // Radio access technology
+  anomalyScore      Float            @default(0.0)
+  startedAt         DateTime         @default(now())
+  lastActivityAt    DateTime         @default(now())
+  terminatedAt      DateTime?
+
+  subscriber        Subscriber?      @relation(fields: [imsi], references: [imsi], onDelete: SetNull)
+  networkElement    NetworkElement?  @relation(fields: [destIp], references: [ipAddress], onDelete: SetNull)
+
+  @@index([imsi])
+  @@index([sessionType])
+  @@index([sessionStatus])
+  @@index([startedAt])
+  @@map("gtp_sessions")
+}
+
+enum GTPSessionType {
+  DATA
+  CONTROL
+  SIGNALING
+}
+
+enum PDNType {
+  IPV4
+  IPV6
+  IPV4V6
+}
+
+enum SessionStatus {
+  ACTIVE
+  IDLE
+  TERMINATED
+  SUSPENDED
+}
+
+enum RATType {
+  GERAN          // 2G/GSM
+  UTRAN          // 3G/UMTS
+  EUTRAN         // 4G/LTE
+  NR             // 5G
+  WLAN           // WiFi
+  UNKNOWN
+}
+
+model DiameterSession {
+  id                String              @id @default(cuid())
+  sessionId         String              @unique
+  commandCode       DiameterCommand
+  originHost        String
+  originRealm       String
+  destinationHost   String?
+  destinationRealm  String?
+  authApplicationId Int?
+  userName          String?             // Often IMSI or MSISDN
+  imsi              String?
+  resultCode        Int?
+  isError           Boolean             @default(false)
+  errorReason       String?
+  ccRequestType    CCRequestType?
+  ccRequestNumber  Int                 @default(0)
+  serviceInfo       String?             // JSON service-specific info
+  subscriptionId    String?
+  ratedUnits        BigInt              @default(0)
+  currencyCode      String?
+  sessionStatus     SessionStatus       @default(ACTIVE)
+  anomalyScore      Float               @default(0.0)
+  startedAt         DateTime            @default(now())
+  lastActivityAt    DateTime            @default(now())
+  terminatedAt      DateTime?
+
+  subscriber        Subscriber?         @relation(fields: [imsi], references: [imsi], onDelete: SetNull)
+  networkElement    NetworkElement?     @relation(fields: [originHost], references: [hostname], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([commandCode])
+  @@index([userName])
+  @@index([sessionStatus])
+  @@map("diameter_sessions")
+}
+
+enum DiameterCommand {
+  CCR             // Credit-Control-Request
+  CCA             // Credit-Control-Answer
+  AAR             // Auth-Request
+  AAA             // Auth-Answer
+  STR             // Session-Termination-Request
+  STA             // Session-Termination-Answer
+  ASR             // Abort-Session-Request
+  ASA             // Abort-Session-Answer
+  DER             // Disconnect-Event-Request
+  DEA             // Disconnect-Event-Answer
+  UDR             // User-Data-Request
+  UDA             // User-Data-Answer
+  PUR             // Push-Notification-Request
+  PUA             // Push-Notification-Answer
+  RAR             // Re-Auth-Request
+  RAA             // Re-Auth-Answer
+  OTHER
+}
+
+enum CCRequestType {
+  INITIAL_REQUEST
+  UPDATE_REQUEST
+  TERMINATION_REQUEST
+  EVENT_REQUEST
+}
+
+model RadiusSession {
+  id                String           @id @default(cuid())
+  sessionId         String           @unique
+  userName          String?
+  nasIpAddress      String
+  nasPort           Int?
+  nasPortType       NASPortType?
+  framedProtocol    FramedProtocol?
+  serviceName       ServiceName?
+  callingStationId  String?          // Usually MSISDN/IMEI
+  calledStationId   String?
+  authProtocol      AuthProtocol?
+  packetType        RadiusPacketType
+  statusCode        Int?
+  errorMessage      String?
+  sessionTimeout    Int?             // seconds
+  idleTimeout       Int?             // seconds
+  bytesIn           BigInt           @default(0)
+  bytesOut          BigInt           @default(0)
+  packetsIn         BigInt           @default(0)
+  packetsOut        BigInt           @default(0)
+  imsi              String?
+  apn               String?
+  sessionStatus     SessionStatus    @default(ACTIVE)
+  startedAt         DateTime         @default(now())
+  lastActivityAt    DateTime         @default(now())
+  terminatedAt      DateTime?
+
+  subscriber        Subscriber?      @relation(fields: [imsi], references: [imsi], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([userName])
+  @@index([nasIpAddress])
+  @@index([sessionStatus])
+  @@map("radius_sessions")
+}
+
+enum NASPortType {
+  WIRELESS_80211
+  ETHERNET
+  ADSL
+  GPRS_UMTS
+  CDMA2000
+  LTE_EUTRAN
+  NR_5G
+  WIMAX
+  XDSL
+  VPN
+  OTHER
+}
+
+enum FramedProtocol {
+  PPP
+  SLIP
+  ARAP
+  GPRS_PPP
+  OTHER
+}
+
+enum ServiceName {
+  FRAMED_USER
+  LOGIN_USER
+  OUTBOUND_USER
+  ADMINISTRATOR
+  NAS_PROMPT
+  AUTHENTICATE_ONLY
+  CALLBACK_LOGIN
+  CALLBACK_FRAMED
+  OTHER
+}
+
+enum AuthProtocol {
+  PAP
+  CHAP
+  MSCHAP
+  MSCHAPV2
+  EAP
+  OTHER
+}
+
+enum RadiusPacketType {
+  ACCESS_REQUEST
+  ACCESS_ACCEPT
+  ACCESS_REJECT
+  ACCESS_CHALLENGE
+  ACCOUNTING_REQUEST
+  ACCOUNTING_RESPONSE
+  SERVER_COA_REQUEST
+  SERVER_COA_ACK
+  SERVER_COA_NAK
+  DISCONNECT_REQUEST
+  DISCONNECT_ACK
+  DISCONNECT_NAK
+}
+
+model SIPSession {
+  id                String           @id @default(cuid())
+  callId            String           @unique
+  fromUri           String
+  toUri             String
+  fromUser          String?
+  toUser            String?
+  fromDomain        String?
+  toDomain         String?
+  callType          SIPCallType      @default(VOICE)
+  callDirection     CallDirection    @default(INCOMING)
+  inviteTimestamp   DateTime?
+  tryTimestamp      DateTime?
+  ringingTimestamp  DateTime?
+  connectTimestamp  DateTime?
+  disconnectTimestamp DateTime?
+  disconnectReason  String?
+  durationSeconds   Int              @default(0)
+  sourceIp          String
+  destIp            String
+  sourcePort        Int?
+  destPort          Int?
+  sipMethod         SIPMethod?
+  responseCode      Int?
+  userAgent         String?
+  isEncrypted       Boolean          @default(false)
+  srtpEnabled       Boolean          @default(false)
+  isIntercepted     Boolean          @default(false)
+  interceptionType  String?
+  fraudIndicators   String?          // JSON array of fraud indicators
+  anomalyScore      Float            @default(0.0)
+  sourceNeId        String?
+  destNeId          String?
+  createdAt         DateTime         @default(now())
+
+  sourceNe NetworkElement? @relation(fields: [sourceNeId], references: [id])
+  destNe   NetworkElement? @relation(fields: [destNeId], references: [id])
+
+  @@index([callId])
+  @@index([fromUser])
+  @@index([toUser])
+  @@index([callType])
+  @@index([connectTimestamp])
+  @@map("sip_sessions")
+}
+
+enum SIPCallType {
+  VOICE
+  VIDEO
+  SMS_OVER_SIP
+  INSTANT_MESSAGE
+  PRESENCE
+  CONFERENCE
+  OTHER
+}
+
+enum CallDirection {
+  INCOMING
+  OUTGOING
+  INTERNAL
+  TRANSIT
+}
+
+enum SIPMethod {
+  INVITE
+  ACK
+  BYE
+  CANCEL
+  OPTIONS
+  REGISTER
+  PRACK
+  SUBSCRIBE
+  NOTIFY
+  PUBLISH
+  INFO
+  REFER
+  MESSAGE
+  UPDATE
+}
+
+// ============================================================
+// DOMAIN 5: COMPLIANCE & AUDIT
+// ============================================================
+
+model AuditLog {
+  id            String       @id @default(cuid())
+  userId        String?
+  action        String
+  resource      String
+  resourceId    String?
+  oldValue      String?      // JSON snapshot before change
+  newValue      String?      // JSON snapshot after change
+  ipAddress     String?
+  userAgent     String?
+  severity      AuditSeverity @default(INFO)
+  category      AuditCategory @default(GENERAL)
+  outcome       AuditOutcome  @default(SUCCESS)
+  errorMessage  String?
+  metadata      String?      // Additional context JSON
+  createdAt     DateTime     @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@index([category])
+  @@map("audit_logs")
+}
+
+enum AuditSeverity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFO
+}
+
+enum AuditCategory {
+  AUTHENTICATION
+  AUTHORIZATION
+  DATA_ACCESS
+  DATA_MODIFICATION
+  SYSTEM_CONFIG
+  INCIDENT_MANAGEMENT
+  THREAT_INTEL
+  COMPLIANCE
+  SECURITY_EVENT
+  GENERAL
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+  DENIED
+  ERROR
+  PARTIAL
+}
+
+model Report {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  reportType    ReportType   @default(INCIDENT_SUMMARY)
+  format        ReportFormat @default(PDF)
+  status        ReportStatus @default(GENERATING)
+  generatedBy   String?
+  parameters    String?      // JSON report parameters
+  filePath      String?
+  fileSize      Int?        // in bytes
+  schedule      ReportSchedule? // Cron expression for scheduled reports
+  recipients    String?      // JSON array of recipient emails
+  dateRangeStart DateTime?
+  dateRangeEnd   DateTime?
+  createdAt     DateTime     @default(now())
+  completedAt   DateTime?
+
+  @@index([reportType])
+  @@index([status])
+  @@index([generatedBy])
+  @@index([createdAt])
+}
+
+enum ReportType {
+  INCIDENT_SUMMARY
+  ALERT_TRENDS
+  THREAT_LANDSCAPE
+  KPI_DASHBOARD
+  COMPLIANCE_STATUS
+  SLA_REPORT
+  TEAM_PERFORMANCE
+  THREAT_ACTOR_PROFILE
+  TELECOM_FRAUD
+  ROAMING_ANALYSIS
+  EXECUTIVE_SUMMARY
+  CUSTOM
+}
+
+enum ReportFormat {
+  PDF
+  HTML
+  CSV
+  JSON
+  XLSX
+  DOCX
+}
+
+enum ReportStatus {
+  GENERATING
+  COMPLETED
+  FAILED
+  SCHEDULED
+  EXPIRED
+}
+
+enum ReportSchedule {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ON_DEMAND
+}
+
+model SystemConfig {
+  id            String    @id @default(cuid())
+  key           String    @unique
+  value         String    // JSON-encoded value for complex types
+  description   String?
+  category      ConfigCategory @default(GENERAL)
+  isSensitive   Boolean   @default(false) // Encrypted at rest
+  validationRule String?  // JSON Schema for validation
+  lastModifiedBy String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([category])
+  @@map("system_config")
+}
+
+enum ConfigCategory {
+  GENERAL
+  SECURITY
+  INTEGRATION
+  NOTIFICATION
+  COMPLIANCE
+  PERFORMANCE
+  BACKUP
+  TELECOM
+  THREAT_INTEL
+  UI_SETTINGS
+}
+
+model DataRetentionPolicy {
+  id                  String              @id @default(cuid())
+  entityType          RetentionEntityType
+  retentionPeriodDays Int                 @default(365)
+  actionAfterExpiry   RetentionAction     @default(ARCHIVE)
+  storageTier         StorageTier         @default(HOT)
+  legalHold           Boolean             @default(false)
+  complianceRequirements String?          // JSON array of regulatory requirements
+  customRules         String?             // JSON array of special conditions
+  isEnabled           Boolean             @default(true)
+  lastRun             DateTime?
+  nextRun             DateTime?
+  recordsAffected     BigInt              @default(0)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([entityType])
+  @@index([isEnabled])
+  @@map("data_retention_policies")
+}
+
+enum RetentionEntityType {
+  ALERTS
+  INCIDENTS
+  AUDIT_LOGS
+  RAW_LOGS
+  SESSION_DATA
+  PCAP_FILES
+  EVIDENCE
+  THREAT_INTEL
+  METRICS
+  REPORTS
+  TELECOM_SESSIONS
+  SS7_MESSAGES
+  SIP_CDRS
+  ALL
+}
+
+enum RetentionAction {
+  DELETE
+  ARCHIVE
+  ANONYMIZE
+  AGGREGATE
+  MOVE_TO_COLD
+}
+
+enum StorageTier {
+  HOT             // Fast access, expensive
+  WARM            // Moderate access speed
+  COLD            // Archive storage
+  GLACIER         // Long-term archive, retrieval delay
 }

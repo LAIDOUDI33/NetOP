@@ -10,7 +10,18 @@
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:setup": "prisma migrate dev && tsx prisma/seed.ts",
+    "migration:run": "tsx scripts/migration-runner.ts migrate",
+    "migration:rollback": "tsx scripts/migration-runner.ts rollback",
+    "migration:status": "tsx scripts/migration-runner.ts status",
+    "migration:health": "tsx scripts/migration-runner.ts health",
+    "migration:validate": "tsx scripts/migration-validator.ts validate",
+    "migration:report": "tsx scripts/migration-validator.ts report"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
