@@ -392,6 +392,9 @@ const fr: Record<string, string> = {
   'nav.ossIntegration': 'Intégration OSS',
   'nav.crmIntegration': 'Intégration CRM',
   'nav.billingIntegration': 'Intégration Facturation',
+  'nav.multiAgent': 'Système Multi-Agents',
+  'nav.dataPipeline': 'Pipeline de Données',
+  'nav.integrationHub': 'Hub d\'Intégration',
   'nav.services': 'Qualité de Service',
   'nav.slicing': 'Découpage Réseau',
   'nav.energy': 'Gestion Énergétique',
@@ -468,6 +471,9 @@ const fr: Record<string, string> = {
   'title.ossIntegration': 'Intégration OSS',
   'title.crmIntegration': 'Intégration CRM',
   'title.billingIntegration': 'Intégration Facturation',
+  'title.multiAgent': 'Système Multi-Agents',
+  'title.dataPipeline': 'Pipeline de Données',
+  'title.integrationHub': 'Hub d\'Intégration',
 
   // ========== VIEW-SPECIFIC: Dashboard ==========
   'dash.totalSites': 'Total Sites',

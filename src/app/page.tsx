@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCard, Languages,
+  CreditCard, Languages, Bot, FolderTree, GitBranch,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -74,6 +74,9 @@ const VendorCompareView = lazy(() => import('@/components/views/VendorCompareVie
 const OSSIntegrationView = lazy(() => import('@/components/views/OSSIntegrationView'));
 const CRMIntegrationView = lazy(() => import('@/components/views/CRMIntegrationView'));
 const BillingIntegrationView = lazy(() => import('@/components/views/BillingIntegrationView'));
+const MultiAgentView = lazy(() => import('@/components/views/MultiAgentView'));
+const DataPipelineView = lazy(() => import('@/components/views/DataPipelineView'));
+const IntegrationHubView = lazy(() => import('@/components/views/IntegrationHubView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -125,6 +128,9 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'oss-integration', labelKey: 'nav.ossIntegration', icon: Server, group: 'Automation' },
   { view: 'crm-integration', labelKey: 'nav.crmIntegration', icon: Phone, group: 'Automation' },
   { view: 'billing-integration', labelKey: 'nav.billingIntegration', icon: CreditCard, group: 'Automation' },
+  { view: 'multi-agent', labelKey: 'nav.multiAgent', icon: Bot, group: 'AI Engine' },
+  { view: 'data-pipeline', labelKey: 'nav.dataPipeline', icon: FolderTree, group: 'AI Engine' },
+  { view: 'integration-hub', labelKey: 'nav.integrationHub', icon: GitBranch, group: 'AI Engine' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
@@ -181,6 +187,9 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'oss-integration': 'title.ossIntegration',
   'crm-integration': 'title.crmIntegration',
   'billing-integration': 'title.billingIntegration',
+  'multi-agent': 'title.multiAgent',
+  'data-pipeline': 'title.dataPipeline',
+  'integration-hub': 'title.integrationHub',
 };
 
 function ViewFallback() {
@@ -357,6 +366,9 @@ function ViewRenderer() {
           {currentView === 'oss-integration' && <OSSIntegrationView />}
           {currentView === 'crm-integration' && <CRMIntegrationView />}
           {currentView === 'billing-integration' && <BillingIntegrationView />}
+          {currentView === 'multi-agent' && <MultiAgentView />}
+          {currentView === 'data-pipeline' && <DataPipelineView />}
+          {currentView === 'integration-hub' && <IntegrationHubView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

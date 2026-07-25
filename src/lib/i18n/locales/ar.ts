@@ -397,6 +397,9 @@ const ar: Record<string, string> = {
   'nav.ossIntegration': 'تكامل OSS',
   'nav.crmIntegration': 'تكامل CRM',
   'nav.billingIntegration': 'دمج الفوترة',
+  'nav.multiAgent': 'نظام الوكلاء المتعددين',
+  'nav.dataPipeline': 'خط أنابيب البيانات',
+  'nav.integrationHub': 'مركز التكامل',
   'nav.rca': 'تحليل السبب الجذري',
   'nav.group.operations': 'العمليات',
   'nav.group.analytics': 'التحليلات',
@@ -453,6 +456,9 @@ const ar: Record<string, string> = {
   'title.ossIntegration': 'تكامل OSS',
   'title.crmIntegration': 'تكامل CRM',
   'title.billingIntegration': 'دمج الفوترة',
+  'title.multiAgent': 'نظام الوكلاء المتعددين',
+  'title.dataPipeline': 'خط أنابيب البيانات',
+  'title.integrationHub': 'مركز التكامل',
   'title.rca': 'تحليل السبب الجذري',
 
   // ========== METRIC LABELS ==========
