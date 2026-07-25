@@ -1,7 +1,7 @@
 import { db } from '../src/lib/db';
 import { subHours, subMinutes } from 'date-fns';
 
-const regions = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou'];
+const regions = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou', 'Batna', 'Béjaïa', 'Djelfa', 'Skikda', 'Tébessa', 'Ouargla', 'Biskra', 'Ghardaïa', 'Mostaganem', 'M\'sila', 'Médéa', 'Bouira'];
 const vendors = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
 
 function rand(min: number, max: number) { return Math.random() * (max - min) + min; }
@@ -53,6 +53,53 @@ const siteData = [
   { name: 'NR-OR-001', code: 'OR001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 35.6971, lng: -0.6328, alt: 80 },
   { name: 'NR-CN-001', code: 'CN001N', tech: '5G', freq: '3500MHz', bw: 80, cap: 800, lat: 36.3650, lng: 6.6153, alt: 650 },
   { name: 'NR-SF-001', code: 'SF001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.1891, lng: 5.4088, alt: 1081 },
+  // Additional 4G sites (new regions)
+  { name: 'LTE-BT-001', code: 'BT001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 35.5550, lng: 6.1747, alt: 1050 },
+  { name: 'LTE-BT-002', code: 'BT002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 35.5600, lng: 6.1800, alt: 1060 },
+  { name: 'LTE-BJ-001', code: 'BJ001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.7500, lng: 5.0800, alt: 2 },
+  { name: 'LTE-BJ-002', code: 'BJ002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 36.7550, lng: 5.0850, alt: 5 },
+  { name: 'LTE-DJ-001', code: 'DJ001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 36.2625, lng: 2.9100, alt: 680 },
+  { name: 'LTE-SK-001', code: 'SK001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.8800, lng: 6.9100, alt: 5 },
+  { name: 'LTE-SK-002', code: 'SK002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 36.8850, lng: 6.9150, alt: 8 },
+  { name: 'LTE-TB-001', code: 'TB001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 35.4040, lng: 8.1200, alt: 800 },
+  { name: 'LTE-OG-001', code: 'OG001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 31.9500, lng: 5.3300, alt: 140 },
+  { name: 'LTE-OG-002', code: 'OG002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 31.9550, lng: 5.3350, alt: 145 },
+  { name: 'LTE-BK-001', code: 'BK001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 34.8500, lng: 5.7300, alt: 85 },
+  { name: 'LTE-GH-001', code: 'GH001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 32.4900, lng: 3.6700, alt: 470 },
+  { name: 'LTE-MS-001', code: 'MS001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 35.9350, lng: 0.0800, alt: 85 },
+  { name: 'LTE-MS-002', code: 'MS002L', tech: '4G', freq: '2600MHz', bw: 20, cap: 200, lat: 35.9400, lng: 0.0850, alt: 90 },
+  { name: 'LTE-MI-001', code: 'MI001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 35.7000, lng: 3.5400, alt: 440 },
+  { name: 'LTE-MD-001', code: 'MD001L', tech: '4G', freq: '1800MHz', bw: 20, cap: 150, lat: 36.2600, lng: 2.7500, alt: 530 },
+  { name: 'LTE-BR-001', code: 'BR001L', tech: '4G', freq: '1800MHz', bw: 15, cap: 120, lat: 36.3700, lng: 3.9000, alt: 520 },
+  { name: 'LTE-BR-002', code: 'BR002L', tech: '4G', freq: '800MHz', bw: 10, cap: 75, lat: 36.3750, lng: 3.9050, alt: 515 },
+  // Additional 5G sites (new regions)
+  { name: 'NR-OR-002', code: 'OR002N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 35.7000, lng: -0.6252, alt: 82 },
+  { name: 'NR-BT-001', code: 'BT001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 35.5552, lng: 6.1749, alt: 1052 },
+  { name: 'NR-BJ-001', code: 'BJ001N', tech: '5G', freq: '3500MHz', bw: 80, cap: 800, lat: 36.7502, lng: 5.0802, alt: 3 },
+  { name: 'NR-MS-001', code: 'MS001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 35.9352, lng: 0.0802, alt: 87 },
+  { name: 'NR-TL-001', code: 'TL001N', tech: '5G', freq: '3500MHz', bw: 80, cap: 800, lat: 34.8817, lng: -1.3154, alt: 812 },
+  { name: 'NR-BL-001', code: 'BL001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.4702, lng: 2.8306, alt: 232 },
+  { name: 'NR-SF-002', code: 'SF002N', tech: '5G', freq: '2600MHz', bw: 80, cap: 800, lat: 36.1910, lng: 5.4090, alt: 1085 },
+  { name: 'NR-AN-001', code: 'AN001N', tech: '5G', freq: '3500MHz', bw: 100, cap: 1000, lat: 36.9002, lng: 7.7673, alt: 7 },
+  { name: 'NR-CN-002', code: 'CN002N', tech: '5G', freq: '2600MHz', bw: 80, cap: 800, lat: 36.3700, lng: 6.6150, alt: 655 },
+  // Additional 3G sites (new regions)
+  { name: 'UMTS-BT-001', code: 'BT001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 35.5548, lng: 6.1745, alt: 1048 },
+  { name: 'UMTS-BJ-001', code: 'BJ001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.7498, lng: 5.0798, alt: 1 },
+  { name: 'UMTS-DJ-001', code: 'DJ001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 36.2623, lng: 2.9098, alt: 678 },
+  { name: 'UMTS-SK-001', code: 'SK001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.8798, lng: 6.9098, alt: 3 },
+  { name: 'UMTS-TB-001', code: 'TB001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 35.4038, lng: 8.1198, alt: 798 },
+  { name: 'UMTS-OG-001', code: 'OG001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 31.9498, lng: 5.3298, alt: 138 },
+  { name: 'UMTS-BK-001', code: 'BK001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 34.8498, lng: 5.7298, alt: 83 },
+  { name: 'UMTS-MS-001', code: 'MS001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 35.9348, lng: 0.0798, alt: 83 },
+  { name: 'UMTS-MD-001', code: 'MD001U', tech: '3G', freq: '900MHz', bw: 5, cap: 256, lat: 36.2598, lng: 2.7498, alt: 528 },
+  { name: 'UMTS-BR-001', code: 'BR001U', tech: '3G', freq: '2100MHz', bw: 5, cap: 384, lat: 36.3698, lng: 3.8998, alt: 518 },
+  // Additional 2G sites (new regions)
+  { name: 'GSM-BT-001', code: 'BT001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 85, lat: 35.5546, lng: 6.1743, alt: 1045 },
+  { name: 'GSM-BJ-001', code: 'BJ001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 90, lat: 36.7496, lng: 5.0796, alt: -1 },
+  { name: 'GSM-DJ-001', code: 'DJ001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 36.2621, lng: 2.9096, alt: 675 },
+  { name: 'GSM-SK-001', code: 'SK001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 85, lat: 36.8796, lng: 6.9096, alt: 2 },
+  { name: 'GSM-TB-001', code: 'TB001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 80, lat: 35.4036, lng: 8.1196, alt: 796 },
+  { name: 'GSM-OG-001', code: 'OG001G', tech: '2G', freq: '900MHz', bw: 0.2, cap: 75, lat: 31.9496, lng: 5.3296, alt: 136 },
 ];
 
 function genKpi(siteId: string, tech: string, timestamp: Date) {
@@ -136,15 +183,28 @@ async function main() {
   }
   console.log(`  Sites: ${created.length}`);
 
-  // Seed KPI - 6 hours, 30-min intervals = 12 points per site
+  // Seed KPI - 24 hours, 1-hour intervals
   console.log('Seeding KPI metrics...');
   const now = new Date();
   let kpiCount = 0;
-  for (let i = 0; i < 12; i++) {
-    const ts = subMinutes(now, i * 30);
+  for (let h = 0; h < 24; h++) {
+    const ts = subHours(now, 23 - h);
+    // Simulate daily traffic pattern
+    const hourOfDay = ts.getHours();
+    const peakFactor = hourOfDay >= 0 && hourOfDay <= 5 ? 0.4
+      : hourOfDay >= 6 && hourOfDay <= 8 ? 0.7
+      : hourOfDay >= 9 && hourOfDay <= 12 ? 1.0
+      : hourOfDay >= 13 && hourOfDay <= 17 ? 0.85
+      : hourOfDay >= 18 && hourOfDay <= 21 ? 1.0
+      : 0.6;
     const batch: any[] = [];
     for (const site of created) {
-      batch.push(genKpi(site.id, site.technology, ts));
+      const kpi = genKpi(site.id, site.technology, ts);
+      // Scale user counts and throughput by time-of-day
+      if (kpi.activeUsers) kpi.activeUsers = Math.round((kpi.activeUsers as number) * peakFactor);
+      if (kpi.downloadThroughput) kpi.downloadThroughput = Number(((kpi.downloadThroughput as number) * peakFactor).toFixed(2));
+      if (kpi.uploadThroughput) kpi.uploadThroughput = Number(((kpi.uploadThroughput as number) * peakFactor).toFixed(2));
+      batch.push(kpi);
     }
     await db.kpiMetric.createMany({ data: batch });
     kpiCount += batch.length;
@@ -174,13 +234,15 @@ async function main() {
   console.log('Seeding alerts...');
   const msgs = ['RSRP below threshold', 'SINR degradation', 'High latency detected', 'Drop rate exceeds threshold', 'Availability below SLA', 'PRB utilization high', 'Handover failure increased', 'Packet loss above normal', 'Throughput degraded', 'Signal quality deterioration'];
   const alerts: any[] = [];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 60; i++) {
     const site = pick(created);
-    const sev = pick(['critical', 'warning', 'info']);
+    const sev = i < 12 ? 'critical' : i < 35 ? 'warning' : 'info';
+    const corrGroup = i < 20 ? `CORR-${String(Math.floor(i / 3) + 1).padStart(3, '0')}` : null;
     alerts.push({
-      siteId: site.id, technology: site.technology, metric: pick(['rsrp', 'sinr', 'latency', 'dropRate', 'availability', 'prbUtilization']),
+      siteId: site.id, technology: site.technology, metric: pick(['rsrp', 'sinr', 'latency', 'dropRate', 'availability', 'prbUtilization', 'handoverSuccessRate', 'packetLoss', 'throughput']),
       value: rand(-115, 200), threshold: rand(-105, 90), condition: pick(['lt', 'gt']),
       severity: sev, message: pick(msgs), acknowledged: Math.random() > 0.5,
+      correlatedGroupId: corrGroup,
       resolvedAt: Math.random() > 0.4 ? subHours(now, randInt(1, 48)) : null,
       createdAt: subHours(now, randInt(0, 72)),
     });
@@ -271,7 +333,7 @@ async function main() {
   const anomalyStatuses = ['detected', 'investigating', 'resolved', 'false_positive'] as const;
   const anomalyMetrics = ['downloadThroughput', 'latency', 'availability', 'sinr', 'dropRate', 'prbUtilization'];
   const anomalyData: any[] = [];
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 50; i++) {
     const site = pick(created);
     const metric = pick(anomalyMetrics);
     const actual = rand(0, 200);
