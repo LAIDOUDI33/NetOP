@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  Languages,
+  CreditCard, Languages,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -73,6 +73,7 @@ const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
 const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
 const OSSIntegrationView = lazy(() => import('@/components/views/OSSIntegrationView'));
 const CRMIntegrationView = lazy(() => import('@/components/views/CRMIntegrationView'));
+const BillingIntegrationView = lazy(() => import('@/components/views/BillingIntegrationView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -123,6 +124,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
   { view: 'oss-integration', labelKey: 'nav.ossIntegration', icon: Server, group: 'Automation' },
   { view: 'crm-integration', labelKey: 'nav.crmIntegration', icon: Phone, group: 'Automation' },
+  { view: 'billing-integration', labelKey: 'nav.billingIntegration', icon: CreditCard, group: 'Automation' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
@@ -178,6 +180,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'vendor-compare': 'title.vendorCompare',
   'oss-integration': 'title.ossIntegration',
   'crm-integration': 'title.crmIntegration',
+  'billing-integration': 'title.billingIntegration',
 };
 
 function ViewFallback() {
@@ -353,6 +356,7 @@ function ViewRenderer() {
           {currentView === 'vendor-compare' && <VendorCompareView />}
           {currentView === 'oss-integration' && <OSSIntegrationView />}
           {currentView === 'crm-integration' && <CRMIntegrationView />}
+          {currentView === 'billing-integration' && <BillingIntegrationView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>
