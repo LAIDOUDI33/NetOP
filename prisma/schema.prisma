@@ -1159,3 +1159,63 @@ enum StorageTier {
   COLD
   GLACIER
 }
+
+// ============================================================
+// DOMAIN: FRAUD DETECTION (Telecom Security)
+// ============================================================
+
+model FraudCase {
+  id                String           @id @default(cuid())
+  caseNumber        String           @unique
+  type              String           // SIM_SWAP, IRSF, WANGIRI, PBX_HIJACKING, etc.
+  severity          String           // LOW, MEDIUM, HIGH, CRITICAL
+  status            String           @default("OPEN") // OPEN, INVESTIGATING, ESCALATED, RESOLVED, CLOSED
+  confidence        Int              @default(0) // 0-100
+  description       String?
+  subscriberId      String?
+  
+  // Evidence & Impact
+  evidence          String?          @db.Text // JSON array of evidence items
+  estimatedLossDZD  Decimal?         @db.Decimal(12,2) // Estimated financial loss in Dinar
+  
+  // ARTP Compliance
+  artpReportable    Boolean          @default(false)
+  artpDeadline      DateTime?       // Must report within 24h
+  
+  // Assignment & Resolution
+  assignedTo        String?
+  resolvedAt        DateTime?
+  resolutionNotes   String?
+  metadata          String?          @db.Text // Additional metadata as JSON
+  
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([caseNumber])
+  @@index([type])
+  @@index([severity])
+  @@index([status])
+  @@index([subscriberId])
+  @@index([artpReportable])
+  @@index([createdAt])
+}
+
+model FraudRule {
+  id                String           @id @default(cuid())
+  name              String
+  fraudType         String           // Maps to FraudCase.type
+  enabled           Boolean          @default(true)
+  severity          String           // LOW, MEDIUM, HIGH, CRITICAL
+  conditions        String?          @db.Text // JSON array of rule conditions
+  actions           String?          @db.Text // JSON array of actions to take
+  artpReportable    Boolean          @default(false)
+  cooldownMinutes   Int              @default(60)
+  hitCount          Int              @default(0)
+  lastHitAt         DateTime?
+  enabledBy         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([fraudType])
+  @@index([enabled])
+}
