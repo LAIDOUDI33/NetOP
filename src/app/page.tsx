@@ -18,7 +18,7 @@ import {
   Shield, Brain, ArrowLeftRight, Search, Cpu, Server, PlusCircle, Plug, HeartPulse,
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
-  FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare,
+  FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
   Languages,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
@@ -72,6 +72,7 @@ const AuditView = lazy(() => import('@/components/views/AuditView'));
 const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
 const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
 const OSSIntegrationView = lazy(() => import('@/components/views/OSSIntegrationView'));
+const CRMIntegrationView = lazy(() => import('@/components/views/CRMIntegrationView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -121,6 +122,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'changes', labelKey: 'nav.changes', icon: GitBranch, group: 'Automation' },
   { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
   { view: 'oss-integration', labelKey: 'nav.ossIntegration', icon: Server, group: 'Automation' },
+  { view: 'crm-integration', labelKey: 'nav.crmIntegration', icon: Phone, group: 'Automation' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
@@ -175,6 +177,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   executive: 'title.executive',
   'vendor-compare': 'title.vendorCompare',
   'oss-integration': 'title.ossIntegration',
+  'crm-integration': 'title.crmIntegration',
 };
 
 function ViewFallback() {
@@ -349,6 +352,7 @@ function ViewRenderer() {
           {currentView === 'executive' && <ExecutiveView />}
           {currentView === 'vendor-compare' && <VendorCompareView />}
           {currentView === 'oss-integration' && <OSSIntegrationView />}
+          {currentView === 'crm-integration' && <CRMIntegrationView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

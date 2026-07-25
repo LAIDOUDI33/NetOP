@@ -390,6 +390,7 @@ const fr: Record<string, string> = {
   'nav.coverageHoles': 'Zones sans Couverture',
   'nav.vendorCompare': 'Comparaison Fourn.',
   'nav.ossIntegration': 'Intégration OSS',
+  'nav.crmIntegration': 'Intégration CRM',
   'nav.services': 'Qualité de Service',
   'nav.slicing': 'Découpage Réseau',
   'nav.energy': 'Gestion Énergétique',
@@ -464,6 +465,7 @@ const fr: Record<string, string> = {
   'title.executive': 'Résumé Exécutif',
   'title.vendorCompare': 'Comparaison Fournisseurs',
   'title.ossIntegration': 'Intégration OSS',
+  'title.crmIntegration': 'Intégration CRM',
 
   // ========== VIEW-SPECIFIC: Dashboard ==========
   'dash.totalSites': 'Total Sites',
