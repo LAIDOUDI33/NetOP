@@ -389,6 +389,7 @@ const fr: Record<string, string> = {
   'nav.interference': 'Interférences',
   'nav.coverageHoles': 'Zones sans Couverture',
   'nav.vendorCompare': 'Comparaison Fourn.',
+  'nav.ossIntegration': 'Intégration OSS',
   'nav.services': 'Qualité de Service',
   'nav.slicing': 'Découpage Réseau',
   'nav.energy': 'Gestion Énergétique',
@@ -462,6 +463,7 @@ const fr: Record<string, string> = {
   'title.audit': 'Journal d\'Audit',
   'title.executive': 'Résumé Exécutif',
   'title.vendorCompare': 'Comparaison Fournisseurs',
+  'title.ossIntegration': 'Intégration OSS',
 
   // ========== VIEW-SPECIFIC: Dashboard ==========
   'dash.totalSites': 'Total Sites',

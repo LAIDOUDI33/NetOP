@@ -71,6 +71,7 @@ const ServicesView = lazy(() => import('@/components/views/ServicesView'));
 const AuditView = lazy(() => import('@/components/views/AuditView'));
 const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
 const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
+const OSSIntegrationView = lazy(() => import('@/components/views/OSSIntegrationView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -119,6 +120,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'policies', labelKey: 'nav.policies', icon: Shield, group: 'Automation' },
   { view: 'changes', labelKey: 'nav.changes', icon: GitBranch, group: 'Automation' },
   { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
+  { view: 'oss-integration', labelKey: 'nav.ossIntegration', icon: Server, group: 'Automation' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
@@ -172,6 +174,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   audit: 'title.audit',
   executive: 'title.executive',
   'vendor-compare': 'title.vendorCompare',
+  'oss-integration': 'title.ossIntegration',
 };
 
 function ViewFallback() {
@@ -345,6 +348,7 @@ function ViewRenderer() {
           {currentView === 'audit' && <AuditView />}
           {currentView === 'executive' && <ExecutiveView />}
           {currentView === 'vendor-compare' && <VendorCompareView />}
+          {currentView === 'oss-integration' && <OSSIntegrationView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

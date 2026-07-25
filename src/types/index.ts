@@ -165,7 +165,7 @@ export interface CoverageData {
   }[];
 }
 
-export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config' | 'health' | 'benchmark' | 'handover' | 'load' | 'interference' | 'coverage-holes' | 'changes' | 'outages' | 'playbooks' | 'assistant' | 'simulations' | 'trends' | 'roi' | 'spectrum' | 'evolution' | 'npi' | 'services' | 'audit' | 'executive' | 'vendor-compare' | 'live' | 'rca';
+export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config' | 'health' | 'benchmark' | 'handover' | 'load' | 'interference' | 'coverage-holes' | 'changes' | 'outages' | 'playbooks' | 'assistant' | 'simulations' | 'trends' | 'roi' | 'spectrum' | 'evolution' | 'npi' | 'services' | 'audit' | 'executive' | 'vendor-compare' | 'live' | 'rca' | 'oss-integration';
 
 // ========== PHASE A: SON & Automation Types ==========
 

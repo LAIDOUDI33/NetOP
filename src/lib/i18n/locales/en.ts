@@ -394,6 +394,7 @@ const en: Record<string, string> = {
   'nav.interference': 'Interference',
   'nav.coverageHoles': 'Coverage Holes',
   'nav.vendorCompare': 'Vendor Compare',
+  'nav.ossIntegration': 'OSS Integration',
   'nav.services': 'Service Quality',
   'nav.slicing': 'Network Slicing',
   'nav.energy': 'Energy Management',
@@ -467,6 +468,7 @@ const en: Record<string, string> = {
   'title.audit': 'Audit Trail',
   'title.executive': 'Executive Summary',
   'title.vendorCompare': 'Vendor Comparison',
+  'title.ossIntegration': 'OSS Integration',
 
   // ========== VIEW-SPECIFIC: Dashboard ==========
   'dash.totalSites': 'Total Sites',
