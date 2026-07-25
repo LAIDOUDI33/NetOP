@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCard, Languages, Bot, FolderTree, GitBranch,
+  CreditCard, Languages, Bot, FolderTree,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
