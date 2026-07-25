@@ -70,3 +70,25 @@ Stage Summary:
 - Dev server running, all 46 views + 55 APIs functional
 - Code is committed and pushed to GitHub
 - Platform Caddy gateway routes traffic to the app
+---
+Task ID: 5
+Agent: Main
+Task: Enhance seed data for full demo coverage
+
+Work Log:
+- Audited all 47 DB tables — all had data but volumes were low
+- Enhanced prisma/seed.ts with 4 targeted edits:
+  1. Added 43 new sites (34→77) across 20 Algerian regions
+  2. KPI data 6h→24h with realistic daily traffic patterns (408→1848 records)
+  3. Alerts 20→60 with correlation groups for correlated alert view
+  4. Anomalies 15→50 for better anomaly detection demo
+- Ran seed successfully, lint clean
+- Committed and pushed as d29adf4
+
+Stage Summary:
+- 77 sites across 20 Algerian wilayas (2G/3G/4G/5G)
+- 1848 KPI records with time-of-day traffic patterns
+- 60 alerts with correlated groups
+- 50 anomaly events
+- All 42 data tables populated with demo-ready data
+- Total: ~3000+ DB records for full platform demo
