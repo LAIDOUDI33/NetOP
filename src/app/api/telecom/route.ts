@@ -4,15 +4,15 @@
  * Provides telecom-specific security data:
  * - SS7 message monitoring and analysis
  * - GTP session tracking
- - Diameter session management
- - SIP call analysis
- - Subscriber risk scoring
- * Network element status
+ * - Diameter session management
+ * - SIP call analysis
+ * - Subscriber risk scoring
+ * - Network element status
  */
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { SessionStatus, NEStatus, SubscriberStatus, RoamingStatus, SIPCallType, CallDirection } from "@prisma/client";
+import { SessionStatus, SubscriberStatus, RoamingStatus, SIPCallType, CallDirection } from "@prisma/client";
 
 // GET /api/telecom - Fetch telecom security data
 export async function GET(request: Request) {
@@ -143,14 +143,11 @@ async function getTelecomOverview() {
       db.networkElement.count()
     ]),
 
-    // Recent anomalies (last 50)
+    // Recent anomalies (last 10)
     db.sS7Message.findMany({
       where: { anomalyScore: { gt: 80 } },
       orderBy: { anomalyScore: 'desc' },
-      take: 10,
-      include: {
-        sourceNe: { select: { hostname: true, elementType: true } }
-      }
+      take: 10
     })
   ]);
 
@@ -197,7 +194,7 @@ async function getTelecomOverview() {
         anomalyScore: msg.anomalyScore,
         isBlocked: msg.isBlocked,
         timestamp: msg.timestamp,
-        sourceNetwork: msg.sourceNe?.hostname
+        sourceNeId: msg.sourceNeId
       }))
     },
     timestamp: new Date().toISOString()
@@ -218,10 +215,6 @@ async function getSS7Data(limit: number, offset: number, highRiskOnly: boolean) 
       orderBy: { timestamp: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        sourceNe: { select: { hostname: true, ipAddress: true } },
-        destNe: { select: { hostname: true, ipAddress: true } }
-      }
     }),
     db.sS7Message.count({ where }),
     db.sS7Message.groupBy({
@@ -253,8 +246,8 @@ async function getSS7Data(limit: number, offset: number, highRiskOnly: boolean) 
         anomalyReason: msg.anomalyReason,
         isBlocked: msg.isBlocked,
         timestamp: msg.timestamp,
-        sourceNetwork: msg.sourceNe?.hostname,
-        destNetwork: msg.destNe?.hostname
+        sourceNeId: msg.sourceNeId,
+        destNeId: msg.destNeId
       })),
       statistics: {
         byMessageType: byMessageType.reduce((acc, m) => ({
@@ -282,14 +275,6 @@ async function getGTPData(limit: number, offset: number, highRiskOnly: boolean) 
       orderBy: { startedAt: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        subscriber: {
-          select: { imsi: true, msisdn: true, riskScore: true, roamingStatus: true }
-        },
-        networkElement: {
-          select: { hostname: true, ipAddress: true }
-        }
-      }
     }),
     db.gTPSession.count({ where })
   ]);
@@ -302,7 +287,7 @@ async function getGTPData(limit: number, offset: number, highRiskOnly: boolean) 
         id: session.id,
         sessionType: session.sessionType.toLowerCase(),
         imsi: session.imsi,
-        msisdn: session.subscriber?.msisdn,
+        msisdn: session.msisdn,
         apn: session.apn,
         sourceIp: session.sourceIp,
         destIp: session.destIp,
@@ -312,9 +297,7 @@ async function getGTPData(limit: number, offset: number, highRiskOnly: boolean) 
         ratType: session.ratType?.toLowerCase(),
         anomalyScore: session.anomalyScore,
         startedAt: session.startedAt,
-        lastActivityAt: session.lastActivityAt,
-        subscriberRisk: session.subscriber?.riskScore,
-        isRoaming: session.subscriber?.roamingStatus !== 'HOME'
+        lastActivityAt: session.lastActivityAt
       })),
       pagination: { total, limit, offset, hasMore: offset + limit < total }
     },
@@ -340,10 +323,6 @@ async function getSIPData(limit: number, offset: number, highRiskOnly: boolean) 
       orderBy: { connectTimestamp: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        sourceNe: { select: { hostname: true } },
-        destNe: { select: { hostname: true } }
-      }
     }),
     db.sIPSession.count({ where }),
     db.sIPSession.groupBy({
@@ -400,10 +379,6 @@ async function getDiameterData(limit: number, offset: number) {
       orderBy: { startedAt: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        subscriber: { select: { imsi: true, msisdn: true } },
-        networkElement: { select: { hostname: true } }
-      }
     }),
     db.diameterSession.count({ where: { sessionStatus: 'ACTIVE' } })
   ]);
@@ -446,14 +421,6 @@ async function getSubscriberData(limit: number, offset: number, highRiskOnly: bo
       orderBy: { riskScore: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        _count: {
-          select: {
-            gtpSessions: { where: { sessionStatus: 'ACTIVE' } },
-            sipSessions: { where: { disconnectTimestamp: null } }
-          }
-        }
-      }
     }),
     db.subscriber.count({ where }),
     // Risk distribution
@@ -479,9 +446,7 @@ async function getSubscriberData(limit: number, offset: number, highRiskOnly: bo
         homeCountry: sub.homeCountry,
         visitedCountry: sub.visitedCountry,
         riskScore: sub.riskScore,
-        lastActivityAt: sub.lastActivityAt,
-        activeGTPSessions: sub._count.gtpSessions,
-        activeSIPSessions: sub._count.sipSessions
+        lastActivityAt: sub.lastActivityAt
       })),
       statistics: {
         riskDistribution: {
@@ -501,15 +466,6 @@ async function getSubscriberData(limit: number, offset: number, highRiskOnly: bo
 // Network elements status
 async function getNetworkData() {
   const elements = await db.networkElement.findMany({
-    include: {
-      _count: {
-        select: {
-          ss7Messages: { where: { timestamp: { gte: new Date(Date.now() - 60 * 60 * 1000) } } },
-          gtpSessions: { where: { sessionStatus: 'ACTIVE' } },
-          sipSessions: { where: { disconnectTimestamp: null } }
-        }
-      }
-    },
     orderBy: { hostname: 'asc' }
   });
 
@@ -529,12 +485,7 @@ async function getNetworkData() {
         location: el.location,
         redundancyGroup: el.redundancyGroup,
         securityZone: el.securityZone,
-        lastHeartbeat: el.lastHeartbeat,
-        activity: {
-          ss7MessagesLastHour: el._count.ss7Messages,
-          activeGTPSessions: el._count.gtpSessions,
-          activeSIPSessions: el._count.sipSessions
-        }
+        lastHeartbeat: el.lastHeartbeat
       }))
     },
     timestamp: new Date().toISOString()

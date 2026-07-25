@@ -58,10 +58,7 @@ export async function GET(request: Request) {
           status: CampaignStatus.ACTIVE
         },
         take: 10,
-        orderBy: { lastSeen: 'desc' },
-        include: {
-          _count: { select: { indicators: true } }
-        }
+        orderBy: { lastSeen: 'desc' }
       }),
 
       // IOC statistics
@@ -99,8 +96,7 @@ export async function GET(request: Request) {
           targetSector: camp.targetSector,
           targetRegion: camp.targetRegion,
           objectives: camp.objectives ? JSON.parse(camp.objectives) : [],
-          lastSeen: camp.lastSeen,
-          indicatorCount: camp._count.indicators
+          lastSeen: camp.lastSeen
         })),
         statistics: {
           totalIndicators: total,

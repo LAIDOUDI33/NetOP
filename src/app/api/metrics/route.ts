@@ -297,7 +297,8 @@ async function getTelecomMetrics() {
     activeGTPSessions,
     activeSIPSessions,
     ss7MessageCount,
-    anomalyCount,
+    gtpAnomalies,
+    ss7Anomalies,
     roamingSubscribers
   ] = await Promise.all([
     db.subscriber.count({ where: { subscriberStatus: 'ACTIVE' } }),
@@ -322,7 +323,8 @@ async function getTelecomMetrics() {
         anomalyScore: { gt: 70 },
         sessionStatus: 'ACTIVE'
       } 
-    }) +
+    }),
+    
     db.sS7Message.count({ 
       where: { 
         anomalyScore: { gt: 70 },
@@ -343,7 +345,7 @@ async function getTelecomMetrics() {
     activeGTPSessions,
     activeSIPSessions,
     ss7MessagesLast24h: ss7MessageCount,
-    highRiskAnomalies: anomalyCount,
+    highRiskAnomalies: gtpAnomalies + ss7Anomalies,
     roamingSubscribers,
     networkElements: {
       operational: 18, // Would query NetworkElement table

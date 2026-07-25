@@ -61,9 +61,6 @@ export async function GET(request: Request) {
         take: limit,
         skip: offset,
         include: {
-          assignedTo: {
-            select: { id: true, name: true, email: true, role: true }
-          },
           alerts: includeDetails ? {
             take: 5,
             orderBy: { firstSeen: 'desc' },
@@ -124,11 +121,7 @@ export async function GET(request: Request) {
         resolvedAt: incident.resolvedAt,
         targetResolution: incident.targetResolution,
         slaBreach: incident.slaBreach,
-        assignedTo: incident.assignedTo ? {
-          id: incident.assignedTo.id,
-          name: incident.assignedTo.name,
-          role: incident.assignedTo.role?.name
-        } : null,
+        assignedToId: incident.assignedToId,
         affectedAssets: incident.affectedAssets ? JSON.parse(incident.affectedAssets) : [],
         affectedServices: incident.affectedServices ? JSON.parse(incident.affectedServices) : [],
         // Counts
