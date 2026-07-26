@@ -1,0 +1,48 @@
+{{/*
+============================================================
+National SOC Platform - ConfigMap Template
+============================================================*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "soc-platform.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: config
+data:
+  NODE_ENV: "{{ .Values.env.NODE_ENV }}"
+  PORT: "{{ .Values.app.service.targetPort }}"
+  HOSTNAME: "0.0.0.0"
+  TZ: "{{ .Values.global.timezone }}"
+  DJEZZY_ENVIRONMENT: "{{ .Values.env.DJEZZY_ENVIRONMENT }}"
+  LOG_LEVEL: "{{ .Values.env.LOG_LEVEL }}"
+  LOG_FORMAT: "{{ .Values.env.LOG_FORMAT }}"
+  
+  # Database
+  POSTGRES_HOST: "{{ .Values.env.POSTGRES_HOST }}"
+  POSTGRES_PORT: "{{ .Values.env.POSTGRES_PORT }}"
+  POSTGRES_USER: "{{ .Values.env.POSTGRES_USER }}"
+  POSTGRES_DB: "{{ .Values.env.POSTGRES_DB }}"
+  
+  # Redis
+  REDIS_HOST: "{{ .Values.env.REDIS_HOST }}"
+  REDIS_PORT: "{{ .Values.env.REDIS_PORT }}"
+  
+  # JWT
+  JWT_EXPIRES_IN: "{{ .Values.env.JWT_EXPIRES_IN }}"
+  JWT_REFRESH_EXPIRES_IN: "{{ .Values.env.JWT_REFRESH_EXPIRES_IN }}"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "{{ .Values.env.RATE_LIMIT_WINDOW_MS }}"
+  RATE_LIMIT_MAX_ATTEMPTS: "{{ .Values.env.RATE_LIMIT_MAX_ATTEMPTS }}"
+  
+  # SSE
+  SSE_HEARTBEAT_INTERVAL: "{{ .Values.env.SSE_HEARTBEAT_INTERVAL }}"
+  SSE_ALERTS_POLL_INTERVAL: "{{ .Values.env.SSE_ALERTS_POLL_INTERVAL }}"
+  
+  # External Services
+  LDAP_URL: "{{ .Values.env.LDAP_URL }}"
+  ELASTICSEARCH_URL: "{{ .Values.env.ELASTICSEARCH_URL }}"
+  
+  NEXTAUTH_URL: "https://{{ .Values.app.ingress.hostname }}"

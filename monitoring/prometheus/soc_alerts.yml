@@ -1,0 +1,309 @@
+# ============================================================
+# National SOC Platform - Alert Rules
+# Prometheus alerting rules for Djezzy SOC
+# ============================================================
+
+groups:
+  # ----------------------------------------------------------
+  # Application Health Alerts
+  # ----------------------------------------------------------
+  - name: soc_platform_health
+    interval: 30s
+    rules:
+      - alert: SOCPlatformDown
+        expr: up{job="soc-platform"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: soc-ops
+          runbook: "https://wiki.djezzy.dz/runbooks/soc-platform-down"
+        annotations:
+          summary: "SOC Platform is down"
+          description: "SOC Platform has been down for more than 1 minute. Current status: {{ $value }}"
+          dashboard: "https://grafana.djezzy.dz/d/soc-platform-overview"
+          runbook_url: "https://wiki.djezzy.dz/runbooks/soc-platform-down"
+
+      - alert: SOCPlatformDegraded
+        expr: soc_platform_health_status > 0
+        for: 5m
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "SOC Platform is in degraded state"
+          description: "SOC Platform health check showing degraded status for 5+ minutes"
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(soc_http_errors_total[5m])) 
+            / sum(rate(soc_http_requests_total[5m]))
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "High error rate detected ({{ $value }}%)"
+          description: "Error rate is above 5% for the last 5 minutes"
+
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            sum(rate(soc_http_errors_total[5m])) 
+            / sum(rate(soc_http_requests_total[5m]))
+          ) * 100 > 20
+        for: 2m
+        labels:
+          severity: critical
+          team: soc-ops
+          pagerduty: "true"
+        annotations:
+          summary: "Critical error rate detected ({{ $value }}%)"
+          description: "Error rate is above 20% for the last 2 minutes. Immediate attention required!"
+
+  # ----------------------------------------------------------
+  # Performance Alerts
+  # ----------------------------------------------------------
+  - name: soc_platform_performance
+    interval: 1m
+    rules:
+      - alert: HighResponseTimeP95
+        expr: histogram_quantile(0.95, rate(soc_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "High P95 response time ({{ $value }}s)"
+          description: "95th percentile response time is above 2 seconds for 10+ minutes"
+
+      - alert: CriticalResponseTimeP99
+        expr: histogram_quantile(0.99, rate(soc_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: critical
+          team: soc-ops
+        annotations:
+          summary: "Critical P99 response time ({{ $value }}s)"
+          description: "99th percentile response time is above 5 seconds"
+
+      - alert: SlowDatabaseQueries
+        expr: histogram_quantile(0.95, rate(soc_database_query_duration_seconds_bucket[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          team: database-ops
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile of DB query time is above 1 second"
+
+  # ----------------------------------------------------------
+  # Resource Utilization Alerts
+  # ----------------------------------------------------------
+  - name: soc_platform_resources
+    interval: 1m
+    rules:
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            soc_process_memory_bytes{type="heap_used"} 
+            / soc_process_memory_bytes{type="heap_total"}
+          ) * 100 > 85
+        for: 15m
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "High memory usage ({{ $value }}%)"
+          description: "Heap memory usage is above 85% for 15+ minutes"
+
+      - alert: CriticalMemoryUsage
+        expr: |
+          (
+            soc_process_memory_bytes{type="heap_used"} 
+            / soc_process_memory_bytes{type="heap_total"}
+          ) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: soc-ops
+        annotations:
+          summary: "Critical memory usage ({{ $value }}%)"
+          description: "Heap memory usage is above 95%. Risk of OOM kill!"
+
+      - alert: HighCPUUsage
+        expr: avg by(instance) (100 - (avg by(mode) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: infra-ops
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for 10+ minutes"
+
+      - alert: DiskSpaceWarning
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 20
+        for: 30m
+        labels:
+          severity: warning
+          team: infra-ops
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 20% on mountpoint {{ $labels.mountpoint }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 10m
+        labels:
+          severity: critical
+          team: infra-ops
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk space is below 10%! Immediate action required."
+
+  # ----------------------------------------------------------
+  # SSE/Real-time Alerts
+  # ----------------------------------------------------------
+  - name: soc_platform_sse
+    interval: 30s
+    rules:
+      - alert: HighSSEConnections
+        expr: soc_sse_connections_active > 500
+        for: 15m
+        labels:
+          severity: info
+          team: soc-ops
+        annotations:
+          summary: "High number of SSE connections ({{ $value }})"
+          description: "Active SSE connections are above 500"
+
+      - alert: SSEConnectionDrops
+        expr: increase(soc_sse_connections_dropped[5m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "SSE connection drops detected"
+          description: "{{ $value }} SSE connections dropped in the last 5 minutes"
+
+  # ----------------------------------------------------------
+  # Security Alerts
+  # ----------------------------------------------------------
+  - name: soc_platform_security
+    interval: 1m
+    rules:
+      - alert: HighFailedLoginAttempts
+        expr: sum by(ip) (increase(soc_auth_failures_total[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Brute force attack suspected from IP {{ $labels.ip }}"
+          description: "More than 10 failed login attempts from single IP in 5 minutes"
+
+      - alert: UnusualTrafficPattern
+        expr: |
+          abs(
+            sum(rate(soc_http_requests_total[1h])) 
+            - sum(rate(soc_http_requests_total[24h] offset 24h))
+          ) / sum(rate(soc_http_requests_total[24h] offset 24h)) > 2
+        for: 30m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Unusual traffic pattern detected"
+          description: "Current traffic differs by more than 200% from same time yesterday"
+
+      - alert: SSLCertificateExpiringSoon
+        expr: (ssl_cert_not_after - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: warning
+          team: infra-ops
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate will expire in {{ $value | humanizeDuration }}"
+
+  # ----------------------------------------------------------
+  # Telecom-Specific Alerts
+  # ----------------------------------------------------------
+  - name: telecom_alerts
+    interval: 30s
+    rules:
+      - alert: HighSS7MessageVolume
+        expr: sum(rate(ss7_messages_received_total[5m])) > 10000
+        for: 10m
+        labels:
+          severity: warning
+          team: telecom-ops
+        annotations:
+          summary: "Unusual SS7 message volume"
+          description: "SS7 message volume is abnormally high: {{ $value }} msgs/sec"
+
+      - alert: HighGTPSessionCount
+        expr: gtp_sessions_active > 50000
+        for: 15m
+        labels:
+          severity: info
+          team: telecom-ops
+        annotations:
+          summary: "High GTP session count"
+          description: "Active GTP sessions: {{ $value }}"
+
+      - alert: FraudDetectionTriggered
+        expr: increase(fraud_alerts_total[1h]) > 100
+        for: 5m
+        labels:
+          severity: critical
+          team: fraud-team
+          pagerduty: "true"
+        annotations:
+          summary: "Fraud detection system triggered frequently"
+          description: "{{ $value }} fraud alerts in the last hour. Investigation required!"
+
+      - alert: SubscriberRiskScoreSpike
+        expr: subscribers_with_high_risk_score > 1000
+        for: 10m
+        labels:
+          severity: warning
+          team: risk-management
+        annotations:
+          summary: "Multiple high-risk subscribers detected"
+          description: "{{ $value }} subscribers with risk score > 70"
+
+  # ----------------------------------------------------------
+  # Availability SLA Alerts
+  # ----------------------------------------------------------
+  - name: sla_alerts
+    interval: 5m
+    rules:
+      - alert: PlatformAvailabilityDegrading
+        expr: |
+          (
+            sum(rate(soc_http_requests_total{status!~"5.."}[1h]))
+            / sum(rate(soc_http_requests_total[1h]))
+          ) < 0.999
+        for: 30m
+        labels:
+          severity: critical
+          team: soc-ops
+          sla_impact: "yes"
+        annotations:
+          summary: "Platform availability below 99.9% SLA"
+          description: "Current availability: {{ $value | humanizePercentage }}. SLA target: 99.9%"
+
+      - alert: IncidentResponseSLABreachRisk
+        expr: |
+          avg(incident_resolution_time_hours) > 4
+          and incident_severity == "critical"
+        for: 1h
+        labels:
+          severity: warning
+          team: soc-ops
+        annotations:
+          summary: "Critical incidents approaching SLA breach"
+          description: "Average resolution time for critical incidents: {{ $value }} hours"

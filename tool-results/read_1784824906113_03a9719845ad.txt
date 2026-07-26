@@ -1,0 +1,918 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect } from "react";
+     4→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     5→import { Badge } from "@/components/ui/badge";
+     6→import { Button } from "@/components/ui/button";
+     7→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+     8→
+     9→// Icons as simple SVG components
+    10→const ShieldIcon = () => (
+    11→  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    12→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    13→  </svg>
+    14→);
+    15→
+    16→const AlertIcon = () => (
+    17→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    18→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    19→  </svg>
+    20→);
+    21→
+    22→const ActivityIcon = () => (
+    23→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    24→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    25→  </svg>
+    26→);
+    27→
+    28→const GlobeIcon = () => (
+    29→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    30→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+    31→  </svg>
+    32→);
+    33→
+    34→const UsersIcon = () => (
+    35→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    36→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    37→  </svg>
+    38→);
+    39→
+    40→const ClockIcon = () => (
+    41→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    42→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    43→  </svg>
+    44→);
+    45→
+    46→const TrendingUpIcon = () => (
+    47→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    48→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    49→  </svg>
+    50→);
+    51→
+    52→const ServerIcon = () => (
+    53→  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    54→    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+    55→  </svg>
+    56→);
+    57→
+    58→// Mock data for demonstration
+    59→const mockAlerts = [
+    60→  {
+    61→    id: "ALT-2026-001247",
+    62→    title: "Brute Force Attack Detected - Domain Controller",
+    63→    severity: "critical",
+    64→    source: "SIEM Correlation Engine",
+    65→    timestamp: "2 min ago",
+    66→    status: "new",
+    67→    assignee: "Unassigned",
+    68→    category: "Initial Access"
+    69→  },
+    70→  {
+    71→    id: "ALT-2026-001246",
+    72→    title: "Suspicious PowerShell Execution - Workstation-0451",
+    73→    severity: "high",
+    74→    source: "CrowdStrike EDR",
+    75→    timestamp: "5 min ago",
+    76→    status: "investigating",
+    77→    assignee: "A. Benali",
+    78→    category: "Execution"
+    79→  },
+    80→  {
+    81→    id: "ALT-2026-001245",
+    82→    title: "Phishing Email Reported - Multiple Recipients",
+    83→    severity: "high",
+    84→    source: "Email Gateway",
+    85→    timestamp: "12 min ago",
+    86→    status: "investigating",
+    87→    assignee: "S. Mansouri",
+    88→    category: "Social Engineering"
+    89→  },
+    90→  {
+    91→    id: "ALT-2026-001244",
+    92→    title: "DNS Tunneling Detected - Server-Web-012",
+    93→    severity: "medium",
+    94→    source: "Network IDS",
+    95→    timestamp: "18 min ago",
+    96→    status: "in_progress",
+    97→    assignee: "K. Hadj",
+    98→    category: "Command & Control"
+    99→  },
+   100→  {
+   101→    id: "ALT-2026-001243",
+   102→    title: "Large Data Transfer to External IP",
+   103→    severity: "medium",
+   104→    source: "DLP System",
+   105→    timestamp: "25 min ago",
+   106→    status: "pending_review",
+   107→    assignee: "Unassigned",
+   108→    category: "Exfiltration"
+   109→  },
+   110→  {
+   111→    id: "ALT-2026-001242",
+   112→    title: "Failed VPN Authentication - 50+ Attempts",
+   113→    severity: "medium",
+   114→    source: "VPN Gateway",
+   115→    timestamp: "32 min ago",
+   116→    status: "resolved",
+   117→    assignee: "M. Zerhouni",
+   118→    category: "Credential Access"
+   119→  },
+   120→  {
+   121→    id: "ALT-2026-001241",
+   122→    title: "Vulnerability Scan Detected from Internal Network",
+   123→    severity: "low",
+   124→    source: "Network Sensors",
+   125→    timestamp: "45 min ago",
+   126→    status: "resolved",
+   127→    assignee: "Y. Amrani",
+   128→    category: "Discovery"
+   129→  }
+   130→];
+   131→
+   132→const mockMetrics = {
+   133→  totalAlertsToday: 1847,
+   134→  criticalAlerts: 23,
+   135→  activeIncidents: 12,
+   136→  mttD: "3.2 min",
+   137→  mttr: "11.5 min",
+   138→  automationRate: 87,
+   139→  coveragePercent: 94,
+   140→  endpointsProtected: 148392,
+   141→  epsCurrent: 7843521
+   142→};
+   143→
+   144→const mockThreatActors = [
+   145→  { name: "APT28 (Fancy Bear)", capability: "Nation-State", activity: "Active", lastSeen: "2 hours ago", targeting: "Government" },
+   146→  { name: "LockBit Ransomware", capability: "Cyber Crime", activity: "High", lastSeen: "6 hours ago", targeting: "All Sectors" },
+   147→  { name: "APT41 (Double Dragon)", capability: "Nation-State", activity: "Moderate", lastSeen: "1 day ago", targeting: "Technology" },
+   148→  { name: "Scattered Spider", capability: "Cyber Crime", activity: "Elevated", lastSeen: "3 hours ago", targeting: "Financial" }
+   149→];
+   150→
+   151→const mockSystemHealth = [
+   152→  { component: "SIEM Cluster", status: "healthy", uptime: "99.99%", latency: "12ms" },
+   153→  { component: "SOAR Platform", status: "healthy", uptime: "99.98%", latency: "45ms" },
+   154→  { component: "EDR Cloud", status: "healthy", uptime: "100%", latency: "8ms" },
+   155→  { component: "TIP/MISP", status: "degraded", uptime: "98.5%", latency: "120ms" },
+   156→  { component: "Data Lake", status: "healthy", uptime: "99.95%", latency: "34ms" },
+   157→  { component: "Network NDR", status: "healthy", uptime: "99.97%", latency: "22ms" }
+   158→];
+   159→
+   160→// Severity badge component
+   161→function SeverityBadge({ severity }: { severity: string }) {
+   162→  const styles: Record<string, string> = {
+   163→    critical: "bg-red-500/20 text-red-400 border border-red-500/30",
+   164→    high: "bg-orange-500/20 text-orange-400 border border-orange-500/30",
+   165→    medium: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
+   166→    low: "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+   167→  };
+   168→  
+   169→  return (
+   170→    <Badge className={`${styles[severity] || styles.low} capitalize`}>
+   171→      {severity}
+   172→    </Badge>
+   173→  );
+   174→}
+   175→
+   176→// Status indicator component
+   177→function StatusIndicator({ status }: { status: string }) {
+   178→  const colors: Record<string, string> = {
+   179→    healthy: "bg-emerald-500",
+   180→    degraded: "bg-yellow-500",
+   181→    down: "bg-red-500"
+   182→  };
+   183→  
+   184→  return (
+   185→    <span className={`inline-block w-2 h-2 rounded-full ${colors[status] || colors.down} pulse-dot`} />
+   186→  );
+   187→}
+   188→
+   189→// Metric card component
+   190→function MetricCard({ 
+   191→  title, 
+   192→  value, 
+   193→  icon: Icon, 
+   194→  trend, 
+   195→  color = "blue",
+   196→  subtitle 
+   197→}: { 
+   198→  title: string; 
+   199→  value: string | number; 
+   200→  icon: React.ComponentType; 
+   201→  trend?: string;
+   202→  color?: string;
+   203→  subtitle?: string;
+   204→}) {
+   205→  const colorClasses: Record<string, string> = {
+   206→    blue: "from-blue-500/20 to-blue-600/5 border-blue-500/30",
+   207→    green: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/30",
+   208→    red: "from-red-500/20 to-red-600/5 border-red-500/30",
+   209→    yellow: "from-yellow-500/20 to-yellow-600/5 border-yellow-500/30",
+   210→    purple: "from-purple-500/20 to-purple-600/5 border-purple-500/30"
+   211→  };
+   212→
+   213→  return (
+   214→    <Card className={`soc-card bg-gradient-to-br ${colorClasses[color]} overflow-hidden`}>
+   215→      <CardContent className="p-6">
+   216→        <div className="flex items-start justify-between">
+   217→          <div className="space-y-2">
+   218→            <p className="text-sm font-medium text-gray-400">{title}</p>
+   219→            <p className="metric-value gradient-text">{value}</p>
+   220→            {subtitle && (
+   221→              <p className="text-xs text-gray-500">{subtitle}</p>
+   222→            )}
+   223→          </div>
+   224→          <div className={`p-3 rounded-lg bg-${color}-500/10`}>
+   225→            <Icon />
+   226→          </div>
+   227→        </div>
+   228→        {trend && (
+   229→          <div className="mt-4 flex items-center gap-1 text-xs text-gray-400">
+   230→            <TrendingUpIcon />
+   231→            <span>{trend}</span>
+   232→          </div>
+   233→        )}
+   234→      </CardContent>
+   235→    </Card>
+   236→  );
+   237→}
+   238→
+   239→// Mini chart component (CSS-based)
+   240→function MiniChart({ data, color = "#3b82f6" }: { data: number[]; color?: string }) {
+   241→  const max = Math.max(...data);
+   242→  const min = Math.min(...data);
+   243→  const range = max - min || 1;
+   244→  
+   245→  const points = data.map((value, index) => {
+   246→    const x = (index / (data.length - 1)) * 100;
+   247→    const y = 100 - ((value - min) / range) * 80 - 10;
+   248→    return `${x},${y}`;
+   249→  }).join(" ");
+   250→
+   251→  return (
+   252→    <svg className="w-full h-12" viewBox="0 0 100 100" preserveAspectRatio="none">
+   253→      <defs>
+   254→        <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+   255→          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+   256→          <stop offset="100%" stopColor={color} stopOpacity="0" />
+   257→        </linearGradient>
+   258→      </defs>
+   259→      <polygon
+   260→        points={`0,100 ${points} 100,100`}
+   261→        fill={`url(#gradient-${color.replace('#', '')})`}
+   262→      />
+   263→      <polyline
+   264→        points={points}
+   265→        fill="none"
+   266→        stroke={color}
+   267→        strokeWidth="2"
+   268→        vectorEffect="non-scaling-stroke"
+   269→      />
+   270→    </svg>
+   271→  );
+   272→}
+   273→
+   274→export default function SOCDashboard() {
+   275→  const [currentTime, setCurrentTime] = useState(new Date());
+   276→  const [activeTab, setActiveTab] = useState("overview");
+   277→  
+   278→  useEffect(() => {
+   279→    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+   280→    return () => clearInterval(timer);
+   281→  }, []);
+   282→
+   283→  // Generate mock chart data
+   284→  const alertTrendData = Array.from({ length: 24 }, (_, i) => 
+   285→    Math.floor(Math.random() * 100) + 50 + (i > 12 ? 30 : 0)
+   286→  );
+   287→  const epsTrendData = Array.from({ length: 24 }, (_, i) => 
+   288→    Math.floor(Math.random() * 2000000) + 6000000
+   289→  );
+   290→
+   291→  return (
+   292→    <div className="min-h-screen grid-pattern">
+   293→      {/* Animated Background */}
+   294→      <div className="animated-bg" />
+   295→      
+   296→      {/* Header */}
+   297→      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#0a0e1a]/80 border-b border-gray-800/50">
+   298→        <div className="max-w-[1920px] mx-auto px-6 py-4">
+   299→          <div className="flex items-center justify-between">
+   300→            <div className="flex items-center gap-4">
+   301→              <div className="flex items-center gap-3">
+   302→                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+   303→                  <ShieldIcon />
+   304→                </div>
+   305→                <div>
+   306→                  <h1 className="text-xl font-bold gradient-text">National SOC</h1>
+   307→                  <p className="text-xs text-gray-500">Algeria Security Operations Center</p>
+   308→                </div>
+   309→              </div>
+   310→              <div className="hidden md:block h-8 w-px bg-gray-700" />
+   311→              <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
+   312→                <StatusIndicator status="healthy" />
+   313→                <span>All Systems Operational</span>
+   314→              </div>
+   315→            </div>
+   316→            
+   317→            <div className="flex items-center gap-6">
+   318→              <div className="hidden lg:block text-right">
+   319→                <p className="text-sm font-medium">{currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+   320→                <p className="text-2xl font-mono font-bold text-blue-400">
+   321→                  {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+   322→                </p>
+   323→              </div>
+   324→              
+   325→              <Button variant="outline" size="sm" className="border-gray-700 hover:bg-gray-800">
+   326→                <AlertIcon />
+   327→                <span className="ml-2">3 New Critical</span>
+   328→              </Button>
+   329→              
+   330→              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold cursor-pointer">
+   331→                OP
+   332→              </div>
+   333→            </div>
+   334→          </div>
+   335→        </div>
+   336→      </header>
+   337→
+   338→      {/* Main Content */}
+   339→      <main className="max-w-[1920px] mx-auto px-6 py-6 space-y-6">
+   340→        
+   341→        {/* Top Metrics Row */}
+   342→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+   343→          <MetricCard
+   344→            title="Total Alerts (24h)"
+   345→            value={mockMetrics.totalAlertsToday.toLocaleString()}
+   346→            icon={AlertIcon}
+   347→            trend="+12% vs yesterday"
+   348→            color="blue"
+   349→            subtitle="Last hour: +47"
+   350→          />
+   351→          <MetricCard
+   352→            title="Critical Alerts"
+   353→            value={mockMetrics.criticalAlerts}
+   354→            icon={ActivityIcon}
+   355→            trend="Requires attention"
+   356→            color="red"
+   357→            subtitle="3 new in last hour"
+   358→          />
+   359→          <MetricCard
+   360→            title="Active Incidents"
+   361→            value={mockMetrics.activeIncidents}
+   362→            icon={ShieldIcon}
+   363→            trend="2 escalated today"
+   364→            color="yellow"
+   365→            subtitle="4 under investigation"
+   366→          />
+   367→          <MetricCard
+   368→            title="MTTD"
+   369→            value={mockMetrics.mttD}
+   370→            icon={ClockIcon}
+   371→            target="< 5 min"
+   372→            color="green"
+   373→            subtitle="Target achieved ✓"
+   374→          />
+   375→          <MetricCard
+   376→            title="MTTR"
+   377→            value={mockMetrics.mttr}
+   378→            icon={ClockIcon}
+   379→            trend="-18% improvement"
+   380→            color="purple"
+   381→            subtitle="Target: < 15 min"
+   382→          />
+   383→          <MetricCard
+   384→            title="Automation Rate"
+   385→            value={`${mockMetrics.automationRate}%`}
+   386→            icon={ActivityIcon}
+   387→            trend="+5% this month"
+   388→            color="blue"
+   389→            subtitle="Target: 85%"
+   390→          />
+   391→          <MetricCard
+   392→            title="Endpoints Protected"
+   393→            value={(mockMetrics.endpointsProtected / 1000).toFixed(1)}K"
+   394→            icon={ServerIcon}
+   395→            trend="+2,340 this week"
+   396→            color="green"
+   397→            subtitle="Coverage: 94%"
+   398→          />
+   399→        </div>
+   400→
+   401→        {/* Main Grid */}
+   402→        <Tabs defaultValue="overview" className="space-y-6">
+   403→          <TabsList className="bg-gray-900/50 border border-gray-800 p-1">
+   404→            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600">Overview</TabsTrigger>
+   405→            <TabsTrigger value="alerts" className="data-[state=active]:bg-blue-600">Live Alerts</TabsTrigger>
+   406→            <TabsTrigger value="threats" className="data-[state=active]:bg-blue-600">Threat Intel</TabsTrigger>
+   407→            <TabsTrigger value="incidents" className="data-[state=active]:bg-blue-600">Incidents</TabsTrigger>
+   408→            <TabsTrigger value="systems" className="data-[state=active]:bg-blue-600">Systems</TabsTrigger>
+   409→          </TabsList>
+   410→
+   411→          {/* Overview Tab */}
+   412→          <TabsContent value="overview" className="space-y-6">
+   413→            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+   414→              
+   415→              {/* Alert Feed */}
+   416→              <Card className="soc-card lg:col-span-2">
+   417→                <CardHeader className="pb-4">
+   418→                  <div className="flex items-center justify-between">
+   419→                    <CardTitle className="flex items-center gap-2">
+   420→                      <AlertIcon />
+   421→                      Live Alert Feed
+   422→                    </CardTitle>
+   423→                    <div className="flex items-center gap-2 text-xs text-gray-400">
+   424→                      <span className="w-2 h-2 rounded-full bg-green-500 pulse-dot" />
+   425→                      Live
+   426→                    </div>
+   427→                  </div>
+   428→                </CardHeader>
+   429→                <CardContent>
+   430→                  <div className="overflow-x-auto">
+   431→                    <table className="data-table">
+   432→                      <thead>
+   433→                        <tr>
+   434→                          <th>Alert ID</th>
+   435→                          <th>Title</th>
+   436→                          <th>Severity</th>
+   437→                          <th>Time</th>
+   438→                          <th>Status</th>
+   439→                        </tr>
+   440→                      </thead>
+   441→                      <tbody>
+   442→                        {mockAlerts.slice(0, 6).map((alert) => (
+   443→                          <tr key={alert.id} className="cursor-pointer hover:bg-blue-500/5">
+   444→                            <td className="font-mono text-xs text-blue-400">{alert.id}</td>
+   445→                            <td className="max-w-xs truncate">{alert.title}</td>
+   446→                            <td><SeverityBadge severity={alert.severity} /></td>
+   447→                            <td className="text-gray-400">{alert.timestamp}</td>
+   448→                            <td>
+   449→                              <Badge variant="outline" className={
+   450→                                alert.status === "new" ? "border-red-500/50 text-red-400" :
+   451→                                alert.status === "investigating" ? "border-yellow-500/50 text-yellow-400" :
+   452→                                "border-gray-500/50 text-gray-400"
+   453→                              }>
+   454→                                {alert.status.replace("_", " ")}
+   455→                              </Badge>
+   456→                            </td>
+   457→                          </tr>
+   458→                        ))}
+   459→                      </tbody>
+   460→                    </table>
+   461→                  </div>
+   462→                </CardContent>
+   463→              </Card>
+   464→
+   465→              {/* Quick Stats & Chart */}
+   466→              <div className="space-y-6">
+   467→                {/* EPS Counter */}
+   468→                <Card className="soc-card">
+   469→                  <CardContent className="p-6">
+   470→                    <div className="flex items-center justify-between mb-4">
+   471→                      <span className="text-sm text-gray-400">Events Per Second</span>
+   472→                      <GlobeIcon />
+   473→                    </div>
+   474→                    <p className="text-3xl font-bold font-mono text-blue-400">
+   475→                      {(mockMetrics.epsCurrent / 1000000).toFixed(2)}M
+   476→                    </p>
+   477→                    <div className="mt-4">
+   478→                      <MiniChart data={epsTrendData} color="#3b82f6" />
+   479→                    </div>
+   480→                  </CardContent>
+   481→                </Card>
+   482→
+   483→                {/* Threat Level Indicator */}
+   484→                <Card className="soc-card border-yellow-500/30">
+   485→                  <CardContent className="p-6">
+   486→                    <div className="flex items-center justify-between mb-4">
+   487→                      <span className="text-sm font-medium">National Threat Level</span>
+   488→                      <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+   489→                        ELEVATED
+   490→                      </Badge>
+   491→                    </div>
+   492→                    <div className="space-y-3">
+   493→                      <div className="flex justify-between text-sm">
+   494→                        <span className="text-gray-400">Global Cyber Threat Index</span>
+   495→                        <span>72/100</span>
+   496→                      </div>
+   497→                      <div className="progress-bar">
+   498→                        <div className="progress-bar-fill bg-gradient-to-r from-yellow-500 to-orange-500" style={{ width: "72%" }} />
+   499→                      </div>
+   500→                      <p className="text-xs text-gray-500 mt-2">
+   501→                        Increased APT activity targeting MENA region detected
+   502→                      </p>
+   503→                    </div>
+   504→                  </CardContent>
+   505→                </Card>
+   506→
+   507→                {/* On-Call Team */}
+   508→                <Card className="soc-card">
+   509→                  <CardContent className="p-6">
+   510→                    <div className="flex items-center justify-between mb-4">
+   511→                      <span className="text-sm font-medium">On-Call Analysts</span>
+   512→                      <UsersIcon />
+   513→                    </div>
+   514→                    <div className="space-y-3">
+   515→                      {["A. Benali (Lead)", "S. Mansouri", "K. Hadj", "M. Zerhouni"].map((name, idx) => (
+   516→                        <div key={idx} className="flex items-center gap-3">
+   517→                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-xs font-medium">
+   518→                            {name.charAt(0)}
+   519→                          </div>
+   520→                          <div className="flex-1">
+   521→                            <p className="text-sm font-medium">{name}</p>
+   522→                            <p className="text-xs text-gray-500">{idx === 0 ? "Shift Lead" : "Tier-1 Analyst"}</p>
+   523→                          </div>
+   524→                          <StatusIndicator status="healthy" />
+   525→                        </div>
+   526→                      ))}
+   527→                    </div>
+   528→                  </CardContent>
+   529→                </Card>
+   530→              </div>
+   531→            </div>
+   532→
+   533→            {/* Bottom Row - Charts */}
+   534→            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   535→              {/* Alert Trend Chart */}
+   536→              <Card className="soc-card">
+   537→                <CardHeader>
+   538→                  <CardTitle className="text-base">Alert Volume Trend (24 Hours)</CardTitle>
+   539→                </CardHeader>
+   540→                <CardContent>
+   541→                  <div className="h-64 flex items-end gap-1">
+   542→                    {alertTrendData.map((value, idx) => (
+   543→                      <div
+   544→                        key={idx}
+   545→                        className="flex-1 bg-gradient-to-t from-blue-500 to-blue-400/50 rounded-t transition-all hover:opacity-80"
+   546→                        style={{ height: `${value}%` }}
+   547→                        title={`${value} alerts at ${idx}:00`}
+   548→                      />
+   549→                    ))}
+   550→                  </div>
+   551→                  <div className="flex justify-between mt-2 text-xs text-gray-500">
+   552→                    <span>00:00</span>
+   553→                    <span>06:00</span>
+   554→                    <span>12:00</span>
+   555→                    <span>18:00</span>
+   556→                    <span>23:00</span>
+   557→                  </div>
+   558→                </CardContent>
+   559→              </Card>
+   560→
+   561→              {/* Severity Distribution */}
+   562→              <Card className="soc-card">
+   563→                <CardHeader>
+   564→                  <CardTitle className="text-base">Alert Distribution by Severity</CardTitle>
+   565→                </CardHeader>
+   566→                <CardContent>
+   567→                  <div className="space-y-4">
+   568→                    {[
+   569→                      { label: "Critical", count: 23, percent: 1.2, color: "bg-red-500" },
+   570→                      { label: "High", count: 342, percent: 18.5, color: "bg-orange-500" },
+   571→                      { label: "Medium", count: 892, percent: 48.3, color: "bg-yellow-500" },
+   572→                      { label: "Low", count: 590, percent: 32, color: "bg-blue-500" }
+   573→                    ].map((item) => (
+   574→                      <div key={item.label} className="space-y-1">
+   575→                        <div className="flex justify-between text-sm">
+   576→                          <span>{item.label}</span>
+   577→                          <span className="text-gray-400">{item.count.toLocaleString()} ({item.percent}%)</span>
+   578→                        </div>
+   579→                        <div className="progress-bar">
+   580→                          <div className={`progress-bar-fill ${item.color}`} style={{ width: `${item.percent}%` }} />
+   581→                        </div>
+   582→                      </div>
+   583→                    ))}
+   584→                  </div>
+   585→                </CardContent>
+   586→              </Card>
+   587→            </div>
+   588→          </TabsContent>
+   589→
+   590→          {/* Alerts Tab */}
+   591→          <TabsContent value="alerts">
+   592→            <Card className="soc-card">
+   593→              <CardHeader className="pb-4">
+   594→                <div className="flex items-center justify-between">
+   595→                  <CardTitle>All Active Alerts</CardTitle>
+   596→                  <div className="flex gap-2">
+   597→                    <Button variant="outline" size="sm" className="border-gray-700">Export</Button>
+   598→                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">+ Create Alert Rule</Button>
+   599→                  </div>
+   600→                </div>
+   601→              </CardHeader>
+   602→              <CardContent>
+   603→                <div className="overflow-x-auto">
+   604→                  <table className="data-table">
+   605→                    <thead>
+   606→                      <tr>
+   607→                        <th>Alert ID</th>
+   608→                        <th>Title</th>
+   609→                        <th>Severity</th>
+   610→                        <th>Category</th>
+   611→                        <th>Source</th>
+   612→                        <th>Timestamp</th>
+   613→                        <th>Status</th>
+   614→                        <th>Assignee</th>
+   615→                        <th>Actions</th>
+   616→                      </tr>
+   617→                    </thead>
+   618→                    <tbody>
+   619→                      {mockAlerts.map((alert) => (
+   620→                        <tr key={alert.id}>
+   621→                          <td className="font-mono text-xs text-blue-400">{alert.id}</td>
+   622→                          <td className="max-w-md">{alert.title}</td>
+   623→                          <td><SeverityBadge severity={alert.severity} /></td>
+   624→                          <td className="text-gray-400">{alert.category}</td>
+   625→                          <td className="text-gray-400">{alert.source}</td>
+   626→                          <td className="text-gray-400">{alert.timestamp}</td>
+   627→                          <td>
+   628→                            <Badge variant="outline" className={
+   629→                              alert.status === "new" ? "border-red-500/50 text-red-400" :
+   630→                              alert.status === "investigating" ? "border-yellow-500/50 text-yellow-400" :
+   631→                              alert.status === "in_progress" ? "border-blue-500/50 text-blue-400" :
+   632→                              "border-gray-500/50 text-gray-400"
+   633→                            }>
+   634→                              {alert.status.replace("_", " ")}
+   635→                            </Badge>
+   636→                          </td>
+   637→                          <td className="text-gray-300">{alert.assignee}</td>
+   638→                          <td>
+   639→                            <Button variant="ghost" size="sm" className="text-blue-400 hover:text-blue-300">
+   640→                              View →
+   641→                            </Button>
+   642→                          </td>
+   643→                        </tr>
+   644→                      ))}
+   645→                    </tbody>
+   646→                  </table>
+   647→                </div>
+   648→              </CardContent>
+   649→            </Card>
+   650→          </TabsContent>
+   651→
+   652→          {/* Threat Intelligence Tab */}
+   653→          <TabsContent value="threats" className="space-y-6">
+   654→            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   655→              {/* Threat Actors */}
+   656→              <Card className="soc-card">
+   657→                <CardHeader>
+   658→                  <CardTitle className="text-base flex items-center gap-2">
+   659→                    <GlobeIcon />
+   660→                    Active Threat Actors Tracking
+   661→                  </CardTitle>
+   662→                </CardHeader>
+   663→                <CardContent>
+   664→                  <div className="space-y-4">
+   665→                    {mockThreatActors.map((actor, idx) => (
+   666→                      <div key={idx} className="p-4 rounded-lg bg-gray-900/50 border border-gray-800 hover:border-gray-700 transition-colors">
+   667→                        <div className="flex items-start justify-between mb-2">
+   668→                          <h4 className="font-semibold">{actor.name}</h4>
+   669→                          <Badge className={
+   670→                            actor.activity === "Active" ? "bg-red-500/20 text-red-400" :
+   671→                            actor.activity === "High" || actor.activity === "Elevated" ? "bg-orange-500/20 text-orange-400" :
+   672→                            "bg-yellow-500/20 text-yellow-400"
+   673→                          }>
+   674→                            {actor.activity}
+   675→                          </Badge>
+   676→                        </div>
+   677→                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-400">
+   678→                          <div>Capability: <span className="text-gray-200">{actor.capability}</span></div>
+   679→                          <div>Last Seen: <span className="text-gray-200">{actor.lastSeen}</span></div>
+   680→                          <div className="col-span-2">Targeting: <span className="text-gray-200">{actor.targeting}</span></div>
+   681→                        </div>
+   682→                      </div>
+   683→                    ))}
+   684→                  </div>
+   685→                </CardContent>
+   686→              </Card>
+   687→
+   688→              {/* IOC Statistics */}
+   689→              <Card className="soc-card">
+   690→                <CardHeader>
+   691→                  <CardTitle className="text-base">IOC Database Statistics</CardTitle>
+   692→                </CardHeader>
+   693→                <CardContent>
+   694→                  <div className="grid grid-cols-2 gap-4">
+   695→                    {[
+   696→                      { label: "Total IOCs", value: "2,847,293", icon: "🔢" },
+   697→                      { label: "IP Addresses", value: "1,234,567", icon: "🌐" },
+   698→                      { label: "Domains", value: "892,341", icon: "📝" },
+   699→                      { label: "File Hashes", value: "567,890", icon: "📄" },
+   700→                      { label: "URLs", value: "123,456", icon: "🔗" },
+   701→                      { label: "Updated Today", value: "+12,456", icon: "🔄" }
+   702→                    ].map((stat, idx) => (
+   703→                      <div key={idx} className="p-4 rounded-lg bg-gray-900/50 border border-gray-800">
+   704→                        <div className="text-2xl mb-1">{stat.icon}</div>
+   705→                        <p className="text-2xl font-bold text-blue-400">{stat.value}</p>
+   706→                        <p className="text-xs text-gray-500">{stat.label}</p>
+   707→                      </div>
+   708→                    ))}
+   709→                  </div>
+   710→                  
+   711→                  <div className="mt-6 space-y-3">
+   712→                    <h4 className="font-semibold text-sm">Top Feeds (Last 24h)</h4>
+   713→                    {[
+   714→                      { name: "AlienVault OTX", count: 45231 },
+   715→                      { name: "Abuse.ch URLhaus", count: 28456 },
+   716→                      { name: "CrowdStrike Intel", count: 18923 },
+   717→                      { name: "MISP Community", count: 12456 },
+   718→                      { name: "Internal Honeypots", count: 8234 }
+   719→                    ].map((feed, idx) => (
+   720→                      <div key={idx} className="flex items-center justify-between text-sm">
+   721→                        <span className="text-gray-400">{feed.name}</span>
+   722→                        <span className="font-mono text-blue-400">+{feed.count.toLocaleString()}</span>
+   723→                      </div>
+   724→                    ))}
+   725→                  </div>
+   726→                </CardContent>
+   727→              </Card>
+   728→            </div>
+   729→          </TabsContent>
+   730→
+   731→          {/* Incidents Tab */}
+   732→          <TabsContent value="incidents">
+   733→            <Card className="soc-card">
+   734→              <CardHeader className="pb-4">
+   735→                <div className="flex items-center justify-between">
+   736→                  <CardTitle>Active Incidents</CardTitle>
+   737→                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">+ New Incident</Button>
+   738→                </div>
+   739→              </CardHeader>
+   740→              <CardContent>
+   741→                <div className="space-y-4">
+   742→                  {[
+   743→                    {
+   744→                      id: "INC-2026-00089",
+   745→                      title: "Targeted Phishing Campaign Against Ministry of Finance",
+   746→                      severity: "critical",
+   747→                      status: "open",
+   748→                      created: "2 hours ago",
+   749→                      assignee: "IR Team Alpha",
+   750→                      tasksCompleted: 4,
+   751→                      tasksTotal: 8
+   752→                    },
+   753→                    {
+   754→                      id: "INC-2026-00088",
+   755→                      title: "Suspected APT Activity on Research Network",
+   756→                      severity: "high",
+   757→                      status: "in_progress",
+   758→                      created: "6 hours ago",
+   759→                      assignee: "IR Team Beta",
+   760→                      tasksCompleted: 6,
+   761→                      tasksTotal: 10
+   762→                    },
+   763→                    {
+   764→                      id: "INC-2026-00087",
+   765→                      title: "Ransomware Containment - Department of Health",
+   766→                      severity: "high",
+   767→                      status: "contained",
+   768→                      created: "1 day ago",
+   769→                      assignee: "IR Team Alpha",
+   770→                      tasksCompleted: 12,
+   771→                      tasksTotal: 15
+   772→                    },
+   773→                    {
+   774→                      id: "INC-2026-00086",
+   775→                      title: "Data Exfiltration Attempt - External IP Block",
+   776→                      severity: "medium",
+   777→                      status: "resolved",
+   778→                      created: "2 days ago",
+   779→                      assignee: "M. Zerhouni",
+   780→                      tasksCompleted: 5,
+   781→                      tasksTotal: 5
+   782→                    }
+   783→                  ].map((incident) => (
+   784→                    <div key={incident.id} className="p-4 rounded-lg bg-gray-900/50 border border-gray-800 hover:border-gray-700 transition-colors">
+   785→                      <div className="flex items-start justify-between mb-3">
+   786→                        <div>
+   787→                          <div className="flex items-center gap-3 mb-1">
+   788→                            <span className="font-mono text-sm text-blue-400">{incident.id}</span>
+   789→                            <SeverityBadge severity={incident.severity} />
+   790→                            <Badge variant="outline" className={
+   791→                              incident.status === "open" ? "border-red-500/50 text-red-400" :
+   792→                              incident.status === "in_progress" ? "border-yellow-500/50 text-yellow-400" :
+   793→                              incident.status === "contained" ? "border-orange-500/50 text-orange-400" :
+   794→                              "border-green-500/50 text-green-400"
+   795→                            }>
+   796→                              {incident.status.replace("_", " ")}
+   797→                            </Badge>
+   798→                          </div>
+   799→                          <h4 className="font-semibold">{incident.title}</h4>
+   800→                        </div>
+   801→                      </div>
+   802→                      <div className="flex items-center justify-between text-sm text-gray-400">
+   803→                        <div className="flex items-center gap-4">
+   804→                          <span>Created: {incident.created}</span>
+   805→                          <span>Assigned: {incident.assignee}</span>
+   806→                        </div>
+   807→                        <div className="flex items-center gap-2">
+   808→                          <span>Progress:</span>
+   809→                          <div className="w-24 progress-bar">
+   810→                            <div 
+   811→                              className="progress-bar-fill bg-blue-500" 
+   812→                              style={{ width: `${(incident.tasksCompleted / incident.tasksTotal) * 100}%` }}
+   813→                            />
+   814→                          </div>
+   815→                          <span>{incident.tasksCompleted}/{incident.tasksTotal}</span>
+   816→                        </div>
+   817→                      </div>
+   818→                    </div>
+   819→                  ))}
+   820→                </div>
+   821→              </CardContent>
+   822→            </Card>
+   823→          </TabsContent>
+   824→
+   825→          {/* Systems Tab */}
+   826→          <TabsContent value="systems">
+   827→            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   828→              {/* System Health */}
+   829→              <Card className="soc-card">
+   830→                <CardHeader>
+   831→                  <CardTitle className="text-base flex items-center gap-2">
+   832→                    <ServerIcon />
+   833→                    Infrastructure Health
+   834→                  </CardTitle>
+   835→                </CardHeader>
+   836→                <CardContent>
+   837→                  <div className="space-y-3">
+   838→                    {mockSystemHealth.map((system, idx) => (
+   839→                      <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+   840→                        <div className="flex items-center gap-3">
+   841→                          <StatusIndicator status={system.status} />
+   842→                          <div>
+   843→                            <p className="font-medium text-sm">{system.component}</p>
+   844→                            <p className="text-xs text-gray-500">Latency: {system.latency}</p>
+   845→                          </div>
+   846→                        </div>
+   847→                        <div className="text-right">
+   848→                          <p className="text-sm font-medium text-gray-300">{system.status === "healthy" ? "Healthy" : system.status === "degraded" ? "Degraded" : "Down"}</p>
+   849→                          <p className="text-xs text-gray-500">Uptime: {system.uptime}</p>
+   850→                        </div>
+   851→                      </div>
+   852→                    ))}
+   853→                  </div>
+   854→                </CardContent>
+   855→              </Card>
+   856→
+   857→              {/* Data Pipeline Status */}
+   858→              <Card className="soc-card">
+   859→                <CardHeader>
+   860→                  <CardTitle className="text-base">Data Pipeline Status</CardTitle>
+   861→                </CardHeader>
+   862→                <CardContent>
+   863→                  <div className="space-y-4">
+   864→                    {[
+   865→                      { pipeline: "Log Ingestion (Kafka)", status: "running", throughput: "5.2 GB/min", lag: "0.3s" },
+   866→                      { pipeline: "SIEM Indexing", status: "running", throughput: "4.8 GB/min", lag: "1.2s" },
+   867→                      { pipeline: "SOAR Processing", status: "running", throughput: "847 events/min", lag: "0.1s" },
+   868→                      { pipeline: "TIP Enrichment", status: "warning", throughput: "12.4k IOC/hr", lag: "5.4s" },
+   869→                      { pipeline: "Backup Replication", status: "running", throughput: "1.1 GB/min", lag: "2.1s" },
+   870→                      { pipeline: "Archive Storage", status: "running", throughput: "890 MB/min", lag: "0.8s" }
+   871→                    ].map((pipeline, idx) => (
+   872→                      <div key={idx} className="p-3 rounded-lg bg-gray-900/50 border border-gray-800">
+   873→                        <div className="flex items-center justify-between mb-2">
+   874→                          <div className="flex items-center gap-2">
+   875→                            <StatusIndicator status={pipeline.status === "running" ? "healthy" : "degraded"} />
+   876→                            <span className="font-medium text-sm">{pipeline.pipeline}</span>
+   877→                          </div>
+   878→                          <Badge variant="outline" className={
+   879→                            pipeline.status === "running" ? "border-green-500/50 text-green-400" :
+   880→                            "border-yellow-500/50 text-yellow-400"
+   881→                          }>
+   882→                            {pipeline.status}
+   883→                          </Badge>
+   884→                        </div>
+   885→                        <div className="flex items-center justify-between text-xs text-gray-500">
+   886→                          <span>Throughput: {pipeline.throughput}</span>
+   887→                          <span>Lag: {pipeline.lag}</span>
+   888→                        </div>
+   889→                      </div>
+   890→                    ))}
+   891→                  </div>
+   892→                </CardContent>
+   893→              </Card>
+   894→            </div>
+   895→          </TabsContent>
+   896→        </Tabs>
+   897→      </main>
+   898→
+   899→      {/* Footer */}
+   900→      <footer className="border-t border-gray-800/50 mt-12 py-6">
+   901→        <div className="max-w-[1920px] mx-auto px-6 flex items-center justify-between text-sm text-gray-500">
+   902→          <div className="flex items-center gap-2">
+   903→            <ShieldIcon />
+   904→            <span>National SOC Algeria © 2026</span>
+   905→          </div>
+   906→          <div className="flex items-center gap-6">
+   907→            <span>v2.1.0</span>
+   908→            <span>|</span>
+   909→            <span>Classification: Internal Use</span>
+   910→            <span>|</span>
+   911→            <span>Last Updated: {currentTime.toLocaleTimeString()}</span>
+   912→          </div>
+   913→        </div>
+   914→      </footer>
+   915→    </div>
+   916→  );
+   917→}
+   918→

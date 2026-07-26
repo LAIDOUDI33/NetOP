@@ -1,0 +1,320 @@
+# ============================================================
+# National SOC Platform - Helm Values
+# Configuration for Djezzy Production Deployment
+# ============================================================
+
+# Global configuration
+global:
+  environment: production
+  imageRegistry: soc.djezzy.dz
+  imagePullSecrets: []
+  
+  # Timezone
+  timezone: "Africa/Algiers"
+  
+  # Storage class
+  storageClass: "standard"
+
+# ============================================================
+# Application Configuration
+# ============================================================
+app:
+  # Replicas
+  replicaCount: 3
+  
+  # Container image
+  image:
+    repository: soc-platform
+    tag: "latest"
+    pullPolicy: Always
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+    
+    # Annotations
+    annotations: {}
+    
+    # LoadBalancer config (if type=LoadBalancer)
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+  
+  # Ingress configuration
+  ingress:
+    enabled: true
+    className: "nginx"
+    
+    # Hostnames
+    hostname: soc.djezzy.dz
+    hostnames:
+      - soc.djezzy.dz
+      - "*.soc.djezzy.dz"
+    
+    # TLS
+    tls:
+      enabled: true
+      secretName: soc-tls-secret
+      # Use cert-manager
+      certManager:
+        enabled: false
+        issuer: "letsencrypt-prod"
+    
+    # Annotations (merged with defaults)
+    annotations: {}
+    
+    # Paths
+    paths:
+      - path: /
+        pathType: Prefix
+  
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+  
+  # Autoscaling
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  # Pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  
+  # Node affinity and tolerations
+  nodeSelector: {}
+  tolerations: []
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - soc-platform
+            topologyKey: kubernetes.io/hostname
+
+# ============================================================
+# Environment Variables
+# ============================================================
+env:
+  # Application settings
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  DJEZZY_ENVIRONMENT: "production"
+  
+  # Database (PostgreSQL)
+  POSTGRES_HOST: "postgres-service.soc-platform.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "soc_admin"
+  POSTGRES_DB: "soc_platform"
+  
+  # Redis
+  REDIS_HOST: "redis-master.soc-platform.svc.cluster.local"
+  REDIS_PORT: "6379"
+  
+  # JWT Settings
+  JWT_EXPIRES_IN: "15m"
+  JWT_REFRESH_EXPIRES_IN: "7d"
+  
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_ATTEMPTS: "5"
+  
+  # SSE Configuration
+  SSE_HEARTBEAT_INTERVAL: "30000"
+  SSE_ALERTS_POLL_INTERVAL: "2000"
+  
+  # External Services
+  LDAP_URL: "ldap://ad.djezzy.dz:3889"
+  ELASTICSEARCH_URL: "http://elasticsearch.logging.svc.cluster.local:9200"
+
+# ============================================================
+# Secrets (Reference to existing secrets or create new)
+# ============================================================
+secrets:
+  # Set to true to create secrets from values
+  create: false
+  
+  # Existing secret name (if not creating)
+  existingSecret: "soc-platform-secrets"
+  
+  # Secret keys mapping
+  keys:
+    postgresPassword: "postgres-password"
+    redisPassword: "redis-password"
+    jwtSecret: "jwt-secret"
+    jwtRefreshSecret: "jwt-refresh-secret"
+    nextauthSecret: "nextauth-secret"
+    encryptionKey: "encryption-key"
+  
+  # Values used if secrets.create = true
+  values:
+    postgresPassword: ""  # Must be set in production
+    redisPassword: ""     # Must be set in production
+    jwtSecret: ""         # Must be set in production (min 32 chars)
+    jwtRefreshSecret: ""  # Must be set in production (min 32 chars)
+    nextauthSecret: ""    # Must be set in production (min 32 chars)
+    encryptionKey: ""    # Must be exactly 32 bytes
+
+# ============================================================
+# Persistence
+# ============================================================
+persistence:
+  logs:
+    enabled: true
+    size: 50Gi
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+  
+  database:
+    enabled: true
+    size: 100Gi
+    storageClass: "fast"  # SSD-backed
+    accessMode: ReadWriteOnce
+  
+  backups:
+    enabled: false
+    size: 500Gi
+    storageClass: "nfs"   # Shared storage
+    accessMode: ReadWriteMany
+
+# ============================================================
+# Monitoring
+# ============================================================
+monitoring:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    path: /api/metrics
+    port: http
+    
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      enabled: false
+      interval: 30s
+      labels: {}
+  
+  # Grafana dashboards
+  grafana:
+    enabled: false
+    dashboards: {}
+
+# ============================================================
+# PostgreSQL (Optional - can use external)
+# ============================================================
+postgresql:
+  enabled: false  # Set to true to deploy PostgreSQL via Bitnami chart
+  
+  auth:
+    postgresPassword: ""
+    password: ""
+    database: "soc_platform"
+    user: "soc_admin"
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: "fast"
+  
+  replica:
+    enabled: true
+    count: 1
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: "fast"
+
+# ============================================================
+# Redis (Optional - can use external)
+# ============================================================
+redis:
+  enabled: false  # Set to true to deploy Redis via Bitnami chart
+  
+  auth:
+    enabled: true
+    password: ""
+  
+  architecture: standalone  # or replication, sentinel
+  
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+      storageClass: "standard"
+
+# ============================================================
+# Network Policies (Security)
+# ============================================================
+networkPolicy:
+  enabled: true
+  
+  # Ingress rules - who can access the app
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+  
+  # Egress rules - what can the app access
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 6379  # Redis
+        - protocol: TCP
+          port: 443   # External HTTPS
+
+# ============================================================
+# Security Context
+# ============================================================
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ============================================================
+# Service Account
+# ============================================================
+serviceAccount:
+  create: false  # Use default service account
+  name: ""
+  annotations: {}
+
+# ============================================================
+# Extra manifests to deploy
+# ============================================================
+extraManifests: []
+
+# ============================================================
+# Tests
+# ============================================================
+test:
+  enabled: true
