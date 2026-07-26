@@ -168,3 +168,22 @@ Stage Summary:
 - All 12 views have i18n for primary UI strings (~80+ replacements)
 - French and Arabic translations for all new keys
 - Some secondary strings remain English (acceptable for demo)
+---
+Task ID: 9
+Agent: Main
+Task: P0 fixes - auth env, dead files, i18n for 20 views
+
+Work Log:
+- Fixed .env missing NEXTAUTH_SECRET and NEXTAUTH_URL (env was gitignored, lost between sessions)
+- Created .env.example with documented config vars
+- Deleted 12 dead files: piworks_*.json (11 files), docker-compose.yml
+- Added i18n t() calls for ~140 hardcoded English strings across 20 views
+- Added 140 new locale keys to en.ts, fr.ts, ar.ts with professional translations
+- Verified: lint clean, dev server compiles, no auth warnings
+- Committed as 0d1ab53 and pushed to GitHub
+
+Stage Summary:
+- Auth warnings resolved (NEXTAUTH_SECRET/URL now loaded)
+- 12 dead artifacts removed from repo
+- 20 views now fully i18n (en/fr/ar)
+- Total locale files: ~2100 keys each (en/fr/ar)
