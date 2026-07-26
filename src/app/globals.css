@@ -120,3 +120,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL Support */
+[dir="rtl"] .sidebar-rtl {
+  border-right: none;
+  border-left: 1px solid var(--border);
+  order: 2;
+}
+[dir="rtl"] .content-rtl {
+  order: 1;
+}
+[dir="rtl"] .chevron-rtl {
+  transform: rotate(180deg);
+}
+[dir="rtl"] .ml-rtl {
+  margin-left: unset;
+  margin-right: auto;
+}

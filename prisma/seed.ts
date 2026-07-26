@@ -1,5 +1,6 @@
 import { db } from '../src/lib/db';
 import { subHours, subMinutes } from 'date-fns';
+import { seedRbac } from '../src/lib/rbac';
 
 const regions = ['Alger Centre', 'Oran Métropole', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou', 'Batna', 'Béjaïa', 'Djelfa', 'Skikda', 'Tébessa', 'Ouargla', 'Biskra', 'Ghardaïa', 'Mostaganem', 'M\'sila', 'Médéa', 'Bouira'];
 const vendors = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
@@ -2879,6 +2880,11 @@ async function main() {
   }
   await db.auditTrail.createMany({ data: auditData });
   console.log(`  AuditTrails: ${auditData.length}`);
+
+  // ========== RBAC SEED ==========
+  console.log('\n  Seeding RBAC (roles, permissions, users)...');
+  await seedRbac();
+  console.log('  ✅ RBAC seeded!');
 
   console.log('\n✅ Seed complete!');
   console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length})`);

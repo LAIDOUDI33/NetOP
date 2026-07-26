@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import { ThemeProvider } from "next-themes";
+import { HtmlAttributes } from "@/components/HtmlAttributes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,6 +42,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Providers>
+            <HtmlAttributes />
             {children}
             <Toaster />
           </Providers>

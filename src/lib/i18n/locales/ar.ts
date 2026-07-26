@@ -1589,11 +1589,19 @@ const ar: Record<string, string> = {
   // ========== LOGIN PAGE ==========
   'login.title': 'نت أوبتيما الجزائر',
   'login.subtitle': 'مركز عمليات الشبكة',
+  'login.email': 'البريد الإلكتروني',
+  'login.password': 'كلمة المرور',
+  'login.signIn': 'تسجيل الدخول',
+  'login.signingIn': 'جاري تسجيل الدخول...',
+  'login.error': 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+  'login.errorTitle': 'فشل المصادقة',
+  'login.rememberMe': 'تذكرني',
+  'login.forgotPassword': 'نسيت كلمة المرور؟',
   'login.features.monitoring': 'مراقبة في الوقت الحقيقي',
   'login.features.analytics': 'تحليل متقدم',
   'login.features.automation': 'أتمتة ذكية',
   'login.features.reporting': 'تقارير شاملة',
-  'login.demoHint': 'عرض تجريبي: admin@netoptima-dز.local / admin123',
+  'login.demoHint': 'عرض تجريبي: admin@netoptima-dz.local / admin123',
   'login.selectLanguage': 'اللغة',
 };
 

@@ -281,7 +281,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-left
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-start
                       ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
                       ${collapsed ? 'justify-center px-2' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
@@ -421,7 +421,7 @@ export default function Home() {
 
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-r transition-all duration-200 ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
+        <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-e transition-all duration-200 sidebar-rtl ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
           <div className={`flex items-center gap-2 px-4 h-14 border-b shrink-0 ${sidebarOpen ? '' : 'justify-center px-2'}`}>
             <Radio className="h-5 w-5 text-primary shrink-0" />
             {sidebarOpen && <span className="font-bold text-sm">{t('app.brand')}</span>}
@@ -430,14 +430,14 @@ export default function Home() {
             <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate}  />
           </ScrollArea>
           <div className="border-t p-2 shrink-0 flex items-center gap-1">
-            <Button variant="ghost" size="icon" className={`h-8 ${sidebarOpen ? 'w-8 ml-auto' : 'w-full'}`} onClick={toggleSidebar} aria-label={sidebarOpen ? t('app.collapseSidebar') : t('app.expandSidebar')}>
-              <ChevronLeft className={`h-4 w-4 transition-transform ${sidebarOpen ? '' : 'rotate-180'}`} />
+            <Button variant="ghost" size="icon" className={`h-8 ${sidebarOpen ? 'w-8 ms-auto' : 'w-full'}`} onClick={toggleSidebar} aria-label={sidebarOpen ? t('app.collapseSidebar') : t('app.expandSidebar')}>
+              <ChevronLeft className={`h-4 w-4 transition-transform chevron-rtl ${sidebarOpen ? '' : 'rotate-180'}`} />
             </Button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 flex flex-col min-w-0 content-rtl">
           <header className="hidden lg:flex items-center justify-between h-14 px-6 border-b shrink-0">
             <div>
               <h1 className="text-lg font-bold leading-tight">{t(VIEW_TITLE_KEYS[currentView])}</h1>
