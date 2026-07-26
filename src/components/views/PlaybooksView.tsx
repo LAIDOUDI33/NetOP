@@ -463,7 +463,7 @@ export default function PlaybooksView() {
                   <TableHead className="min-w-[180px]">{t('pb.name')}</TableHead>
                   <TableHead>{t('filter.category')}</TableHead>
                   <TableHead>{t('filter.tech')}</TableHead>
-                  <TableHead>Severity</TableHead>
+                  <TableHead>{t('th.severity')}</TableHead>
                   <TableHead className="text-right">{t('pb.steps')}</TableHead>
                   <TableHead className="text-right">{t('pb.avgSuccessRate')}</TableHead>
                   <TableHead className="text-right">{t('pb.usage')}</TableHead>

@@ -358,7 +358,7 @@ export default function LiveView() {
         {/* Recent Alerts */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Recent Alerts</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('live.recentAlerts')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="max-h-96 overflow-y-auto space-y-2">
@@ -394,7 +394,7 @@ export default function LiveView() {
               {recentAlerts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-8 w-8 mb-2 opacity-40" />
-                  <p className="text-xs">No unresolved alerts</p>
+                  <p className="text-xs">{t('live.noUnresolved')}</p>
                 </div>
               )}
             </div>
@@ -445,7 +445,7 @@ export default function LiveView() {
                 <p className="text-lg font-bold mt-0.5 text-red-600 dark:text-red-400">{incidents?.open ?? 0}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Investigating</p>
+                <p className="text-xs text-muted-foreground">{t('live.investigating')}</p>
                 <p className="text-lg font-bold mt-0.5 text-amber-600 dark:text-amber-400">{incidents?.investigating ?? 0}</p>
               </div>
               <div className="text-center">

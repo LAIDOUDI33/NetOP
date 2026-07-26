@@ -307,10 +307,10 @@ export default function IncidentsView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <AlertTriangle className="h-6 w-6 text-amber-500" />
-          Incident Management
+          {t('inc.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Network incident tracking, SLA compliance, and resolution workflow
+          {t('inc.subtitle')}
         </p>
       </div>
 
@@ -321,7 +321,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-500" />
-              Open Incidents
+              {t('inc.openIncidents')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -336,7 +336,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Search className="h-4 w-4 text-amber-500" />
-              Investigating
+              {t('inc.investigating')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -351,7 +351,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              Resolved Today
+              {t('inc.resolvedToday')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -366,7 +366,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-red-500" />
-              SLA Breaches
+              {t('inc.slaBreaches')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -381,7 +381,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-cyan-500" />
-              Avg MTTR
+              {t('inc.avgMttr')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -397,7 +397,7 @@ export default function IncidentsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ListChecks className="h-4 w-4 text-slate-500" />
-              Total Incidents
+              {t('inc.totalIncidents')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -413,7 +413,7 @@ export default function IncidentsView() {
         {/* t('inc.statusDist') Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status Distribution</CardTitle>
+            <CardTitle className="text-base">{t('inc.statusDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -445,7 +445,7 @@ export default function IncidentsView() {
         {/* t('inc.catDist') Pie Chart (Donut) */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Category Distribution</CardTitle>
+            <CardTitle className="text-base">{t('inc.categoryDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -484,7 +484,7 @@ export default function IncidentsView() {
         {/* t('inc.sevByCat') Stacked Bar Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Severity by Category</CardTitle>
+            <CardTitle className="text-base">{t('inc.severityByCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -543,9 +543,9 @@ export default function IncidentsView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allSeverities')}</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="low">{t('inc.low')}</SelectItem>
+            <SelectItem value="medium">{t('inc.medium')}</SelectItem>
+            <SelectItem value="high">{t('inc.high')}</SelectItem>
             <SelectItem value="critical">{t('status.critical')}</SelectItem>
           </SelectContent>
         </Select>
@@ -569,12 +569,12 @@ export default function IncidentsView() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filter.allCategories')}</SelectItem>
-            <SelectItem value="network">Network</SelectItem>
-            <SelectItem value="hardware">Hardware</SelectItem>
-            <SelectItem value="software">Software</SelectItem>
-            <SelectItem value="power">Power</SelectItem>
-            <SelectItem value="environmental">Environmental</SelectItem>
-            <SelectItem value="third_party">Third Party</SelectItem>
+            <SelectItem value="network">{t('inc.catNetwork')}</SelectItem>
+            <SelectItem value="hardware">{t('inc.catHardware')}</SelectItem>
+            <SelectItem value="software">{t('inc.catSoftware')}</SelectItem>
+            <SelectItem value="power">{t('inc.catPower')}</SelectItem>
+            <SelectItem value="environmental">{t('inc.catEnvironmental')}</SelectItem>
+            <SelectItem value="third_party">{t('inc.catThirdParty')}</SelectItem>
           </SelectContent>
         </Select>
         <ExportButton data={incidents} filenamePrefix="incidents" columns={[{ key: 'title', header: 'Title' }, { key: 'technology', header: 'Technology' }, { key: 'severity', header: 'Severity' }, { key: 'status', header: 'Status' }, { key: 'category', header: 'Category' }, { key: 'assignedTo', header: 'Assigned To' }, { key: 'reportedBy', header: 'Reported By' }]} />
@@ -594,18 +594,18 @@ export default function IncidentsView() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[160px]">Title</TableHead>
-                  <TableHead>Tech</TableHead>
-                  <TableHead>Severity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Site</TableHead>
-                  <TableHead>Assigned</TableHead>
-                  <TableHead>MTTR</TableHead>
-                  <TableHead>SLA</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead className="min-w-[160px]">{t('inc.colTitle')}</TableHead>
+                  <TableHead>{t('inc.colTech')}</TableHead>
+                  <TableHead>{t('inc.colSeverity')}</TableHead>
+                  <TableHead>{t('inc.colStatus')}</TableHead>
+                  <TableHead>{t('inc.colCategory')}</TableHead>
+                  <TableHead>{t('inc.colPriority')}</TableHead>
+                  <TableHead>{t('inc.colSite')}</TableHead>
+                  <TableHead>{t('inc.colAssigned')}</TableHead>
+                  <TableHead>{t('inc.colMttr')}</TableHead>
+                  <TableHead>{t('inc.colSla')}</TableHead>
+                  <TableHead>{t('inc.colTags')}</TableHead>
+                  <TableHead>{t('inc.colCreated')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -669,7 +669,7 @@ export default function IncidentsView() {
                       {inc.assignedTo ? (
                         <span>{inc.assignedTo}</span>
                       ) : (
-                        <span className="text-muted-foreground italic">Unassigned</span>
+                        <span className="text-muted-foreground italic">{t('inc.unassigned')}</span>
                       )}
                     </TableCell>
 
@@ -681,7 +681,7 @@ export default function IncidentsView() {
                     {/* SLA */}
                     <TableCell>
                       {inc.slaBreach ? (
-                        <Badge variant="destructive">BREACH</Badge>
+                        <Badge variant="destructive">{t('inc.breach')}</Badge>
                       ) : (
                         <Badge variant="outline">{t('view.none')}</Badge>
                       )}

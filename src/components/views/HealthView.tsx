@@ -289,7 +289,7 @@ export default function HealthView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Radio className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Health Data Available</p>
+        <p className="text-lg font-medium">{t('health.noData')}</p>
         <p className="text-sm mt-1">
           Health scores have not been computed yet.
         </p>
@@ -381,7 +381,7 @@ export default function HealthView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {degradingCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Trending downward</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('health.trendingDown')}</p>
           </CardContent>
         </Card>
 
@@ -397,7 +397,7 @@ export default function HealthView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {fCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Critical attention needed</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('health.criticalAttention')}</p>
           </CardContent>
         </Card>
       </div>
@@ -574,15 +574,15 @@ export default function HealthView() {
                     <TableHead className="sticky left-0 bg-background z-10">{t('th.site')}</TableHead>
                     <TableHead>{t('th.tech')}</TableHead>
                     <TableHead>{t('th.region')}</TableHead>
-                    <TableHead className="text-right">Overall</TableHead>
-                    <TableHead className="text-right">Coverage</TableHead>
-                    <TableHead className="text-right">Capacity</TableHead>
-                    <TableHead className="text-right">Quality</TableHead>
-                    <TableHead className="text-right">Reliability</TableHead>
-                    <TableHead className="text-right">Experience</TableHead>
+                    <TableHead className="text-right">{t('health.overall')}</TableHead>
+                    <TableHead className="text-right">{t('health.coverage')}</TableHead>
+                    <TableHead className="text-right">{t('health.capacity')}</TableHead>
+                    <TableHead className="text-right">{t('health.quality')}</TableHead>
+                    <TableHead className="text-right">{t('health.reliability')}</TableHead>
+                    <TableHead className="text-right">{t('health.experience')}</TableHead>
                     <TableHead>{t('th.grade')}</TableHead>
-                    <TableHead>Trend</TableHead>
-                    <TableHead>Issues</TableHead>
+                    <TableHead>{t('th.trend')}</TableHead>
+                    <TableHead>{t('health.issues')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

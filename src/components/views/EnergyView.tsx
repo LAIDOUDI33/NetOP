@@ -315,7 +315,7 @@ export default function EnergyView() {
               {formatNumber(summary?.totalCO2kg ?? 0, 1)}
               <span className="text-base font-normal text-muted-foreground ml-1">kg</span>
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Carbon footprint</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('en.carbonFootprint')}</p>
           </CardContent>
         </Card>
 
@@ -332,7 +332,7 @@ export default function EnergyView() {
               {formatNumber(summary?.avgTemp ?? 0, 1)}
               <span className="text-base font-normal text-muted-foreground ml-1">°C</span>
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all sites</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('en.acrossAllSites')}</p>
           </CardContent>
         </Card>
 
@@ -367,7 +367,7 @@ export default function EnergyView() {
               {formatNumber(summary?.energySavingPct ?? 0, 1)}
               <span className="text-base font-normal text-muted-foreground ml-1">%</span>
             </span>
-            <p className="text-xs text-muted-foreground mt-1">vs normal operation</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('en.vsNormal')}</p>
           </CardContent>
         </Card>
       </div>
@@ -542,7 +542,7 @@ export default function EnergyView() {
                     <TableHead>{t('th.tech')}</TableHead>
                     <TableHead className="text-right">Power (W)</TableHead>
                     <TableHead className="text-right">Energy (Wh)</TableHead>
-                    <TableHead className="text-right">Users</TableHead>
+                    <TableHead className="text-right">{t('en.colUsers')}</TableHead>
                     <TableHead className="text-right">Load %</TableHead>
                     <TableHead className="text-right">Temp °C</TableHead>
                     <TableHead>{t('th.status')}</TableHead>

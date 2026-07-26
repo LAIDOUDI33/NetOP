@@ -321,7 +321,7 @@ export default function RoiView() {
             <span className="text-2xl font-bold">
               {formatCurrency(summary?.totalInvestment ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Across all projects</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('roi.acrossAllProjects')}</p>
           </CardContent>
         </Card>
 
@@ -337,7 +337,7 @@ export default function RoiView() {
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               {formatCurrency(summary?.totalAnnualSaving ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Per year</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('roi.perYear')}</p>
           </CardContent>
         </Card>
 
@@ -353,7 +353,7 @@ export default function RoiView() {
             <span className="text-2xl font-bold">
               {formatCurrency(summary?.totalCumulativeSaving ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">All time</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('roi.allTime')}</p>
           </CardContent>
         </Card>
 
@@ -369,7 +369,7 @@ export default function RoiView() {
             <span className={`text-2xl font-bold ${roiColor(summary?.avgRoi ?? 0)}`}>
               {formatNumber(summary?.avgRoi ?? 0, 0)}%
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Average return</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('roi.avgReturn')}</p>
           </CardContent>
         </Card>
 
@@ -401,7 +401,7 @@ export default function RoiView() {
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               {realizedCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Completed actions</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('roi.completedActions')}</p>
           </CardContent>
         </Card>
       </div>
@@ -539,16 +539,16 @@ export default function RoiView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Title</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('roi.colTitle')}</TableHead>
                     <TableHead>{t('filter.category')}</TableHead>
                     <TableHead>{t('filter.tech')}</TableHead>
-                    <TableHead>Site</TableHead>
+                    <TableHead>{t('th.site')}</TableHead>
                     <TableHead className="text-right">{t('roi.investment')}</TableHead>
                     <TableHead className="text-right">{t('roi.saving')}</TableHead>
                     <TableHead className="text-right">{t('roi.paybackMonths')}</TableHead>
                     <TableHead className="text-right">{t('roi.roiPct')}</TableHead>
                     <TableHead>{t('filter.status')}</TableHead>
-                    <TableHead className="text-right">Cumulative</TableHead>
+                    <TableHead className="text-right">{t('roi.cumulative')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

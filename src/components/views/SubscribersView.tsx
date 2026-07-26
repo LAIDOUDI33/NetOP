@@ -271,7 +271,7 @@ export default function SubscribersView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Users className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Subscriber Data Available</p>
+        <p className="text-lg font-medium">{t('sub.noData')}</p>
         <p className="text-sm mt-1">
           {technology !== 'all'
             ? t('sub.noSegForTech', { technology })
@@ -581,7 +581,7 @@ export default function SubscribersView() {
                   <TableHead className="text-right">Voice (min)</TableHead>
                   <TableHead className="text-right">ARPU ($)</TableHead>
                   <TableHead className="text-center">{t('th.churnRisk')}</TableHead>
-                  <TableHead className="text-right">Satisfaction</TableHead>
+                  <TableHead className="text-right">{t('crm.colSatisfaction')}</TableHead>
                   <TableHead>{t('th.peakHour')}</TableHead>
                   <TableHead className="min-w-[180px]">{t('th.topServices')}</TableHead>
                 </TableRow>

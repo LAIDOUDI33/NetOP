@@ -87,15 +87,15 @@ export default function OSSIntegrationView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">OSS Integration</h1>
-          <p className="text-muted-foreground text-sm mt-1">Network element inventory and real-time performance from OSS systems</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('oss.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('oss.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input placeholder="Search network elements..." className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
+            <input placeholder={t('oss.searchPlaceholder')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
-          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Sync OSS</Button>
+          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('oss.syncOss')}</Button>
           <ExportButton data={elements} filename="oss-network-elements" />
         </div>
       </div>
@@ -106,9 +106,9 @@ export default function OSSIntegrationView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total NEs</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('oss.totalNes')}</p>
                 <p className="text-3xl font-bold mt-1">{summary.total}</p>
-                <p className="text-xs text-muted-foreground mt-1">Managed Elements</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('oss.managedElements')}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                 <Server className="h-6 w-6 text-slate-600 dark:text-slate-300" />
@@ -120,9 +120,9 @@ export default function OSSIntegrationView() {
           <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Active NEs</p>
+              <p className="text-sm font-medium text-muted-foreground">{t('oss.activeNes')}</p>
               <p className="text-3xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">{summary.active}</p>
-              <div className="flex items-center gap-1 mt-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" /><p className="text-xs text-emerald-600">Fully Operational</p></div>
+              <div className="flex items-center gap-1 mt-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" /><p className="text-xs text-emerald-600">{t('oss.fullyOperational')}</p></div>
             </div>
             <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
               <Signal className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -134,7 +134,7 @@ export default function OSSIntegrationView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg CPU / Memory</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('oss.avgCpuMemory')}</p>
                 <p className="text-3xl font-bold mt-1">{summary.avgCpu}%</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Progress value={summary.avgCpu} className="flex-1 h-2" />
@@ -151,9 +151,9 @@ export default function OSSIntegrationView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Down NEs</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('oss.downNes')}</p>
                 <p className="text-3xl font-bold mt-1 text-red-600 dark:text-red-400">{summary.down}</p>
-                <div className="flex items-center gap-1 mt-1"><AlertTriangle className="h-3 w-3 text-red-500" /><p className="text-xs text-red-600">Requires Attention</p></div>
+                <div className="flex items-center gap-1 mt-1"><AlertTriangle className="h-3 w-3 text-red-500" /><p className="text-xs text-red-600">{t('oss.requiresAttention')}</p></div>
               </div>
               <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                 <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -166,26 +166,26 @@ export default function OSSIntegrationView() {
       {/* Tabs */}
       <Tabs defaultValue="inventory" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="inventory">NE Inventory</TabsTrigger>
-          <TabsTrigger value="charts">Distribution</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="faults">Fault Events</TabsTrigger>
+          <TabsTrigger value="inventory">{t('oss.neInventory')}</TabsTrigger>
+          <TabsTrigger value="charts">{t('oss.distribution')}</TabsTrigger>
+          <TabsTrigger value="performance">{t('oss.performance')}</TabsTrigger>
+          <TabsTrigger value="faults">{t('oss.faultEvents')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="inventory">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Network Element Inventory</CardTitle>
-              <CardDescription>All managed network elements across {REGIONS.length} regions</CardDescription>
+              <CardTitle className="text-base">{t('oss.networkElementInventory')}</CardTitle>
+              <CardDescription>{t('oss.allManagedRegions', { count: REGIONS.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[480px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>NE ID</TableHead><TableHead>Name</TableHead><TableHead>Type</TableHead>
-                      <TableHead>Vendor</TableHead><TableHead>Region</TableHead><TableHead>Status</TableHead>
-                      <TableHead>Last Poll</TableHead><TableHead>CPU</TableHead>
+                      <TableHead>{t('oss.neId')}</TableHead><TableHead>{t('oss.colName')}</TableHead><TableHead>{t('oss.type')}</TableHead>
+                      <TableHead>{t('oss.vendor')}</TableHead><TableHead>{t('oss.region')}</TableHead><TableHead>{t('oss.colStatus')}</TableHead>
+                      <TableHead>{t('oss.lastPoll')}</TableHead><TableHead>{t('oss.cpu')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -216,7 +216,7 @@ export default function OSSIntegrationView() {
         <TabsContent value="charts" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">NE Type Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('oss.neTypeDistribution')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <PieChart>
@@ -230,7 +230,7 @@ export default function OSSIntegrationView() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Vendor Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('oss.vendorDistribution')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={vendorDistribution}>
@@ -250,7 +250,7 @@ export default function OSSIntegrationView() {
 
         <TabsContent value="performance">
           <Card>
-            <CardHeader><CardTitle className="text-base">Real-Time Performance Trends</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('oss.realTimePerformance')}</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={performanceTrend}>
@@ -271,18 +271,18 @@ export default function OSSIntegrationView() {
         <TabsContent value="faults">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Fault Event Feed</CardTitle>
-              <CardDescription>Latest alarms from OSS ({faultEvents.length} events)</CardDescription>
+              <CardTitle className="text-base">{t('oss.faultEventFeed')}</CardTitle>
+              <CardDescription>{t('oss.latestAlarms', { count: faultEvents.length })}</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[480px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Time</TableHead><TableHead>Network Element</TableHead>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Description</TableHead><TableHead>ACK</TableHead>
+                      <TableHead>{t('oss.time')}</TableHead><TableHead>{t('oss.networkElement')}</TableHead>
+                      <TableHead>{t('oss.severity')}</TableHead>
+                      <TableHead>{t('oss.category')}</TableHead>
+                      <TableHead>{t('oss.description')}</TableHead><TableHead>{t('oss.ack')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

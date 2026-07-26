@@ -569,10 +569,10 @@ export default function FaultsView() {
                     <TableHead>{t('th.component')}</TableHead>
                     <TableHead>{t('th.type')}</TableHead>
                     <TableHead className="text-right">{t('th.probability')}</TableHead>
-                    <TableHead>Severity</TableHead>
+                    <TableHead>{t('th.severity')}</TableHead>
                     <TableHead>{t('th.status')}</TableHead>
                     <TableHead className="text-right">{t('th.confidence')}</TableHead>
-                    <TableHead>Time to Fail</TableHead>
+                    <TableHead>{t('ft.timeToFail')}</TableHead>
                     <TableHead>{t('th.action')}</TableHead>
                     <TableHead className="sticky right-0 bg-background z-10">{t('th.createdAt')}</TableHead>
                   </TableRow>

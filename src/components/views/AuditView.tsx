@@ -466,16 +466,16 @@ export default function AuditView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap text-xs">Timestamp</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Entity Type</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Entity Name</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Action</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Field</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('th.timestamp')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.entityType')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.entityName')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.action')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.field')}</TableHead>
                       <TableHead className="whitespace-nowrap text-xs">Previous → New</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Requested By</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Approved By</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Impact</TableHead>
-                      <TableHead className="whitespace-nowrap text-xs">Tech</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.requestedBy')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.approvedBy')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('au.impact')}</TableHead>
+                      <TableHead className="whitespace-nowrap text-xs">{t('th.tech')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

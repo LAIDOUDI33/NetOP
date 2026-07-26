@@ -258,7 +258,7 @@ export default function HandoverView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <ArrowRightLeft className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Handover Data Available</p>
+        <p className="text-lg font-medium">{t('ho.noData')}</p>
         <p className="text-sm mt-1">
           {techFilter !== 'all' || statusFilter !== 'all'
             ? t('ho.noMatch')
@@ -328,7 +328,7 @@ export default function HandoverView() {
             <span className="text-3xl font-bold">
               {formatK(summary?.totalAttempts ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">All HO attempts</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('ho.allAttempts')}</p>
           </CardContent>
         </Card>
 
@@ -343,7 +343,7 @@ export default function HandoverView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {formatK(summary?.totalFailures ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Failed handovers</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('ho.failedHandovers')}</p>
           </CardContent>
         </Card>
 
@@ -358,7 +358,7 @@ export default function HandoverView() {
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {formatK(summary?.pingPongTotal ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Rapid bounce-back HOs</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('ho.rapidBounceback')}</p>
           </CardContent>
         </Card>
 
@@ -373,7 +373,7 @@ export default function HandoverView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {criticalPairs}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Require immediate action</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('ho.requireImmediateAction')}</p>
           </CardContent>
         </Card>
       </div>
@@ -492,20 +492,20 @@ export default function HandoverView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10">Serving Cell</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10">{t('ho.servingCell')}</TableHead>
                     <TableHead className="sticky left-[140px] bg-background z-10">{t('th.code')}</TableHead>
-                    <TableHead className="sticky left-[200px] bg-background z-10">Neighbor</TableHead>
+                    <TableHead className="sticky left-[200px] bg-background z-10">{t('ho.neighbor')}</TableHead>
                     <TableHead className="sticky left-[340px] bg-background z-10">{t('th.code')}</TableHead>
                     <TableHead>{t('th.tech')}</TableHead>
                     <TableHead>{t('th.type')}</TableHead>
-                    <TableHead className="text-right">Attempts</TableHead>
-                    <TableHead className="text-right">Success</TableHead>
-                    <TableHead className="text-right">Failures</TableHead>
+                    <TableHead className="text-right">{t('ho.attempts')}</TableHead>
+                    <TableHead className="text-right">{t('ho.success')}</TableHead>
+                    <TableHead className="text-right">{t('ho.failures')}</TableHead>
                     <TableHead className="text-right">{t('th.hoSuccessRate')}</TableHead>
-                    <TableHead className="text-right">Prep ms</TableHead>
-                    <TableHead className="text-right">Exec ms</TableHead>
-                    <TableHead className="text-right">Ping-Pong</TableHead>
-                    <TableHead>Early/Late</TableHead>
+                    <TableHead className="text-right">{t('ho.prepMs')}</TableHead>
+                    <TableHead className="text-right">{t('ho.execMs')}</TableHead>
+                    <TableHead className="text-right">{t('ho.pingPong')}</TableHead>
+                    <TableHead>{t('ho.earlyLate')}</TableHead>
                     <TableHead>{t('th.status')}</TableHead>
                     <TableHead>{t('th.action')}</TableHead>
                   </TableRow>

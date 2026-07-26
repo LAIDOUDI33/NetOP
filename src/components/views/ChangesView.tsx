@@ -510,18 +510,18 @@ export default function ChangesView() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-background z-10 min-w-[180px]">Title</TableHead>
+                    <TableHead className="sticky left-0 bg-background z-10 min-w-[180px]">{t('chg.colTitle')}</TableHead>
                     <TableHead>{t('filter.tech')}</TableHead>
                     <TableHead>{t('filter.category')}</TableHead>
-                    <TableHead>Site</TableHead>
-                    <TableHead>Parameter</TableHead>
+                    <TableHead>{t('th.site')}</TableHead>
+                    <TableHead>{t('chg.colParameter')}</TableHead>
                     <TableHead>{t('chg.previousToProposed')}</TableHead>
-                    <TableHead>Risk</TableHead>
+                    <TableHead>{t('th.risk')}</TableHead>
                     <TableHead>{t('filter.status')}</TableHead>
-                    <TableHead>Requested By</TableHead>
-                    <TableHead>Implemented</TableHead>
-                    <TableHead>Rollback Reason</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>{t('au.requestedBy')}</TableHead>
+                    <TableHead>{t('chg.implemented')}</TableHead>
+                    <TableHead>{t('chg.rollbackReason')}</TableHead>
+                    <TableHead>{t('th.createdAt')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

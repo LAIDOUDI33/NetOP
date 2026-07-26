@@ -97,9 +97,9 @@ export default function BillingIntegrationView() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input placeholder="Search invoices..." className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
+            <input placeholder={t('bil.searchInvoices')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
-          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Sync Billing</Button>
+          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('bil.syncBilling')}</Button>
           <ExportButton data={invoices} filename="billing-invoices" />
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function BillingIntegrationView() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('bil.totalRevenue')}</p>
             <p className="text-3xl font-bold mt-1">{(summary.totalRevenue / 1000000).toFixed(1)}M <span className="text-sm font-normal text-muted-foreground">DZD</span></p>
             <div className="flex items-center gap-1 mt-1">
               {summary.monthlyGrowth >= 0
@@ -125,7 +125,7 @@ export default function BillingIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Collection Rate</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('bil.collectionRate')}</p>
             <p className="text-3xl font-bold mt-1">{summary.collectionRate}%</p>
             <Progress value={summary.collectionRate} className="mt-2 h-2" />
           </div>
@@ -135,9 +135,9 @@ export default function BillingIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Overdue Amount</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('bil.overdueAmount')}</p>
             <p className="text-3xl font-bold mt-1 text-red-600 dark:text-red-400">{(summary.overdueAmount / 1000).toFixed(0)}K <span className="text-sm font-normal text-muted-foreground">DZD</span></p>
-            <p className="text-xs text-red-600 mt-1">{summary.overdueCount} invoices overdue</p>
+            <p className="text-xs text-red-600 mt-1">{summary.overdueCount} {t('bil.invoicesOverdue')}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
             <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -145,9 +145,9 @@ export default function BillingIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Avg Invoice</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('bil.avgInvoice')}</p>
             <p className="text-3xl font-bold mt-1">{summary.avgInvoiceAmount.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">DZD</span></p>
-            <p className="text-xs text-muted-foreground mt-1">{summary.totalInvoices} total invoices</p>
+            <p className="text-xs text-muted-foreground mt-1">{summary.totalInvoices} {t('bil.totalInvoices')}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
             <Receipt className="h-6 w-6 text-slate-600 dark:text-slate-300" />
@@ -166,15 +166,15 @@ export default function BillingIntegrationView() {
 
         <TabsContent value="invoices">
           <Card>
-            <CardHeader><CardTitle className="text-base">Invoice Register ({invoices.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('bil.invoiceRegister')} ({invoices.length})</CardTitle></CardHeader>
             <CardContent>
               <ScrollArea className="h-[480px]">
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>Invoice ID</TableHead><TableHead>Customer</TableHead><TableHead>MSISDN</TableHead>
-                    <TableHead>Service</TableHead><TableHead>Amount</TableHead><TableHead>Tax</TableHead>
-                    <TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Payment</TableHead>
-                    <TableHead>Due Date</TableHead>
+                    <TableHead>{t('bil.colInvoiceId')}</TableHead><TableHead>{t('bil.colCustomer')}</TableHead><TableHead>{t('bil.colMsisdn')}</TableHead>
+                    <TableHead>{t('bil.colService')}</TableHead><TableHead>{t('bil.colAmount')}</TableHead><TableHead>{t('bil.colTax')}</TableHead>
+                    <TableHead>{t('bil.colTotal')}</TableHead><TableHead>{t('bil.colStatus')}</TableHead><TableHead>{t('bil.colPayment')}</TableHead>
+                    <TableHead>{t('bil.colDueDate')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {invoices.map((inv) => {
@@ -203,7 +203,7 @@ export default function BillingIntegrationView() {
 
         <TabsContent value="analytics" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle className="text-base">Monthly Revenue Trend</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('bil.monthlyRevenueTrend')}</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={revenueByMonth}>
@@ -219,7 +219,7 @@ export default function BillingIntegrationView() {
           </Card>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Revenue by Region</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('bil.revenueByRegion')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={revenueByRegion}>
@@ -233,7 +233,7 @@ export default function BillingIntegrationView() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Revenue by Service</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('bil.revenueByService')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <PieChart>
@@ -252,7 +252,7 @@ export default function BillingIntegrationView() {
         <TabsContent value="payments" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Payment Methods</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('bil.paymentMethods')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={paymentMethods} layout="vertical">
@@ -269,15 +269,15 @@ export default function BillingIntegrationView() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Top Debtors</CardTitle>
-                <CardDescription>Highest unpaid amounts</CardDescription>
+                <CardTitle className="text-base">{t('bil.topDebtors')}</CardTitle>
+                <CardDescription>{t('bil.highestUnpaid')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[340px]">
                   <Table>
                     <TableHeader><TableRow>
-                      <TableHead>Customer</TableHead><TableHead>Region</TableHead>
-                      <TableHead>Total Due</TableHead><TableHead>Days</TableHead><TableHead>Status</TableHead>
+                      <TableHead>{t('bil.colCustomer')}</TableHead><TableHead>{t('bil.colRegion')}</TableHead>
+                      <TableHead>{t('bil.colTotalDue')}</TableHead><TableHead>{t('bil.colDays')}</TableHead><TableHead>{t('bil.colStatus')}</TableHead>
                     </TableRow></TableHeader>
                     <TableBody>
                       {topDebtors.map((d) => (
@@ -300,7 +300,7 @@ export default function BillingIntegrationView() {
         <TabsContent value="aging">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Aging Analysis</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('bil.agingAnalysis')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={agingBuckets}>
@@ -315,7 +315,7 @@ export default function BillingIntegrationView() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Aging by Value (DZD)</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('bil.agingByValue')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={360}>
                   <BarChart data={agingBuckets}>

@@ -534,8 +534,8 @@ export default function CoverageHolesView() {
                     <TableHead>{t('ch.nearestSiteCol')}</TableHead>
                     <TableHead className="text-right">{t('ch.affectedUsers')}</TableHead>
                     <TableHead>{t('filter.status')}</TableHead>
-                    <TableHead className="min-w-[160px]">Recommendation</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead className="min-w-[160px]">{t('ft.recommendation')}</TableHead>
+                    <TableHead>{t('onb.colCreated')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

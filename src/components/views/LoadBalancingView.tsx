@@ -338,7 +338,7 @@ export default function LoadBalancingView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {summary?.congestedSites ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Require offloading</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('lb.requireOffloading')}</p>
           </CardContent>
         </Card>
 

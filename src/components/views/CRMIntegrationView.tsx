@@ -79,9 +79,9 @@ export default function CRMIntegrationView() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input placeholder="Search customers..." className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
+            <input placeholder={t('crm.searchCustomers')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
-          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Sync CRM</Button>
+          <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('crm.syncCrm')}</Button>
           <ExportButton data={customers} filename="crm-customers" />
         </div>
       </div>
@@ -98,9 +98,9 @@ export default function CRMIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Avg ARPU</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('crm.avgArpu')}</p>
             <p className="text-3xl font-bold mt-1">{summary.avgArpu.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">DZD</span></p>
-            <p className="text-xs text-emerald-600 mt-1">Revenue: {summary.totalRevenue.toLocaleString()} DZD</p>
+            <p className="text-xs text-emerald-600 mt-1">{t('crm.revenue')}: {summary.totalRevenue.toLocaleString()} DZD</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><DollarSign className="h-6 w-6 text-emerald-600 dark:text-emerald-400" /></div>
         </div></CardContent></Card>
@@ -133,14 +133,14 @@ export default function CRMIntegrationView() {
 
         <TabsContent value="customers">
           <Card>
-            <CardHeader><CardTitle className="text-base">Customer List ({customers.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('crm.customerList')} ({customers.length})</CardTitle></CardHeader>
             <CardContent>
               <ScrollArea className="h-[480px]">
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>MSISDN</TableHead><TableHead>Name</TableHead><TableHead>Segment</TableHead>
-                    <TableHead>Tier</TableHead><TableHead>Region</TableHead><TableHead>ARPU</TableHead>
-                    <TableHead>Churn</TableHead><TableHead>Satisfaction</TableHead><TableHead>Tenure</TableHead>
+                    <TableHead>{t('crm.colMsisdn')}</TableHead><TableHead>{t('crm.colName')}</TableHead><TableHead>{t('crm.colSegment')}</TableHead>
+                    <TableHead>{t('crm.colTier')}</TableHead><TableHead>{t('crm.colRegion')}</TableHead><TableHead>{t('crm.colArpu')}</TableHead>
+                    <TableHead>{t('crm.colChurn')}</TableHead><TableHead>{t('crm.colSatisfaction')}</TableHead><TableHead>{t('crm.colTenure')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {customers.map((c) => (
@@ -166,7 +166,7 @@ export default function CRMIntegrationView() {
         <TabsContent value="analytics" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Segment Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('crm.segmentDistribution')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <PieChart><Pie data={segmentDistribution} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={110} paddingAngle={3}>
@@ -176,7 +176,7 @@ export default function CRMIntegrationView() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">ARPU by Region</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('crm.arpuByRegion')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={arpuByRegion}>
@@ -193,7 +193,7 @@ export default function CRMIntegrationView() {
             </Card>
           </div>
           <Card className="mt-4">
-            <CardHeader><CardTitle className="text-base">Satisfaction Trend</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t('crm.satisfactionTrend')}</CardTitle></CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={satisfactionTrend}>
@@ -213,7 +213,7 @@ export default function CRMIntegrationView() {
         <TabsContent value="churn">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle className="text-base">Churn Risk Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('crm.churnRiskDistribution')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={churnAnalysis}>
@@ -227,7 +227,7 @@ export default function CRMIntegrationView() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle className="text-base">Revenue at Risk by Level</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t('crm.revenueAtRisk')}</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={340}>
                   <BarChart data={churnAnalysis}>
@@ -246,15 +246,15 @@ export default function CRMIntegrationView() {
         <TabsContent value="complaints">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Top Complaint Categories</CardTitle>
-              <CardDescription>Impact on customer satisfaction</CardDescription>
+              <CardTitle className="text-base">{t('crm.topComplaints')}</CardTitle>
+              <CardDescription>{t('crm.complaintsImpact')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[420px]">
                 <Table>
                   <TableHeader><TableRow>
-                    <TableHead>Category</TableHead><TableHead>Region</TableHead><TableHead>Count</TableHead>
-                    <TableHead>Share</TableHead><TableHead>Trend</TableHead><TableHead>Sat. Impact</TableHead>
+                    <TableHead>{t('crm.colCategory')}</TableHead><TableHead>{t('crm.colRegion')}</TableHead><TableHead>{t('crm.colCount')}</TableHead>
+                    <TableHead>{t('crm.colShare')}</TableHead><TableHead>{t('crm.colTrend')}</TableHead><TableHead>{t('crm.colSatImpact')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
                     {topComplaints.map((c) => {

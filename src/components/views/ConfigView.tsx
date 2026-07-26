@@ -164,7 +164,7 @@ export default function ConfigView() {
             <Settings2 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Configuration Templates</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t('cfg.templates')}</h2>
             <p className="text-sm text-muted-foreground">{t('cfg.subtitle')}</p>
           </div>
         </div>
@@ -343,10 +343,10 @@ export default function ConfigView() {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-muted/50">
-                          <TableHead className="text-[11px] font-semibold h-8 px-3">Name</TableHead>
-                          <TableHead className="text-[11px] font-semibold h-8 px-3">Value</TableHead>
-                          <TableHead className="text-[11px] font-semibold h-8 px-3">Unit</TableHead>
-                          <TableHead className="text-[11px] font-semibold h-8 px-3">Range</TableHead>
+                          <TableHead className="text-[11px] font-semibold h-8 px-3">{t('cfg.colName')}</TableHead>
+                          <TableHead className="text-[11px] font-semibold h-8 px-3">{t('cfg.colValue')}</TableHead>
+                          <TableHead className="text-[11px] font-semibold h-8 px-3">{t('cfg.colUnit')}</TableHead>
+                          <TableHead className="text-[11px] font-semibold h-8 px-3">{t('cfg.colRange')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

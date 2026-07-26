@@ -484,7 +484,7 @@ export default function NpiView() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Rank</TableHead>
+                        <TableHead className="w-16">{t('npi.rank')}</TableHead>
                         <TableHead>{t('th.site')}</TableHead>
                         <TableHead className="w-20">{t('th.tech')}</TableHead>
                         <TableHead className="w-48">{t('npi.overallScore')}</TableHead>

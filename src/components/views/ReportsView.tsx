@@ -603,8 +603,8 @@ function PolicyReportTab() {
                     <TableHead className="text-xs">{t('th.tech')}</TableHead>
                     <TableHead className="text-xs">{t('th.trigger')}</TableHead>
                     <TableHead className="text-xs">{t('rpt.scope')}</TableHead>
-                    <TableHead className="text-xs text-center">Priority</TableHead>
-                    <TableHead className="text-xs text-center">Enabled</TableHead>
+                    <TableHead className="text-xs text-center">{t('th.priority')}</TableHead>
+                    <TableHead className="text-xs text-center">{t('rpt.enabled')}</TableHead>
                     <TableHead className="text-xs text-right">{t('rpt.totalRuns')}</TableHead>
                     <TableHead className="text-xs text-right">{t('rpt.successRate')}</TableHead>
                     <TableHead className="text-xs">{t('rpt.lastRun')}</TableHead>

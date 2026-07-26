@@ -320,7 +320,7 @@ export default function SpectrumView() {
             <span className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Frequency blocks</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('spec.freqBlocks')}</p>
           </CardContent>
         </Card>
 
@@ -336,7 +336,7 @@ export default function SpectrumView() {
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {summary?.totalBandwidth ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">MHz allocated</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('spec.mhzAllocated')}</p>
           </CardContent>
         </Card>
 
@@ -358,7 +358,7 @@ export default function SpectrumView() {
                 style={{ width: `${Math.min(summary?.avgUtilization ?? 0, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Channel utilization</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('spec.channelUtil')}</p>
           </CardContent>
         </Card>
 
@@ -374,7 +374,7 @@ export default function SpectrumView() {
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {summary?.refarmCandidates ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Bands eligible for refarming</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('spec.refarmEligible')}</p>
           </CardContent>
         </Card>
 
@@ -390,7 +390,7 @@ export default function SpectrumView() {
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {formatCurrency(summary?.totalRefarmSaving ?? 0)}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Estimated annual savings</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('spec.annualSavings')}</p>
           </CardContent>
         </Card>
       </div>
@@ -557,12 +557,12 @@ export default function SpectrumView() {
                     <TableHead className="text-right">{t('spc.bandwidthMhz')}</TableHead>
                     <TableHead>{t('filter.tech')}</TableHead>
                     <TableHead>{t('filter.region')}</TableHead>
-                    <TableHead className="text-right">Channels</TableHead>
+                    <TableHead className="text-right">{t('spec.channels')}</TableHead>
                     <TableHead className="text-right">{t('spc.utilizationPct')}</TableHead>
                     <TableHead className="text-right">{t('spc.avgInterference')}</TableHead>
                     <TableHead className="text-right">{t('spc.avgRsrp')}</TableHead>
                     <TableHead className="text-center">{t('spc.refarm')}</TableHead>
-                    <TableHead className="text-right">Potential Saving</TableHead>
+                    <TableHead className="text-right">{t('spec.potentialSaving')}</TableHead>
                     <TableHead>{t('filter.status')}</TableHead>
                   </TableRow>
                 </TableHeader>

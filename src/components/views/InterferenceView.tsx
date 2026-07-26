@@ -370,7 +370,7 @@ export default function InterferenceView() {
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {highCriticalCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Require immediate attention</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('intf.requireAttention')}</p>
           </CardContent>
         </Card>
 
@@ -408,7 +408,7 @@ export default function InterferenceView() {
             <span className="text-3xl font-bold text-amber-600 dark:text-amber-400">
               {activeCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Currently unresolved</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('intf.unresolved')}</p>
           </CardContent>
         </Card>
 
@@ -424,7 +424,7 @@ export default function InterferenceView() {
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {resolvedCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Successfully resolved</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('intf.resolved')}</p>
           </CardContent>
         </Card>
       </div>
@@ -560,7 +560,7 @@ export default function InterferenceView() {
                     <TableHead>{t('th.servingCell')}</TableHead>
                     <TableHead>{t('th.conflictingCell')}</TableHead>
                     <TableHead>{t('th.frequency')}</TableHead>
-                    <TableHead>PCI</TableHead>
+                    <TableHead>{t('onb.colPci')}</TableHead>
                     <TableHead className="text-right">{t('th.impactScore')}</TableHead>
                     <TableHead>{t('intf.affectedKpis')}</TableHead>
                     <TableHead className="min-w-[160px]">{t('th.description')}</TableHead>

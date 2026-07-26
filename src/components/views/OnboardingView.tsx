@@ -501,7 +501,7 @@ export default function OnboardingView() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Region</Label>
+                  <Label className="text-xs font-medium">{t('onb.region')}</Label>
                   <Controller
                     name="region"
                     control={form.control}
@@ -530,7 +530,7 @@ export default function OnboardingView() {
 
               {/* Vendor */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Vendor</Label>
+                <Label className="text-xs font-medium">{t('onb.vendor')}</Label>
                 <Controller
                   name="vendor"
                   control={form.control}
@@ -674,24 +674,24 @@ export default function OnboardingView() {
             ) : records.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 py-16 text-muted-foreground">
                 <Building className="h-10 w-10 opacity-30" />
-                <p className="text-sm font-medium">No onboarding records yet</p>
-                <p className="text-xs">Create a new site to begin the provisioning pipeline</p>
+                <p className="text-sm font-medium">{t('onb.noRecords')}</p>
+                <p className="text-xs">{t('onb.createToBegin')}</p>
               </div>
             ) : (
               <ScrollArea className="max-h-[520px]">
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-xs font-semibold">Site</TableHead>
-                      <TableHead className="text-xs font-semibold">Code</TableHead>
-                      <TableHead className="text-xs font-semibold">Tech</TableHead>
-                      <TableHead className="text-xs font-semibold">Region</TableHead>
-                      <TableHead className="text-xs font-semibold">Vendor</TableHead>
-                      <TableHead className="text-xs font-semibold">Status</TableHead>
-                      <TableHead className="text-xs font-semibold">PCI</TableHead>
-                      <TableHead className="text-xs font-semibold">Neighbors</TableHead>
-                      <TableHead className="text-xs font-semibold">Created</TableHead>
-                      <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colSite')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colCode')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colTech')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colRegion')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colVendor')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colStatus')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colPci')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colNeighbors')}</TableHead>
+                      <TableHead className="text-xs font-semibold">{t('onb.colCreated')}</TableHead>
+                      <TableHead className="text-right text-xs font-semibold">{t('onb.colActions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
