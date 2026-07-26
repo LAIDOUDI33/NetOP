@@ -5,8 +5,10 @@ import {
   Shield, AlertTriangle, Activity, Clock, Users, Server, 
   Globe, Lock, Eye, TrendingUp, Bell, Search, Filter,
   CheckCircle, XCircle, AlertCircle, ChevronRight, RefreshCw,
-  Wifi, Database, Cpu, HardDrive, Network, Zap
+  Wifi, Database, Cpu, HardDrive, Network, Zap, Scale
 } from 'lucide-react'
+
+import ComplianceDashboard from '@/components/compliance/dashboard'
 
 // Types
 interface Alert {
@@ -126,7 +128,7 @@ export default function SOCDashboard() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'alerts' | 'incidents'>('overview')
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'alerts' | 'incidents' | 'compliance'>('overview')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -212,7 +214,7 @@ export default function SOCDashboard() {
       {/* Navigation Tabs */}
       <nav className="bg-slate-900/50 border-b border-slate-800 px-6">
         <div className="flex gap-8">
-          {(['overview', 'alerts', 'incidents'] as const).map((tab) => (
+          {(['overview', 'alerts', 'incidents', 'compliance'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setSelectedTab(tab)}
@@ -455,6 +457,11 @@ export default function SOCDashboard() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* Compliance Tab */}
+        {selectedTab === 'compliance' && (
+          <ComplianceDashboard />
         )}
 
         {/* Incidents Tab */}
