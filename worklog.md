@@ -92,3 +92,34 @@ Stage Summary:
 - 50 anomaly events
 - All 42 data tables populated with demo-ready data
 - Total: ~3000+ DB records for full platform demo
+
+---
+Task ID: 6
+Agent: Main
+Task: Implement authentication, RTL support, cleanup, and RBAC seed merge
+
+Work Log:
+- Fixed api-auth.ts stub to use real getServerSession
+- Fixed [...nextauth]/route.ts to use real NextAuth handler
+- Added AuthProvider to Providers.tsx wrapper
+- Created middleware.ts for route protection (redirects to /login)
+- Created login page with i18n (fr/en/ar), RTL, password toggle, demo hint
+- Added NEXTAUTH_SECRET and NEXTAUTH_URL to .env
+- Seeded RBAC: 6 roles, 102 permissions, 6 demo users
+- Added HtmlAttributes component for dynamic dir/lang switching
+- Added RTL CSS classes (sidebar-rtl, content-rtl, chevron-rtl)
+- Applied RTL classes to page.tsx sidebar and nav items
+- Fixed fr.ts parse error (unescaped apostrophe in d'Opérations)
+- Added login i18n keys to en/fr/ar locale files
+- Deleted orphaned CoverageView.tsx (superseded by CoverageMapView)
+- Deleted 8 vendor research JSON artifacts (amdocs, ericsson, huawei, nokia, piworks_*)
+- Merged RBAC seed into main prisma/seed.ts (called at end of main())
+- Verified login flow with agent browser (login → dashboard → Arabic RTL)
+
+Stage Summary:
+- Authentication fully functional: NextAuth v4 + CredentialsProvider + JWT
+- 6 demo users created (admin/noc/rf/nop/field/viewer)
+- Arabic RTL layout works (sidebar, nav, dir attribute all switch correctly)
+- 9 dead files deleted (1 orphaned view + 8 JSON artifacts)
+- RBAC seed now runs automatically with main seed
+- All changes committed (8430898) and pushed to GitHub
