@@ -1586,6 +1586,15 @@ const ar: Record<string, string> = {
   'title.sonAutomation': 'أتمتة SON',
   'trd.confidence': 'مستوى الثقة',
   'trd.recommendation': 'التوصية',
+  // ========== LOGIN PAGE ==========
+  'login.title': 'نت أوبتيما الجزائر',
+  'login.subtitle': 'مركز عمليات الشبكة',
+  'login.features.monitoring': 'مراقبة في الوقت الحقيقي',
+  'login.features.analytics': 'تحليل متقدم',
+  'login.features.automation': 'أتمتة ذكية',
+  'login.features.reporting': 'تقارير شاملة',
+  'login.demoHint': 'عرض تجريبي: admin@netoptima-dز.local / admin123',
+  'login.selectLanguage': 'اللغة',
 };
 
 export default ar;

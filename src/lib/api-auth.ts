@@ -1,17 +1,15 @@
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
-/**
- * Auth stub — authentication is currently disabled.
- * All API requests are allowed through.
- * Re-enable in the next phase when auth is re-implemented.
- */
-export async function checkApiAuth(_request: Request): Promise<Record<string, unknown>> {
-  return { sub: 'admin', role: 'admin' };
+export async function checkApiAuth(request: Request): Promise<Record<string, unknown>> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    throw new Error('UNAUTHENTICATED');
+  }
+  return session.user as Record<string, unknown>;
 }
 
-/**
- * Returns a 401 response (kept for type compatibility, not used).
- */
 export function authError(): NextResponse {
   return NextResponse.json(
     { error: 'Non autorisé', code: 'AUTH_REQUIRED' },

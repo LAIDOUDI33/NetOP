@@ -1634,6 +1634,15 @@ const fr: Record<string, string> = {
   'title.sonAutomation': 'Automatisation SON',
   'trd.confidence': 'Confiance',
   'trd.recommendation': 'Recommandation',
+  // ========== LOGIN PAGE ==========
+  'login.title': 'NetOptima Algérie',
+  'login.subtitle': 'Centre d'Opérations Réseau',
+  'login.features.monitoring': 'Surveillance en Temps Réel',
+  'login.features.analytics': 'Analyse Avancée',
+  'login.features.automation': 'Automatisation Intelligente',
+  'login.features.reporting': 'Rapports Complets',
+  'login.demoHint': 'Démo : admin@netoptima-dz.local / admin123',
+  'login.selectLanguage': 'Langue',
 };
 
 export default fr;

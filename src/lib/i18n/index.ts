@@ -44,3 +44,10 @@ export function timeAgo(dateStr: string, tFn: (key: string, params?: Record<stri
   if (diffHr < 24) return tFn('time.hoursAgo', { n: diffHr });
   return tFn('time.daysAgo', { n: diffDay });
 }
+
+export function useTranslation() {
+  const t = useT();
+  const locale = useAppStore((s) => s.locale ?? 'fr');
+  const setLocale = useAppStore((s) => s.setLocale);
+  return { t, locale, setLocale };
+}
