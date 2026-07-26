@@ -73,43 +73,43 @@ export default function DataPipelineView() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Data Pipeline</h1>
-          <p className="text-muted-foreground text-sm mt-1">ETL orchestration, data flow monitoring, and ingestion management</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('dp.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('dp.subtitle')}</p>
         </div>
-        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
+        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('ma.refresh')}</Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Running Pipelines</p><p className="text-3xl font-bold mt-1 text-emerald-600">{summary.running}<span className="text-sm font-normal text-muted-foreground">/{summary.totalPipelines}</span></p><p className="text-xs text-muted-foreground mt-1">{summary.scheduled} scheduled</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('dp.runningPipelines')}</p><p className="text-3xl font-bold mt-1 text-emerald-600">{summary.running}<span className="text-sm font-normal text-muted-foreground">/{summary.totalPipelines}</span></p><p className="text-xs text-muted-foreground mt-1">{summary.scheduled} scheduled</p></div>
           <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Play className="h-6 w-6 text-emerald-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Records 24h</p><p className="text-3xl font-bold mt-1">{(summary.totalRecords24h / 1000000).toFixed(1)}M</p><p className="text-xs text-muted-foreground mt-1">Across all pipelines</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('dp.records24h')}</p><p className="text-3xl font-bold mt-1">{(summary.totalRecords24h / 1000000).toFixed(1)}M</p><p className="text-xs text-muted-foreground mt-1">{t('dp.acrossAllPipelines')}</p></div>
           <div className="h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><Database className="h-6 w-6 text-violet-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Error Rate</p><p className="text-3xl font-bold mt-1">{summary.avgErrorRate}%</p><Progress value={100 - summary.avgErrorRate} className="mt-2 h-2" /></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('dp.errorRate')}</p><p className="text-3xl font-bold mt-1">{summary.avgErrorRate}%</p><Progress value={100 - summary.avgErrorRate} className="mt-2 h-2" /></div>
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-amber-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Failed Pipelines</p><p className="text-3xl font-bold mt-1 text-red-600">{summary.failed}</p><p className="text-xs text-red-600 mt-1">Requires attention</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('dp.failedPipelines')}</p><p className="text-3xl font-bold mt-1 text-red-600">{summary.failed}</p><p className="text-xs text-red-600 mt-1">{t('dp.requiresAttention')}</p></div>
           <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"><AlertTriangle className="h-6 w-6 text-red-600" /></div>
         </div></CardContent></Card>
       </div>
 
       <Tabs defaultValue="pipelines" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pipelines">Pipelines</TabsTrigger>
-          <TabsTrigger value="flow">Data Flow</TabsTrigger>
-          <TabsTrigger value="throughput">Throughput</TabsTrigger>
+          <TabsTrigger value="pipelines">{t('dp.pipelines')}</TabsTrigger>
+          <TabsTrigger value="flow">{t('dp.dataFlow')}</TabsTrigger>
+          <TabsTrigger value="throughput">{t('dp.throughput')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pipelines">
-          <Card><CardHeader><CardTitle className="text-base">Pipeline Registry ({pipelines.length})</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('dp.pipelineRegistry')} ({pipelines.length})</CardTitle></CardHeader><CardContent>
             <ScrollArea className="h-[480px]"><Table>
-              <TableHeader><TableRow><TableHead>Pipeline</TableHead><TableHead>Source</TableHead><TableHead>Target</TableHead><TableHead>Schedule</TableHead><TableHead>Status</TableHead><TableHead>Records</TableHead><TableHead>Errors</TableHead><TableHead>Duration</TableHead><TableHead>Last Run</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>{t('dp.pipeline')}</TableHead><TableHead>{t('dp.source')}</TableHead><TableHead>{t('dp.target')}</TableHead><TableHead>{t('dp.schedule')}</TableHead><TableHead>Status</TableHead><TableHead>{t('dp.records')}</TableHead><TableHead>{t('dp.errors')}</TableHead><TableHead>{t('dp.duration')}</TableHead><TableHead>{t('dp.lastRun')}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {pipelines.map(p => (
                   <TableRow key={p.id}><TableCell className="font-medium text-xs">{p.name}</TableCell><TableCell className="text-xs">{p.source}</TableCell><TableCell className="text-xs">{p.target}</TableCell><TableCell className="font-mono text-xs">{p.schedule}</TableCell><TableCell><Badge variant={PIPELINE_STATUS_VARIANT[p.status]} className="capitalize text-xs">{p.status}</Badge></TableCell><TableCell className="font-mono text-xs">{p.recordsProcessed.toLocaleString()}</TableCell><TableCell className={cn('font-mono text-xs', p.errorRate > 1 ? 'text-red-600' : '')}>{p.errorRate}%</TableCell><TableCell className="font-mono text-xs">{p.avgDurationMs >= 60000 ? `${(p.avgDurationMs / 60000).toFixed(1)}m` : `${p.avgDurationMs}ms`}</TableCell><TableCell className="text-xs text-muted-foreground">{new Date(p.lastRun).toLocaleTimeString()}</TableCell></TableRow>
@@ -120,7 +120,7 @@ export default function DataPipelineView() {
         </TabsContent>
 
         <TabsContent value="flow">
-          <Card><CardHeader><CardTitle className="text-base">Data Flow Architecture</CardTitle><CardDescription>Source → Ingestion → Transform → Storage</CardDescription></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('dp.dataFlowArchitecture')}</CardTitle><CardDescription>{t('dp.flowDesc')}</CardDescription></CardHeader><CardContent>
             <div className="relative h-[500px] bg-muted/30 rounded-lg border overflow-hidden">
               {/* SVG Edges */}
               <svg className="absolute inset-0 w-full h-full pointer-events-none">
@@ -152,11 +152,11 @@ export default function DataPipelineView() {
         </TabsContent>
 
         <TabsContent value="throughput">
-          <Card><CardHeader><CardTitle className="text-base">24h Throughput</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('dp.throughput24h')}</CardTitle></CardHeader><CardContent>
             <ResponsiveContainer width="100%" height={380}><LineChart data={throughput}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" /><XAxis dataKey="hour" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} /><Tooltip formatter={(v: number) => v.toLocaleString()} contentStyle={{ borderRadius: '8px', fontSize: '12px' }} /><Legend />
-              <Line type="monotone" dataKey="ingested" name="Ingested" stroke="#10B981" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="transformed" name="Transformed" stroke="#F59E0B" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="ingested" name={t('dp.ingested')} stroke="#10B981" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="transformed" name={t('dp.transformed')} stroke="#F59E0B" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="errors" name="Errors" stroke="#EF4444" strokeWidth={1} dot={false} />
             </LineChart></ResponsiveContainer>
           </CardContent></Card>

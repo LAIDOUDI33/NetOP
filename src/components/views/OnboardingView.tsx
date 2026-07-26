@@ -481,7 +481,7 @@ export default function OnboardingView() {
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-8 w-full text-sm">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder={t('onb.select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {TECHNOLOGIES.map((tech) => (
@@ -508,7 +508,7 @@ export default function OnboardingView() {
                     render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="h-8 w-full text-sm">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder={t('onb.select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {REGIONS.map((r) => (
@@ -537,7 +537,7 @@ export default function OnboardingView() {
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="h-8 w-full text-sm">
-                        <SelectValue placeholder="Select vendor" />
+                        <SelectValue placeholder={t('onb.selectVendor')} />
                       </SelectTrigger>
                       <SelectContent>
                         {VENDORS.map((v) => (
@@ -606,14 +606,14 @@ export default function OnboardingView() {
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <Input
-                      placeholder="Freq (MHz)"
+                      placeholder={t('onb.frequency')}
                       className="h-8 text-sm"
                       {...form.register('frequency')}
                     />
                   </div>
                   <div>
                     <Input
-                      placeholder="BW (MHz)"
+                      placeholder={t('onb.bandwidth')}
                       className="h-8 text-sm"
                       type="number"
                       step="any"
@@ -622,7 +622,7 @@ export default function OnboardingView() {
                   </div>
                   <div>
                     <Input
-                      placeholder="Max Cap"
+                      placeholder={t('onb.maxCapacity')}
                       className="h-8 text-sm"
                       type="number"
                       step="any"

@@ -274,7 +274,7 @@ export default function EnergyView() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Zap className="h-6 w-6 text-amber-500" />
-          Energy Management
+          {t('en.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Power consumption optimization and carbon footprint monitoring

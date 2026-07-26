@@ -123,3 +123,31 @@ Stage Summary:
 - 9 dead files deleted (1 orphaned view + 8 JSON artifacts)
 - RBAC seed now runs automatically with main seed
 - All changes committed (8430898) and pushed to GitHub
+
+---
+Task ID: 7
+Agent: Main
+Task: Replace hardcoded English strings with i18n t() calls in 6 view files
+
+Work Log:
+- Read all 6 view files first to get exact strings (some were already partially translated):
+  - MultiAgentView.tsx — title/subtitle/tabs already done; replaced Recent Tasks, 6 TableHeads, Task Throughput, name=Total/Success, Avg Latency, Orchestrator Communication Log (7 edits)
+  - DataPipelineView.tsx — replaced h1, subtitle, Refresh→ma.refresh, 4 KPI labels (Running Pipelines, Records 24h, Error Rate, Failed Pipelines), 2 KPI sub-labels (Across all pipelines, Requires attention), 3 TabsTriggers, Pipeline Registry title, 8 TableHeads (kept Status as-is per spec), Data Flow Architecture + flowDesc, 24h Throughput, name=Ingested/Transformed (18 edits)
+  - IntegrationHubView.tsx — replaced h1, subtitle, Sync All, Connected, {summary.degraded} degraded→{t('ih.degraded')}, Total Data Points, Across all sources, Avg Latency, Sync response time, Syncs 24h, Successful syncs today, 3 TabsTriggers, Recent Sync Operations, Integration Health + uptimeDesc (16 edits)
+  - CRMIntegrationView.tsx — replaced h1, subtitle, 4 TabsTriggers (Customers, Analytics, Churn Analysis, Complaints), Total Customers, {summary.active} active→{t('crm.activeSubscriptions')}, Avg Satisfaction, Churn Risk, {summary.highRisk} high-risk customers→{t('crm.highRisk')} (11 edits; NPS Score did not exist in file — skipped)
+  - BillingIntegrationView.tsx — replaced h1, subtitle, 4 TabsTriggers (Invoices, Revenue Analytics, Payments, Aging) (6 edits)
+  - SubscribersView.tsx — replaced Total Subscribers, Total ARPU, Aggregate revenue per user→sub.avgRevenuePerUser, Avg Churn Risk→sub.churnRate, Segments (5 edits; Net Adds, this month, ARPU by Segment, Churn by Segment, Growth Trend (6 months) did not exist as literal text — some already translated with different keys sub.arpuBySeg/sub.churnBySeg — skipped)
+- Preserved non-target strings: name="Latency (ms)", name="Errors", name="Invoices", Status TableHead (dp), name="Segments" (bar chart), Active customer segments desc, etc.
+- Used contextual multi-line old_str patterns to uniquely identify KPI CardTitle text where standalone strings were ambiguous (e.g. "Segments" appears in multiple places)
+- bun run lint: PASSED (zero errors)
+- Dev server compiles successfully (verified via dev.log)
+
+Stage Summary:
+- All 6 view files now use t() calls for the specified hardcoded English strings
+- 63 total successful string replacements across the 6 files
+- A handful of patterns from the spec did not exist in the files (already translated with different keys, or never present) — those were skipped rather than risk breaking the existing translations
+- Locale files were NOT modified (per instructions)
+- No new imports added (per instructions; all files already imported useT)
+- Lint clean, no regressions
+
+### Post-lint fixes: Fixed pre-existing syntax errors in ReportsView.tsx (missing `const [` on line 193,  ->  on lines 397/402)

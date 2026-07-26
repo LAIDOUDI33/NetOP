@@ -80,38 +80,38 @@ export default function MultiAgentView() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Multi-Agent System</h1>
-          <p className="text-muted-foreground text-sm mt-1">AI agent orchestration, task routing, and autonomous network management</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('ma.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('ma.subtitle')}</p>
         </div>
-        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
+        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('ma.refresh')}</Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Active Agents</p><p className="text-3xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">{summary.activeAgents}<span className="text-sm font-normal text-muted-foreground">/{summary.totalAgents}</span></p><p className="text-xs text-muted-foreground mt-1">AI models running</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ma.activeAgents')}</p><p className="text-3xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">{summary.activeAgents}<span className="text-sm font-normal text-muted-foreground">/{summary.totalAgents}</span></p><p className="text-xs text-muted-foreground mt-1">{t('ma.aiModelsRunning')}</p></div>
           <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Bot className="h-6 w-6 text-emerald-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Success Rate</p><p className="text-3xl font-bold mt-1">{summary.avgSuccessRate}%</p><Progress value={summary.avgSuccessRate} className="mt-2 h-2" /></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ma.successRate')}</p><p className="text-3xl font-bold mt-1">{summary.avgSuccessRate}%</p><Progress value={summary.avgSuccessRate} className="mt-2 h-2" /></div>
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><CheckCircle2 className="h-6 w-6 text-amber-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Tasks Running</p><p className="text-3xl font-bold mt-1">{summary.runningTasks} <span className="text-sm font-normal text-muted-foreground">+{summary.queuedTasks} queued</span></p><p className="text-xs text-muted-foreground mt-1">{summary.totalTasks.toLocaleString()} total completed</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ma.tasksRunning')}</p><p className="text-3xl font-bold mt-1">{summary.runningTasks} <span className="text-sm font-normal text-muted-foreground">+{summary.queuedTasks} {t('ma.queued')}</span></p><p className="text-xs text-muted-foreground mt-1">{summary.totalTasks.toLocaleString()} {t('ma.totalCompleted')}</p></div>
           <div className="h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><Cpu className="h-6 w-6 text-violet-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Tokens 24h</p><p className="text-3xl font-bold mt-1">{(summary.totalTokens24h / 1000000).toFixed(1)}M</p><p className="text-xs text-red-600 mt-1">{summary.totalFailed} failed tasks</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ma.tokens24h')}</p><p className="text-3xl font-bold mt-1">{(summary.totalTokens24h / 1000000).toFixed(1)}M</p><p className="text-xs text-red-600 mt-1">{summary.totalFailed} {t('ma.failedTasks')}</p></div>
           <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Sparkles className="h-6 w-6 text-slate-600" /></div>
         </div></CardContent></Card>
       </div>
 
       <Tabs defaultValue="agents" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="agents">Agent Fleet</TabsTrigger>
-          <TabsTrigger value="tasks">Task Queue</TabsTrigger>
-          <TabsTrigger value="metrics">Metrics</TabsTrigger>
-          <TabsTrigger value="chat">Orchestrator Log</TabsTrigger>
+          <TabsTrigger value="agents">{t('ma.agentFleet')}</TabsTrigger>
+          <TabsTrigger value="tasks">{t('ma.taskQueue')}</TabsTrigger>
+          <TabsTrigger value="metrics">{t('ma.metrics')}</TabsTrigger>
+          <TabsTrigger value="chat">{t('ma.orchestratorLog')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agents">
@@ -141,9 +141,9 @@ export default function MultiAgentView() {
         </TabsContent>
 
         <TabsContent value="tasks">
-          <Card><CardHeader><CardTitle className="text-base">Recent Tasks ({taskQueue.length})</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('ma.recentTasks')} ({taskQueue.length})</CardTitle></CardHeader><CardContent>
             <ScrollArea className="h-[480px]"><Table>
-              <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Agent</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Latency</TableHead><TableHead>Tokens</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>{t('ma.agent')}</TableHead><TableHead>{t('ma.type')}</TableHead><TableHead>{t('ma.status')}</TableHead><TableHead>{t('ma.latency')}</TableHead><TableHead>{t('ma.tokens')}</TableHead><TableHead>{t('ma.time')}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {taskQueue.map(task => (
                   <TableRow key={task.id}><TableCell className="font-mono text-xs">{task.id}</TableCell><TableCell className="text-xs">{task.agentName}</TableCell><TableCell className="text-xs">{task.type.replace(/_/g, ' ')}</TableCell><TableCell><Badge variant={TASK_STATUS_VARIANT[task.status]} className="capitalize text-xs">{task.status === 'running' && <Play className="h-2.5 w-2.5 mr-1 inline" />}{task.status}</Badge></TableCell><TableCell className="font-mono text-xs">{task.latencyMs ? `${task.latencyMs}ms` : '—'}</TableCell><TableCell className="font-mono text-xs">{task.tokensUsed.toLocaleString()}</TableCell><TableCell className="text-xs text-muted-foreground">{new Date(task.createdAt).toLocaleTimeString()}</TableCell></TableRow>
@@ -155,14 +155,14 @@ export default function MultiAgentView() {
 
         <TabsContent value="metrics">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card><CardHeader><CardTitle className="text-base">Task Throughput (24h)</CardTitle></CardHeader><CardContent>
+            <Card><CardHeader><CardTitle className="text-base">{t('ma.taskThroughput')}</CardTitle></CardHeader><CardContent>
               <ResponsiveContainer width="100%" height={320}><LineChart data={metrics}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" /><XAxis dataKey="hour" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} /><Legend />
-                <Line type="monotone" dataKey="tasksTotal" name="Total" stroke="#10B981" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="tasksSuccess" name="Success" stroke="#F59E0B" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="tasksTotal" name={t('ma.total')} stroke="#10B981" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="tasksSuccess" name={t('ma.success')} stroke="#F59E0B" strokeWidth={2} dot={false} />
               </LineChart></ResponsiveContainer>
             </CardContent></Card>
-            <Card><CardHeader><CardTitle className="text-base">Avg Latency (ms)</CardTitle></CardHeader><CardContent>
+            <Card><CardHeader><CardTitle className="text-base">{t('ma.avgLatency')}</CardTitle></CardHeader><CardContent>
               <ResponsiveContainer width="100%" height={320}><LineChart data={metrics}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" /><XAxis dataKey="hour" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} />
                 <Line type="monotone" dataKey="avgLatency" name="Latency (ms)" stroke="#EF4444" strokeWidth={2} dot={false} />
@@ -172,7 +172,7 @@ export default function MultiAgentView() {
         </TabsContent>
 
         <TabsContent value="chat">
-          <Card><CardHeader><CardTitle className="text-base">Orchestrator Communication Log</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('ma.orchestratorChat')}</CardTitle></CardHeader><CardContent>
             <ScrollArea className="h-[480px]"><div className="space-y-3">
               {chat.map((msg, i) => (
                 <div key={i} className={cn('flex gap-3', msg.role === 'orchestrator' ? 'justify-end' : 'justify-start')}>

@@ -249,7 +249,7 @@ function KpiReportTab() {
       <div className="no-print flex flex-wrap gap-4 items-center">
         <Select value={metric} onValueChange={setMetric}>
           <SelectTrigger className="w-[280px]">
-            <SelectValue placeholder="Select Metric" />
+            <SelectValue placeholder={t('rpt.selectMetric')} />
           </SelectTrigger>
           <SelectContent>
             {METRICS.map((m) => (

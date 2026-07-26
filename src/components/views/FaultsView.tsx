@@ -302,9 +302,9 @@ export default function FaultsView() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Brain className="h-12 w-12 mb-4" />
-        <p className="text-lg font-medium">No Fault Predictions Available</p>
+        <p className="text-lg font-medium">{t('empty.noDataFor', { entity: t('flt.title') })}</p>
         <p className="text-sm mt-1">
-          AI fault prediction data has not been generated yet.
+          {t('view.noDataYet', { entity: 'Fault predictions' })}
         </p>
       </div>
     );
@@ -331,14 +331,14 @@ export default function FaultsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Brain className="h-4 w-4 text-amber-500" />
-              Total Predictions
+              'Total Predictions'
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold">
               {summary?.total ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">AI-generated forecasts</p>
+            <p className="text-xs text-muted-foreground mt-1">'AI-generated predictions'</p>
           </CardContent>
         </Card>
 
@@ -347,14 +347,14 @@ export default function FaultsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-red-500" />
-              High/Critical Risk
+              'High/Critical Risk'
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {summary?.highRiskCount ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Requires immediate attention</p>
+            <p className="text-xs text-muted-foreground mt-1">'Requires immediate action'</p>
           </CardContent>
         </Card>
 
@@ -363,7 +363,7 @@ export default function FaultsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Avg Probability
+              'Avg Probability'
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -382,14 +382,14 @@ export default function FaultsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-red-500" />
-              Confirmed Faults
+              'Confirmed Faults'
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-red-600 dark:text-red-400">
               {summary?.byStatus?.confirmed ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Verified failures</p>
+            <p className="text-xs text-muted-foreground mt-1">'Verified by field team'</p>
           </CardContent>
         </Card>
 
@@ -398,14 +398,14 @@ export default function FaultsView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              Mitigated
+              'Mitigated'
             </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
               {summary?.byStatus?.mitigated ?? 0}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Successfully resolved</p>
+            <p className="text-xs text-muted-foreground mt-1">'Action completed'</p>
           </CardContent>
         </Card>
       </div>

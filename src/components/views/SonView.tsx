@@ -387,7 +387,7 @@ export default function SonView() {
             }
           >
             <SelectTrigger size="sm" className="w-[170px]">
-              <SelectValue placeholder="Mode" />
+              <SelectValue placeholder={t('son.mode')} />
             </SelectTrigger>
             <SelectContent>
               {MODE_OPTIONS.map((m) => (
@@ -406,7 +406,7 @@ export default function SonView() {
             className="h-8"
           >
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-            Refresh
+            {t('btn.refresh')}
           </Button>
         </div>
       </div>

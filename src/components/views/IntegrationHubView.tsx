@@ -74,37 +74,37 @@ export default function IntegrationHubView() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Integration Hub</h1>
-          <p className="text-muted-foreground text-sm mt-1">Central management for all system integrations, sync health, and data flow</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('ih.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('ih.subtitle')}</p>
         </div>
-        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />Sync All</Button>
+        <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('ih.syncAll')}</Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Connected</p><p className="text-3xl font-bold mt-1 text-emerald-600">{summary.connected}<span className="text-sm font-normal text-muted-foreground">/{summary.totalIntegrations}</span></p><p className="text-xs text-muted-foreground mt-1">{summary.degraded} degraded</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ih.connected')}</p><p className="text-3xl font-bold mt-1 text-emerald-600">{summary.connected}<span className="text-sm font-normal text-muted-foreground">/{summary.totalIntegrations}</span></p><p className="text-xs text-muted-foreground mt-1">{summary.degraded} {t('ih.degraded')}</p></div>
           <div className="h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><Wifi className="h-6 w-6 text-emerald-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Total Data Points</p><p className="text-3xl font-bold mt-1">{(summary.totalDataPoints / 1000000).toFixed(1)}M</p><p className="text-xs text-muted-foreground mt-1">Across all sources</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ih.totalDataPoints')}</p><p className="text-3xl font-bold mt-1">{(summary.totalDataPoints / 1000000).toFixed(1)}M</p><p className="text-xs text-muted-foreground mt-1">{t('ih.acrossAllSources')}</p></div>
           <div className="h-12 w-12 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center"><Database className="h-6 w-6 text-violet-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Avg Latency</p><p className="text-3xl font-bold mt-1">{summary.avgLatency}ms</p><p className="text-xs text-muted-foreground mt-1">Sync response time</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ih.avgLatency')}</p><p className="text-3xl font-bold mt-1">{summary.avgLatency}ms</p><p className="text-xs text-muted-foreground mt-1">{t('ih.syncResponseTime')}</p></div>
           <div className="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><Zap className="h-6 w-6 text-amber-600" /></div>
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
-          <div><p className="text-sm font-medium text-muted-foreground">Syncs 24h</p><p className="text-3xl font-bold mt-1">{summary.totalSyncs24h.toLocaleString()}</p><p className="text-xs text-muted-foreground mt-1">Successful syncs today</p></div>
+          <div><p className="text-sm font-medium text-muted-foreground">{t('ih.syncs24h')}</p><p className="text-3xl font-bold mt-1">{summary.totalSyncs24h.toLocaleString()}</p><p className="text-xs text-muted-foreground mt-1">{t('ih.successfulSyncs')}</p></div>
           <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Activity className="h-6 w-6 text-slate-600" /></div>
         </div></CardContent></Card>
       </div>
 
       <Tabs defaultValue="integrations" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="history">Sync History</TabsTrigger>
-          <TabsTrigger value="health">Health Timeline</TabsTrigger>
+          <TabsTrigger value="integrations">{t('ih.integrations')}</TabsTrigger>
+          <TabsTrigger value="history">{t('ih.syncHistory')}</TabsTrigger>
+          <TabsTrigger value="health">{t('ih.healthTimeline')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="integrations">
@@ -132,7 +132,7 @@ export default function IntegrationHubView() {
         </TabsContent>
 
         <TabsContent value="history">
-          <Card><CardHeader><CardTitle className="text-base">Recent Sync Operations ({syncHistory.length})</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('ih.recentSyncOps')} ({syncHistory.length})</CardTitle></CardHeader><CardContent>
             <ScrollArea className="h-[480px]"><Table>
               <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Integration</TableHead><TableHead>Status</TableHead><TableHead>Records</TableHead><TableHead>Duration</TableHead><TableHead>Error</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
               <TableBody>
@@ -145,7 +145,7 @@ export default function IntegrationHubView() {
         </TabsContent>
 
         <TabsContent value="health">
-          <Card><CardHeader><CardTitle className="text-base">Integration Health (48h)</CardTitle><CardDescription>Uptime percentage per integration</CardDescription></CardHeader><CardContent>
+          <Card><CardHeader><CardTitle className="text-base">{t('ih.integrationHealth')}</CardTitle><CardDescription>{t('ih.uptimeDesc')}</CardDescription></CardHeader><CardContent>
             <ResponsiveContainer width="100%" height={380}><LineChart data={healthTimeline}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" /><XAxis dataKey="label" tick={{ fontSize: 10 }} /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" /><Tooltip contentStyle={{ borderRadius: '8px', fontSize: '12px' }} /><Legend />
               <Line type="stepAfter" dataKey="oss" name="OSS" stroke="#10B981" strokeWidth={2} dot={false} />

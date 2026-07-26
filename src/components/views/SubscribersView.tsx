@@ -317,7 +317,7 @@ export default function SubscribersView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4 text-emerald-500" />
-              Total Subscribers
+              {t('sub.totalSubscribers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -335,7 +335,7 @@ export default function SubscribersView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <span className="text-base font-semibold text-emerald-500">$</span>
-              Total ARPU
+              {t('sub.totalArpu')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -343,7 +343,7 @@ export default function SubscribersView() {
               {formatARPU(summary?.totalARPU ?? 0)}
             </span>
             <p className="text-xs text-muted-foreground mt-1">
-              Aggregate revenue per user
+              {t('sub.avgRevenuePerUser')}
             </p>
           </CardContent>
         </Card>
@@ -353,7 +353,7 @@ export default function SubscribersView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <span className="h-4 w-4 rounded-full bg-amber-500" />
-              Avg Churn Risk
+              {t('sub.churnRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -377,7 +377,7 @@ export default function SubscribersView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <span className="h-4 w-4 rounded bg-cyan-500" />
-              Segments
+              {t('sub.segments')}
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -73,8 +73,8 @@ export default function CRMIntegrationView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">CRM Integration</h1>
-          <p className="text-muted-foreground text-sm mt-1">Customer analytics, churn risk, and satisfaction from CRM systems</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('crm.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('crm.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -90,9 +90,9 @@ export default function CRMIntegrationView() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('crm.totalCustomers')}</p>
             <p className="text-3xl font-bold mt-1">{summary.total}</p>
-            <p className="text-xs text-muted-foreground mt-1">{summary.active} active</p>
+            <p className="text-xs text-muted-foreground mt-1">{summary.active} {t('crm.activeSubscriptions')}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><Users className="h-6 w-6 text-slate-600 dark:text-slate-300" /></div>
         </div></CardContent></Card>
@@ -106,7 +106,7 @@ export default function CRMIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Avg Satisfaction</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('crm.avgSatisfaction')}</p>
             <p className="text-3xl font-bold mt-1">{summary.avgSatisfaction}/5.0</p>
             <Progress value={summary.avgSatisfaction * 20} className="mt-2 h-2" />
           </div>
@@ -114,9 +114,9 @@ export default function CRMIntegrationView() {
         </div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Churn Risk</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('crm.churnRisk')}</p>
             <p className={cn('text-3xl font-bold mt-1', summary.churnRate > 30 ? 'text-red-600' : 'text-amber-600')}>{summary.churnRate}%</p>
-            <p className="text-xs text-red-600 mt-1">{summary.highRisk} high-risk customers</p>
+            <p className="text-xs text-red-600 mt-1">{summary.highRisk} {t('crm.highRisk')}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center"><AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" /></div>
         </div></CardContent></Card>
@@ -125,10 +125,10 @@ export default function CRMIntegrationView() {
       {/* Tabs */}
       <Tabs defaultValue="customers" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="churn">Churn Analysis</TabsTrigger>
-          <TabsTrigger value="complaints">Complaints</TabsTrigger>
+          <TabsTrigger value="customers">{t('crm.customers')}</TabsTrigger>
+          <TabsTrigger value="analytics">{t('crm.analytics')}</TabsTrigger>
+          <TabsTrigger value="churn">{t('crm.churn')}</TabsTrigger>
+          <TabsTrigger value="complaints">{t('crm.complaints')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="customers">

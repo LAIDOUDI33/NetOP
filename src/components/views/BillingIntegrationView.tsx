@@ -91,8 +91,8 @@ export default function BillingIntegrationView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Billing Integration</h1>
-          <p className="text-muted-foreground text-sm mt-1">Invoice management, revenue analytics, and debt collection from billing systems</p>
+          <h1 className="text-2xl font-bold tracking-tight">{t('bil.title')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('bil.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -158,10 +158,10 @@ export default function BillingIntegrationView() {
       {/* Tabs */}
       <Tabs defaultValue="invoices" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="analytics">Revenue Analytics</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="aging">Aging</TabsTrigger>
+          <TabsTrigger value="invoices">{t('bil.invoices')}</TabsTrigger>
+          <TabsTrigger value="analytics">{t('bil.revenueAnalytics')}</TabsTrigger>
+          <TabsTrigger value="payments">{t('bil.payments')}</TabsTrigger>
+          <TabsTrigger value="aging">{t('bil.aging')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="invoices">
