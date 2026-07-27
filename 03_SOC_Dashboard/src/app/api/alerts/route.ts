@@ -1,77 +1,159 @@
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { AlertSeverity, AlertStatus } from "@prisma/client";
 
-// GET /api/alerts - Returns security alerts
+// GET /api/alerts - Returns security alerts from database
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const severity = searchParams.get("severity");
-  const limit = parseInt(searchParams.get("limit") || "20");
-  
-  // Mock alerts data
-  const allAlerts = [
-    {
-      id: "ALT-2026-00147",
-      timestamp: "2026-07-23T16:38:22Z",
-      severity: "critical",
-      source: "Wazuh SIEM",
-      title: "Ransomware Detection Pattern Match",
-      description: "Multiple file encryption events detected on workstation FIN-DEPT-0142. Potential BlackCat/ALPHV ransomware activity.",
-      endpoint: "FIN-DEPT-0142",
-      status: "new"
-    },
-    {
-      id: "ALT-2026-00146",
-      timestamp: "2026-07-23T16:35:10Z",
-      severity: "high",
-      source: "Wazuh EDR",
-      title: "Suspicious PowerShell Execution",
-      description: "Encoded PowerShell command executed with -enc flag. Possible living-off-the-land technique.",
-      endpoint: "HR-SRV-0089",
-      status: "investigating"
-    },
-    {
-      id: "ALT-2026-00145",
-      timestamp: "2026-07-23T16:32:45Z",
-      severity: "high",
-      source: "MISP TIP",
-      title: "IOC Match: Known APT Indicator",
-      description: "C2 server IP 185.220.101[.]34 detected in outbound traffic. Associated with APT28 activity.",
-      endpoint: "EXT-GW-002",
-      status: "acknowledged"
+  try {
+    const { searchParams } = new URL(request.url);
+    const severity = searchParams.get("severity") as AlertSeverity | null;
+    const status = searchParams.get("status") as AlertStatus | null;
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
+
+    // Build where clause
+    const where: any = {};
+    if (severity && severity !== "all") {
+      where.severity = severity;
     }
-  ];
-  
-  let filteredAlerts = allAlerts;
-  if (severity && severity !== "all") {
-    filteredAlerts = allAlerts.filter(alert => alert.severity === severity);
+    if (status && status !== "all") {
+      where.status = status;
+    }
+
+    // Query alerts with pagination
+    const [alerts, total] = await Promise.all([
+      db.alert.findMany({
+        where,
+        orderBy: { timestamp: "desc" },
+        take: limit,
+        skip: offset,
+        include: {
+          incident: {
+            select: {
+              incidentId: true,
+              title: true,
+              status: true,
+            },
+          },
+        },
+      }),
+      db.alert.count({ where }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: alerts.map(alert => ({
+        ...alert,
+        alertId: alert.alertId,
+        severity: alert.severity.toLowerCase(),
+        status: alert.status.toLowerCase(),
+      })),
+      total,
+      pagination: {
+        limit,
+        offset,
+        hasMore: offset + limit < total,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error fetching alerts:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch alerts" },
+      { status: 500 }
+    );
   }
-  
-  filteredAlerts = filteredAlerts.slice(0, limit);
-  
-  return NextResponse.json({
-    success: true,
-    data: filteredAlerts,
-    total: filteredAlerts.length,
-    timestamp: new Date().toISOString()
-  });
 }
 
-// POST /api/alerts - Update alert status
+// POST /api/alerts - Create or update alert
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { alertId, status } = body;
-    
-    console.log(`Updating alert ${alertId} to status: ${status}`);
-    
-    return NextResponse.json({
-      success: true,
-      message: `Alert ${alertId} updated to ${status}`,
-      timestamp: new Date().toISOString()
-    });
+    const { action, alertId, status, ...alertData } = body;
+
+    if (action === "updateStatus" && alertId && status) {
+      // Update alert status
+      const updateData: any = { 
+        status: status.toUpperCase() 
+      };
+      
+      if (status === "ACKNOWLEDGED") {
+        updateData.acknowledgedAt = new Date();
+      } else if (status === "RESOLVED" || status === "FALSE_POSITIVE") {
+        updateData.resolvedAt = new Date();
+      }
+
+      const updatedAlert = await db.alert.update({
+        where: { alertId },
+        data: updateData,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Alert ${alertId} updated to ${status}`,
+        data: updatedAlert,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (action === "create") {
+      // Create new alert
+      const newAlert = await db.alert.create({
+        data: {
+          alertId: alertId || `ALT-${Date.now()}`,
+          ...alertData,
+          severity: alertData.severity?.toUpperCase() || AlertSeverity.MEDIUM,
+          status: AlertStatus.NEW,
+          timestamp: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Alert created successfully",
+        data: newAlert,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, error: "Invalid action. Use 'create' or 'updateStatus'" },
+      { status: 400 }
+    );
   } catch (error) {
+    console.error("Error processing alert request:", error);
     return NextResponse.json(
       { success: false, error: "Invalid request body" },
       { status: 400 }
+    );
+  }
+}
+
+// DELETE /api/alerts - Delete an alert (admin only)
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const alertId = searchParams.get("alertId");
+
+    if (!alertId) {
+      return NextResponse.json(
+        { success: false, error: "alertId parameter required" },
+        { status: 400 }
+      );
+    }
+
+    await db.alert.delete({ where: { alertId } });
+
+    return NextResponse.json({
+      success: true,
+      message: `Alert ${alertId} deleted`,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error deleting alert:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to delete alert" },
+      { status: 500 }
     );
   }
 }
