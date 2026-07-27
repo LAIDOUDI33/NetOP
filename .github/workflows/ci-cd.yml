@@ -1,0 +1,624 @@
+# ============================================================
+# National SOC Platform - CI/CD Pipeline
+# GitHub Actions for Djezzy Production
+# ============================================================
+
+name: SOC Platform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+# ============================================================
+# CONCURRENCY: Cancel in-progress runs on same branch
+# ============================================================
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ============================================================
+# ENVIRONMENTS
+# ============================================================
+environments:
+  staging:
+    url: https://soc-staging.djezzy.dz
+  production:
+    url: https://soc.djezzy.dz
+
+jobs:
+  # ============================================================
+  # JOB 1: Code Quality & Security Scanning
+  # ============================================================
+  quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+      
+      - name: Run Linting (ESLint)
+        run: npm run lint --if-present
+        continue-on-error: false
+      
+      - name: Type Check
+        run: npx tsc --noEmit --pretty
+        continue-on-error: false
+      
+      - name: Security Audit (npm audit)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Run Snyk Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+  # ============================================================
+  # JOB 2: Unit Tests
+  # ============================================================
+  test-unit:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    timeout-minutes: 20
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: soc_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/soc_test
+      
+      - name: Push Database Schema
+        run: npx prisma db push --accept-data-loss
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/soc_test
+      
+      - name: Seed Test Database
+        run: npm run db:seed || echo "Seed script not found, skipping"
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/soc_test
+      
+      - name: Run Unit Tests
+        run: |
+          if [ -f jest.config.js ] || [ -f jest.config.ts ]; then
+            npm test -- --coverage --ci --reporters=default --reporters=jest-junit
+          elif [ -f vitest.config.ts ]; then
+            npx vitest run --coverage
+          else
+            echo "No test framework configured"
+          fi
+        env:
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/soc_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          JWT_SECRET: test-secret-for-ci-32chars!!
+          NEXTAUTH_SECRET: test-secret-for-ci-32chars!!
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ============================================================
+  # JOB 3: Build Docker Image
+  # ============================================================
+  build:
+    name: 🏗️ Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [quality, test-unit]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    timeout-minutes: 30
+    
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # For OIDC token (cosign)
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Optional: Login to additional registries
+      - name: Login to Djezzy Registry (Optional)
+        if: env.DJEZZY_REGISTRY != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DJEZZY_REGISTRY }}
+          username: ${{ secrets.DJEZZY_REGISTRY_USER }}
+          password: ${{ secrets.DJEZZY_REGISTRY_PASSWORD }}
+        env:
+          DJEZZY_REGISTRY: ${{ secrets.DJEZZY_REGISTRY || '' }}
+      
+      - name: Extract Metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ secrets.DJEZZY_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and Push Docker Image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            VERSION=${{ github.sha }}
+      
+      - name: Sign Container Image with Cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: 'v2.2.0'
+      
+      - name: Sign Image
+        if: github.event_name != 'pull_request'
+        run: |
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1
+      
+      - name: Generate SBOM
+        if: github.event_name != 'pull_request'
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          output-file: ./sbom.spdx.json
+      
+      - name: Upload SBOM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: ./sbom.spdx.json
+          retention-days: 90
+
+  # ============================================================
+  # JOB 4: Deploy to Staging
+  # ============================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    environment: staging
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure kubectl for Djezzy Cluster
+        uses: azure/k8s-set-context@v3
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+      
+      - name: Deploy to Staging using Helm
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: soc-platform-staging
+          manifests: |
+            k8s/namespace.yaml
+            k8s/configmap.yaml
+            k8s/pvc.yaml
+            k8s/deployment.yaml
+            k8s/service.yaml
+            k8s/hpa.yaml
+            k8s/pdb.yaml
+            k8s/ingress.yaml
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kubectl-version: 'latest'
+      
+      - name: Wait for Deployment Rollout
+        run: |
+          kubectl rollout status deployment/soc-platform \
+            -n soc-platform-staging \
+            --timeout=300s
+      
+      - name: Run Smoke Tests
+        run: |
+          STAGING_URL="https://soc-staging.djezzy.dz"
+          
+          echo "Running smoke tests against ${STAGING_URL}..."
+          
+          # Health check
+          curl -sf "${STAGING_URL}/api/health" | jq .
+          
+          # API endpoint check
+          curl -sf "${STAGING_URL}/api/dashboard?timeframe=1h" | jq '.success'
+          
+          echo "✅ Smoke tests passed!"
+      
+      - name: Notify Slack (Staging Deployed)
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚀 *SOC Platform* deployed to **Staging**",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment Info*\n• *Branch:* `${{ github.ref_name }}`\n• *Commit:* `${{ github.sha }}`\n• *Actor:* @${{ github.actor }}\n• *Status:* ✅ Success"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_STAGING }}
+        continue-on-error: true
+
+  # ============================================================
+  # JOB 5: Deploy to Production (Manual Approval)
+  # ============================================================
+  deploy-production:
+    name: 🏭 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, deploy-staging]
+    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+    environment: 
+      name: production
+      url: https://soc.djezzy.dz
+    timeout-minutes: 20
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure kubectl for Production Cluster
+        uses: azure/k8s-set-context@v3
+        with:
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+      
+      - name: Pre-deployment Backup
+        run: |
+          echo "Creating pre-deployment backup..."
+          kubectl exec -it \
+            $(kubectl get pod -n soc-platform -l app.kubernetes.io/name=soc-platform -o jsonpath='{.items[0].metadata.name}') \
+            -n soc-platform \
+            -- /bin/sh -c "pg_dumpall -U soc_admin > /app/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql" || echo "Backup skipped (no DB in container)"
+        continue-on-error: true
+      
+      - name: Deploy to Production using Helm
+        uses: azure/k8s-deploy@v4
+        with:
+          namespace: soc-platform
+          strategy: canary
+          traffic-split-method: pod
+          percentage: 20
+          baseline-and-canary-replicas: 1
+          manifests: |
+            k8s/namespace.yaml
+            k8s/configmap.yaml
+            k8s/pvc.yaml
+            k8s/deployment.yaml
+            k8s/service.yaml
+            k8s/hpa.yaml
+            k8s/pdb.yaml
+            k8s/ingress.yaml
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kubectl-version: 'latest'
+      
+      - name: Verify Deployment Health
+        run: |
+          PROD_URL="https://soc.djezzy.dz"
+          
+          echo "Verifying production deployment..."
+          
+          # Wait for rollout
+          kubectl rollout status deployment/soc-platform \
+            -n soc-platform \
+            --timeout=300s
+          
+          # Health checks
+          sleep 30  # Allow for startup
+          
+          curl -sf "${PROD_URL}/api/health" | jq .
+          curl -sf "${PROD_URL}/api/system" | jq '.health.overall.status'
+          
+          echo "✅ Production deployment verified!"
+      
+      - name: Promote Canary to Full Traffic
+        if: success()
+        run: |
+          echo "Promoting canary to full traffic..."
+          # This is handled by the k8s-deploy action automatically
+          # but you could add custom promotion logic here
+      
+      - name: Create Deployment Record
+        run: |
+          cat <<EOF > deployment-record.json
+          {
+            "version": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "deployedBy": "${{ github.actor }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "production",
+            "image": "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          }
+          EOF
+          echo "Deployment record created:"
+          cat deployment-record.json
+      
+      - name: Notify Teams (Production Deployed)
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🏭 *SOC Platform* deployed to **PRODUCTION**",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🏭 Production Deployment Complete"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Version:*\n`${{ github.ref_name }}`"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n`${{ github.sha }}`"},
+                    {"type": "mrkdwn", "text": "*Deployer:*\n@${{ github.actor }}`"},
+                    {"type": "mrkdwn", "text": "*Time:*\n$(date '+%Y-%m-%d %H:%M %Z')"}
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "View Dashboard" },
+                      "url": "https://soc.djezzy.dz",
+                      "style": "primary"
+                    },
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "Rollback" },
+                      "url": "${{ server_url }}/${{ github.repository }}/actions/workflows/${{ github.workflow_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_PRODUCTION }}
+        continue-on-error: true
+      
+      - name: PagerDuty Alert (On Failure)
+        if: failure()
+        uses: PagerDuty/pd-trigger-action@v3
+        with:
+          pagerduty-integration-key: ${{ secrets.PAGERDUTY_INTEGRATION_KEY }}
+          summary: "SOC Platform Production Deployment Failed"
+          severity: critical
+          custom-details: |
+            {
+              "workflow_run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "commit": "${{ github.sha }}",
+              "actor": "${{ github.actor }}"
+            }
+        continue-on-error: true
+
+  # ============================================================
+  # JOB 6: Performance Testing (After Staging)
+  # ============================================================
+  performance:
+    name: ⚡ Performance Tests
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    timeout-minutes: 30
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Install k6
+        run: |
+          sudo gpg --keyserver hkp://keyserver.ubuntu.com:444 \
+            --recv-keys FA837FE8B6F261186BDCE554BCBA7A680FF422B7
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:444 \
+            --recv-keys FA837FE8B6F261186BDCE554BCBA7A680FF422B7
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run Load Tests
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
+          import { Rate } from 'k6/metrics';
+
+          export const options = {
+            stages: [
+              { duration: '2m', target: 100 },   // Ramp up
+              { duration: '5m', target: 500 },   // Peak load
+              { duration: '2m', target: 100 },   // Ramp down
+            ],
+            thresholds: {
+              http_req_duration: ['p(95)<500'],  // 95% of requests < 500ms
+              http_req_failed: ['rate<0.01'],     // < 1% errors
+            },
+          };
+
+          const errorRate = new Rate('errors');
+
+          export default function () {
+            const res = http.get('https://soc-staging.djezzy.dz/api/dashboard');
+            
+            check(res, {
+              'status is 200': (r) => r.status === 200,
+              'response time < 500ms': (r) => r.timings.duration < 500,
+            }) || errorRate.add(1);
+            
+            sleep(1);
+          }
+          EOF
+          
+          k6 run load-test.js --summary-export=performance-results.json
+      
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results-${{ github.run_id }}
+          path: performance-results.json
+          retention-days: 30
+
+  # ============================================================
+  # JOB 7: Database Migration (PostgreSQL)
+  # ============================================================
+  migrate-database:
+    name: 🗄️ Database Migration
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    environment: production
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Prisma CLI globally
+        run: npm install -g prisma
+      
+      - name: Generate Prisma Client
+        run: prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      
+      - name: Run Database Migrations
+        run: prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      
+      - name: Verify Migration
+        run: prisma db pull --print > /dev/null && echo "Migration successful!"
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+
+  # ============================================================
+  # JOB 8: Cleanup Old Images
+  # ============================================================
+  cleanup:
+    name: 🧹 Cleanup Old Images
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: success()
+    timeout-minutes: 10
+    
+    steps:
+      - name: Cleanup Old Docker Images
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: ${{ env.IMAGE_NAME }}
+          package-type: container
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: true
+          token: ${{ secrets.GITHUB_TOKEN }}

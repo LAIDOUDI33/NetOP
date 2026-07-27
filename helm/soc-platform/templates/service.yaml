@@ -1,0 +1,64 @@
+{{/*
+============================================================
+National SOC Platform - Service Template
+============================================================*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "soc-platform.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: service
+  {{- with .Values.app.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.app.service.type }}
+  
+  {{- if and (eq .Values.app.service.type "LoadBalancer") .Values.app.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.app.service.loadBalancerIP }}
+  {{- end }}
+  
+  {{- if and (eq .Values.app.service.type "LoadBalancer") .Values.app.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml .Values.app.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  
+  selector:
+    {{- include "soc-platform.selectorLabels" . | nindent 4 }}
+  
+  ports:
+    - name: http
+      port: {{ .Values.app.service.port }}
+      targetPort: {{ .Values.app.service.targetPort }}
+      protocol: TCP
+      {{- if and (eq .Values.app.service.type "NodePort") .Values.app.service.nodePort }}
+      nodePort: {{ .Values.app.service.nodePort }}
+      {{- end }}
+
+---
+{{/*
+Headless Service for StatefulSet operations
+*/}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "soc-platform.fullname" . }}-headless
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "soc-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: headless-service
+spec:
+  type: ClusterIP
+  clusterIP: None
+  
+  selector:
+    {{- include "soc-platform.selectorLabels" . | nindent 4 }}
+  
+  ports:
+    - name: http
+      port: {{ .Values.app.service.targetPort }}
+      targetPort: {{ .Values.app.service.targetPort }}
+      protocol: TCP

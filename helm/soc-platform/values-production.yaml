@@ -1,0 +1,218 @@
+# ============================================================
+# National SOC Platform - Production Values (Djezzy)
+# Override these for production deployment
+# ============================================================
+
+# Global
+global:
+  environment: production
+  imageRegistry: soc.djezzy.dz
+  timezone: "Africa/Algiers"
+  storageClass: "standard"
+
+# Application - Scaled for Djezzy production traffic
+app:
+  replicaCount: 5  # Start with 5 replicas
+  
+  image:
+    repository: soc-platform
+    tag: "1.0.0"  # Use specific version, not "latest"
+    pullPolicy: Always
+  
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  
+  ingress:
+    enabled: true
+    className: "nginx"
+    hostname: soc.djezzy.dz
+    hostnames:
+      - soc.djezzy.dz
+      - soc-internal.djezzy.dz
+      - api.soc.djezzy.dz
+    
+    tls:
+      enabled: true
+      secretName: soc-tls-secret
+      certManager:
+        enabled: false  # Use internal CA certificates
+        issuer: ""
+  
+  # Resources tuned for Djezzy workload
+  resources:
+    requests:
+      cpu: "4"       # Higher requests for better scheduling
+      memory: "8Gi"
+    limits:
+      cpu: "8"
+      memory: "16Gi"
+  
+  # Aggressive autoscaling for traffic spikes
+  autoscaling:
+    enabled: true
+    minReplicas: 5   # Minimum for HA
+    maxReplicas: 30  # Handle peak incidents
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+  
+  # Strict availability requirements
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 3  # Always keep 3 pods during maintenance
+
+# Environment variables for production
+env:
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  DJEZZY_ENVIRONMENT: "production"
+  
+  # Database (PostgreSQL cluster)
+  POSTGRES_HOST: "postgres-cluster-rw.soc-platform.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_USER: "soc_admin"
+  POSTGRES_DB: "soc_platform"
+  
+  # Redis (Sentinel mode)
+  REDIS_HOST: "redis-master.soc-platform.svc.cluster.local"
+  REDIS_PORT: "6379"
+  
+  # JWT (shorter tokens in production)
+  JWT_EXPIRES_IN: "15m"
+  JWT_REFRESH_EXPIRES_IN: "7d"
+  
+  # Rate limiting (stricter)
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_ATTEMPTS: "5"
+  
+  # SSE (optimized for real-time)
+  SSE_HEARTBEAT_INTERVAL: "15000"     # Faster heartbeats
+  SSE_ALERTS_POLL_INTERVAL: "1000"    # 1 second polling
+  SSE_INCIDENTS_POLL_INTERVAL: "3000"  # 3 seconds
+  
+  # External services
+  LDAP_URL: "ldaps://ad.djezzy.dz:636"  # LDAPS required
+  ELASTICSEARCH_URL: "https://elasticsearch.logging.svc.cluster.local:9200"
+
+# Secrets - MUST be set via external secrets or sealed secrets
+secrets:
+  create: false  # Never create from values in production!
+  existingSecret: "soc-platform-secrets"
+
+# Persistence - High performance storage
+persistence:
+  logs:
+    enabled: true
+    size: 100Gi        # More log storage for production
+    storageClass: "fast-ssd"
+    accessMode: ReadWriteOnce
+  
+  database:
+    enabled: false     # Use managed PostgreSQL, not local
+    size: 0
+    storageClass: ""
+    accessMode: ReadWriteOnce
+  
+  backups:
+    enabled: true
+    size: 1Ti         # Large backup retention
+    storageClass: "nfs-backup"
+    accessMode: ReadWriteMany
+
+# Monitoring - Full observability
+monitoring:
+  prometheus:
+    enabled: true
+    path: /api/metrics
+    port: http
+    
+    serviceMonitor:
+      enabled: true   # Use Prometheus Operator
+      interval: 15s
+      labels:
+        release: prometheus-stack
+        team: soc-ops
+  
+  grafana:
+    enabled: true
+    dashboards:
+      soc-overview.json: |
+        { /* Dashboard JSON */ }
+      telecom-metrics.json: |
+        { /* Dashboard JSON */ }
+
+# PostgreSQL - External managed service (recommended)
+postgresql:
+  enabled: false  # Use Djezzy's managed PostgreSQL
+
+# Redis - External managed service (recommended)  
+redis:
+  enabled: false  # Use Djezzy's managed Redis
+
+# Network policies - Strict security
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: nginx-ingress
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow PostgreSQL
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Allow Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Allow HTTPS outbound
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+# Security context - Hardened
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Service account with minimal permissions
+serviceAccount:
+  create: true
+  name: "soc-platform-sa"
+  annotations:
+    eks.amazonaws.com/role-arn: ""  # IRSA role if using AWS EKS

@@ -1,0 +1,58 @@
+# ============================================================
+# National SOC Platform - Helm Chart
+# Djezzy Production Deployment
+# ============================================================
+
+apiVersion: v2
+name: soc-platform
+description: >-
+  National SOC Platform - Security Operations Center for Djezzy Telecom.
+  Complete security monitoring, incident response, and threat intelligence platform.
+
+# Chart version (semantic versioning)
+version: 1.0.0
+
+# Application version being deployed
+appVersion: "1.0.0"
+
+type: application
+
+keywords:
+  - soc
+  - security
+  - telecom
+  - djezzy
+  - monitoring
+  - threat-intelligence
+  - ss7
+  - gtp
+  - sip
+
+maintainers:
+  - name: Djezzy SOC Team
+    email: soc-ops@djezzy.dz
+    url: https://www.djezky.dz
+
+home: https://soc.djezzy.dz
+sources:
+  - https://github.com/djezzy/national-soc-platform
+
+# Dependencies (optional)
+dependencies:
+  # PostgreSQL can be included via Bitnami chart or managed externally
+  # - name: postgresql
+  #   version: 12.x.x
+  #   repository: https://charts.bitnami.com/bitnami
+  #   condition: postgresql.enabled
+  
+  # Redis for caching and sessions
+  # - name: redis
+  #   version: 17.x.x
+  #   repository: https://charts.bitnami.com/bitnami
+  #   condition: redis.enabled
+
+annotations:
+  category: "Security"
+  license: "Proprietary"
+  djezzy.dz/classification: "Confidential"
+  djezzy.dz/department: "Cybersecurity Operations Center"

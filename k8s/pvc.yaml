@@ -1,0 +1,110 @@
+# ============================================================
+# National SOC Platform - Persistent Volume Claims
+# Storage for logs, database, and application data
+# ============================================================
+
+# ----------------------------------------------------------
+# Application Logs PVC
+# ----------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: soc-logs-pvc
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: storage
+    purpose: logs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  
+  # Storage class (configure for your cloud/on-prem)
+  # AWS: gp3 / io2 | GCP: premium-rws | Azure: PremiumSSD_LRS
+  # On-prem: local-path / ceph / nfs
+  storageClassName: "standard"  # Change to your storage class
+  
+  resources:
+    requests:
+      storage: 50Gi  # Adjust based on log volume
+  
+  # Optional: Retain data when PVC is deleted
+  persistentVolumeReclaimPolicy: Retain
+
+---
+# ----------------------------------------------------------
+# Database Data PVC (if using embedded SQLite or local cache)
+# For PostgreSQL, use a separate dedicated PVC with higher performance
+# ----------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: soc-db-pvc
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: storage
+    purpose: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  
+  # High-performance storage for database
+  storageClassName: "fast"  # Use SSD-backed storage class
+  
+  resources:
+    requests:
+      storage: 100Gi  # Adjust based on data requirements
+
+---
+# ----------------------------------------------------------
+# Backup Storage PVC (for automated backups)
+# ----------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: soc-backup-pvc
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: storage
+    purpose: backups
+spec:
+  accessModes:
+    - ReadWriteMany  # RWX for backup tools to access
+  
+  storageClassName: "nfs"  # Or any shared storage class
+  
+  resources:
+    requests:
+      storage: 500Gi  # Based on retention policy
+
+---
+# ============================================================
+# Persistent Volumes (for on-prem without dynamic provisioning)
+# Uncomment and configure if using static PVs
+# ============================================================
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: soc-logs-pv
+#   labels:
+#     app.kubernetes.io/name: soc-platform
+#     type: local
+# spec:
+#   capacity:
+#     storage: 50Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   persistentVolumeReclaimPolicy: Retain
+#   storageClassName: standard
+#   local:
+#     path: /opt/soc/logs
+#   nodeAffinity:
+#     required:
+#       nodeSelectorTerms:
+#         - matchExpressions:
+#             - key: kubernetes.io/hostname
+#               operator: In
+#               values:
+#                 - worker-node-1

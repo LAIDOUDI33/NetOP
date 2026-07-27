@@ -1,0 +1,74 @@
+# ============================================================
+# National SOC Platform - Pod Disruption Budget (PDB)
+# Ensures minimum availability during node maintenance
+# ============================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: soc-platform-pdb
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: soc-platform
+    app.kubernetes.io/component: pdb
+  annotations:
+    description: "Ensures SOC platform remains available during node maintenance"
+spec:
+  # Minimum available pods (percentage or absolute number)
+  minAvailable: 2  # Always keep at least 2 pods running
+  
+  # Alternative: Use maxUnavailable instead
+  # maxUnavailable: 1
+  
+  # Selector must match Deployment pods
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: soc-platform
+
+---
+# ============================================================
+# Pod Disruption Budget for Database (Stricter)
+# ============================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1  # For primary, consider using maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+
+---
+# ============================================================
+# PriorityClass for Critical Workloads
+# Ensures SOC platform gets priority during resource contention
+# ============================================================
+
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: soc-platform-high-priority
+  namespace: soc-platform
+  labels:
+    app.kubernetes.io/part-of: national-soc
+description: "High priority class for National SOC Platform workloads"
+value: 1000000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+
+---
+# Standard Priority Class
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: soc-platform-standard
+  namespace: soc-platform
+description: "Standard priority for non-critical SOC components"
+value: 1000
+globalDefault: false
+preemptionPolicy: Never

@@ -1,0 +1,1162 @@
+     1→     1→// ============================================================
+     2→     2→// National SOC Platform - Enterprise Database Schema
+     3→     3→// Version: 2.0.0 (Simplified Relations)
+     4→     4→// Models: 27 | Domains: Auth, Core SOC, Threat Intel, Telecom, Compliance
+     5→     5→// ============================================================
+     6→     6→
+     7→     7→generator client {
+     8→     8→  provider = "prisma-client-js"
+     9→     9→}
+    10→    10→
+    11→    11→datasource db {
+    12→    12→  provider = "sqlite"
+    13→    13→  url      = env("DATABASE_URL")
+    14→    14→}
+    15→    15→
+    16→    16→// ============================================================
+    17→    17→// DOMAIN 1: AUTHENTICATION & AUTHORIZATION
+    18→    18→// ============================================================
+    19→    19→
+    20→    20→model User {
+    21→    21→  id                String           @id @default(cuid())
+    22→    22→  email             String           @unique
+    23→    23→  username          String           @unique
+    24→    24→  passwordHash      String
+    25→    25→  name              String
+    26→    26→  avatarUrl         String?
+    27→    27→  isActive          Boolean          @default(true)
+    28→    28→  isMfaEnabled      Boolean          @default(false)
+    29→    29→  mfaSecret         String?
+    30→    30→  lastLoginAt       DateTime?
+    31→    31→  passwordChangedAt DateTime         @default(now())
+    32→    32→  roleId            String
+    33→    33→  createdAt         DateTime         @default(now())
+    34→    34→  updatedAt         DateTime         @updatedAt
+    35→    35→
+    36→    36→  // Relations
+    37→    37→  role              Role             @relation(fields: [roleId], references: [id])
+    38→    38→  sessions          Session[]
+    39→    39→  auditLogs         AuditLog[]
+    40→    40→  tasks             Task[]
+    41→    41→  incidentUpdates   IncidentUpdate[]
+    42→    42→
+    43→    43→  @@index([email])
+    44→    44→  @@index([username])
+    45→    45→  @@index([roleId])
+    46→    46→}
+    47→    47→
+    48→    48→model Role {
+    49→    49→  id            String        @id @default(cuid())
+    50→    50→  name          String        @unique
+    51→    51→  description   String
+    52→    52→  users         User[]
+    53→    53→
+    54→    54→  @@map("roles")
+    55→    55→}
+    56→    56→
+    57→    57→model Session {
+    58→    58→  id            String    @id @default(cuid())
+    59→    59→  userId        String
+    60→    60→  token         String    @unique
+    61→    61→  refreshToken  String?    @unique
+    62→    62→  ipAddress     String?
+    63→    63→  userAgent     String?
+    64→    64→  expiresAt     DateTime
+    65→    65→  createdAt     DateTime @default(now())
+    66→    66→
+    67→    67→  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    68→    68→
+    69→    69→  @@index([userId])
+    70→    70→  @@index([token])
+    71→    71→  @@index([expiresAt])
+    72→    72→  @@map("sessions")
+    73→    73→}
+    74→    74→
+    75→    75→// ============================================================
+    76→    76→// DOMAIN 2: CORE SOC - ALERTS & INCIDENTS
+    77→    77→// ============================================================
+    78→    78→
+    79→    79→model Alert {
+    80→    80→  id                  String           @id @default(cuid())
+    81→    81→  title               String
+    82→    82→  description         String?
+    83→    83→  severity            AlertSeverity    @default(MEDIUM)
+    84→    84→  status              AlertStatus      @default(NEW)
+    85→    85→  alertType           AlertType        @default(DETECTION)
+    86→    86→  source              String
+    87→    87→  rawEvent            String?
+    88→    88→  sourceIp            String?
+    89→    89→  destIp              String?
+    90→    90→  sourcePort          Int?
+    91→    91→  destPort            Int?
+    92→    92→  protocol            String?
+    93→    93→  mitreTactics        String?
+    94→    94→  mitreTechniques     String?
+    95→    95→  iocIds              String?
+    96→    96→  incidentId          String?
+    97→    97→  assignedToId        String?
+    98→    98→  escalationCount     Int              @default(0)
+    99→    99→  suppressionRuleId   String?
+   100→   100→  isSuppressed        Boolean          @default(false)
+   101→   101→  resolvedAt          DateTime?
+   102→   102→  firstSeen           DateTime         @default(now())
+   103→   103→  lastSeen            DateTime         @default(now())
+   104→   104→  createdAt           DateTime         @default(now())
+   105→   105→  updatedAt           DateTime         @updatedAt
+   106→   106→
+   107→   107→  incident            Incident?        @relation(fields: [incidentId], references: [id])
+   108→   108→
+   109→   109→  @@index([status])
+   110→   110→  @@index([severity])
+   111→   111→  @@index([alertType])
+   112→   112→  @@index([incidentId])
+   113→   113→  @@index([assignedToId])
+   114→   114→  @@index([firstSeen])
+   115→   115→  @@index([isSuppressed])
+   116→   116→}
+   117→   117→
+   118→   118→enum AlertSeverity {
+   119→   119→  CRITICAL
+   120→   120→  HIGH
+   121→   121→  MEDIUM
+   122→   122→  LOW
+   123→   123→  INFO
+   124→   124→}
+   125→   125→
+   126→   126→enum AlertStatus {
+   127→   127→  NEW
+   128→   128→  ACKNOWLEDGED
+   129→   129→  IN_PROGRESS
+   130→   130→  ESCALATED
+   131→   131→  RESOLVED
+   132→   132→  FALSE_POSITIVE
+   133→   133→  SUPPRESSED
+   134→   134→}
+   135→   135→
+   136→   136→enum AlertType {
+   137→   137→  DETECTION
+   138→   138→  CORRELATION
+   139→   139→  ANOMALY
+   140→   140→  THREAT_FEED
+   141→   141→  COMPLIANCE
+   142→   142→  MANUAL
+   143→   143→}
+   144→   144→
+   145→   145→model Incident {
+   146→   146→  id                  String           @id @default(cuid())
+   147→   147→  title               String
+   148→   148→  description         String?
+   149→   149→  incidentType        IncidentType     @default(SECURITY)
+   150→   150→  severity            IncidentSeverity @default(HIGH)
+   151→   151→  status              IncidentStatus   @default(OPEN)
+   152→   152→  priority            Int              @default(3)
+   153→   153→  phase               IncidentPhase    @default(DETECTION)
+   154→   154→  tatcCode            String?
+   155→   155→  impactScore         Float            @default(0.0)
+   156→   156→  confidenceScore     Float            @default(0.0)
+   157→   157→  assignedToId        String?
+   158→   158→  reportedBy          String?
+   159→   159→  rootCauseAnalysis   String?
+   160→   160→  lessonsLearned      String?
+   161→   161→  communicationLog    String?
+   162→   162→  affectedAssets      String?
+   163→   163→  affectedServices    String?
+   164→   164→  blastRadius         String?
+   165→   165→  containmentStrategy String?
+   166→   166→  eradicationSteps    String?
+   167→   167→  recoverySteps       String?
+   168→   168→  detectedAt          DateTime         @default(now())
+   169→   169→  resolvedAt          DateTime?
+   170→   170→  targetResolution    DateTime?
+   171→   171→  slaBreach           Boolean          @default(false)
+   172→   172→  createdAt           DateTime         @default(now())
+   173→   173→  updatedAt           DateTime         @updatedAt
+   174→   174→
+   175→   175→  alerts              Alert[]
+   176→   176→  updates             IncidentUpdate[]
+   177→   177→  evidence            Evidence[]
+   178→   178→  tasks               Task[]
+   179→   179→
+   180→   180→  @@index([status])
+   181→   181→  @@index([severity])
+   182→   182→  @@index([incidentType])
+   183→   183→  @@index([assignedToId])
+   184→   184→  @@index([detectedAt])
+   185→   185→  @@index([slaBreach])
+   186→   186→}
+   187→   187→
+   188→   188→enum IncidentType {
+   189→   189→  SECURITY
+   190→   190→  FRAUD
+   191→   191→  DATA_BREACH
+   192→   192→  DDoS
+   193→   193→  MALWARE
+   194→   194→  PHISHING
+   195→   195→  INSIDER_THREAT
+   196→   196→  THIRD_PARTY
+   197→   197→  TELECOM_FRAUD
+   198→   198→  INTERCEPTION
+   199→   199→  NETWORK_INTRUSION
+   200→   200→  APT
+   201→   201→}
+   202→   202→
+   203→   203→enum IncidentSeverity {
+   204→   204→  CRITICAL
+   205→   205→  HIGH
+   206→   206→  MEDIUM
+   207→   207→  LOW
+   208→   208→}
+   209→   209→
+   210→   210→enum IncidentStatus {
+   211→   211→  OPEN
+   212→   212→  IN_PROGRESS
+   213→   213→  CONTAINED
+   214→   214→  ERADICATED
+   215→   215→  RECOVERING
+   216→   216→  RESOLVED
+   217→   217→  CLOSED
+   218→   218→  POST_MORTEM
+   219→   219→}
+   220→   220→
+   221→   221→enum IncidentPhase {
+   222→   222→  DETECTION
+   223→   223→  ANALYSIS
+   224→   224→  CONTAINMENT
+   225→   225→  ERADICATION
+   226→   226→  RECOVERY
+   227→   227→  LESSONS_LEARNED
+   228→   228→  CLOSED
+   229→   229→}
+   230→   230→
+   231→   231→model IncidentUpdate {
+   232→   232→  id          String    @id @default(cuid())
+   233→   233→  incidentId  String
+   234→   234→  authorId    String
+   235→   235→  message     String
+   236→   236→  status      IncidentStatus?
+   237→   237→  phase       IncidentPhase?
+   238→   238→  isInternal  Boolean   @default(false)
+   239→   239→  attachments String?
+   240→   240→  createdAt   DateTime  @default(now())
+   241→   241→
+   242→   242→  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   243→   243→  author   User    @relation(fields: [authorId], references: [id])
+   244→   244→
+   245→   245→  @@index([incidentId])
+   246→   246→  @@index([authorId])
+   247→   247→  @@map("incident_updates")
+   248→   248→}
+   249→   249→
+   250→   250→model Evidence {
+   251→   251→  id          String        @id @default(cuid())
+   252→   252→  incidentId  String
+   253→   253→  title       String
+   254→   254→  description String?
+   255→   255→  type        EvidenceType  @default(FILE)
+   256→   256→  filePath    String?
+   257→   257→  fileHash    String?
+   258→   258→  fileSize    Int?
+   259→   259→  mimeType    String?
+   260→   260→  collectedBy String?
+   261→   261→  collectedAt DateTime     @default(now())
+   262→   262→  metadata    String?
+   263→   263→  createdAt   DateTime      @default(now())
+   264→   264→
+   265→   265→  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   266→   266→
+   267→   267→  @@index([incidentId])
+   268→   268→  @@index([type])
+   269→   269→  @@map("evidence")
+   270→   270→}
+   271→   271→
+   272→   272→enum EvidenceType {
+   273→   273→  FILE
+   274→   274→  LOG
+   275→   275→  MEMORY_DUMP
+   276→   276→  NETWORK_CAPTURE
+   277→   277→  SCREENSHOT
+   278→   278→  EMAIL
+   279→   279→  MALWARE_SAMPLE
+   280→   280→  CONFIGURATION
+   281→   281→  OTHER
+   282→   282→}
+   283→   283→
+   284→   284→model Task {
+   285→   285→  id          String     @id @default(cuid())
+   286→   286→  title       String
+   287→   287→  description String?
+   288→   288→  status      TaskStatus @default(PENDING)
+   289→   289→  priority    Int        @default(3)
+   290→   290→  assigneeId  String?
+   291→   291→  incidentId  String?
+   292→   292→  dueDate     DateTime?
+   293→   293→  completedAt DateTime?
+   294→   294→  createdAt   DateTime   @default(now())
+   295→   295→  updatedAt   DateTime   @updatedAt
+   296→   296→
+   297→   297→  assignee  User?     @relation(fields: [assigneeId], references: [id])
+   298→   298→  incident Incident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+   299→   299→
+   300→   300→  @@index([status])
+   301→   301→  @@index([assigneeId])
+   302→   302→  @@index([incidentId])
+   303→   303→  @@index([dueDate])
+   304→   304→}
+   305→   305→
+   306→   306→enum TaskStatus {
+   307→   307→  PENDING
+   308→   308→  IN_PROGRESS
+   309→   309→  BLOCKED
+   310→   310→  COMPLETED
+   311→   311→  CANCELLED
+   312→   312→}
+   313→   313→
+   314→   314→// ============================================================
+   315→   315→// DOMAIN 3: THREAT INTELLIGENCE
+   316→   316→// ============================================================
+   317→   317→
+   318→   318→model ThreatIndicator {
+   319→   319→  id                String              @id @default(cuid())
+   320→   320→  type              IndicatorType
+   321→   321→  value             String
+   322→   322→  confidence        Float               @default(50.0)
+   323→   323→  source            String?
+   324→   324→  threatActor       String?
+   325→   325→  malwareFamily     String?
+   326→   326→  campaignId        String?
+   327→   327→  isFirstSeen      Boolean             @default(true)
+   328→   328→  isActive          Boolean             @default(true)
+   329→   329→  ttl               DateTime?
+   330→   330→  lastSeen          DateTime            @default(now())
+   331→   331→  firstSeen         DateTime            @default(now())
+   332→   332→  tags              String?
+   333→   333→  context           String?
+   334→   334→  createdAt         DateTime            @default(now())
+   335→   335→  updatedAt         DateTime            @updatedAt()
+   336→   336→
+   337→   337→  @@unique([type, value])
+   338→   338→  @@index([type])
+   339→   339→  @@index([isActive])
+   340→   340→  @@index([threatActor])
+   341→   341→  @@map("threat_indicators")
+   342→   342→}
+   343→   343→
+   344→   344→enum IndicatorType {
+   345→   345→  IPV4
+   346→   346→  IPV6
+   347→   347→  DOMAIN
+   348→   348→  URL
+   349→   349→  EMAIL
+   350→   350→  FILE_HASH_MD5
+   351→   351→  FILE_HASH_SHA1
+   352→   352→  FILE_HASH_SHA256
+   353→   353→  MUTEX
+   354→   354→  REGISTRY_KEY
+   355→   355→  USER_AGENT
+   356→   356→  SS7_GT
+   357→   357→  SS7_IMSI
+   358→   358→  IMSI
+   359→   359→  IMEI
+   360→   360→  MSISDN
+   361→   361→  PHONE_NUMBER
+   362→   362→}
+   363→   363→
+   364→   364→model IOC {
+   365→   365→  id                String           @id @default(cuid())
+   366→   366→  iocId             String           @unique
+   367→   367→  type              IndicatorType
+   368→   368→  value             String
+   369→   369→  threatLevel       ThreatLevel      @default(MEDIUM)
+   370→   370→  description       String?
+   371→   371→  source            String?
+   372→   372→  sourceUrl         String?
+   373→   373→  confidence        Int              @default(50)
+   374→   374→  createdBy         String?
+   375→   375→  killChainPhases   String?
+   376→   376→  labels            String?
+   377→   377→  isValidated       Boolean          @default(false)
+   378→   378→  falsePositiveRate Float            @default(0.0)
+   379→   379→  lastObserved      DateTime?
+   380→   380→  expiration        DateTime?
+   381→   381→  createdAt         DateTime         @default(now())
+   382→   382→  updatedAt         DateTime         @updatedAt()
+   383→   383→
+   384→   384→  @@index([type])
+   385→   385→  @@index([threatLevel])
+   386→   386→  @@index([isValidated])
+   387→   387→}
+   388→   388→
+   389→   389→enum ThreatLevel {
+   390→   390→  CRITICAL
+   391→   391→  HIGH
+   392→   392→  MEDIUM
+   393→   393→  LOW
+   394→   394→  UNKNOWN
+   395→   395→}
+   396→   396→
+   397→   397→model TIPLv2 {
+   398→   398→  id                  String           @id @default(cuid())
+   399→   399→  tipId               String           @unique
+   400→   400→  title               String
+   401→   401→  type                TIPLv2Type
+   402→   402→  description         String?
+   403→   403→  confidence          Float            @default(50.0)
+   404→   404→  severity            TIPSeverity      @default(MEDIUM)
+   405→   405→  sourceOrg           String?
+   406→   406→  tlp                 TLPMarking       @default(AMBER)
+   407→   407→  iocIds              String?
+   408→   408→  indicatorIds        String?
+   409→   409→  productIds          String?
+   410→   410→  affectedCountries   String?
+   411→   411→  affectedSectors     String?
+   412→   412→  telecomSpecific     String?
+   413→   413→  isActionable        Boolean          @default(false)
+   414→   414→  actionTaken         String?
+   415→   415→  distributionScope   DistributionScope @default(NATIONAL_SOC)
+   416→   416→  publishedAt         DateTime?
+   417→   417→  validFrom           DateTime         @default(now())
+   418→   418→  validUntil         DateTime?
+   419→   419→  createdAt           DateTime         @default(now())
+   420→   420→  updatedAt           DateTime         @updatedAt()
+   421→   421→
+   422→   422→  @@index([type])
+   423→   423→  @@index([severity])
+   424→   424→  @@index([tlp])
+   425→   425→  @@index([isActionable])
+   426→   426→  @@map("tipl_v2")
+   427→   427→}
+   428→   428→
+   429→   429→enum TIPLv2Type {
+   430→   430→  INDICATOR
+   431→   431→  OBSERVABLE
+   432→   432→  CAMPAIGN
+   433→   433→  THREAT_ACTOR
+   434→   434→  MALWARE
+   435→   435→  VULNERABILITY
+   436→   436→  ATTACK_PATTERN
+   437→   437→  COURSE_OF_ACTION
+   438→   438→  INFRASTRUCTURE
+   439→   439→  TELECOM_THREAT
+   440→   440→}
+   441→   441→
+   442→   442→enum TIPSeverity {
+   443→   443→  CRITICAL
+   444→   444→  HIGH
+   445→   445→  MEDIUM
+   446→   446→  LOW
+   447→   447→  INFO
+   448→   448→}
+   449→   449→
+   450→   450→enum TLPMarking {
+   451→   451→  RED
+   452→   452→  AMBER
+   453→   453→  GREEN
+   454→   454→  WHITE
+   455→   455→  CLEAR
+   456→   456→}
+   457→   457→
+   458→   458→enum DistributionScope {
+   459→   459→  NATIONAL_SOC
+   460→   460→  SECTOR_CSIRTs
+   461→   461→  CRITICAL_INFRASTRUCTURE
+   462→   462→  ALL_STAKEHOLDERS
+   463→   463→  INTERNATIONAL_PARTNERS
+   464→   464→  PUBLIC
+   465→   465→}
+   466→   466→
+   467→   467→model Campaign {
+   468→   468→  id                String           @id @default(cuid())
+   469→   469→  name              String           @unique
+   470→   470→  alias             String?
+   471→   471→  description       String?
+   472→   472→  threatActor       String?
+   473→   473→  attributionConfidence Float        @default(0.0)
+   474→   474→  status            CampaignStatus   @default(ACTIVE)
+   475→   475→  startDate         DateTime?
+   476→   476→  endDate           DateTime?
+   477→   477→  targetSector      String?
+   478→   478→  targetRegion      String?
+   479→   479→  objectives        String?
+   480→   480→  techniques        String?
+   481→   481→  milestones        String?
+   482→   482→  financialImpact   Float?
+   483→   483→  isActive          Boolean          @default(true)
+   484→   484→  firstSeen         DateTime         @default(now())
+   485→   485→  lastSeen         DateTime         @default(now())
+   486→   486→  createdAt         DateTime         @default(now())
+   487→   487→  updatedAt         DateTime         @updatedAt()
+   488→   488→
+   489→   489→  @@index([status])
+   490→   490→  @@index([threatActor])
+   491→   491→  @@index([isActive])
+   492→   492→}
+   493→   493→
+   494→   494→enum CampaignStatus {
+   495→   495→  ACTIVE
+   496→   496→  DORMANT
+   497→   497→  CONCLUDED
+   498→   498→  ATTRIBUTED
+   499→   499→  ONGOING
+   500→   500→}
+   501→   501→
+   502→   502→// ============================================================
+   503→   503→// DOMAIN 4: TELECOM-SPECIFIC MODELS (SIMIFIED)
+   504→   504→// ============================================================
+   505→   505→
+   506→   506→model Subscriber {
+   507→   507→  id                String           @id @default(cuid())
+   508→   508→  imsi              String           @unique
+   509→   509→  msisdn            String           @unique
+   510→   510→  imei              String?
+   511→   511→  imsiType          IMSIType         @default(POSTPAID)
+   512→   512→  subscriberStatus  SubscriberStatus @default(ACTIVE)
+   513→   513→  roamingStatus     RoamingStatus    @default(HOME)
+   514→   514→  homeCountry       String?
+   515→   515→  visitedCountry    String?
+   516→   516→  visitedNetwork    String?
+   517→   517→  profile           String?
+   518→   518→  riskScore         Float            @default(0.0)
+   519→   519→  lastLocationUpdate DateTime?
+   520→   520→  lastActivityAt    DateTime?
+   521→   521→  createdAt         DateTime         @default(now())
+   522→   522→  updatedAt         DateTime         @updatedAt()
+   523→   523→
+   524→   524→  @@index([imsi])
+   525→   525→  @@index([msisdn])
+   526→   526→  @@index([subscriberStatus])
+   527→   527→  @@index([riskScore])
+   528→   528→}
+   529→   529→
+   530→   530→enum IMSIType {
+   531→   531→  PREPAID
+   532→   532→  POSTPAID
+   533→   533→  MVNO
+   534→   534→  ROAMING
+   535→   535→  IoT
+   536→   536→  MACHINE
+   537→   537→}
+   538→   538→
+   539→   539→enum SubscriberStatus {
+   540→   540→  ACTIVE
+   541→   541→  SUSPENDED
+   542→   542→  TERMINATED
+   543→   543→  FRAUD_LOCKED
+   544→   544→  BARRED
+   545→   545→  PENDING_ACTIVATION
+   546→   546→}
+   547→   547→
+   548→   548→enum RoamingStatus {
+   549→   549→  HOME
+   550→   550→  INTERNATIONAL_ROAMING
+   551→   551→  NATIONAL_ROAMING
+   552→   552→  UNKNOWN
+   553→   553→}
+   554→   554→
+   555→   555→model NetworkElement {
+   556→   556→  id                String           @id @default(cuid())
+   557→   557→  elementType       NetworkElementType
+   558→   558→  hostname          String
+   559→   559→  ipAddress         String           @unique
+   560→   560→  vendor            String?
+   561→   561→  softwareVersion   String?
+   562→   562→  status            NEStatus         @default(OPERATIONAL)
+   563→   563→  capacity          Float?
+   564→   564→  location          String?
+   565→   565→  redundancyGroup   String?
+   566→   566→  protocols         String?
+   567→   567→  securityZone      String?
+   568→   568→  configHash        String?
+   569→   569→  metadata          String?
+   570→   570→  lastHeartbeat     DateTime?
+   571→   571→  createdAt         DateTime         @default(now())
+   572→   572→  updatedAt         DateTime         @updatedAt()
+   573→   573→
+   574→   574→  @@index([elementType])
+   575→   575→  @@index([status])
+   576→   576→  @@index([ipAddress])
+   577→   577→  @@map("network_elements")
+   578→   578→}
+   579→   579→
+   580→   580→enum NetworkElementType {
+   581→   581→  HLR_HSS
+   582→   582→  MSC
+   583→   583→  SGSN
+   584→   584→  GGSN_PGW
+   585→   585→  MME
+   586→   586→  SMSC
+   587→   587→  STP
+   588→   588→  SIGTRAN_GATEWAY
+   589→   589→  GTP_PROXY
+   590→   590→  DIAMETER_AGENT
+   591→   591→  SIP_PROXY
+   592→   592→  CSCF_P_CSCF
+   593→   593→  CSCF_I_CSCF
+   594→   594→  CSCF_S_CSCF
+   595→   595→  PCRF_OCS
+   596→   596→  CDR_COLLECTOR
+   597→   597→  PROBE_SENSOR
+   598→   598→  FIREWALL
+   599→   599→  IDS_IPS
+   600→   600→  LOAD_BALANCER
+   601→   601→}
+   602→   602→
+   603→   603→enum NEStatus {
+   604→   604→  OPERATIONAL
+   605→   605→  DEGRADED
+   606→   606→  MAINTENANCE
+   607→   607→  FAILED
+   608→   608→  OFFLINE
+   609→   609→  UNKNOWN
+   610→   610→}
+   611→   611→
+   612→   612→model SS7Message {
+   613→   613→  id                String           @id @default(cuid())
+   614→   614→  messageType       SS7MessageType
+   615→   615→  opc               Int
+   616→   616→  dpc               Int
+   617→   617→  globalTitle       String?
+   618→   618→  imsi              String?
+   619→   619→  msisdn            String?
+   620→   620→  sriResult         String?
+   621→   621→  isRoaming         Boolean          @default(false)
+   622→   622→  isInternational   Boolean          @default(false)
+   623→   623→  anomalyScore      Float            @default(0.0)
+   624→   624→  anomalyReason     String?
+   625→   625→  isBlocked         Boolean          @default(false)
+   626→   626→  rawMessage        String?
+   627→   627→  protocolDetails   String?
+   628→   628→  sourceNeId        String?
+   629→   629→  destNeId          String?
+   630→   630→  timestamp         DateTime         @default(now())
+   631→   631→  processedAt       DateTime?
+   632→   632→
+   633→   633→  @@index([messageType])
+   634→   634→  @@index([opc, dpc])
+   635→   635→  @@index([timestamp])
+   636→   636→  @@index([anomalyScore])
+   637→   637→  @@index([isBlocked])
+   638→   638→  @@map("ss7_messages")
+   639→   639→}
+   640→   640→
+   641→   641→enum SS7MessageType {
+   642→   642→  SRI_REQ
+   643→   643→  SRI_RESP
+   644→   644→  ISI_REQ
+   645→   645→  ISI_RESP
+   646→   646→  MAP_INSERT_SUB_DATA
+   647→   647→  MAP_UPDATE_LOCATION
+   648→   648→  MAP_CANCEL_LOCATION
+   649→   649→  MAP_PURGE_MS
+   650→   650→  MAP_NOTIFY_FWD_SHORT_MSG
+   651→   651→  MAP_FWD_SHORT_MSG
+   652→   652→  MAP_DEL_SM_REQ
+   653→   653→  MAP_DEL_SM_RESP
+   654→   654→  MAP_ALERT_SERVICE
+   655→   655→  MAP_PROCESS_SS_REQ
+   656→   656→  MAP_REGISTER_SS
+   657→   657→  MAP_ERASE_SS
+   658→   658→  USSD_REQUEST
+   659→   659→  OTHER
+   660→   660→}
+   661→   661→
+   662→   662→model GTPSession {
+   663→   663→  id                String           @id @default(cuid())
+   664→   664→  sessionType       GTPSessionType
+   665→   665→  imsi              String?
+   666→   666→  msisdn            String?
+   667→   667→  imei              String?
+   668→   668→  sourceIp          String
+   669→   669→  destIp            String
+   670→   670→  sourceTeid        BigInt
+   671→   671→  destTeid          BigInt
+   672→   672→  apn               String?
+   673→   673→  rai               String?
+   674→   674→  cellId            String?
+   675→   675→  lac               Int?
+   676→   676→  mcc               String?
+   677→   677→  mnc               String?
+   678→   678→  qosProfile        String?
+   679→   679→  bytesUp           BigInt           @default(0)
+   680→   680→  bytesDown         BigInt           @default(0)
+   681→   681→  durationSeconds   Int              @default(0)
+   682→   682→  chargingId        String?
+   683→   683→  pdnType           PDNType          @default(IPV4)
+   684→   684→  sessionStatus     SessionStatus    @default(ACTIVE)
+   685→   685→  ratType           RATType?
+   686→   686→  anomalyScore      Float            @default(0.0)
+   687→   687→  startedAt         DateTime         @default(now())
+   688→   688→  lastActivityAt    DateTime         @default(now())
+   689→   689→  terminatedAt      DateTime?
+   690→   690→
+   691→   691→  @@index([imsi])
+   692→   692→  @@index([sessionType])
+   693→   693→  @@index([sessionStatus])
+   694→   694→  @@index([startedAt])
+   695→   695→  @@map("gtp_sessions")
+   696→   696→}
+   697→   697→
+   698→   698→enum GTPSessionType {
+   699→   699→  DATA
+   700→   700→  CONTROL
+   701→   701→  SIGNALING
+   702→   702→}
+   703→   703→
+   704→   704→enum PDNType {
+   705→   705→  IPV4
+   706→   706→  IPV6
+   707→   707→  IPV4V6
+   708→   708→}
+   709→   709→
+   710→   710→enum SessionStatus {
+   711→   711→  ACTIVE
+   712→   712→  IDLE
+   713→   713→  TERMINATED
+   714→   714→  SUSPENDED
+   715→   715→}
+   716→   716→
+   717→   717→enum RATType {
+   718→   718→  GERAN
+   719→   719→  UTRAN
+   720→   720→  EUTRAN
+   721→   721→  NR
+   722→   722→  WLAN
+   723→   723→  UNKNOWN
+   724→   724→}
+   725→   725→
+   726→   726→model DiameterSession {
+   727→   727→  id                String              @id @default(cuid())
+   728→   728→  sessionId         String              @unique
+   729→   729→  commandCode       DiameterCommand
+   730→   730→  originHost        String
+   731→   731→  originRealm       String
+   732→   732→  destinationHost   String?
+   733→   733→  destinationRealm  String?
+   734→   734→  authApplicationId Int?
+   735→   735→  userName          String?
+   736→   736→  imsi              String?
+   737→   737→  resultCode        Int?
+   738→   738→  isError           Boolean             @default(false)
+   739→   739→  errorReason       String?
+   740→   740→  ccRequestType    CCRequestType?
+   741→   741→  ccRequestNumber  Int                 @default(0)
+   742→   742→  serviceInfo       String?
+   743→   743→  subscriptionId    String?
+   744→   744→  ratedUnits        BigInt              @default(0)
+   745→   745→  currencyCode      String?
+   746→   746→  sessionStatus     SessionStatus       @default(ACTIVE)
+   747→   747→  anomalyScore      Float               @default(0.0)
+   748→   748→  startedAt         DateTime            @default(now())
+   749→   749→  lastActivityAt    DateTime            @default(now())
+   750→   750→  terminatedAt      DateTime?
+   751→   751→
+   752→   752→  @@index([sessionId])
+   753→   753→  @@index([commandCode])
+   754→   754→  @@index([userName])
+   755→   755→  @@index([sessionStatus])
+   756→   756→  @@map("diameter_sessions")
+   757→   757→}
+   758→   758→
+   759→   759→enum DiameterCommand {
+   760→   760→  CCR
+   761→   761→  CCA
+   762→   762→  AAR
+   763→   763→  AAA
+   764→   764→  STR
+   765→   765→  STA
+   766→   766→  ASR
+   767→   767→  ASA
+   768→   768→  DER
+   769→   769→  DEA
+   770→   770→  UDR
+   771→   771→  UDA
+   772→   772→  PUR
+   773→   773→  PUA
+   774→   774→  RAR
+   775→   775→  RAA
+   776→   776→  OTHER
+   777→   777→}
+   778→   778→
+   779→   779→enum CCRequestType {
+   780→   780→  INITIAL_REQUEST
+   781→   781→  UPDATE_REQUEST
+   782→   782→  TERMINATION_REQUEST
+   783→   783→  EVENT_REQUEST
+   784→   784→}
+   785→   785→
+   786→   786→model RadiusSession {
+   787→   787→  id                String           @id @default(cuid())
+   788→   788→  sessionId         String           @unique
+   789→   789→  userName          String?
+   790→   790→  nasIpAddress      String
+   791→   791→  nasPort           Int?
+   792→   792→  nasPortType       NASPortType?
+   793→   793→  framedProtocol    FramedProtocol?
+   794→   794→  serviceName       ServiceName?
+   795→   795→  callingStationId  String?
+   796→   796→  calledStationId   String?
+   797→   797→  authProtocol      AuthProtocol?
+   798→   798→  packetType        RadiusPacketType
+   799→   799→  statusCode        Int?
+   800→   800→  errorMessage      String?
+   801→   801→  sessionTimeout    Int?
+   802→   802→  idleTimeout       Int?
+   803→   803→  bytesIn           BigInt           @default(0)
+   804→   804→  bytesOut          BigInt           @default(0)
+   805→   805→  packetsIn         BigInt           @default(0)
+   806→   806→  packetsOut        BigInt           @default(0)
+   807→   807→  imsi              String?
+   808→   808→  apn               String?
+   809→   809→  sessionStatus     SessionStatus    @default(ACTIVE)
+   810→   810→  startedAt         DateTime         @default(now())
+   811→   811→  lastActivityAt    DateTime         @default(now())
+   812→   812→  terminatedAt      DateTime?
+   813→   813→
+   814→   814→  @@index([sessionId])
+   815→   815→  @@index([userName])
+   816→   816→  @@index([nasIpAddress])
+   817→   817→  @@index([sessionStatus])
+   818→   818→  @@map("radius_sessions")
+   819→   819→}
+   820→   820→
+   821→   821→enum NASPortType {
+   822→   822→  WIRELESS_80211
+   823→   823→  ETHERNET
+   824→   824→  ADSL
+   825→   825→  GPRS_UMTS
+   826→   826→  CDMA2000
+   827→   827→  LTE_EUTRAN
+   828→   828→  NR_5G
+   829→   829→  WIMAX
+   830→   830→  XDSL
+   831→   831→  VPN
+   832→   832→  OTHER
+   833→   833→}
+   834→   834→
+   835→   835→enum FramedProtocol {
+   836→   836→  PPP
+   837→   837→  SLIP
+   838→   838→  ARAP
+   839→   839→  GPRS_PPP
+   840→   840→  OTHER
+   841→   841→}
+   842→   842→
+   843→   843→enum ServiceName {
+   844→   844→  FRAMED_USER
+   845→   845→  LOGIN_USER
+   846→   846→  OUTBOUND_USER
+   847→   847→  ADMINISTRATOR
+   848→   848→  NAS_PROMPT
+   849→   849→  AUTHENTICATE_ONLY
+   850→   850→  CALLBACK_LOGIN
+   851→   851→  CALLBACK_FRAMED
+   852→   852→  OTHER
+   853→   853→}
+   854→   854→
+   855→   855→enum AuthProtocol {
+   856→   856→  PAP
+   857→   857→  CHAP
+   858→   858→  MSCHAP
+   859→   859→  MSCHAPV2
+   860→   860→  EAP
+   861→   861→  OTHER
+   862→   862→}
+   863→   863→
+   864→   864→enum RadiusPacketType {
+   865→   865→  ACCESS_REQUEST
+   866→   866→  ACCESS_ACCEPT
+   867→   867→  ACCESS_REJECT
+   868→   868→  ACCESS_CHALLENGE
+   869→   869→  ACCOUNTING_REQUEST
+   870→   870→  ACCOUNTING_RESPONSE
+   871→   871→  SERVER_COA_REQUEST
+   872→   872→  SERVER_COA_ACK
+   873→   873→  SERVER_COA_NAK
+   874→   874→  DISCONNECT_REQUEST
+   875→   875→  DISCONNECT_ACK
+   876→   876→  DISCONNECT_NAK
+   877→   877→}
+   878→   878→
+   879→   879→model SIPSession {
+   880→   880→  id                String           @id @default(cuid())
+   881→   881→  callId            String           @unique
+   882→   882→  fromUri           String
+   883→   883→  toUri             String
+   884→   884→  fromUser          String?
+   885→   885→  toUser            String?
+   886→   886→  fromDomain        String?
+   887→   887→  toDomain         String?
+   888→   888→  callType          SIPCallType      @default(VOICE)
+   889→   889→  callDirection     CallDirection    @default(INCOMING)
+   890→   890→  inviteTimestamp   DateTime?
+   891→   891→  tryTimestamp      DateTime?
+   892→   892→  ringingTimestamp  DateTime?
+   893→   893→  connectTimestamp  DateTime?
+   894→   894→  disconnectTimestamp DateTime?
+   895→   895→  disconnectReason  String?
+   896→   896→  durationSeconds   Int              @default(0)
+   897→   897→  sourceIp          String
+   898→   898→  destIp            String
+   899→   899→  sourcePort        Int?
+   900→   900→  destPort          Int?
+   901→   901→  sipMethod         SIPMethod?
+   902→   902→  responseCode      Int?
+   903→   903→  userAgent         String?
+   904→   904→  isEncrypted       Boolean          @default(false)
+   905→   905→  srtpEnabled       Boolean          @default(false)
+   906→   906→  isIntercepted     Boolean          @default(false)
+   907→   907→  interceptionType  String?
+   908→   908→  fraudIndicators   String?
+   909→   909→  anomalyScore      Float            @default(0.0)
+   910→   910→  sourceNeId        String?
+   911→   911→  destNeId          String?
+   912→   912→  createdAt         DateTime         @default(now())
+   913→   913→
+   914→   914→  @@index([callId])
+   915→   915→  @@index([fromUser])
+   916→   916→  @@index([toUser])
+   917→   917→  @@index([callType])
+   918→   918→  @@index([connectTimestamp])
+   919→   919→  @@map("sip_sessions")
+   920→   920→}
+   921→   921→
+   922→   922→enum SIPCallType {
+   923→   923→  VOICE
+   924→   924→  VIDEO
+   925→   925→  SMS_OVER_SIP
+   926→   926→  INSTANT_MESSAGE
+   927→   927→  PRESENCE
+   928→   928→  CONFERENCE
+   929→   929→  OTHER
+   930→   930→}
+   931→   931→
+   932→   932→enum CallDirection {
+   933→   933→  INCOMING
+   934→   934→  OUTGOING
+   935→   935→  INTERNAL
+   936→   936→  TRANSIT
+   937→   937→}
+   938→   938→
+   939→   939→enum SIPMethod {
+   940→   940→  INVITE
+   941→   941→  ACK
+   942→   942→  BYE
+   943→   943→  CANCEL
+   944→   944→  OPTIONS
+   945→   945→  REGISTER
+   946→   946→  PRACK
+   947→   947→  SUBSCRIBE
+   948→   948→  NOTIFY
+   949→   949→  PUBLISH
+   950→   950→  INFO
+   951→   951→  REFER
+   952→   952→  MESSAGE
+   953→   953→  UPDATE
+   954→   954→}
+   955→   955→
+   956→   956→// ============================================================
+   957→   957→// DOMAIN 5: COMPLIANCE & AUDIT
+   958→   958→// ============================================================
+   959→   959→
+   960→   960→model AuditLog {
+   961→   961→  id            String       @id @default(cuid())
+   962→   962→  userId        String?
+   963→   963→  action        String
+   964→   964→  resource      String
+   965→   965→  resourceId    String?
+   966→   966→  oldValue      String?
+   967→   967→  newValue      String?
+   968→   968→  ipAddress     String?
+   969→   969→  userAgent     String?
+   970→   970→  severity      AuditSeverity @default(INFO)
+   971→   971→  category      AuditCategory @default(GENERAL)
+   972→   972→  outcome       AuditOutcome  @default(SUCCESS)
+   973→   973→  errorMessage  String?
+   974→   974→  metadata      String?
+   975→   975→  createdAt     DateTime     @default(now())
+   976→   976→
+   977→   977→  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+   978→   978→
+   979→   979→  @@index([userId])
+   980→   980→  @@index([action])
+   981→   981→  @@index([resource])
+   982→   982→  @@index([createdAt])
+   983→   983→  @@index([category])
+   984→   984→  @@map("audit_logs")
+   985→   985→}
+   986→   986→
+   987→   987→enum AuditSeverity {
+   988→   988→  CRITICAL
+   989→   989→  HIGH
+   990→   990→  MEDIUM
+   991→   991→  LOW
+   992→   992→  INFO
+   993→   993→}
+   994→   994→
+   995→   995→enum AuditCategory {
+   996→   996→  AUTHENTICATION
+   997→   997→  AUTHORIZATION
+   998→   998→  DATA_ACCESS
+   999→   999→  DATA_MODIFICATION
+  1000→  1000→  SYSTEM_CONFIG
+  1001→  1001→  INCIDENT_MANAGEMENT
+  1002→  1002→  THREAT_INTEL
+  1003→  1003→  COMPLIANCE
+  1004→  1004→  SECURITY_EVENT
+  1005→  1005→  GENERAL
+  1006→  1006→}
+  1007→  1007→
+  1008→  1008→enum AuditOutcome {
+  1009→  1009→  SUCCESS
+  1010→  1010→  FAILURE
+  1011→  1011→  DENIED
+  1012→  1012→  ERROR
+  1013→  1013→  PARTIAL
+  1014→  1014→}
+  1015→  1015→
+  1016→  1016→model Report {
+  1017→  1017→  id            String       @id @default(cuid())
+  1018→  1018→  title         String
+  1019→  1019→  description   String?
+  1020→  1020→  reportType    ReportType   @default(INCIDENT_SUMMARY)
+  1021→  1021→  format        ReportFormat @default(PDF)
+  1022→  1022→  status        ReportStatus @default(GENERATING)
+  1023→  1023→  generatedBy   String?
+  1024→  1024→  parameters    String?
+  1025→  1025→  filePath      String?
+  1026→  1026→  fileSize      Int?
+  1027→  1027→  schedule      ReportSchedule?
+  1028→  1028→  recipients    String?
+  1029→  1029→  dateRangeStart DateTime?
+  1030→  1030→  dateRangeEnd   DateTime?
+  1031→  1031→  createdAt     DateTime     @default(now())
+  1032→  1032→  completedAt   DateTime?
+  1033→  1033→
+  1034→  1034→  @@index([reportType])
+  1035→  1035→  @@index([status])
+  1036→  1036→  @@index([generatedBy])
+  1037→  1037→  @@index([createdAt])
+  1038→  1038→}
+  1039→  1039→
+  1040→  1040→enum ReportType {
+  1041→  1041→  INCIDENT_SUMMARY
+  1042→  1042→  ALERT_TRENDS
+  1043→  1043→  THREAT_LANDSCAPE
+  1044→  1044→  KPI_DASHBOARD
+  1045→  1045→  COMPLIANCE_STATUS
+  1046→  1046→  SLA_REPORT
+  1047→  1047→  TEAM_PERFORMANCE
+  1048→  1048→  THREAT_ACTOR_PROFILE
+  1049→  1049→  TELECOM_FRAUD
+  1050→  1050→  ROAMING_ANALYSIS
+  1051→  1051→  EXECUTIVE_SUMMARY
+  1052→  1052→  CUSTOM
+  1053→  1053→}
+  1054→  1054→
+  1055→  1055→enum ReportFormat {
+  1056→  1056→  PDF
+  1057→  1057→  HTML
+  1058→  1058→  CSV
+  1059→  1059→  JSON
+  1060→  1060→  XLSX
+  1061→  1061→  DOCX
+  1062→  1062→}
+  1063→  1063→
+  1064→  1064→enum ReportStatus {
+  1065→  1065→  GENERATING
+  1066→  1066→  COMPLETED
+  1067→  1067→  FAILED
+  1068→  1068→  SCHEDULED
+  1069→  1069→  EXPIRED
+  1070→  1070→}
+  1071→  1071→
+  1072→  1072→enum ReportSchedule {
+  1073→  1073→  DAILY
+  1074→  1074→  WEEKLY
+  1075→  1075→  MONTHLY
+  1076→  1076→  QUARTERLY
+  1077→  1077→  YEARLY
+  1078→  1078→  ON_DEMAND
+  1079→  1079→}
+  1080→  1080→
+  1081→  1081→model SystemConfig {
+  1082→  1082→  id            String    @id @default(cuid())
+  1083→  1083→  key           String    @unique
+  1084→  1084→  value         String
+  1085→  1085→  description   String?
+  1086→  1086→  category      ConfigCategory @default(GENERAL)
+  1087→  1087→  isSensitive   Boolean   @default(false)
+  1088→  1088→  validationRule String?
+  1089→  1089→  lastModifiedBy String?
+  1090→  1090→  createdAt     DateTime  @default(now())
+  1091→  1091→  updatedAt     DateTime  @updatedAt
+  1092→  1092→
+  1093→  1093→  @@index([category])
+  1094→  1094→  @@map("system_config")
+  1095→  1095→}
+  1096→  1096→
+  1097→  1097→enum ConfigCategory {
+  1098→  1098→  GENERAL
+  1099→  1099→  SECURITY
+  1100→  1100→  INTEGRATION
+  1101→  1101→  NOTIFICATION
+  1102→  1102→  COMPLIANCE
+  1103→  1103→  PERFORMANCE
+  1104→  1104→  BACKUP
+  1105→  1105→  TELECOM
+  1106→  1106→  THREAT_INTEL
+  1107→  1107→  UI_SETTINGS
+  1108→  1108→}
+  1109→  1109→
+  1110→  1110→model DataRetentionPolicy {
+  1111→  1111→  id                  String              @id @default(cuid())
+  1112→  1112→  entityType          RetentionEntityType
+  1113→  1113→  retentionPeriodDays Int                 @default(365)
+  1114→  1114→  actionAfterExpiry   RetentionAction     @default(ARCHIVE)
+  1115→  1115→  storageTier         StorageTier         @default(HOT)
+  1116→  1116→  legalHold           Boolean             @default(false)
+  1117→  1117→  complianceRequirements String?
+  1118→  1118→  customRules         String?
+  1119→  1119→  isEnabled           Boolean             @default(true)
+  1120→  1120→  lastRun             DateTime?
+  1121→  1121→  nextRun             DateTime?
+  1122→  1122→  recordsAffected     BigInt              @default(0)
+  1123→  1123→  createdAt           DateTime            @default(now())
+  1124→  1124→  updatedAt           DateTime            @updatedAt
+  1125→  1125→
+  1126→  1126→  @@index([entityType])
+  1127→  1127→  @@index([isEnabled])
+  1128→  1128→  @@map("data_retention_policies")
+  1129→  1129→}
+  1130→  1130→
+  1131→  1131→enum RetentionEntityType {
+  1132→  1132→  ALERTS
+  1133→  1133→  INCIDENTS
+  1134→  1134→  AUDIT_LOGS
+  1135→  1135→  RAW_LOGS
+  1136→  1136→  SESSION_DATA
+  1137→  1137→  PCAP_FILES
+  1138→  1138→  EVIDENCE
+  1139→  1139→  THREAT_INTEL
+  1140→  1140→  METRICS
+  1141→  1141→  REPORTS
+  1142→  1142→  TELECOM_SESSIONS
+  1143→  1143→  SS7_MESSAGES
+  1144→  1144→  SIP_CDRS
+  1145→  1145→  ALL
+  1146→  1146→}
+  1147→  1147→
+  1148→  1148→enum RetentionAction {
+  1149→  1149→  DELETE
+  1150→  1150→  ARCHIVE
+  1151→  1151→  ANONYMIZE
+  1152→  1152→  AGGREGATE
+  1153→  1153→  MOVE_TO_COLD
+  1154→  1154→}
+  1155→  1155→
+  1156→  1156→enum StorageTier {
+  1157→  1157→  HOT
+  1158→  1158→  WARM
+  1159→  1159→  COLD
+  1160→  1160→  GLACIER
+  1161→  1161→}
+  1162→  1162→
