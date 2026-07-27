@@ -1,12 +1,13 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const siteId = searchParams.get('siteId');
   const technology = searchParams.get('technology');
-  const now = new Date();
-  const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+  const now = await getDemoNow();
+  const sixHoursAgo = await demoHoursAgo(6);
 
   try {
     const techFilter = technology && technology !== 'all' ? technology : undefined;

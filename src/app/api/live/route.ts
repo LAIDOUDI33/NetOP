@@ -1,11 +1,13 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     // 1. KPI metrics - latest per site
+    const since = await demoHoursAgo(24);
     const allKpis = await db.kpiMetric.findMany({
-      where: { timestamp: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      where: { timestamp: { gte: since } },
       orderBy: { timestamp: 'desc' },
       include: { site: { select: { id: true, name: true, code: true, technology: true, region: true, status: true } } },
     });
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Energy metrics - latest per site
     const allEnergy = await db.energyMetric.findMany({
-      where: { timestamp: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      where: { timestamp: { gte: since } },
       orderBy: { timestamp: 'desc' },
     });
     const energySiteMap = new Map<string, (typeof allEnergy)[number]>();
@@ -136,7 +138,8 @@ export async function GET(request: NextRequest) {
     }));
 
     // 4. Incidents summary
-    const todayStart = new Date();
+    const demoNow = await getDemoNow();
+    const todayStart = new Date(demoNow.getTime());
     todayStart.setHours(0, 0, 0, 0);
 
     const [openCount, investigatingCount, todayResolvedCount, slaBreachCount] = await Promise.all([

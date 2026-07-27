@@ -1,10 +1,11 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const sixHoursAgo = await demoHoursAgo(6);
+    const oneHourAgo = await demoHoursAgo(1);
 
     // Get all KPI metrics from last 6 hours
     const kpis = await db.kpiMetric.findMany({
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
           const recentExists = await db.anomalyEvent.count({
             where: {
               siteId: latest.siteId, metric: m,
-              createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
+              createdAt: { gte: oneHourAgo },
             },
           });
           if (recentExists > 0) continue;

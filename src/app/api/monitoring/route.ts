@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology') || '4G';
-  const now = new Date();
-  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-  const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+  const oneHourAgo = await demoHoursAgo(1);
+  const sixHoursAgo = await demoHoursAgo(6);
 
   try {
     // Sites with their latest KPI

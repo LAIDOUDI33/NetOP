@@ -1,10 +1,11 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     const targets = await db.sLATarget.findMany({ where: { enabled: true } });
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneHourAgo = await demoHoursAgo(1);
 
     // Get latest KPI averages per technology
     const techAvgs = await db.kpiMetric.groupBy({

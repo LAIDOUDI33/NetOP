@@ -284,3 +284,29 @@ Stage Summary:
 - 27 files changed across the batch commit + 3 in hotfix
 - Production-ready features: error handling, rate limiting, loading states, 404 page, pagination, accessibility, README
 - Browser-verified: login, dashboard, alerts with pagination, French/Arabic RTL
+---
+Task ID: 3
+Agent: Sub-agent
+Task: Update 10 API routes to use demoHoursAgo() instead of hardcoded Date.now() for time-windowed queries
+
+Work Log:
+- Read all 10 route files to catalog exact time-window patterns
+- Edited 10 files (each: add import from @/lib/demo-time, replace Date.now()/new Date() arithmetic with await demoHoursAgo/demoDaysAgo/getDemoNow):
+  1. src/app/api/dashboard/route.ts — oneHourAgo, oneDayAgo, sixHoursAgo (import demoHoursAgo)
+  2. src/app/api/monitoring/route.ts — oneHourAgo, sixHoursAgo (import demoHoursAgo)
+  3. src/app/api/live/route.ts — since (24h), todayStart via getDemoNow (import demoHoursAgo, getDemoNow)
+  4. src/app/api/kpi/route.ts — sixHoursAgo (import demoHoursAgo)
+  5. src/app/api/coverage/route.ts — oneHourAgo (import demoHoursAgo)
+  6. src/app/api/qoe/route.ts — sixHoursAgo, now via getDemoNow (import demoHoursAgo, getDemoNow)
+  7. src/app/api/sla/route.ts — oneHourAgo (import demoHoursAgo)
+  8. src/app/api/optimizer/route.ts — oneHourAgo (import demoHoursAgo)
+  9. src/app/api/anomalies/detect/route.ts — sixHoursAgo, oneHourAgo, inline duplicate-check Date (import demoHoursAgo)
+  10. src/app/api/reports/route.ts — now, since (daily/weekly), oneHourAgo in handleSlaReport (import demoHoursAgo, demoDaysAgo, getDemoNow)
+- Removed all unused `now` variables where applicable
+- No query logic, data transformations, or response shapes were changed
+- `bun run lint` passed with zero errors
+
+Stage Summary:
+- All 10 API routes now use demo-time utilities for time-windowed queries
+- Seed data will always be queryable regardless of when it was generated
+- Lint clean, no regressions

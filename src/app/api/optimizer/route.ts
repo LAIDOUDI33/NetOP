@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 
 export async function GET() {
   try {
@@ -10,8 +11,7 @@ export async function GET() {
 
     // Get network health summary for context
     const sites = await db.networkSite.findMany();
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneHourAgo = await demoHoursAgo(1);
 
     const latestKpis = await db.kpiMetric.groupBy({
       by: ['technology'],

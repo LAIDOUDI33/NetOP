@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo, demoDaysAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 // ── Statistics helpers ──
@@ -32,11 +33,11 @@ export async function GET(request: NextRequest) {
   const technology = searchParams.get('technology');
 
   try {
-    const now = new Date();
+    const now = await getDemoNow();
     const since =
       type === 'weekly'
-        ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        ? await demoDaysAgo(7)
+        : await demoHoursAgo(24);
 
     const techFilter = technology && technology !== 'all' ? technology : undefined;
 
@@ -137,7 +138,7 @@ async function handleSlaReport(techFilter: string | undefined) {
   if (techFilter) targetWhere.technology = techFilter;
 
   const targets = await db.sLATarget.findMany({ where: targetWhere });
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+  const oneHourAgo = await demoHoursAgo(1);
 
   const techAvgs = await db.kpiMetric.groupBy({
     by: ['technology'],

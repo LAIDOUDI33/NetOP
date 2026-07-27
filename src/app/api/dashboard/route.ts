@@ -1,10 +1,11 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneHourAgo = await demoHoursAgo(1);
+    const oneDayAgo = await demoHoursAgo(24);
 
     // Site counts by technology and status
     const allSites = await db.networkSite.findMany();
@@ -45,10 +46,10 @@ export async function GET(request: NextRequest) {
 
     // Alerts
     const activeAlerts = await db.alert.count({ where: { resolvedAt: null } });
-    const recentAlerts = await db.alert.count({ where: { createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) } } });
+    const recentAlerts = await db.alert.count({ where: { createdAt: { gte: oneDayAgo } } });
 
     // KPI Trends (last 6 hours, hourly)
-    const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+    const sixHoursAgo = await demoHoursAgo(6);
     const trendKpis = await db.kpiMetric.groupBy({
       by: ['timestamp'],
       where: { timestamp: { gte: sixHoursAgo } },

@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -11,8 +12,7 @@ export async function GET(request: NextRequest) {
     if (technology && technology !== 'all') where.technology = technology;
     if (region && region !== 'all') where.region = region;
 
-    const now = new Date();
-    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    const oneHourAgo = await demoHoursAgo(1);
 
     const sites = await db.networkSite.findMany({
       where,
