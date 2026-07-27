@@ -1,0 +1,557 @@
+Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/dashboard'
+}
+○ Compiling /api/auth/[...nextauth] ...
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/auth/session'
+}
+ GET /api/auth/session 500 in 8.6s (next.js: 7.6s, proxy.ts: 17ms, application-code: 915ms)
+ GET /api/alerts?resolved=false 500 in 7.9s (next.js: 7.7s, proxy.ts: 60ms, application-code: 165ms)
+ GET /api/alerts?severity=critical&resolved=false 500 in 7.9s (next.js: 7.8s, proxy.ts: 50ms, application-code: 114ms)
+ GET /api/dashboard 500 in 7.8s (next.js: 7.7s, proxy.ts: 25ms, application-code: 56ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/auth/_log'
+}
+ POST /api/auth/_log 500 in 320ms (next.js: 236ms, proxy.ts: 15ms, application-code: 69ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/monitoring'
+}
+ GET /api/monitoring?technology=4G 500 in 980ms (next.js: 919ms, proxy.ts: 22ms, application-code: 39ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+ GET /api/alerts?resolved=false 500 in 918ms (next.js: 637ms, proxy.ts: 32ms, application-code: 249ms)
+ GET /api/alerts?severity=critical&resolved=false 500 in 909ms (next.js: 809ms, proxy.ts: 27ms, application-code: 72ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/monitoring'
+}
+[browser] [next-auth][error][CLIENT_FETCH_ERROR]
+https://next-auth.js.org/errors#client_fetch_error Unexpected token '<', "<!DOCTYPE "... is not valid JSON {
+  error: {
+    message: `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`,
+    name: 'SyntaxError',
+    stack: `SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON`
+  },
+  message: `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`,
+  url: '/api/auth/session'
+}
+    at Object.error (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11878:17)
+    at _callee$ (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11911:47)
+    at <unknown> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11225:26)
+    at Generator.<anonymous> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11049:63)
+    at Generator.next (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:10998:29)
+    at asyncGeneratorStep (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11310:21)
+    at _next (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11322:17)
+    at <unknown> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11327:13)
+    at new Promise (<anonymous>)
+    at Object.<anonymous> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11319:16)
+    at Object.error (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11943:33)
+    at _callee$ (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:12057:28)
+    at <unknown> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11225:26)
+    at Generator.<anonymous> (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11049:63)
+    at Generator.throw (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:10998:29)
+    at asyncGeneratorStep (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11310:21)
+    at _throw (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)/NetOP-main/.next/dev/static/chunks/node_modules__pnpm_0qfniem._.js:11325:17) (file://C:/Users/LAIDOUDI Lyassine/Desktop/netooooo/NetOP-main (1)
+ GET /api/monitoring?technology=4G 500 in 219ms (next.js: 153ms, proxy.ts: 9ms, application-code: 56ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son/actions'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son/neighbors'
+}
+ GET /api/son 500 in 1695ms (next.js: 1333ms, proxy.ts: 22ms, application-code: 340ms)
+ GET /api/son/actions?limit=50 500 in 1692ms (next.js: 1438ms, proxy.ts: 22ms, application-code: 232ms)
+ GET /api/son/neighbors 500 in 1686ms (next.js: 1522ms, proxy.ts: 18ms, application-code: 146ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son/actions'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/son/neighbors'
+}
+ GET /api/son 500 in 539ms (next.js: 349ms, proxy.ts: 26ms, application-code: 164ms)
+ GET /api/son/actions?limit=50 500 in 536ms (next.js: 409ms, proxy.ts: 26ms, application-code: 100ms)
+ GET /api/son/neighbors 500 in 529ms (next.js: 456ms, proxy.ts: 23ms, application-code: 49ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/dashboard'
+}
+ GET /api/dashboard 500 in 148ms (next.js: 96ms, proxy.ts: 9ms, application-code: 43ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/dashboard'
+}
+ GET /api/dashboard 500 in 170ms (next.js: 118ms, proxy.ts: 10ms, application-code: 43ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/roi'
+}
+ GET /api/roi 500 in 500ms (next.js: 446ms, proxy.ts: 8ms, application-code: 46ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/roi'
+}
+ GET /api/roi 500 in 236ms (next.js: 152ms, proxy.ts: 11ms, application-code: 72ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/dashboard'
+}
+ GET /api/dashboard 500 in 165ms (next.js: 107ms, proxy.ts: 12ms, application-code: 46ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/dashboard'
+}
+ GET /api/dashboard 500 in 148ms (next.js: 114ms, proxy.ts: 7ms, application-code: 26ms)
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+⨯ Error: Failed to load external module @prisma/client-10a2479dd6bba05f: Error: Cannot find module '.prisma/client/default'
+Require stack:
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\@prisma+client@6.19.3_prism_1d040ab5215f59f0e27ddee7f0cf082e\node_modules\@prisma\client\default.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[root-of-the-server]__1fwjlve._.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\chunks\[turbopack]_runtime.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\require.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\load-components.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\build\utils.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\router-server.js
+- C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\node_modules\.pnpm\next@16.2.12_@babel+core@7._a203e3d9d5b27b66bd2ac80cabd825d0\node_modules\next\dist\server\lib\start-server.js
+    at module evaluation (src\lib\db.ts:1:1)
+    at module evaluation (src\app\api\dashboard\route.ts:1:1)
+    at Object.<anonymous> (C:\Users\LAIDOUDI Lyassine\Desktop\netooooo\NetOP-main (1)\NetOP-main\.next\dev\server\app\api\dashboard\route.js:6:3)
+> 1 | import { PrismaClient } from '@prisma/client'
+    | ^
+  2 |
+  3 | const globalForPrisma = globalThis as unknown as {
+  4 |   prisma: PrismaClient | undefined {
+  page: '/api/alerts'
+}
+ GET /api/alerts?resolved=false 500 in 323ms (next.js: 189ms, proxy.ts: 15ms, application-code: 119ms)
+ GET /api/alerts?severity=critical&resolved=false 500 in 320ms (next.js: 239ms, proxy.ts: 14ms, application-code: 67ms)
