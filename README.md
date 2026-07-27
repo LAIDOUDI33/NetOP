@@ -159,19 +159,52 @@ prisma/
 
 ### Prerequisites
 
-- Node.js 18+ or Bun
-- SQLite3
+- **Node.js 18+** (recommended: 20+) — works with npm, pnpm, or bun
+- No separate SQLite install needed (bundled with Prisma)
 
-### Installation
+### Quick Start (3 commands)
 
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
-bun install
-bun run db:push
-bun run prisma db seed
-bun run dev
+npm install          # or: pnpm install  or:  bun install
+npm run setup       # creates .env, pushes schema, seeds demo data
+npm run dev         # starts on http://localhost:3000
 ```
+
+> **Note:** `npm run setup` does everything in one step:
+> 1. Creates `.env` from `.env.example` (if missing)
+> 2. Generates the Prisma client (`prisma generate`)
+> 3. Pushes the database schema (`prisma db push`)
+> 4. Seeds ~3000 demo records (`prisma db seed`)
+
+### Manual Installation
+
+If you prefer step-by-step:
+
+```bash
+# 1. Install dependencies (postinstall auto-generates Prisma client)
+npm install          # or: pnpm install  or:  bun install
+
+# 2. Create environment file
+cp .env.example .env
+
+# 3. Push schema to database
+npx prisma db push
+
+# 4. Seed demo data
+npx prisma db seed
+
+# 5. Start dev server
+npm run dev
+```
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `Cannot find module '.prisma/client/default'` | Run `npx prisma generate` then restart |
+| `prisma db push` fails | Make sure `db/` folder exists: `mkdir -p db` |
+| Port 3000 in use | Change port: `npx next dev -p 3001` |
+| Seed fails on Windows | Use `npx prisma db seed` (not `bun`) |
 
 ### Environment Variables
 
@@ -196,12 +229,13 @@ bun run dev
 
 | Command | Description |
 |---------|-------------|
-| `bun run dev` | Start dev server (port 3000) |
-| `bun run lint` | Run ESLint |
-| `bun run db:push` | Push Prisma schema to database |
-| `bun run db:generate` | Generate Prisma Client |
-| `bun run db:seed` | Seed demo data |
-| `bun run db:reset` | Reset database and reseed |
+| `npm run setup` | **One-command setup**: .env + schema + seed |
+| `npm run dev` | Start dev server (port 3000) |
+| `npm run lint` | Run ESLint |
+| `npx prisma db push` | Push Prisma schema to database |
+| `npx prisma generate` | Generate Prisma Client |
+| `npx prisma db seed` | Seed demo data |
+| `npx prisma migrate reset` | Reset database and reseed |
 
 ## Key Features
 
