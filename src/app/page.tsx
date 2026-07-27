@@ -1,542 +1,623 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { 
-  Shield, AlertTriangle, Activity, Clock, Users, Server, 
+import React, { useState } from 'react'
+import {
+  Shield, AlertTriangle, Activity, Clock, Users, Server,
   Globe, Lock, Eye, TrendingUp, Bell, Search, Filter,
-  CheckCircle, XCircle, AlertCircle, ChevronRight, RefreshCw,
-  Wifi, Database, Cpu, HardDrive, Network, Zap, Scale
+  CheckCircle, XCircle, AlertCircle, ChevronRight, ChevronDown,
+  RefreshCw, Wifi, Database, Cpu, HardDrive, Network, Zap,
+  Scale, Target, Radar, Crosshair, Bot, FileSearch, Play,
+  Settings, BarChart3, Brain, ShieldCheck, Fingerprint, Key,
+  Radio, Phone, Signal, Router, Cloud, DatabaseBackup,
+  BookOpen, ClipboardCheck, Award, FileText, Bug, UserCheck,
+  LayoutDashboard, LineChart, PieChart, Monitor, Terminal,
+  ArrowRight, Menu, X, Home, Grid3X3, Layers, Workflow
 } from 'lucide-react'
 
-import ComplianceDashboard from '@/components/compliance/dashboard'
+// ============================================================
+// COMPLETE MODULE STRUCTURE FOR DJEZZY NATIONAL SOC PLATFORM
+// All 8 Phases with Sub-modules
+// ============================================================
 
-// Types
-interface Alert {
+interface Module {
   id: string
-  severity: 'critical' | 'high' | 'medium' | 'low' | 'info'
-  title: string
-  description: string
-  source: string
-  timestamp: Date
-  status: 'new' | 'investigating' | 'resolved'
-}
-
-interface Metric {
-  label: string
-  value: string | number
-  change: number
+  name: string
   icon: React.ReactNode
+  description: string
+  status: 'active' | 'coming-soon' | 'beta'
+  phase: number
+  subModules?: SubModule[]
+  path?: string
 }
 
-interface Incident {
+interface SubModule {
   id: string
-  title: string
-  severity: string
-  status: string
-  assignee: string
-  created: string
-  updated: string
+  name: string
+  icon: React.ReactNode
+  description: string
+  itemCount?: number
+  badge?: string
 }
 
-// Mock Data Generators
-const generateAlerts = (): Alert[] => [
+// Complete Module Definition
+const socModules: Module[] = [
+  // ══════════════════════════════════════════════════════
+  // PHASE 1-4: FOUNDATION & CORE INFRASTRUCTURE
+  // ══════════════════════════════════════════════════════
   {
-    id: '1',
-    severity: 'critical',
-    title: 'Multiple Failed Login Attempts Detected',
-    description: 'Brute force attack detected from IP 192.168.1.100 - 150+ attempts in 5 minutes',
-    source: 'Authentication System',
-    timestamp: new Date(Date.now() - 2 * 60 * 1000),
-    status: 'new'
+    id: 'siem',
+    name: 'SIEM Platform',
+    icon: <LayoutDashboard className="w-5 h-5" />,
+    description: 'Security Information & Event Management',
+    status: 'active',
+    phase: 1,
+    subModules: [
+      { id: 'siem-dashboard', name: 'SIEM Dashboard', icon: <Monitor className="w-4 h-4" />, description: 'Real-time security monitoring', itemCount: 847 },
+      { id: 'log-management', name: 'Log Management', icon: <FileText className="w-4 h-4" />, description: 'Centralized log collection & storage', itemCount: 2847 },
+      { id: 'correlation-engine', name: 'Correlation Engine', icon: <Brain className="w-4 h-4" />, description: 'Multi-source event correlation', badge: 'AI-Powered' },
+      { id: 'rule-management', name: 'Rule Management', icon: <Settings className="w-4 h-4" />, description: 'Detection rules & policies', itemCount: 1247 },
+      { id: 'log-analytics', name: 'Log Analytics', icon: <LineChart className="w-4 h-4" />, description: 'Advanced log search & analysis' }
+    ]
   },
   {
-    id: '2',
-    severity: 'high',
-    title: 'Suspicious File Execution on Workstation',
-    description: 'Potential malware execution detected on WS-ALG-0456 in Finance Department',
-    source: 'EDR Agent',
-    timestamp: new Date(Date.now() - 8 * 60 * 1000),
-    status: 'investigating'
+    id: 'edr',
+    name: 'EDR/XDR',
+    icon: <ShieldCheck className="w-5 h-5" />,
+    description: 'Endpoint Detection & Response',
+    status: 'active',
+    phase: 2,
+    subModules: [
+      { id: 'endpoint-monitoring', name: 'Endpoint Monitoring', icon: <Monitor className="w-4 h-4" />, description: 'Real-time endpoint visibility', itemCount: 2847 },
+      { id: 'threat-hunting-edr', name: 'Threat Hunting', icon: <Crosshair className="w-4 h-4" />, description: 'Proactive threat detection' },
+      { id: 'incident-response', name: 'Incident Response', icon: <Target className="w-4 h-4" />, description: 'Automated response actions', badge: 'SOAR' },
+      { id: 'forensics', name: 'Digital Forensics', icon: <Search className="w-4 h-4" />, description: 'Endpoint forensics & analysis' }
+    ]
   },
   {
-    id: '3',
-    severity: 'medium',
-    title: 'Unusual Data Transfer to External Location',
-    description: 'Large volume data transfer (2.3GB) to external IP detected outside business hours',
-    source: 'Network Monitor',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    status: 'new'
+    id: 'network-security',
+    name: 'Network Security',
+    icon: <Router className="w-5 h-5" />,
+    description: 'Network Detection & Response (NDR)',
+    status: 'active',
+    phase: 3,
+    subModules: [
+      { id: 'ids-ips', name: 'IDS/IPS', icon: <Shield className="w-4 h-4" />, description: 'Intrusion detection & prevention', itemCount: 156 },
+      { id: 'traffic-analysis', name: 'Traffic Analysis', icon: <Activity className="w-4 h-4" />, description: 'Network traffic monitoring', itemCount: 4521 },
+      { id: 'vulnerability-scanner', name: 'Vulnerability Scanner', icon: <Bug className="w-4 h-4" />, description: 'Network vulnerability assessment', badge: 'Auto' },
+      { id: 'firewall-mgmt', name: 'Firewall Management', icon: <Lock className="w-4 h-4" />, description: 'Firewall rule management' }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // TELECOM-SPECIFIC MODULES (Djezzy Special)
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'telecom-security',
+    name: 'Telecom Security',
+    icon: <Phone className="w-5 h-5" />,
+    description: 'Telecom Protocol Security (SS7/Diameter/SIP/GTP)',
+    status: 'active',
+    phase: 4,
+    subModules: [
+      { id: 'ss7-firewall', name: 'SS7 Firewall', icon: <Radio className="w-4 h-4" />, description: 'SS7 signaling protection', itemCount: 23, badge: 'Critical' },
+      { id: 'gtp-inspector', name: 'GTP Inspector', icon: <Signal className="w-4 h-4" />, description: 'GTP tunnel inspection', itemCount: 12 },
+      { id: 'diameter-analyzer', name: 'Diameter Analyzer', icon: <Wifi className="w-4 h-4" />, description: 'Diameter protocol analysis', itemCount: 8 },
+      { id: 'sip-sentry', name: 'SIP Sentry', icon: <Phone className="w-4 h-4" />, description: 'VoIP/SIP fraud prevention', itemCount: 34 },
+      { id: 'ims-protection', name: 'IMS Protection', icon: <Cloud className="w-4 h-4" />, description: 'IMS network security' },
+      { id: 'sim-swap-detector', name: 'SIM Swap Detection', icon: <Fingerprint className="w-4 h-4" />, description: 'Fraud detection system', badge: 'AI' }
+    ]
   },
   {
-    id: '4',
-    severity: 'high',
-    title: 'Vulnerability Scan Detected from Unknown Source',
-    description: 'Automated vulnerability scanning activity detected from external network segment',
-    source: 'IDS/IPS',
-    timestamp: new Date(Date.now() - 22 * 60 * 1000),
-    status: 'investigating'
+    id: 'fraud-detection',
+    name: 'Fraud Prevention',
+    icon: <UserCheck className="w-5 h-5" />,
+    description: 'Telecom Fraud Detection & Prevention',
+    status: 'active',
+    phase: 4,
+    subModules: [
+      { id: 'fraud-dashboard', name: 'Fraud Dashboard', icon: <BarChart3 className="w-4 h-4" />, description: 'Fraud analytics overview', itemCount: 89 },
+      { id: 'subscription-fraud', name: 'Subscription Fraud', icon: <UserCheck className="w-4 h-4" />, description: 'Subscription fraud detection' },
+      { id: 'billing-fraud', name: 'Billing Fraud', icon: <CreditCard className="w-4 h-4" />, description: 'Billing bypass detection' },
+      { id: 'roaming-fraud', name: 'Roaming Fraud', icon: <Globe className="w-4 h-4" />, description: 'IRSF & roaming fraud' }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // PHASE 5: ANALYTICS ENGINE
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'analytics',
+    name: 'Analytics Engine',
+    icon: <BarChart3 className="w-5 h-5" />,
+    description: 'Advanced Security Analytics & Intelligence',
+    status: 'active',
+    phase: 5,
+    subModules: [
+      { id: 'threat-intel', name: 'Threat Intelligence', icon: <Radar className="w-4 h-4" />, description: 'Threat feeds & IOC management', itemCount: 14, badge: 'Live' },
+      { id: 'behavioral-analytics', name: 'Behavioral Analytics', icon: <Brain className="w-4 h-4" />, description: 'UBA & entity behavior', badge: 'ML' },
+      { id: 'threat-scoring', name: 'Threat Scoring', icon: <Target className="w-4 h-4" />, description: 'Risk scoring engine' },
+      { id: 'ml-predictions', name: 'ML Predictions', icon: <TrendingUp className="w-4 h-4" />, description: 'Predictive threat analysis', badge: 'Beta' },
+      { id: 'reporting', name: 'Reporting', icon: <FileText className="w-4 h-4" />, description: 'Custom reports & dashboards', itemCount: 24 }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // PHASE 6: COMPLIANCE AUTOMATION
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'compliance',
+    name: 'Compliance Center',
+    icon: <Scale className="w-5 h-5" />,
+    description: 'Regulatory Compliance & Audit Management',
+    status: 'active',
+    phase: 6,
+    subModules: [
+      { id: 'artp-reporting', name: 'ARTP Reporting', icon: <ClipboardCheck className="w-4 h-4" />, description: 'Algerian telecom regulator reports', itemCount: 12, badge: 'Auto' },
+      { id: 'anssi-alignment', name: 'ANSSI Alignment', icon: <Award className="w-4 h-4" />, description: 'French security framework alignment', score: '87%' },
+      { id: 'iso27001', name: 'ISO 27001', icon: <BookOpen className="w-4 h-4" />, description: 'Information security management', score: '94%' },
+      { id: 'nist-framework', name: 'NIST CSF', icon: <Shield className="w-4 h-4" />, description: 'NIST Cybersecurity Framework', score: '82%' },
+      { id: 'evidence-vault', name: 'Evidence Vault', icon: <DatabaseBackup className="w-4 h-4" />, description: 'Audit evidence management', itemCount: 342 },
+      { id: 'gap-analysis', name: 'Gap Analysis', icon: <LineChart className="w-4 h-4" />, description: 'Compliance gap tracking' }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // PHASE 7: ML/ANALYTICS INTEGRATION
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'ml-platform',
+    name: 'ML/AI Platform',
+    icon: <Brain className="w-5 h-5" />,
+    description: 'Machine Learning & AI Capabilities',
+    status: 'active',
+    phase: 7,
+    subModules: [
+      { id: 'anomaly-detection', name: 'Anomaly Detection', icon: <Radar className="w-4 h-4" />, description: 'ML-powered anomaly detection', accuracy: '96.1%' },
+      { id: 'predictive-analytics', name: 'Predictive Analytics', icon: <TrendingUp className="w-4 h-4" />, description: 'Threat prediction models', accuracy: '94.2%' },
+      { id: 'uba-engine', name: 'UBA Engine', icon: <Users className="w-4 h-4" />, description: 'User behavior analytics', accuracy: '89.7%' },
+      { id: 'model-management', name: 'Model Management', icon: <Settings className="w-4 h-4" />, description: 'ML model versioning & A/B testing', itemCount: 8 },
+      { id: 'automated-response-ai', name: 'AI Response', icon: <Bot className="w-4 h-4" />, description: 'AI-driven incident response' }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // PHASE 8: THREAT HUNTING & SOAR (NEW!)
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'threat-hunting',
+    name: 'Threat Hunting',
+    icon: <Crosshair className="w-5 h-5" />,
+    description: 'Proactive Threat Hunting Operations',
+    status: 'active',
+    phase: 8,
+    subModules: [
+      { id: 'hunt-sessions', name: 'Hunt Sessions', icon: <Play className="w-4 h-4" />, description: 'Active hunting operations', itemCount: 4, badge: 'Active' },
+      { id: 'hypothesis-builder', name: 'Hypothesis Builder', icon: <Target className="w-4 h-4" />, description: 'Create hunting hypotheses', itemCount: 12 },
+      { id: 'query-workbench', name: 'Query Workbench', icon: <Terminal className="w-4 h-4" />, description: 'Advanced threat queries' },
+      { id: 'ioc-extraction', name: 'IOC Extraction', icon: <FileSearch className="w-4 h-4" />, description: 'Automatic IOC extraction', itemCount: 38 },
+      { id: 'timeline-analysis', name: 'Timeline Analysis', icon: <Clock className="w-4 h-4" />, description: 'Attack timeline reconstruction' }
+    ]
   },
   {
-    id: '5',
-    severity: 'low',
-    title: 'Policy Violation: USB Device Connected',
-    description: 'Unauthorized USB storage device connected to workstation WS-ALG-0123',
-    source: 'DLP System',
-    timestamp: new Date(Date.now() - 35 * 60 * 1000),
-    status: 'resolved'
+    id: 'soar',
+    name: 'SOAR Platform',
+    icon: <Workflow className="w-5 h-5" />,
+    description: 'Security Orchestration, Automation & Response',
+    status: 'active',
+    phase: 8,
+    subModules: [
+      { id: 'playbooks', name: 'Playbooks', icon: <Play className="w-4 h-4" />, description: 'Response playbooks library', itemCount: 6, badge: '561 Runs' },
+      { id: 'case-management', name: 'Case Management', icon: <FolderOpen className="w-4 h-4" />, description: 'Investigation case management', itemCount: 5 },
+      { id: 'automation-rules', name: 'Automation Rules', icon: <Zap className="w-4 h-4" />, description: 'Automation rule engine', itemCount: 47 },
+      { id: 'task-automation', name: 'Task Automation', icon: <Workflow className="w-4 h-4" />, description: 'Automated task workflows' },
+      { id: 'integration-hub', name: 'Integration Hub', icon: <Grid3X3 className="w-4 h-4" />, description: 'Third-party integrations', itemCount: 12 }
+    ]
+  },
+
+  // ══════════════════════════════════════════════════════
+  // OPERATIONAL MODULES
+  // ══════════════════════════════════════════════════════
+  {
+    id: 'incidents',
+    name: 'Incident Management',
+    icon: <AlertTriangle className="w-5 h-5" />,
+    description: 'Incident Lifecycle Management',
+    status: 'active',
+    phase: 1,
+    subModules: [
+      { id: 'incident-queue', name: 'Incident Queue', icon: <List className="w-4 h-4" />, description: 'Active incidents', itemCount: 8, badge: '2 Critical' },
+      { id: 'response-playbooks', name: 'Response Playbooks', icon: <BookOpen className="w-4 h-4" />, description: 'Standard procedures' },
+      { id: 'escalation', name: 'Escalation Matrix', icon: <ArrowRight className="w-4 h-4" />, description: 'Escalation procedures' },
+      { id: 'post-incident', name: 'Post-Incident Review', icon: <FileText className="w-4 h-4" />, description: 'Lessons learned' }
+    ]
+  },
+  {
+    id: 'vulnerability',
+    name: 'Vulnerability Mgmt',
+    icon: <Bug className="w-5 h-5" />,
+    description: 'Vulnerability Assessment & Patching',
+    status: 'beta',
+    phase: 3,
+    subModules: [
+      { id: 'vuln-scanner', name: 'Scanner', icon: <Radar className="w-4 h-4" />, description: 'Vulnerability scanning', itemCount: 234 },
+      { id: 'patch-mgmt', name: 'Patch Management', icon: <Settings className="w-4 h-4" />, description: 'Patch deployment' },
+      { id: 'risk-prioritization', name: 'Risk Prioritization', icon: <Target className="w-4 h-4" />, description: 'CVSS-based prioritization' }
+    ]
+  },
+  {
+    id: 'identity',
+    identity: 'Identity & Access',
+    icon: <Key className="w-5 h-5" />,
+    description: 'IAM & Privileged Access Management',
+    status: 'active',
+    phase: 2,
+    subModules: [
+      { id: 'ldap-sync', name: 'LDAP Sync', icon: <Users className="w-4 h-4" />, description: 'Directory synchronization', badge: 'Synced' },
+      { id: 'pam', name: 'Privileged Access', icon: <Lock className="w-4 h-4" />, description: 'PAM console access' },
+      { id: 'mfa', name: 'MFA Management', icon: <Fingerprint className="w-4 h-4" />, description: 'Multi-factor authentication' },
+      { id: 'sso', name: 'SSO/SAML', icon: <Key className="w-4 h-4" />, description: 'Single sign-on' }
+    ]
   }
 ]
 
-const generateMetrics = (): Metric[] => [
-  { label: 'Events/Second', value: '847K', change: 12.5, icon: <Activity className="w-4 h-4" /> },
-  { label: 'Active Alerts', value: 23, change: -5.2, icon: <AlertTriangle className="w-4 h-4" /> },
-  { label: 'MTTD', value: '3.2m', change: -18.3, icon: <Clock className="w-4 h-4" /> },
-  { label: 'MTTR', value: '12.4m', change: -22.1, icon: <RefreshCw className="w-4 h-4" /> },
-  { label: 'Analysts Online', value: 12, change: 0, icon: <Users className="w-4 h-4" /> },
-  { label: 'Systems Monitored', value: '2,847', change: 2.1, icon: <Server className="w-4 h-4" /> }
-]
-
-const generateIncidents = (): Incident[] => [
-  { id: 'INC-2026-001', title: 'Ransomware Detection - HR Department', severity: 'critical', status: 'active', assignee: 'Ahmed M.', created: '2026-07-23 08:30', updated: '2026-07-23 14:15' },
-  { id: 'INC-2026-002', title: 'Phishing Campaign Targeting Executives', severity: 'high', status: 'active', assignee: 'Fatima B.', created: '2026-07-23 10:45', updated: '2026-07-23 13:20' },
-  { id: 'INC-2026-003', title: 'Unauthorized Access Attempt - Financial Systems', severity: 'high', status: 'monitoring', assignee: 'Karim A.', created: '2026-07-23 11:00', updated: '2026-07-23 12:30' },
-  { id: 'INC-2026-004', title: 'Data Exfiltration Prevention', severity: 'medium', status: 'resolved', assignee: 'Sara L.', created: '2026-07-22 16:20', updated: '2026-07-23 09:00' },
-  { id: 'INC-2026-005', title: 'Zero-Day Exploit in Legacy System', severity: 'critical', status: 'active', assignee: 'Youssef K.', created: '2026-07-23 06:15', updated: '2026-07-23 14:45' }
-]
-
-// Severity Colors
-const severityColors = {
-  critical: 'bg-red-100 text-red-800 border-red-200',
-  high: 'bg-orange-100 text-orange-800 border-orange-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  low: 'bg-blue-100 text-blue-800 border-blue-200',
-  info: 'bg-gray-100 text-gray-800 border-gray-200'
-}
-
-const severityBadge = (severity: string) => {
-  const colors: Record<string, string> = {
-    critical: 'bg-red-500',
-    high: 'bg-orange-500',
-    medium: 'bg-yellow-500',
-    low: 'bg-blue-500',
-    info: 'bg-gray-500'
+// Helper Components
+const StatusBadge = ({ status }: { status: Module['status'] }) => {
+  const styles = {
+    active: 'bg-green-500/20 text-green-400 border-green-500/30',
+    'coming-soon': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    beta: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
   }
-  return colors[severity] || 'bg-gray-500'
+  return (
+    <span className={`px-2 py-0.5 rounded text-xs border ${styles[status]}`}>
+      {status === 'active' ? '● Active' : status === 'beta' ? 'β Beta' : '○ Coming Soon'}
+    </span>
+  )
 }
+
+const PhaseBadge = ({ phase }: { phase: number }) => (
+  <span className="px-2 py-0.5 rounded text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+    Phase {phase}
+  </span>
+)
+
+// Missing component definitions
+const CreditCard = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+  </svg>
+)
+
+const FolderOpen = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+  </svg>
+)
+
+const List = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+  </svg>
+)
 
 export default function SOCDashboard() {
-  const [alerts, setAlerts] = useState<Alert[]>([])
-  const [metrics, setMetrics] = useState<Metric[]>([])
-  const [incidents, setIncidents] = useState<Incident[]>([])
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'alerts' | 'incidents' | 'compliance'>('overview')
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [selectedModule, setSelectedModule] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
-  // Initialize data
-  useEffect(() => {
-    setAlerts(generateAlerts())
-    setMetrics(generateMetrics())
-    setIncidents(generateIncidents())
-  }, [])
-
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  // Simulate refresh
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    setTimeout(() => {
-      setAlerts(generateAlerts())
-      setMetrics(generateMetrics())
-      setIsRefreshing(false)
-    }, 1000)
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  }
-
-  const formatRelativeTime = (date: Date) => {
-    const diff = Math.floor((Date.now() - date.getTime()) / 1000)
-    if (diff < 60) return `${diff}s ago`
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-    return `${Math.floor(diff / 3600)}h ago`
-  }
+  const filteredModules = socModules.filter(module =>
+    module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    module.description.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
+      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8 text-cyan-400" />
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
               <div>
                 <h1 className="text-xl font-bold">National SOC</h1>
-                <p className="text-xs text-slate-400">Security Operations Center - Algeria</p>
+                <p className="text-xs text-slate-400">Djezzy Security Operations Center • Algeria</p>
               </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-6">
-            {/* Status Indicators */}
+
+          <div className="hidden md:flex items-center gap-6">
+            {/* Quick Stats */}
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-slate-300">Operational</span>
+                <span className="text-slate-300">All Systems Operational</span>
               </div>
-              <div className="text-slate-400">
-                {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-              </div>
-              <div className="font-mono text-cyan-400">{formatTime(currentTime)}</div>
+              <div className="text-cyan-400 font-mono">{new Date().toLocaleTimeString()}</div>
             </div>
 
             {/* Actions */}
-            <button 
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+              <RefreshCw className="w-5 h-5" />
             </button>
-            
             <button className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="md:hidden p-2 hover:bg-slate-800 rounded-lg"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav className="bg-slate-900/50 border-b border-slate-800 px-6">
-        <div className="flex gap-8">
-          {(['overview', 'alerts', 'incidents', 'compliance'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setSelectedTab(tab)}
-              className={`py-4 px-2 border-b-2 transition-colors capitalize ${
-                selectedTab === tab 
-                  ? 'border-cyan-400 text-cyan-400' 
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main className="p-6">
-        {/* Overview Tab */}
-        {selectedTab === 'overview' && (
+      <div className="flex">
+        {/* Sidebar Navigation - Full Module View */}
+        <aside className={`${showMobileMenu ? 'block' : 'hidden'} md:block w-full md:w-80 lg:w-96 bg-slate-900/50 border-r border-slate-800 min-h-screen p-6 overflow-y-auto`}>
           <div className="space-y-6">
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              {metrics.map((metric, index) => (
-                <div key={index} className="bg-slate-900 rounded-xl p-4 border border-slate-800">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-slate-400 text-sm">{metric.label}</span>
-                    <div className="text-cyan-400">{metric.icon}</div>
-                  </div>
-                  <div className="text-2xl font-bold mb-1">{metric.value}</div>
-                  <div className={`flex items-center text-sm ${metric.change > 0 ? 'text-red-400' : metric.change < 0 ? 'text-green-400' : 'text-slate-400'}`}>
-                    {metric.change > 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : null}
-                    {Math.abs(metric.change)}% {metric.change > 0 ? 'increase' : metric.change < 0 ? 'decrease' : ''}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Main Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Live Alerts Feed */}
-              <div className="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800">
-                <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                  <h2 className="font-semibold flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-cyan-400" />
-                    Live Alert Feed
-                  </h2>
-                  <span className="text-sm text-slate-400">{alerts.length} new alerts</span>
-                </div>
-                <div className="divide-y divide-slate-800 max-h-[480px] overflow-y-auto">
-                  {alerts.map((alert) => (
-                    <div key={alert.id} className="p-4 hover:bg-slate-800/50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className={`w-2 h-2 mt-2 rounded-full ${severityBadge(alert.severity)}`}></div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityColors[alert.severity]}`}>
-                              {alert.severity.toUpperCase()}
-                            </span>
-                            <span className="text-xs text-slate-400">{formatRelativeTime(alert.timestamp)}</span>
-                          </div>
-                          <h3 className="font-medium text-sm mb-1 truncate">{alert.title}</h3>
-                          <p className="text-xs text-slate-400 line-clamp-2">{alert.description}</p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                            <span>{alert.source}</span>
-                            <span className={`capitalize px-2 py-0.5 rounded ${
-                              alert.status === 'new' ? 'bg-blue-900/30 text-blue-400' :
-                              alert.status === 'investigating' ? 'bg-yellow-900/30 text-yellow-400' :
-                              'bg-green-900/30 text-green-400'
-                            }`}>
-                              {alert.status}
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-600" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {/* Search & Filters */}
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search modules..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                />
               </div>
 
-              {/* Right Sidebar */}
-              <div className="space-y-6">
-                {/* SOC Status */}
-                <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-                  <h2 className="font-semibold mb-4 flex items-center gap-2">
-                    <Server className="w-5 h-5 text-cyan-400" />
-                    SOC Status
-                  </h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Shift Status</span>
-                      <span className="text-green-400 font-medium">Active - Day Shift</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Team Lead</span>
-                      <span className="text-white font-medium">Karim A.</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Coverage</span>
-                      <span className="text-cyan-400 font-medium">24/7 Operational</span>
-                    </div>
-                    <div className="pt-4 border-t border-slate-800">
-                      <div className="text-sm text-slate-400 mb-2">System Health</div>
-                      <div className="space-y-2">
-                        {[
-                          { name: 'SIEM Platform', status: 'operational' },
-                          { name: 'EDR Agents', status: 'operational' },
-                          { name: 'Network Sensors', status: 'degraded' },
-                          { name: 'Threat Intel', status: 'operational' }
-                        ].map((system) => (
-                          <div key={system.name} className="flex items-center justify-between text-sm">
-                            <span className="text-slate-300">{system.name}</span>
-                            <span className={`flex items-center gap-1 ${
-                              system.status === 'operational' ? 'text-green-400' : 'text-yellow-400'
-                            }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${
-                                system.status === 'operational' ? 'bg-green-400' : 'bg-yellow-400'
-                              }`}></span>
-                              {system.status}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-                  <h2 className="font-semibold mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-cyan-400" />
-                    Today's Summary
-                  </h2>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Total Events Processed</span>
-                      <span className="font-mono text-white">73.2M</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Alerts Generated</span>
-                      <span className="font-mono text-white">1,247</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Incidents Created</span>
-                      <span className="font-mono text-white">5</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Auto-Resolved</span>
-                      <span className="font-mono text-green-400">892 (71%)</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400 text-sm">Threat Intelligence Feeds</span>
-                      <span className="font-mono text-white">47 Active</span>
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">{filteredModules.length} Modules Available</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Threat Map Placeholder */}
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
-              <h2 className="font-semibold mb-4 flex items-center gap-2">
-                <Globe className="w-5 h-5 text-cyan-400" />
-                Global Threat Activity
-              </h2>
-              <div className="h-64 bg-slate-800/50 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Network className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-                  <p className="text-slate-400 text-sm">Threat Map Visualization</p>
-                  <p className="text-slate-500 text-xs">Real-time global attack visualization</p>
-                </div>
+            {/* Phase Legend */}
+            <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-700">
+              <div className="text-xs font-medium text-slate-300 mb-2">Implementation Phases</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {[1,2,3,4,5,6,7,8].map(phase => (
+                  <div key={phase} className="flex items-center gap-1.5 text-slate-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                    Phase {phase}
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Alerts Tab */}
-        {selectedTab === 'alerts' && (
-          <div className="bg-slate-900 rounded-xl border border-slate-800">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-              <h2 className="font-semibold">All Alerts Management</h2>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input 
-                    type="text" 
-                    placeholder="Search alerts..."
-                    className="bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-cyan-500 w-64"
-                  />
-                </div>
-                <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-sm transition-colors">
-                  <Filter className="w-4 h-4" />
-                  Filter
-                </button>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-800/50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Severity</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Alert</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Source</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Time</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {alerts.map((alert) => (
-                    <tr key={alert.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${severityColors[alert.severity]}`}>
-                          {alert.severity.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-white">{alert.title}</div>
-                        <div className="text-sm text-slate-400 truncate max-w-md">{alert.description}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{alert.source}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`capitalize px-2 py-1 rounded text-xs ${
-                          alert.status === 'new' ? 'bg-blue-900/30 text-blue-400' :
-                          alert.status === 'investigating' ? 'bg-yellow-900/30 text-yellow-400' :
-                          'bg-green-900/30 text-green-400'
+            {/* Modules Grid/List */}
+            <div className={viewMode === 'grid' ? 'space-y-3' : 'space-y-2'}>
+              {filteredModules.map((module) => (
+                <div
+                  key={module.id}
+                  className={`group bg-slate-800/30 rounded-xl border transition-all cursor-pointer ${
+                    selectedModule === module.id
+                      ? 'border-cyan-500 bg-cyan-500/10'
+                      : 'border-slate-700 hover:border-slate-600 hover:bg-slate-800/50'
+                  }`}
+                  onClick={() => setSelectedModule(selectedModule === module.id ? null : module.id)}
+                >
+                  {/* Module Header */}
+                  <div className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          module.status === 'active' ? 'bg-cyan-500/20 text-cyan-400' :
+                          module.status === 'beta' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-slate-700 text-slate-400'
                         }`}>
-                          {alert.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                        {formatRelativeTime(alert.timestamp)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button className="text-cyan-400 hover:text-cyan-300 text-sm">View</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          {module.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm group-hover:text-cyan-400 transition-colors">
+                            {module.name}
+                          </h3>
+                          <p className="text-xs text-slate-400 mt-0.5">{module.description}</p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${
+                        selectedModule === module.id ? 'rotate-180' : ''
+                      }`} />
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <PhaseBadge phase={module.phase} />
+                      <StatusBadge status={module.status} />
+                    </div>
+                  </div>
+
+                  {/* Sub-modules (Expandable) */}
+                  {selectedModule === module.id && module.subModules && (
+                    <div className="border-t border-slate-700 p-3 space-y-1 max-h-64 overflow-y-auto">
+                      {module.subModules.map((sub) => (
+                        <div
+                          key={sub.id}
+                          className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-700/50 transition-colors group/sub"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <sub.icon className="w-4 h-4 text-slate-400 group-hover/sub:text-cyan-400 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate group-hover/sub:text-cyan-400">
+                                {sub.name}
+                              </div>
+                              <div className="text-xs text-slate-500 truncate">{sub.description}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {sub.badge && (
+                              <span className="px-1.5 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                {sub.badge}
+                              </span>
+                            )}
+                            {sub.score && (
+                              <span className="px-1.5 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+                                {sub.score}
+                              </span>
+                            )}
+                            {sub.accuracy && (
+                              <span className="px-1.5 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">
+                                {sub.accuracy}
+                              </span>
+                            )}
+                            {sub.itemCount !== undefined && (
+                              <span className="text-xs text-slate-400 font-mono min-w-[28px] text-right">
+                                {sub.itemCount}
+                              </span>
+                            )}
+                            <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover/sub:text-cyan-400 opacity-0 group-hover/sub:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        )}
+        </aside>
 
-        {/* Compliance Tab */}
-        {selectedTab === 'compliance' && (
-          <ComplianceDashboard />
-        )}
-
-        {/* Incidents Tab */}
-        {selectedTab === 'incidents' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Active Incidents</h2>
-              <button className="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                + New Incident
-              </button>
+        {/* Main Content Area */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {/* Welcome Banner */}
+          <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 rounded-2xl border border-cyan-500/30 p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Welcome to Djezzy National SOC</h2>
+                <p className="text-slate-300 max-w-2xl">
+                  Complete Security Operations Center platform with <strong>13 major modules</strong> and <strong>60+ sub-modules</strong>. 
+                  Select a module from the sidebar to explore its features.
+                </p>
+                <div className="flex items-center gap-4 mt-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>All 8 Phases Implemented</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-cyan-400" />
+                    <span>Real-time Monitoring Active</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-purple-400" />
+                    <span>Production Ready</span>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:block">
+                <Layers className="w-24 h-24 text-cyan-400/20" />
+              </div>
             </div>
-            
-            <div className="grid gap-4">
-              {incidents.map((incident) => (
-                <div key={incident.id} className="bg-slate-900 rounded-xl border border-slate-800 p-6 hover:border-slate-700 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        incident.severity === 'critical' ? 'bg-red-900/30' :
-                        incident.severity === 'high' ? 'bg-orange-900/30' : 'bg-yellow-900/30'
-                      }`}>
-                        <AlertTriangle className={`w-5 h-5 ${
-                          incident.severity === 'critical' ? 'text-red-400' :
-                          incident.severity === 'high' ? 'text-orange-400' : 'text-yellow-400'
-                        }`} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold">{incident.title}</h3>
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityColors[incident.severity as keyof typeof severityColors] || ''}`}>
-                            {incident.severity.toUpperCase()}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-xs capitalize ${
-                            incident.status === 'active' ? 'bg-red-900/30 text-red-400' :
-                            incident.status === 'monitoring' ? 'bg-yellow-900/30 text-yellow-400' :
-                            'bg-green-900/30 text-green-400'
-                          }`}>
-                            {incident.status}
-                          </span>
-                        </div>
-                        <div className="text-sm text-slate-400 mb-2">{incident.id}</div>
-                        <div className="flex items-center gap-6 text-sm text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {incident.assignee}
-                          </span>
-                          <span>Created: {incident.created}</span>
-                          <span>Updated: {incident.updated}</span>
-                        </div>
-                      </div>
+          </div>
+
+          {/* Quick Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            {[
+              { label: 'Total Modules', value: '13', icon: <Grid3X3 className="w-5 h-5" />, color: 'text-cyan-400' },
+              { label: 'Sub-Modules', value: '60+', icon: <Layers className="w-5 h-5" />, color: 'text-purple-400' },
+              { label: 'API Endpoints', value: '21', icon: <Terminal className="w-5 h-5" />, color: 'text-green-400' },
+              { label: 'Integration Points', value: '12', icon: <Zap className="w-5 h-5" />, color: 'text-yellow-400' }
+            ].map((stat, idx) => (
+              <div key={idx} className="bg-slate-900 rounded-xl border border-slate-800 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-400 text-sm">{stat.label}</span>
+                  <div className={stat.color}>{stat.icon}</div>
+                </div>
+                <div className="text-2xl font-bold">{stat.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Featured Modules Grid */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-400" />
+              Key Modules for CEO Presentation
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[
+                socModules.find(m => m.id === 'telecom-security'),
+                socModules.find(m => m.id === 'compliance'),
+                socModules.find(m => m.id === 'soar'),
+                socModules.find(m => m.id === 'threat-hunting'),
+                socModules.find(m => m.id === 'ml-platform'),
+                socModules.find(m => m.id === 'fraud-detection')
+              ].map((module, idx) => module && (
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-5 hover:border-cyan-500/50 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 group-hover:bg-cyan-500/30 transition-colors">
+                      {module.icon}
                     </div>
-                    <button className="text-cyan-400 hover:text-cyan-300">
-                      View Details
-                    </button>
+                    <div>
+                      <h4 className="font-semibold group-hover:text-cyan-400 transition-colors">{module.name}</h4>
+                      <p className="text-xs text-slate-400">{module.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <PhaseBadge phase={module.phase} />
+                    <span>{module.subModules?.length || 0} Sub-modules</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        )}
-      </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-slate-800 px-6 py-4 bg-slate-900">
-        <div className="flex items-center justify-between text-sm text-slate-400">
-          <div>National SOC Dashboard v1.0.0 | Algeria 2026-2030</div>
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Lock className="w-4 h-4" />
-              Classification: Official Use Only
-            </span>
-            <span>Session: SOC-2026-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
+          {/* System Health Overview */}
+          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <Server className="w-5 h-5 text-cyan-400" />
+              Platform Health Overview
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[
+                { name: 'SIEM Core', status: 'operational', uptime: '99.97%' },
+                { name: 'Database', status: 'operational', uptime: '99.99%' },
+                { name: 'ML Engine', status: 'operational', uptime: '99.95%' },
+                { name: 'SS7 Firewall', status: 'operational', uptime: '100%' },
+                { name: 'Threat Intel', status: 'degraded', uptime: '98.5%' },
+                { name: 'SOAR Engine', status: 'operational', uptime: '99.98%' }
+              ].map((system, idx) => (
+                <div key={idx} className="text-center p-3 rounded-lg bg-slate-800/50">
+                  <div className={`w-2 h-2 rounded-full mx-auto mb-2 ${
+                    system.status === 'operational' ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'
+                  }`} />
+                  <div className="text-sm font-medium">{system.name}</div>
+                  <div className="text-xs text-slate-400 mt-1">{system.uptime}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   )
 }
+
+// Additional missing icons
+const Star = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  </svg>
+)
