@@ -310,3 +310,24 @@ Stage Summary:
 - All 10 API routes now use demo-time utilities for time-windowed queries
 - Seed data will always be queryable regardless of when it was generated
 - Lint clean, no regressions
+---
+Task ID: 1
+Agent: Main
+Task: Fix all build errors and sync to GitHub repository LAIDOUDI33/NetOP
+
+Work Log:
+- Ran `bun run build` and identified 8 categories of errors
+- Fixed integration-hub/route.ts: `syncHistory` -> `SYNC_HISTORY` (undefined variable)
+- Fixed integrations/billing/route.ts: added `?? 1000` nullish coalescing for possibly undefined `baseAmount`
+- Fixed integrations/oss/route.ts: removed `as const` from SEVERITIES/STATUSES arrays (readonly not assignable to mutable)
+- Fixed not-found.tsx: changed `useT` to `useTranslation` (returns function, not object with `t`)
+- Fixed usePagination.ts: generic type inference - changed `data: any[]` to `data: T[]` in options interface
+- Fixed BillingIntegrationView, CRMIntegrationView, OSSIntegrationView: `filename` -> `filenamePrefix` prop on ExportButton
+- Fixed all 3 locale files (en/fr/ar): removed 11 duplicate keys per file from batch sections
+- Build passes cleanly after all fixes
+- Committed as 2fd2ffb and pushed to origin/main
+
+Stage Summary:
+- 11 files modified, 12 insertions, 48 deletions
+- Build now compiles with 0 errors
+- Changes synced to https://github.com/LAIDOUDI33/NetOP
