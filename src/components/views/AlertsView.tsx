@@ -82,7 +82,7 @@ export default function AlertsView() {
     },
   });
 
-  const { paginatedData: paginatedAlerts, currentPage, totalPages, setCurrentPage } = usePagination({ data: data.alerts, pageSize: 10 });
+  const { paginatedData: paginatedAlerts, currentPage, totalPages, setCurrentPage } = usePagination({ data: data?.alerts ?? [], pageSize: 10 });
 
   const handleAcknowledge = (id: string) => patchMutation.mutate({ alertId: id, action: 'acknowledge' });
   const handleResolve = (id: string) => patchMutation.mutate({ alertId: id, action: 'resolve' });

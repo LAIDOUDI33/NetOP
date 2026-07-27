@@ -185,12 +185,12 @@ bun run dev
 
 | Email | Password | Role |
 |-------|----------|------|
-| admin@netoptima.dz | admin123 | NOC Admin |
-| noc@netoptima.dz | noc123 | NOC Engineer |
-| rf@netoptima.dz | rf123 | RF Engineer |
-| nop@netoptima.dz | nop123 | NOP Manager |
-| field@netoptima.dz | field123 | Field Technician |
-| viewer@netoptima.dz | viewer123 | Read-Only Viewer |
+| admin@netoptima-dz.local | admin123 | Super Admin |
+| noc@netoptima-dz.local | demo123 | NOC Manager |
+| rf@netoptima-dz.local | demo123 | RF Engineer |
+| nop@netoptima-dz.local | demo123 | NOP Engineer |
+| field@netoptima-dz.local | demo123 | Field Technician |
+| viewer@netoptima-dz.local | demo123 | Read-Only Viewer |
 
 ## Scripts
 
