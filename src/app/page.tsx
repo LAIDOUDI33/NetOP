@@ -11,7 +11,8 @@ import {
   Radio, Phone, Signal, Router, Cloud, DatabaseBackup,
   BookOpen, ClipboardCheck, Award, FileText, Bug, UserCheck,
   LayoutDashboard, LineChart, PieChart, Monitor, Terminal,
-  ArrowRight, Menu, X, Home, Grid3X3, Layers, Workflow
+  ArrowRight, Menu, X, Home, Grid3X3, Layers, Workflow,
+  CreditCard, FolderOpen, List
 } from 'lucide-react'
 
 // ============================================================
