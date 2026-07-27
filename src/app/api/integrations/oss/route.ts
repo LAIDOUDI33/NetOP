@@ -5,8 +5,8 @@ const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 
 const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
 const NE_TYPES: Record<string, string[]> = { '5G': ['gNodeB'], '4G': ['eNodeB'], '3G': ['RNC', 'NodeB'], '2G': ['BSC', 'BTS'], Core: ['MME', 'SGSN', 'MSC', 'AMF', 'SMF', 'UPF', 'HSS'] };
 const FAULT_TYPES = ['Link Down', 'High CPU', 'High Memory', 'Interface Flap', 'Sync Loss', 'Power Alarm', 'Temperature', 'Card Failure'];
-const SEVERITIES = ['critical', 'major', 'minor', 'warning'] as const;
-const STATUSES = ['active', 'degraded', 'maintenance', 'down'] as const;
+const SEVERITIES = ['critical', 'major', 'minor', 'warning'];
+const STATUSES = ['active', 'degraded', 'maintenance', 'down'];
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 function rand(min: number, max: number) { return Math.round(min + Math.random() * (max - min)); }

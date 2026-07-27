@@ -104,7 +104,7 @@ export default function BillingIntegrationView() {
             <input placeholder={t('bil.searchInvoices')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
           <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('bil.syncBilling')}</Button>
-          <ExportButton data={invoices} filename="billing-invoices" />
+          <ExportButton data={invoices as unknown as Record<string, unknown>[]} filenamePrefix="billing-invoices" />
         </div>
       </div>
 

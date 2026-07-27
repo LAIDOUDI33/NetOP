@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Radio, ArrowLeft } from 'lucide-react';
-import { useT } from '@/lib/i18n';
+import { useTranslation } from '@/lib/i18n';
 
 export default function NotFound() {
-  const { t } = useT();
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="max-w-md w-full text-center">

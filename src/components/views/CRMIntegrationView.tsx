@@ -86,7 +86,7 @@ export default function CRMIntegrationView() {
             <input placeholder={t('crm.searchCustomers')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
           <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('crm.syncCrm')}</Button>
-          <ExportButton data={customers} filename="crm-customers" />
+          <ExportButton data={customers as unknown as Record<string, unknown>[]} filenamePrefix="crm-customers" />
         </div>
       </div>
 

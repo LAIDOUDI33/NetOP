@@ -96,7 +96,7 @@ export default function OSSIntegrationView() {
             <input placeholder={t('oss.searchPlaceholder')} className="pl-9 pr-4 py-2 rounded-md border bg-background text-sm w-64" />
           </div>
           <Button variant="outline" onClick={() => refetch()}><RefreshCw className="h-4 w-4 mr-2" />{t('oss.syncOss')}</Button>
-          <ExportButton data={elements} filename="oss-network-elements" />
+          <ExportButton data={elements as unknown as Record<string, unknown>[]} filenamePrefix="oss-network-elements" />
         </div>
       </div>
 

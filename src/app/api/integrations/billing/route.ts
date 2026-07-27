@@ -27,7 +27,7 @@ function generateInvoices() {
     ] as const);
     const cycle = pick(CYCLES);
     const serviceType = pick(SERVICES);
-    const baseAmount = { 'Mobile Data': rand(800, 3500), 'Voice Only': rand(500, 2000), 'Data + Voice': rand(1200, 5000), 'Enterprise': rand(15000, 80000), 'Family Plan': rand(2500, 8000), 'Fixed Line': rand(1500, 6000), 'IoT Connectivity': rand(3000, 12000) }[serviceType];
+    const baseAmount = { 'Mobile Data': rand(800, 3500), 'Voice Only': rand(500, 2000), 'Data + Voice': rand(1200, 5000), 'Enterprise': rand(15000, 80000), 'Family Plan': rand(2500, 8000), 'Fixed Line': rand(1500, 6000), 'IoT Connectivity': rand(3000, 12000) }[serviceType] ?? 1000;
     const amount = baseAmount;
     const tax = Math.round(amount * 0.19);
     const total = amount + tax;

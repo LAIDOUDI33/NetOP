@@ -1,8 +1,8 @@
 'use client';
 import { useState, useMemo } from 'react';
 
-interface UsePaginationOptions {
-  data: any[];
+interface UsePaginationOptions<T> {
+  data: T[];
   pageSize?: number;
   initialPage?: number;
 }
@@ -18,7 +18,7 @@ interface UsePaginationReturn<T> {
   pageSize: number;
 }
 
-export function usePagination<T>({ data, pageSize = 10, initialPage = 1 }: UsePaginationOptions): UsePaginationReturn<T> {
+export function usePagination<T>({ data, pageSize = 10, initialPage = 1 }: UsePaginationOptions<T>): UsePaginationReturn<T> {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
 

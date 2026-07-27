@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     avgLatency: Math.round(INTEGRATIONS.reduce((s, i) => s + i.latencyMs, 0) / INTEGRATIONS.length),
   };
 
-  return NextResponse.json({ integrations: INTEGRATIONS, syncHistory, healthTimeline, summary });
+  return NextResponse.json({ integrations: INTEGRATIONS, syncHistory: SYNC_HISTORY, healthTimeline, summary });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
