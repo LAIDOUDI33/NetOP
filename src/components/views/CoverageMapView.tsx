@@ -136,7 +136,7 @@ export default function CoverageMapView() {
               </div>
             </div>
           ) : (
-            <div className="h-[400px] lg:h-[500px]">
+            <div className="h-[400px] lg:h-[500px]" role="application" aria-label="Interactive network coverage map">
               {sites.length === 0 ? (
                 <div className="h-full flex items-center justify-center bg-muted/30">
                   <div className="text-center space-y-2">

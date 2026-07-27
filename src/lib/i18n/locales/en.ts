@@ -2097,6 +2097,13 @@ const en: Record<string, string> = {
   'rpt.enabled': 'Enabled',
   'npi.rank': 'Rank',
   'ft.timeToFail': 'Time to Fail',
+  'notFound.title': '404',
+  'notFound.heading': 'Page Not Found',
+  'notFound.description': 'The page you are looking for does not exist or has been moved.',
+  'notFound.backButton': 'Back to Dashboard',
+  'pg.previous': 'Previous',
+  'pg.next': 'Next',
+  'pg.goToPage': 'Go to page {page}',
 };
 
 export default en;

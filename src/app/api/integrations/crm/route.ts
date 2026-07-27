@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 'Blida', 'Batna', 'Béjaïa', 'Tizi Ouzou', 'Biskra', 'Ouargla'];
 const SEGMENTS = ['prepaid', 'postpaid', 'corporate'] as const;
@@ -37,7 +38,11 @@ function generateCustomers() {
   return customers;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const customers = generateCustomers();
   const active = customers.filter(c => c.status === 'active');
 
@@ -98,4 +103,7 @@ export async function GET() {
   };
 
   return NextResponse.json({ customers, segmentDistribution, arpuByRegion, churnAnalysis, satisfactionTrend, topComplaints: complaintData, summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

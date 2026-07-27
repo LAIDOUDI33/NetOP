@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
@@ -238,6 +240,7 @@ export default function OutagesView() {
   });
 
   const outages = data?.outages ?? [];
+  const { paginatedData: paginatedOutages, currentPage, totalPages, setCurrentPage } = usePagination({ data: outages, pageSize: 10 });
   const summary = data?.summary;
 
   // Chart data: Status Bar
@@ -543,7 +546,7 @@ export default function OutagesView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {outages.map((outage) => (
+                  {paginatedOutages.map((outage) => (
                     <TableRow key={outage.id}>
                       <TableCell className="font-medium text-xs sticky left-0 bg-background">
                         <div className="max-w-[160px]">
@@ -611,6 +614,7 @@ export default function OutagesView() {
               </Table>
             </div>
           )}
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </CardContent>
       </Card>
     </div>

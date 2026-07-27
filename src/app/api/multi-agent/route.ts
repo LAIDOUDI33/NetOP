@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const AGENTS = [
   { id: 'agent-optimizer', name: 'Network Optimizer', type: 'optimization', description: 'Autonomous parameter tuning based on KPI targets', model: 'gpt-4o', status: 'active', tasksCompleted: 1847, tasksFailed: 23, avgLatencyMs: 2340, successRate: 98.8 },
@@ -59,7 +60,11 @@ function generateAgentChat() {
   ];
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const agents = AGENTS.map(a => ({ ...a, uptime: rand(95, 99.9) }));
   const taskQueue = generateTaskQueue();
   const metrics = generateAgentMetrics();
@@ -77,4 +82,7 @@ export async function GET() {
   };
 
   return NextResponse.json({ agents, taskQueue, metrics, chat, summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

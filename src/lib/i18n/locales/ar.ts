@@ -1983,6 +1983,13 @@ const ar: Record<string, string> = {
   'rpt.enabled': 'مفعّل',
   'npi.rank': 'الترتيب',
   'ft.timeToFail': 'الوقت حتى العطل',
+  'notFound.title': '404',
+  'notFound.heading': 'الصفحة غير موجودة',
+  'notFound.description': 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
+  'notFound.backButton': 'العودة إلى لوحة القيادة',
+  'pg.previous': 'السابق',
+  'pg.next': 'التالي',
+  'pg.goToPage': 'الذهاب إلى الصفحة {page}',
 };
 
 export default ar;

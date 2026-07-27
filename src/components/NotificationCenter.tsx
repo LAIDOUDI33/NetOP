@@ -62,7 +62,7 @@ export function NotificationCenter() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-96 p-0">
+      <PopoverContent align="end" className="w-96 p-0" role="dialog" aria-label={t('notif.title')}>
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h3 className="text-sm font-semibold">{t('notif.title')}</h3>

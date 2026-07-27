@@ -15,6 +15,8 @@ import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff } from 'luci
 import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 import DataExportButton from '@/components/DataExportButton';
 import { ExportButton } from '@/components/ExportButton';
 
@@ -80,6 +82,8 @@ export default function AlertsView() {
     },
   });
 
+  const { paginatedData: paginatedAlerts, currentPage, totalPages, setCurrentPage } = usePagination({ data: data.alerts, pageSize: 10 });
+
   const handleAcknowledge = (id: string) => patchMutation.mutate({ alertId: id, action: 'acknowledge' });
   const handleResolve = (id: string) => patchMutation.mutate({ alertId: id, action: 'resolve' });
   const handleToggleRule = (ruleId: string, enabled: boolean) =>
@@ -100,6 +104,9 @@ export default function AlertsView() {
 
   return (
     <div className="space-y-6">
+      {/* Screen reader live region for filtered alert count */}
+      <div className="sr-only" aria-live="polite">{t('alert.result', { n: data.alerts.length })}</div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
@@ -212,13 +219,13 @@ export default function AlertsView() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data.alerts.map((alert) => {
+                    paginatedAlerts.map((alert) => {
                       const sev = SEVERITY_CONFIG[alert.severity];
                       const SevIcon = sev.icon;
                       return (
                         <TableRow key={alert.id}>
                           <TableCell>
-                            <Badge variant={sev.variant} className="text-xs gap-1">
+                            <Badge variant={sev.variant} className="text-xs gap-1" role="status">
                               <SevIcon className="h-3 w-3" />
                               {alert.severity}
                             </Badge>
@@ -278,6 +285,7 @@ export default function AlertsView() {
               </Table>
             </div>
           </ScrollArea>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </CardContent>
       </Card>
 

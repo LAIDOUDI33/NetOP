@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const INTEGRATIONS = [
   { id: 'int-oss', name: 'OSS Integration', type: 'oss', vendor: 'Ericsson', protocol: 'REST/SOAP', endpoint: 'https://oss.algtelecom.dz/api/v2', status: 'connected', lastSync: new Date(Date.now() - 180000).toISOString(), syncIntervalMin: 5, totalSyncs: 45230, failedSyncs: 12, dataPoints: 2840000, latencyMs: 450, version: 'v2.4.1' },
@@ -43,7 +44,11 @@ function generateHealthTimeline() {
 
 function rand(min: number, max: number) { return Math.round(min + Math.random() * (max - min)); }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const healthTimeline = generateHealthTimeline();
 
   const summary = {
@@ -57,4 +62,7 @@ export async function GET() {
   };
 
   return NextResponse.json({ integrations: INTEGRATIONS, syncHistory, healthTimeline, summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

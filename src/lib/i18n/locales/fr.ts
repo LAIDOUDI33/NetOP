@@ -2104,6 +2104,13 @@ const fr: Record<string, string> = {
   'rpt.enabled': 'Activé',
   'npi.rank': 'Rang',
   'ft.timeToFail': 'Temps avant Panne',
+  'notFound.title': '404',
+  'notFound.heading': 'Page Non Trouvée',
+  'notFound.description': "La page que vous recherchez n'existe pas ou a été déplacée.",
+  'notFound.backButton': 'Retour au Tableau de Bord',
+  'pg.previous': 'Précédent',
+  'pg.next': 'Suivant',
+  'pg.goToPage': 'Aller à la page {page}',
 };
 
 export default fr;

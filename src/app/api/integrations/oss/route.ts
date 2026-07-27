@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 'Blida', 'Batna', 'Béjaïa', 'Tizi Ouzou', 'Biskra', 'Ouargla'];
 const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
@@ -64,7 +65,11 @@ function generateFaults(nes: any[]) {
   });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const elements = generateNEs();
   const faultEvents = generateFaults(elements);
 
@@ -93,4 +98,7 @@ export async function GET() {
   };
 
   return NextResponse.json({ elements, neTypeDistribution, vendorDistribution, performanceTrend, faultEvents, summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

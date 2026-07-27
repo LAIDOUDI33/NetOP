@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 import { cn } from '@/lib/utils';
 
 interface Invoice {
@@ -62,6 +64,8 @@ export default function BillingIntegrationView() {
     }),
     refetchInterval: 30000,
   });
+
+  const { paginatedData: paginatedInvoices, currentPage, totalPages, setCurrentPage } = usePagination({ data: data?.invoices ?? [], pageSize: 10 });
 
   if (isLoading || !data) {
     return (
@@ -177,7 +181,7 @@ export default function BillingIntegrationView() {
                     <TableHead>{t('bil.colDueDate')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {invoices.map((inv) => {
+                    {paginatedInvoices.map((inv) => {
                       const Icon = STATUS_ICON[inv.status] || Clock;
                       return (
                         <TableRow key={inv.id}>
@@ -197,6 +201,7 @@ export default function BillingIntegrationView() {
                   </TableBody>
                 </Table>
               </ScrollArea>
+              <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             </CardContent>
           </Card>
         </TabsContent>

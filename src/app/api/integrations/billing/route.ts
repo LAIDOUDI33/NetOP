@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 'Blida', 'Batna', 'Béjaïa', 'Tizi Ouzou', 'Biskra', 'Ouargla'];
 const SERVICES = ['Mobile Data', 'Voice Only', 'Data + Voice', 'Enterprise', 'Family Plan', 'Fixed Line', 'IoT Connectivity'];
@@ -56,7 +57,11 @@ function generateInvoices() {
   return invoices;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const invoices = generateInvoices();
 
   // Revenue by month (line chart)
@@ -141,4 +146,7 @@ export async function GET() {
     invoices, revenueByMonth, revenueByRegion, revenueByService,
     paymentMethods, topDebtors: debtors, summary,
   });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

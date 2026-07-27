@@ -1,5 +1,7 @@
 'use client';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -206,6 +208,7 @@ export default function AuditView() {
   });
 
   const trails = data?.trails ?? [];
+  const { paginatedData: paginatedTrails, currentPage, totalPages, setCurrentPage } = usePagination({ data: trails, pageSize: 10 });
   const summary = data?.summary;
 
   // Count distinct requestedBy
@@ -462,6 +465,7 @@ export default function AuditView() {
                 {t('aud.noMatch')}
               </div>
             ) : (
+              <>
               <div className="max-h-[480px] overflow-y-auto">
                 <Table>
                   <TableHeader>
@@ -479,7 +483,7 @@ export default function AuditView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {trails.map((trail) => (
+                    {paginatedTrails.map((trail) => (
                       <TableRow key={trail.id}>
                         <TableCell className="text-xs whitespace-nowrap">
                           {formatTimestamp(trail.createdAt)}
@@ -536,6 +540,8 @@ export default function AuditView() {
                   </TableBody>
                 </Table>
               </div>
+              <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              </>
             )}
           </CardContent>
         </Card>

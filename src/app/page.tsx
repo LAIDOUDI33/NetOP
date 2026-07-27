@@ -387,6 +387,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <CommandPalette />
 
       {/* Mobile Header */}
@@ -437,7 +438,7 @@ export default function Home() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0 content-rtl">
+        <main id="main-content" className="flex-1 flex flex-col min-w-0 content-rtl">
           <header className="hidden lg:flex items-center justify-between h-14 px-6 border-b shrink-0">
             <div>
               <h1 className="text-lg font-bold leading-tight">{t(VIEW_TITLE_KEYS[currentView])}</h1>

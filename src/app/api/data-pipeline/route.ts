@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const PIPELINES = [
   { id: 'pipe-kpi-ingest', name: 'KPI Metrics Ingestion', source: 'OSS Poller', target: 'Time-Series DB', schedule: '*/5 * * * *', status: 'running', lastRun: new Date(Date.now() - 120000).toISOString(), nextRun: new Date(Date.now() + 180000).toISOString(), recordsProcessed: 184200, errorRate: 0.02, avgDurationMs: 2300 },
@@ -49,7 +50,11 @@ function generateThroughput() {
   }));
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
+
+  try {
   const pipelines = PIPELINES;
   const flowNodes = generateFlowNodes();
   const flowEdges = generateFlowEdges();
@@ -65,4 +70,7 @@ export async function GET() {
   };
 
   return NextResponse.json({ pipelines, flowNodes, flowEdges, throughput, summary });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

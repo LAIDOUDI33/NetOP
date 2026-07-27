@@ -93,7 +93,7 @@ export default function DashboardView() {
       </div>
 
       {/* KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-live="polite">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -167,7 +167,7 @@ export default function DashboardView() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Technology Health */}
-        <Card>
+        <Card role="region" aria-label={t('dash.techHealthComp')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">{t('dash.techHealthComp')}</CardTitle>
           </CardHeader>
@@ -193,7 +193,7 @@ export default function DashboardView() {
         </Card>
 
         {/* KPI Trends */}
-        <Card>
+        <Card role="region" aria-label={t('dash.kpiTrends')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">{t('dash.kpiTrends')}</CardTitle>
           </CardHeader>
@@ -222,7 +222,7 @@ export default function DashboardView() {
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Alerts Summary */}
-        <Card>
+        <Card role="region" aria-label={t('dash.recentAlerts')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">{t('dash.recentAlerts')}</CardTitle>
           </CardHeader>
@@ -252,7 +252,7 @@ export default function DashboardView() {
         </Card>
 
         {/* Technology Distribution */}
-        <Card>
+        <Card role="region" aria-label={t('dash.techDistribution')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">{t('dash.techDistribution')}</CardTitle>
           </CardHeader>
@@ -284,7 +284,7 @@ export default function DashboardView() {
         </Card>
 
         {/* Avg Latency & Tech Health Summary */}
-        <Card>
+        <Card role="region" aria-label={t('dash.techSummary')}>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">{t('dash.techSummary')}</CardTitle>
           </CardHeader>

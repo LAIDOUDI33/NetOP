@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 import { cn } from '@/lib/utils';
 
 interface Customer {
@@ -52,6 +54,8 @@ export default function CRMIntegrationView() {
     queryFn: () => fetch('/api/integrations/crm').then(r => { if (!r.ok) throw new Error('CRM API error'); return r.json(); }),
     refetchInterval: 30000,
   });
+
+  const { paginatedData: paginatedCustomers, currentPage, totalPages, setCurrentPage } = usePagination({ data: data?.customers ?? [], pageSize: 10 });
 
   if (isLoading || !data) {
     return (
@@ -143,7 +147,7 @@ export default function CRMIntegrationView() {
                     <TableHead>{t('crm.colChurn')}</TableHead><TableHead>{t('crm.colSatisfaction')}</TableHead><TableHead>{t('crm.colTenure')}</TableHead>
                   </TableRow></TableHeader>
                   <TableBody>
-                    {customers.map((c) => (
+                    {paginatedCustomers.map((c) => (
                       <TableRow key={c.id}>
                         <TableCell className="font-mono text-xs">{c.msisdn}</TableCell>
                         <TableCell className="font-medium">{c.name}</TableCell>
@@ -159,6 +163,7 @@ export default function CRMIntegrationView() {
                   </TableBody>
                 </Table>
               </ScrollArea>
+              <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
             </CardContent>
           </Card>
         </TabsContent>

@@ -187,3 +187,75 @@ Stage Summary:
 - 12 dead artifacts removed from repo
 - 20 views now fully i18n (en/fr/ar)
 - Total locale files: ~2100 keys each (en/fr/ar)
+---
+Task ID: 1-a
+Agent: Sub-agent
+Task: P1-a — Add try/catch error handling and rate-limiting to 7 API routes
+
+Work Log:
+- Read rate-limit.ts to understand the exported API: `rateLimit(request, config)` → `{ limited, remaining, resetMs }`, `rateLimitResponse(resetMs)` → 429 Response
+- Edited all 7 route files using MultiEdit (3 edits each: import, rate-limit guard, try/catch wrapper):
+  1. src/app/api/data-pipeline/route.ts — added `request: Request` param, rate-limit, try/catch
+  2. src/app/api/integration-hub/route.ts — added `request: Request` param, rate-limit, try/catch
+  3. src/app/api/integrations/billing/route.ts — added `request: Request` param, rate-limit, try/catch
+  4. src/app/api/integrations/crm/route.ts — added `request: Request` param, rate-limit, try/catch
+  5. src/app/api/integrations/oss/route.ts — added `request: Request` param, rate-limit, try/catch
+  6. src/app/api/multi-agent/route.ts — added `request: Request` param, rate-limit, try/catch
+  7. src/app/api/route.ts (dashboard) — already had `request: NextRequest`, added rate-limit, try/catch
+- All routes use consistent pattern: 100 req/min window, `rateLimitResponse(resetMs)` for 429, `catch (error: any) → 500 JSON`
+- No data generation logic was modified — only error handling wrappers added
+- `bun run lint` passed with zero errors
+
+Stage Summary:
+- All 7 API routes now have rate-limiting (100 req/min per IP) and try/catch error handling
+- Pattern: rate-limit check at top → try block wrapping handler body → catch returns 500 JSON
+- Dashboard route (api/route.ts) preserved its existing `NextRequest` type signature
+- Lint clean, no regressions
+---
+Task ID: 2-b
+Agent: Sub-agent
+Task: P2-b — Add pagination to 6 table views
+
+Work Log:
+- Verified existing usePagination hook at src/hooks/usePagination.ts (already created, clean implementation with generics, safe page clamping)
+- Verified existing PaginationControls component at src/components/PaginationControls.tsx (windowed page numbers, max 7, sr-only, i18n labels)
+- Added 3 pagination i18n keys (pg.previous, pg.next, pg.goToPage) to en.ts, fr.ts, ar.ts
+- Applied pagination (pageSize=10) to 6 data-heavy table views:
+  1. AlertsView.tsx — main alerts table (data.alerts)
+  2. IncidentsView.tsx — main incidents table (incidents)
+  3. OutagesView.tsx — main outages table (outages)
+  4. BillingIntegrationView.tsx — invoices table (100 invoices)
+  5. CRMIntegrationView.tsx — customers table (120 customers)
+  6. AuditView.tsx — audit trails table (trails)
+- For each view: added imports, hooked usePagination before early returns, replaced .map() with paginatedData.map(), added PaginationControls after table
+- Fixed 3 lint errors: JSX fragment wrapping in AuditView ternary, moved hook calls before early returns in Billing/CRM views
+- bun run lint: PASSED (zero errors)
+
+Stage Summary:
+- Reusable pagination hook and component already existed and were well-designed
+- 6 data-heavy tables now paginate at 10 rows per page with Previous/Next + windowed page numbers
+- All changes are client-side only — no API calls, data fetching, or charts modified
+- i18n keys added for en/fr/ar (pg.previous, pg.next, pg.goToPage)
+- Lint clean, no regressions
+---
+Task ID: 1-d
+Agent: Sub-agent
+Task: P1-d — ARIA accessibility improvements
+
+Work Log:
+- DashboardView.tsx: Added `aria-live="polite"` to the KPI summary grid div. Added `role="region" aria-label={t('...')}` to 5 chart/summary Card elements (Technology Health, KPI Trends, Recent Alerts, Tech Distribution, Tech Summary).
+- AlertsView.tsx: Added `role="status"` to the severity Badge in the alerts table. Added a visually-hidden `aria-live="polite"` div at the top of the view that announces the filtered alert count.
+- CoverageMapView.tsx: Added `role="application" aria-label="Interactive network coverage map"` to the map container div.
+- NotificationCenter.tsx: Verified bell button already had `aria-label`. Added `role="dialog" aria-label={t('notif.title')}` to PopoverContent.
+- CommandPalette.tsx: Verified no changes needed — cmdk library's CommandPrimitive.Input already provides `role="combobox"`, `aria-expanded`, `aria-controls`, and `aria-activedescendant` internally.
+- globals.css: Added `:focus-visible` style (2px solid primary outline with 2px offset) and `.skip-link` / `.skip-link:focus` styles.
+- page.tsx: Added `<a href="#main-content" className="skip-link">Skip to main content</a>` before CommandPalette. Added `id="main-content"` to the `<main>` element.
+- `bun run lint` passed with zero errors.
+
+Stage Summary:
+- 6 files modified with targeted ARIA accessibility improvements
+- Zero business logic or visual changes
+- Screen readers now: announce KPI changes (aria-live), announce alert severity (role=status), announce filtered count, navigate via skip link, and get clear focus indicators
+- Interactive map properly identified as an application role
+- Notification dropdown has dialog role
+- Command palette confirmed to have proper combobox ARIA via cmdk

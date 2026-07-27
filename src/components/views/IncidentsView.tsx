@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useT } from '@/lib/i18n';
+import { usePagination } from '@/hooks/usePagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useAppStore } from '@/store/app';
 import { ExportButton } from '@/components/ExportButton';
 import { useQuery } from '@tanstack/react-query';
@@ -241,6 +243,7 @@ export default function IncidentsView() {
   });
 
   const incidents = data?.incidents ?? [];
+  const { paginatedData: paginatedIncidents, currentPage, totalPages, setCurrentPage } = usePagination({ data: incidents, pageSize: 10 });
   const summary = data?.summary;
 
   // ─── Chart Data ─────────────────────────────────────────────────────
@@ -616,7 +619,7 @@ export default function IncidentsView() {
                     </TableCell>
                   </TableRow>
                 )}
-                {incidents.map((inc) => (
+                {paginatedIncidents.map((inc) => (
                   <TableRow key={inc.id}>
                     {/* Title */}
                     <TableCell className="font-medium min-w-[160px] max-w-[220px] truncate">
@@ -712,6 +715,7 @@ export default function IncidentsView() {
               </TableBody>
             </Table>
           </div>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </CardContent>
       </Card>
     </div>
