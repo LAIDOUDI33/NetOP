@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCard, Languages, Bot, FolderTree,
+  CreditCardIcon, Languages, Bot, FolderTree,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -127,7 +127,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
   { view: 'oss-integration', labelKey: 'nav.ossIntegration', icon: Server, group: 'Automation' },
   { view: 'crm-integration', labelKey: 'nav.crmIntegration', icon: Phone, group: 'Automation' },
-  { view: 'billing-integration', labelKey: 'nav.billingIntegration', icon: CreditCard, group: 'Automation' },
+  { view: 'billing-integration', labelKey: 'nav.billingIntegration', icon: CreditCardIcon, group: 'Automation' },
   { view: 'multi-agent', labelKey: 'nav.multiAgent', icon: Bot, group: 'AI Engine' },
   { view: 'data-pipeline', labelKey: 'nav.dataPipeline', icon: FolderTree, group: 'AI Engine' },
   { view: 'integration-hub', labelKey: 'nav.integrationHub', icon: GitBranch, group: 'AI Engine' },
