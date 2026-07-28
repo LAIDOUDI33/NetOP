@@ -1,0 +1,1125 @@
+     1→// ============================================================
+     2→// Djezzy National SOC Platform - Enterprise Production Schema
+     3→// Version: 11.0.0 (Phase 11 - Full Telco Production Ready)
+     4→// Database: PostgreSQL 16+ (Production)
+     5→// Capacity: 15M+ Subscribers | 50B+ Events/Year | 80B+ CDRs/Year
+     6→// Features: Partitioning, Sharding, Full-Text Search, Row-Level Security
+     7→// ============================================================
+     8→
+     9→generator client {
+    10→  provider = "prisma-client-js"
+    11→}
+    12→
+    13→datasource db {
+    14→  provider = "postgresql"
+    15→  url      = env("DATABASE_URL")
+    16→}
+    17→
+    18→// ============================================================
+    19→// DOMAIN 1: AUTHENTICATION & AUTHORIZATION (Enterprise RBAC + ABAC)
+    20→// ============================================================
+    21→
+    22→model User {
+    23→  id                String           @id @default(cuid())
+    24→  email             String           @unique
+    25→  username          String           @unique
+    26→  passwordHash      String?
+    27→  name              String
+    28→  avatarUrl         String?
+    29→  isActive          Boolean          @default(true)
+    30→  isMfaEnabled      Boolean          @default(false)
+    31→  mfaSecret         String?
+    32→  lastLoginAt       DateTime?
+    33→  passwordChangedAt DateTime         @default(now())
+    34→  roleId            String
+    35→  
+    36→  // Corporate Identity Integration
+    37→  employeeId        String?          @unique @map("employee_id")
+    38→  department        String?
+    39→  costCenter        String?          @map("cost_center")
+    40→  managerId         String?          @map("manager_id")
+    41→  
+    42→  // LDAP/AD Integration
+    43→  ldapDN            String?          @map("ldap_dn")
+    44→  ldapGUID          String?          @unique @map("ldap_guid")
+    45→  adSid             String?          @unique @map("ad_sid")
+    46→  
+    47→  // Session Management
+    48→  lastIpAddress     String?          @map("last_ip_address")
+    49→  lastUserAgent     String?          @map("last_user_agent")
+    50→  failedLoginCount  Int              @default(0) @map("failed_login_count")
+    51→  lockedUntil       DateTime?        @map("locked_until")
+    52→
+    53→  // Audit timestamps
+    54→  createdAt         DateTime         @default(now())
+    55→  updatedAt         DateTime         @updatedAt
+    56→  createdBy         String?          @map("created_by")
+    57→  updatedBy         String?          @map("updated_by")
+    58→  deletedAt         DateTime?        @map("deleted_at") // Soft delete
+    59→
+    60→  // Relations
+    61→  role              Role             @relation(fields: [roleId], references: [id])
+    62→  sessions          UserSession[]
+    63→  auditLogs         AuditLog[]
+    64→  incidentsCreated  Incident[]       @relation("IncidentCreator")
+    65→  incidentsAssigned Incident[]       @relation("IncidentAssignee")
+    66→  tasksAssigned     Task[]           @relation("TaskAssignee")
+    67→  tasksCreated      Task[]           @relation("TaskCreator")
+    68→  evidenceUploaded  Evidence[]       @relation("EvidenceUploader")
+    69→  comments          Comment[]        @relation("CommentAuthor")
+    70→  apiKeys           ApiKey[]
+    71→
+    72→  @@index([roleId])
+    73→  @@index([department])
+    74→  @@index([isActive])
+    75→  @@index([createdAt])
+    76→  @@map("users")
+    77→}
+    78→
+    79→model Role {
+    80→  id                String           @id @default(cuid())
+    81→  name              String           @unique
+    82→  description       String?
+    83→  level             Int              // Hierarchy: 1=Viewer, 2=Analyst, 3=SeniorAnalyst, 4=TeamLead, 5=IncidentCommander, 6=Admin
+    84→  permissions       Json             @default("[]") // Array of permission strings
+    85→  isSystemRole      Boolean          @default(false) @map("is_system_role")
+    86→  
+    87→  createdAt         DateTime         @default(now())
+    88→  updatedAt         DateTime         @updatedAt
+    89→
+    90→  users             User[]
+    91→
+    92→  @@map("roles")
+    93→}
+    94→
+    95→model UserSession {
+    96→  id                String           @id @default(cuid())
+    97→  userId            String
+    98→  tokenHash         String           @map("token_hash")
+    99→  refreshTokenHash  String?          @map("refresh_token_hash")
+   100→  ipAddress         String           @map("ip_address")
+   101→  userAgent         String           @map("user_agent")
+   102→  isActive          Boolean          @default(true)
+   103→  expiresAt         DateTime         @map("expires_at")
+   104→  
+   105→  createdAt         DateTime         @default(now())
+   106→  revokedAt         DateTime?        @map("revoked_at")
+   107→
+   108→  user              User             @relation(fields: [userId], references: [id])
+   109→
+   110→  @@index([userId])
+   111→  @@index([tokenHash])
+   112→  @@index([isActive])
+   113→  @@index([expiresAt])
+   114→  @@map("user_sessions")
+   115→}
+   116→
+   117→model ApiKey {
+   118→  id                String           @id @default(cuid())
+   119→  name              String
+   120→  keyHash           String           @map("key_hash") // SHA-256 hash of API key
+   121→  prefix            String           // First 8 chars for identification
+   122→  userId            String
+   123→  permissions       Json             @default("[]")
+   124→  scopes            String[]         @default(["read"])
+   125→  rateLimit         Int              @default(1000) // Requests per minute
+   126→  lastUsedAt        DateTime?        @map("last_used_at")
+   127→  ipAddress         String?          @map("ip_address") // Whitelist (null = any)
+   128→  isActive          Boolean          @default(true)
+   129→  expiresAt         DateTime?        @map("expires_at")
+   130→  
+   131→  createdAt         DateTime         @default(now())
+   132→  updatedAt         DateTime         @updatedAt
+   133→  revokedAt         DateTime?        @map("revoked_at")
+   134→
+   135→  user              User             @relation(fields: [userId], references: [id])
+   136→
+   137→  @@index([userId])
+   138→  @@index([keyHash])
+   139→  @@index([prefix])
+   140→  @@index([isActive])
+   141→  @@map("api_keys")
+   142→}
+   143→
+   144→// ============================================================
+   145→// DOMAIN 2: SECURITY EVENTS (Partitioned for High Volume)
+   146→// Note: PostgreSQL partitioning configured via raw SQL migrations
+   147→// ============================================================
+   148→
+   149→model SecurityEvent {
+   150→  id                String           @id @default(cuid())
+   151→  eventId           String           @unique @map("event_id") // External event ID from source
+   152→  
+   153→  // Event Classification
+   154→  eventType         String           @map("event_type") // authentication, network, endpoint, application, cloud, telecom
+   155→  category          String           // intrusion, malware, policy_violation, anomaly, reconnaissance
+   156→  severity          String           // critical, high, medium, low, informational
+   157→  status            String           @default("new") // new, triaged, investigating, closed, false_positive
+   158→  
+   159→  // Source Information
+   160→  sourceIp          String?          @map("source_ip")
+   161→  destinationIp     String?          @map("destination_ip")
+   162→  sourcePort        Int?             @map("source_port")
+   163→  destinationPort   Int?             @map("destination_port")
+   164→  protocol          String?
+   165→  sourceHost        String?          @map("source_host")
+   166→  destinationHost   String?          @map("destination_host")
+   167→  
+   168→  // Tool/Source Origin
+   169→  toolName          String           @map("tool_name") // wazuh, suricata, zeek, splunk, etc.
+   170→  toolSeverity      String?          @map("tool_severity") // Original severity from source tool
+   171→  ruleId            String?          @map("rule_id") // Original rule/signature ID
+   172→  ruleName          String?          @map("rule_name") // Human-readable rule name
+   173→  ruleCategory      String?          @map("rule_category") // MITRE ATT&CK tactic
+   174→  
+   175→  // Event Details
+   176→  title             String
+   177→  description       String?          @db.Text
+   178→  metadata          Json?            // Flexible JSON for additional data
+   179→  rawLog            String?          @db.Text // Original log line
+   180→  
+   181→  // Telecom-Specific Fields
+   182→  subscriberId      String?          @map("subscriber_id") // MSISDN reference
+   183→  imsi              String?          // IMSI if available
+   184→  imei              String?          // Device IMEI
+   185→  cellId            String?          @map("cell_id") // Cell tower identifier
+   186→  lac               String?          // Location Area Code
+   187→  
+   188→  // Correlation & Investigation
+   189→  incidentId        String?          @map("incident_id") // Linked incident if any
+   190→  iocMatched        String?          @map("ioc_matched") // Matched IOC hash/reference
+   191→  correlationGroup  String?          @map("correlation_group") // Group ID for correlated events
+   192→  confidence        Float?           @default(0.0) // 0.0-1.0 confidence score
+   193→  
+   194→  // Enrichment
+   195→  geoLocation       Json?            @map("geo_location") // {country, city, lat, lon}
+   196→  threatIntel       Json?            @map("threat_intel") // Enrichment from TI feeds
+   197→  assetInfo         Json?            @map("asset_info") // Asset inventory enrichment
+   198→  
+   199→  // Processing Metadata
+   200→  processedAt       DateTime         @map("processed_at") @default(now())
+   201→  ingestedAt        DateTime         @map("ingested_at") @default(now()) // Original event timestamp
+   202→  firstSeenAt       DateTime         @map("first_seen_at") @default(now())
+   203→  lastSeenAt       DateTime         @map("last_seen_at") @default(now())
+   204→  count             Int              @default(1) // Deduplication count
+   205→  
+   206→  // Audit
+   207→  assignedTo        String?          @map("assigned_to") // Analyst user ID
+   208→  assignedAt        DateTime?        @map("assigned_at")
+   209→  triagedBy         String?          @map("triaged_by")
+   210→  triagedAt         DateTime?        @map("triaged_at")
+   211→  closedBy          String?          @map("closed_by")
+   212→  closedAt         DateTime?        @map("closed_at")
+   213→  closureReason     String?          @map("closure_reason")
+   214→  
+   215→  createdAt         DateTime         @default(now())
+   216→  updatedAt         DateTime         @updatedAt
+   217→
+   218→  // Relations
+   219→  incident          Incident?        @relation(fields: [incidentId], references: [id])
+   220→  tags              SecurityEventTag[]
+   221→
+   222→  // Indexes for query performance
+   223→  @@index([eventType])
+   224→  @@index([severity])
+   225→  @@index([status])
+   226→  @@index([sourceIp])
+   227→  @@index([destinationIp])
+   228→  @@index([toolName])
+   229→  @@index([ruleId])
+   230→  @@index([ingestedAt]) // Primary partition column
+   231→  @@index([processedAt])
+   232→  @@index([incidentId])
+   233→  @@index([assignedTo])
+   234→  @@index([correlationGroup])
+   235→  @@fulltext([title, description])
+   236→  @@map("security_events")
+   237→}
+   238→
+   239→model SecurityEventTag {
+   240→  securityEventId   String           @map("security_event_id")
+   241→  tagId             String
+   242→  
+   243→  securityEvent     SecurityEvent    @relation(fields: [securityEventId], references: [id], onDelete: Cascade)
+   244→  tag               Tag              @relation(fields: [tagId], references: [id])
+   245→
+   246→  @@id([securityEventId, tagId])
+   247→  @@map("security_event_tags")
+   248→}
+   249→
+   250→model Tag {
+   251→  id                String           @id @default(cuid())
+   252→  name              String           @unique
+   253→  color             String?          // Hex color code
+   254→  category          String?          // classification, confidence, source, custom
+   255→  description       String?
+   256→  
+   257→  createdAt         DateTime         @default(now())
+   258→
+   259→  events            SecurityEventTag[]
+   260→  incidents         IncidentTag[]
+   261→
+   262→  @@map("tags")
+   263→}
+   264→
+   265→// ============================================================
+   266→// DOMAIN 3: INCIDENT MANAGEMENT (Full IR Lifecycle)
+   267→// ============================================================
+   268→
+   269→model Incident {
+   270→  id                String           @id @default(cuid())
+   271→  incidentNumber    String           @unique @map("incident_number") // Auto-generated: INC-20260728-0001
+   272→  
+   273→  // Classification
+   274→  title             String
+   275→  description       String           @db.Text
+   276→  type              String           // malware, data_breach, ddos, insider_threat, sim_swap_fraud, apt, phishing, policy_violation, other
+   277→  severity          String           // critical, high, medium, low
+   278→  status            String           @default("open") // open, contained, eradicated, recovery, closed, post_incident
+   279→  phase             String           @default("detection") // detection, analysis, containment, eradication, recovery, lessons_learned
+   280→  
+   281→  // MITRE ATT&CK Mapping
+   282→  tactics           String[]         @default([]) // MITRE tactics
+   283→  techniques        String[]         @default([]) // MITRE technique IDs
+   284→  
+   285→  // Timeline
+   286→  detectedAt        DateTime         @map("detected_at")
+   287→  occurredAt        DateTime?        @map("occurred_at") // When the incident actually started
+   288→  containmentTarget DateTime?       @map("containment_target") // SLA target
+   289→  resolutionTarget  DateTime?       @map("resolution_target") // SLA target
+   290→  resolvedAt        DateTime?        @map("resolved_at")
+   291→  closedAt          DateTime?        @map("closed_at")
+   292→  
+   293→  // Impact Assessment
+   294→  confidentialityImpact String?      @map("confidentiality_impact") // none, low, medium, high
+   295→  integrityImpact    String?         @map("integrity_impact")
+   296→  availabilityImpact String?        @map("availability_impact")
+   297→  assetsAffected    Int              @default(0) @map("assets_affected")
+   298→  subscribersAffected Int?          @map("subscribers_affected") // Telecom-specific
+   299→  revenueImpact      Decimal?        @map("revenue_impact") @db.Decimal(15, 2)
+   300→  
+   301→  // Assignment & Escalation
+   302→  commanderId       String?          @map("commander_id") // Incident Commander
+   303→  createdById       String           @map("created_by")
+   304→  assignedTeam      String?          @map("assigned_team") // SOC, Fraud, NOC, Legal, PR
+   305→  escalationLevel   Int              @default(1) @map("escalation_level") // 1=L1, 2=L2, 3=L3, 4=Executive
+   306→  priorityScore     Float?           @map("priority_score") // Calculated based on severity + impact + intel
+   307→  
+   308→  // External Coordination
+   309→  isPublic          Boolean          @default(false) @map("is_public")
+   310→  externalRef       String?          @map("external_ref") // External ticket/case number
+   311→  lawEnforcement    Boolean          @default(false) @map("law_enforcement")
+   312→  regulatoryNotice  Boolean          @default(false) @map("regulatory_notice") // ARPT notification required/arptNotified
+   313→  arptReportedAt    DateTime?        @map("arpt_reported_at")
+   314→  
+   315→  // Communication
+   316→  statusUpdate      String?          @db.Text @map("status_update") // Latest status narrative
+   317→  lessonsLearned    String?          @db.Text @map("lessons_learned")
+   318→  afterActionReport String?          @db.Text @map("after_action_report")
+   319→  
+   320→  // Metrics
+   321→  mttDetect         Int?             @map("mtt_detect") // Minutes to detect
+   322→  mttRespond        Int?             @map("mtt_respond") // Minutes to respond
+   323→  mttContain        Int?             @map("mtt_contain") // Minutes to contain
+   324→  totalCost         Decimal?         @db.Decimal(15, 2) @map("total_cost")
+   325→  
+   326→  // Audit
+   327→  createdAt         DateTime         @default(now())
+   328→  updatedAt         DateTime         @updatedAt
+   329→  createdBy         User             @relation("IncidentCreator", fields: [createdById], references: [id])
+   330→  assignedTo        User?            @relation("IncidentAssignee", fields: [commanderId], references: [id])
+   331→  deletedAt         DateTime?        @map("deleted_at")
+   332→
+   333→  // Relations
+   334→  events            SecurityEvent[]  @relation("IncidentLinkedEvents")
+   335→  tasks             Task[]
+   336→  evidence          Evidence[]
+   337→  timelineEntries   TimelineEntry[]
+   338→  comments          Comment[]
+   339→  tags              IncidentTag[]
+   340→  playbooks         IncidentPlaybook[]
+   341→
+   342→  @@index([status])
+   343→  @@index([severity])
+   344→  @@index([type])
+   345→  @@index([commanderId])
+   346→  @@index([createdById])
+   347→  @@index([detectedAt])
+   348→  @@index([assignedTeam])
+   349→  @@index([escalationLevel])
+   350→  @@fulltext([title, description])
+   351→  @@map("incidents")
+   352→}
+   353→
+   354→model IncidentTag {
+   355→  incidentId        String           @map("incident_id")
+   356→  tagId             String
+   357→  
+   358→  incident          Incident         @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   359→  tag               Tag              @relation(fields: [tagId], references: [id])
+   360→
+   361→  @@id([incidentId, tagId])
+   362→  @@map("incident_tags")
+   363→}
+   364→
+   365→model Task {
+   366→  id                String           @id @default(cuid())
+   367→  incidentId        String           @map("incident_id")
+   368→  title             String
+   369→  description       String?          @db.Text
+   370→  type              String           // analysis, containment, eradication, recovery, documentation, communication, coordination
+   371→  status            String           @default("pending") // pending, in_progress, blocked, completed, cancelled
+   372→  priority          String           @default("medium") // critical, high, medium, low
+   373→  
+   374→  // Assignment
+   375→  assignedTo        String?          @map("assigned_to")
+   376→  createdById       String           @map("created_by")
+   377→  
+   378→  // Timing
+   379→  dueAt             DateTime?        @map("due_at")
+   380→  completedAt       DateTime?        @map("completed_at")
+   381→  estimatedHours    Decimal?         @db.Decimal(5, 2) @map("estimated_hours")
+   382→  actualHours       Decimal?         @db.Decimal(5, 2) @map("actual_hours")
+   383→  
+   384→  // Dependencies
+   385→  dependsOn         String[]         @default([]) @map("depends_on") // Task IDs this depends on
+   386→  blockingFor       String[]         @default([]) @map("blocking_for") // Tasks blocked by this
+   387→  
+   388→  // Results
+   389→  output            String?          @db.Text // Task output/deliverable
+   390→  artifacts         Json?            // References to evidence/files
+   391→  
+   392→  createdAt         DateTime         @default(now())
+   393→  updatedAt         DateTime         @updatedAt
+   394→
+   395→  incident          Incident         @relation("IncidentTasks", fields: [incidentId], references: [id], onDelete: Cascade)
+   396→  assignee          User?            @relation("TaskAssignee", fields: [assignedTo], references: [id])
+   397→  creator           User             @relation("TaskCreator", fields: [createdById], references: [id])
+   398→
+   399→  @@index([incidentId])
+   400→  @@index([assignedTo])
+   401→  @@index([status])
+   402→  @@index([priority])
+   403→  @@index([dueAt])
+   404→  @@map("tasks")
+   405→}
+   406→
+   407→model Evidence {
+   408→  id                String           @id @default(cuid())
+   409→  incidentId        String           @map("incident_id")
+   410→  
+   411→  filename          String
+   412→  originalFilename  String           @map("original_filename")
+   413→  fileSize          BigInt           @map("file_size") // Bytes
+   414→  mimeType          String           @map("mime_type")
+   415→  fileHashSha256    String           @map("file_hash_sha256")
+   416→  fileHashMd5       String?          @map("file_hash_md5")
+   417→  
+   418→  description       String?          @db.Text
+   419→  type              String           // log, pcap, memory_image, disk_image, screenshot, document, malware_sample, other
+   420→  classification    String?          // public, internal, confidential, restricted
+   421→  chainOfCustody    Boolean          @default(false) @map("chain_of_custody")
+   422→  
+   423→  // Storage
+   424→  storagePath       String           @map("storage_path") // Object storage path
+   425→  storageProvider   String           @map("storage_provider") // local, s3, azure, gcs
+   426→  isEncrypted       Boolean          @default(false) @map("is_encrypted")
+   427→  encryptionKeyId   String?          @map("encryption_key_id")
+   428→  
+   429→  // Collection Info
+   430→  collectedBy       String           @map("collected_by") // User or automated system
+   431→  collectionMethod  String?          @map("collection_method") // manual, grr_flow, edr_alert, siem_export
+   432→  collectedAt       DateTime         @map("collected_at") @default(now())
+   433→  sourceHost        String?          @map("source_host")
+   434→  timeRangeStart   DateTime?        @map("time_range_start")
+   435→  timeRangeEnd     DateTime?        @map("time_range_end")
+   436→  
+   437→  // Analysis
+   438→  analyzedAt        DateTime?        @map("analyzed_at")
+   439→  analysisResults  Json?            @map("analysis_results") // Sandbox, AV scan results
+   440→  iocsExtracted     Json?            @map("iocs_extracted") // Extracted IOCs
+   441→  
+   442→  uploadedById      String           @map("uploaded_by")
+   443→  createdAt         DateTime         @default(now())
+   444→  updatedAt         DateTime         @updatedAt
+   445→
+   446→  incident          Incident         @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   447→  uploader          User             @relation("EvidenceUploader", fields: [uploadedById], references: [id])
+   448→
+   449→  @@index([incidentId])
+   450→  @@index([uploadedById])
+   451→  @@index([fileHashSha256])
+   452→  @@index([type])
+   453→  @@index([collectedAt])
+   454→  @@map("evidence")
+   455→}
+   456→
+   457→model TimelineEntry {
+   458→  id                String           @id @default(cuid())
+   459→  incidentId        String           @map("incident_id")
+   460→  
+   461→  timestamp         DateTime         // When this event in the timeline occurred
+   462→  type              String           // detection, action, observation, decision, milestone, external
+   463→  title             String
+   464→  description       String?          @db.Text
+   465→  category          String?          // attacker, defender, victim, automated, unknown
+   466→  
+   467→  // Source
+   468→  source            String?          // analyst, system, automated_playbook, external
+   469→  sourceRef         String?          @map("source_ref") // Reference to source (task ID, event ID, etc.)
+   470→  
+   471→  // TTP Mapping
+   472→  tactic            String?          // MITRE ATT&CK tactic
+   473→  technique         String?          // MITRE ATT&CK technique ID
+   474→  
+   475→  // Artifacts
+   476→  artifacts         Json?            // Linked evidence, IOCs, indicators
+   477→  
+   478→  createdBy         String           @map("created_by")
+   479→  createdAt         DateTime         @default(now())
+   480→
+   481→  incident          Incident         @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   482→
+   483→  @@index([incidentId])
+   484→  @@index([timestamp])
+   485→  @@index([type])
+   486→  @@map("timeline_entries")
+   487→}
+   488→
+   489→model Comment {
+   490→  id                String           @id @default(cuid())
+   491→  
+   492→  // Polymorphic relation (can be on Incident or Task)
+   493→  incidentId        String?          @map("incident_id")
+   494→  taskId            String?          @map("task_id")
+   495→  
+   496→  content           String           @db.Content
+   497→  isInternal        Boolean          @default(true) @map("is_internal") // False = visible to external stakeholders
+   498→  
+   499→  authorId          String           @map("author_id")
+   500→  parentId          String?          @map("parent_id") // For threaded replies
+   501→  mentions          String[]         @default([]) // User IDs mentioned (@username)
+   502→  attachments       Json?            // File attachment references
+   503→  
+   504→  createdAt         DateTime         @default(now())
+   505→  updatedAt         DateTime         @updatedAt
+   506→  deletedAt         DateTime?        @map("deleted_at")
+   507→
+   508→  incident          Incident?        @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   509→  task              Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+   510→  author            User             @relation("CommentAuthor", fields: [authorId], references: [id])
+   511→  parent            Comment?         @relation("CommentReplies", fields: [parentId], references: [id])
+   512→  replies           Comment[]       @relation("CommentReplies")
+   513→
+   514→  @@index([incidentId])
+   515→  @@index([taskId])
+   516→  @@index([authorId])
+   517→  @@index([parentId])
+   518→  @@index([createdAt])
+   519→  @@map("comments")
+   520→}
+   521→
+   522→// ============================================================
+   523→// DOMAIN 4: THREAT INTELLIGENCE (IOC Management & TI Platform)
+   524→// ============================================================
+   525→
+   526→model ThreatIntelFeed {
+   527→  id                String           @id @default(cuid())
+   528→  name              String           @unique
+   529→  description       String?          @db.Text
+   530→  type              String           // commercial, opensource, community, internal, government
+   531→  format            String           // stix/taxii, csv, json, xml, misp
+   532→  url               String?          // Feed URL or API endpoint
+   533→  apiKey            String?          @map("api_key") // Encrypted
+   534→  pollingInterval   Int              @default(3600) @map("polling_interval") // Seconds
+   535→  lastPolledAt      DateTime?        @map("polled_at")
+   536→  lastPollStatus    String?          @map("last_poll_status") // success, error, auth_failed
+   537→  lastPollMessage   String?          @map("last_poll_message")
+   538→  isActive          Boolean          @default(true) @map("is_active")
+   539→  
+   540→  // Quality Scoring
+   541→  reliabilityScore  Float            @default(0.5) @map("reliability_score") // 0.0-1.0 based on historical accuracy
+   542→  coverage          String[]         @default([]) // What types of IOCs it covers
+   543→  tlpDefault        String           @default("white") @map("tlp_default") // Traffic Light Protocol default
+   544→  
+   545→  createdAt         DateTime         @default(now())
+   546→  updatedAt         DateTime         @updatedAt
+   547→
+   548→  iocs              Ioc[]
+   549→  syncLogs          ThreatIntelSyncLog[]
+   550→
+   551→  @@index([isActive])
+   552→  @@index([type])
+   553→  @@map("threat_intel_feeds")
+   554→}
+   555→
+   556→model Ioc {
+   557→  id                String           @id @default(cuid())
+   558→  
+   559→  // IOC Value & Type
+   560→  value             String           // The actual indicator value
+   561→  type              String           // ipv4, ipv6, domain, url, email, md5, sha256, sha1, mutex, registry, ja3, ssl_cert_fingerprint, msisdn, imsi, imei, ssid, cve
+   562→  
+   563→  // Classification
+   564→  tlp               String           @default("white") // white, green, amber, red
+   565→  confidence        Float            @default(0.0) // 0.0-1.0
+   566→  severity          String?          // critical, high, medium, low
+   567→  
+   568→  // Description & Context
+   569→  description       String?          @db.Text
+   570→  threatTypes       String[]         @default([]) @map("threat_types") // malware, phishing, c2, scanner, exploitkit, etc.
+   571→  malwareFamilies   String[]         @default([]) @map("malware_families")
+   572→  attackPatterns   String[]         @default([]) @map("attack_patterns") // MITRE technique IDs
+   573→  campaigns         String[]         @default([]) // Known campaign names
+   574→  
+   575→  // Source Tracking
+   576→  feedId            String?          @map("feed_id") // Source feed
+   577→  sourceContext     Json?            @map("source_context") // Original context from feed
+   578→  firstSeenAt       DateTime         @map("first_seen_at") @default(now())
+   579→  lastSeenAt       DateTime         @map("last_seen_at") @default(now())
+   580→  expirationDate    DateTime?        @map("expiration_date") // When this IOC should be considered stale
+   581→  
+   582→  // State Management
+   583→  isActive          Boolean          @default(true) @map("is_active")
+   584→  falsePositive     Boolean          @default(false) @map("false_positive")
+   585→  falsePositiveReason String?        @map("false_positive_reason")
+   586→  whitelisted       Boolean          @default(false)
+   587→  whitelistReason   String?          @map("whitelist_reason")
+   588→  
+   589→  // Enrichment
+   590→  whoisData         Json?            @map("whois_data")
+   591→  geoData           Json?            @map("geo_data")
+   592→  passiveDns        Json?            @map("passive_dns")
+   593→  sandboxResults   Json?            @map("sandbox_results")
+   594→  relatedIocs       Json?            @map("related_iocs") // Pre-computed relationships
+   595→  
+   596→  // Matching Statistics
+   597→  matchCount        Int              @default(0) @map("match_count") // How many times matched in events
+   598→  lastMatchedAt     DateTime?        @map("last_matched_at")
+   599→  incidentsLinked   String[]         @default([]) @map("incidents_linked") // Incident IDs where this IOC appeared
+   600→  
+   601→  // Tags for Organization
+   602→  tags              String[]         @default([])
+   603→  
+   604→  // Audit
+   605→  createdBy         String?          @map("created_by")
+   606→  createdAt         DateTime         @default(now())
+   607→  updatedAt         DateTime         @updatedAt
+   608→
+   609→  feed              ThreatIntelFeed? @relation(fields: [feedId], references: [id])
+   610→  matches           IocMatch[]
+   611→
+   612→  @@index([value])
+   613→  @@index([type])
+   614→  @@index([tlp])
+   615→  @@index([isActive])
+   616→  @@index([falsePositive])
+   617→  @@index([firstSeenAt])
+   618→  @@index([lastSeenAt])
+   619→  @@index([expirationDate])
+   620→  @@unique([value, type]) // Prevent duplicate IOCs of same type
+   621→  @@fulltext([value, description])
+   622→  @@map("iocs")
+   623→}
+   624→
+   625→model IocMatch {
+   626→  id                String           @id @default(cuid())
+   627→  iocId             String           @map("ioc_id")
+   628→  securityEventId   String           @map("security_event_id")
+   629→  
+   630→  matchConfidence   Float            @map("match_confidence") // 0.0-1.0
+   631→  matchContext      Json?            @map("match_context") // What field(s) matched
+   632→  
+   633→  matchedAt         DateTime         @map("matched_at") @default(now())
+   634→
+   635→  ioc               Ioc              @relation(fields: [iocId], references: [id], onDelete: Cascade)
+   636→  securityEvent     SecurityEvent?   @relation(fields: [securityEventId], references: [id], onDelete: Cascade)
+   637→
+   638→  @@index([iocId])
+   639→  @@index([securityEventId])
+   640→  @@index([matchedAt])
+   641→  @@map("ioc_matches")
+   642→}
+   643→
+   644→model ThreatIntelSyncLog {
+   645→  id                String           @id @default(cuid())
+   646→  feedId            String           @map("feed_id")
+   647→  
+   648→  startedAt         DateTime         @map("started_at")
+   649→  completedAt       DateTime?        @map("completed_at")
+   650→  status            String           // running, success, error, partial
+   651→  itemsProcessed    Int              @map("items_processed")
+   652→  itemsNew          Int              @default(0) @map("items_new")
+   653→  itemsUpdated      Int              @default(0) @map("items_updated")
+   654→  itemsFailed       Int              @default(0) @map("items_failed")
+   655→  errorMessage      String?          @map("error_message")
+   656→  
+   657→  createdAt         DateTime         @default(now())
+   658→
+   659→  feed              ThreatIntelFeed @relation(fields: [feedId], references: [id], onDelete: Cascade)
+   660→
+   661→  @@index([feedId])
+   662→  @@index([startedAt])
+   663→  @@index([status])
+   664→  @@map("threat_intel_sync_logs")
+   665→}
+   666→
+   667→// ============================================================
+   668→// DOMAIN 5: TELECOM-SPECIFIC DATA (CDR, Subscriber, Network)
+   669→// ============================================================
+   670→
+   671→model Subscriber {
+   672→  id                String           @id @default(cuid())
+   673→  
+   674→  // Identity
+   675→  msisdn            String           @unique // Mobile Station International Subscriber Directory Number (phone number)
+   676→  imsi              String           @unique // International Mobile Subscriber Identity
+   677→  imei              String?          // International Mobile Equipment Identity
+   678→  
+   679→  // Profile
+   680→  subscriberType    String           @map("subscriber_type") // prepaid, postpaid, corporate, roaming, mvno
+   681→  status            String           @default("active") // active, suspended, terminated, fraud_investigation
+   682→  riskScore         Float            @default(0.0) @map("risk_score") // 0.0-1.0 calculated fraud/security risk
+   683→  
+   684→  // Service Information
+   685→  planType          String?          @map("plan_type")
+   686→  activationDate    DateTime?        @map("activation_date")
+   687→  lastActivityAt    DateTime?        @map("last_activity_at")
+   688→  
+   689→  // Location (last known)
+   690→  lastCellId        String?          @map("last_cell_id")
+   691→  lastLac           String?          @map("last_lac")
+   692→  lastVlr           String?          @map("last_vlr") // Visitor Location Register
+   693→  
+   694→  // Security Flags
+   695→  isRoaming         Boolean          @default(false) @map("is_roaming")
+   696→  simSwapCount      Int              @default(0) @map("sim_swap_count")
+   697→  lastSimSwapAt     DateTime?        @map("last_sim_swap_at")
+   698→  isHighValue       Boolean          @default(false) @map("is_high_value") // VIP/high-risk customer
+   699→  monitoringLevel   String           @default("standard") @map("monitoring_level") // standard, enhanced, intensive
+   700→  
+   701→  // Notes
+   702→  securityNotes     String?          @db.Text @map("security_notes")
+   703→  fraudFlags        String[]         @default([]) @map("fraud_flags")
+   704→  
+   705→  // Audit
+   706→  createdBy         String?          @map("created_by")
+   707→  createdAt         DateTime         @default(now())
+   708→  updatedAt         DateTime         @updatedAt
+   709→
+   710→  @@index([msisdn])
+   711→  @@index([imsi])
+   712→  @@index([imei])
+   713→  @@index([status])
+   714→  @@index([riskScore])
+   715→  @@index([subscriberType])
+   716→  @@index([monitoringLevel])
+   717→  @@map("subscribers")
+   718→}
+   719→
+   720→model CdrRecord {
+   721→  id                String           @id @default(cuid())
+   722→  cdrId             String           @unique @map("cdr_id") // Unique CDR identifier from switch
+   723→  
+   724→  // Call/Data Identifiers
+   725→  callId            String           @map("call_id")
+   726→  callingNumber     String           @map("calling_number")
+   727→  calledNumber      String           @map("called_number")
+   728→  imsiCalling       String?          @map("imsi_calling")
+   729→  imsiCalled        String?          @map("imsi_called")
+   730→  
+   731→  // Type & Timing
+   732→  recordType        String           @map("record_type") // voice_call, sms, data_session, roaming, ss7_signaling
+   733→  startTime         DateTime         @map("start_time")
+   734→  endTime           DateTime?        @map("end_time")
+   735→  durationSeconds   Int?             @map("duration_seconds")
+   736→  
+   737→  // Network Elements
+   738→  originatingSwitch String?         @map("originating_switch")
+   739→  terminatingSwitch String?         @map("terminating_switch")
+   740→  servingMsc        String?          @map("serving_msc")
+   741→  servingVlr        String?          @map("serving_vlr")
+   742→  
+   743→  // Location
+   744→  callingCellId     String?          @map("calling_cell_id")
+   745→  callingLac        String?          @map("calling_lac")
+   746→  calledCellId      String?          @map("called_cell_id")
+   747→  calledLac         String?          @map("called_lac")
+   748→  
+   749→  // Data Specific
+   750→  dataVolumeUp      BigInt?          @map("data_volume_up") // Bytes
+   751→  dataVolumeDown    BigInt?          @map("data_volume_down") // Bytes
+   752→  apn              String?          // Access Point Name
+   753→  
+   754→  // Roaming
+   755→  isRoaming         Boolean          @default(false) @map("is_roaming")
+   756→  roamingPartner    String?          @map("roaming_partner")
+   757→  visitedCountry   String?          @map("visited_country")
+   758→  visitedNetwork   String?          @map("visited_network")
+   759→  
+   760→  // Charging
+   761→  chargeAmount      Decimal?         @db.Decimal(10, 2) @map("charge_amount")
+   762→  currency          String?          @default("DZD")
+   763→  
+   764→  // Fraud/Security Markers
+   765→  fraudIndicators   String[]         @default([]) @map("fraud_indicators")
+   766→  riskFlagged       Boolean          @default(false) @map("risk_flagged")
+   767→  securityReviewRequired Boolean      @default(false) @map("security_review_required")
+   768→  
+   769→  // Raw CDR Data
+   770→  rawCdr            Json?            @map("raw_cdr") // Complete original CDR as JSON
+   771→  
+   772→  createdAt         DateTime         @default(now())
+   773→
+   774→  @@index([callId])
+   775→  @@index([callingNumber])
+   776→  @@index([calledNumber])
+   777→  @@index([imsiCalling])
+   778→  @@index([startTime])
+   779→  @@index([recordType])
+   780→  @@index([originatingSwitch])
+   781→  @@index([isRoaming])
+   782→  @@index([riskFlagged])
+   783→  @@index([securityReviewRequired])
+   784→  @@map("cdr_records")
+   785→}
+   786→
+   787→model SimSwapEvent {
+   788→  id                String           @id @default(cuid())
+   789→  
+   790→  subscriberId      String           @map("subscriber_id") // MSISDN
+   791→  oldImsi           String           @map("old_imsi")
+   792→  newImsi           String           @map("new_imsi")
+   793→  oldSimSerial      String?          @map("old_sim_serial")
+   794→  newSimSerial      String?          @map("new_sim_serial")
+   795→  
+   796→  swapTime          DateTime         @map("swap_time")
+   797→  channel           String           // store, app, self_service, agent, fraud
+   798→  
+   799→  // Verification
+   800→  verificationMethod String?        @map("verification_method")
+   801→  verifiedIdentity  Boolean          @default(false) @map("verified_identity")
+   802→  
+   803→  // Risk Assessment
+   804→  riskScore         Float            @default(0.0) @map("risk_score")
+   805→  riskFactors       String[]         @default([]) @map("risk_factors")
+   806→  isSuspicious      Boolean          @default(false) @map("is_suspicious")
+   807→  investigationStatus String?        @map("investigation_status") // none, under_review, confirmed_fraud, cleared
+   808→  
+   809→  // Reference
+   810→  incidentId        String?          @map("incident_id") // Linked fraud incident
+   811→  requestId         String?          @map("request_id") // Original request tracking ID
+   812→  
+   813→  // Location
+   814→  channelId         String?          @map("channel_id")
+   815→  terminalId        String?          @map("terminal_id")
+   816→  ipAddress         String?          @map("ip_address")
+   817→  
+   818→  createdAt         DateTime         @default(now())
+   819→
+   820→  @@index([subscriberId])
+   821→  @@index([newImsi])
+   822→  @@index([swapTime])
+   823→  @@index([isSuspicious])
+   824→  @@index([investigationStatus])
+   825→  @@map("sim_swap_events")
+   826→}
+   827→
+   828→// ============================================================
+   829→// DOMAIN 6: PLAYBOOKS & AUTOMATION (SOAR Integration)
+   830→// ============================================================
+   831→
+   832→model Playbook {
+   833→  id                String           @id @default(cuid())
+   834→  name              String           @unique
+   835→  description       String?          @db.Text
+   836→  version           String           @default("1.0")
+   837→  category          String           // phishing, malware, ddos, data_breach, insider, sim_swap_fraud, apt, vulnerability, general
+   838→  severity          String?          // Applicable severity levels
+   839→  
+   840→  // Content
+   841→  triggerConditions Json             @map("trigger_conditions") // When to auto-execute
+   842→  steps             Json             // Ordered array of playbook steps
+   843→  expectedDuration  Int?             @map("expected_duration") // Minutes
+   844→  
+   845→  // Execution Settings
+   846→  isAutoExecutable  Boolean          @default(false) @map("auto_executable")
+   847→  requiresApproval  Boolean          @default(true) @map("requires_approval")
+   848→  approvalThreshold Int?             @map("approval_threshold") // Role level required
+   849→  
+   850→  // Status
+   851→  isActive          Boolean          @default(true) @map("is_active")
+   852→  isDraft           Boolean          @default(true) @map("is_draft")
+   853→  
+   854→  // Metrics
+   855→  totalRuns         Int              @default(0) @map("total_runs")
+   856→  successfulRuns    Int              @default(0) @map("successful_runs")
+   857→  avgRuntime        Int?             @map("avg_runtime") // Seconds
+   858→  
+   859→  createdBy         String           @map("created_by")
+   860→  reviewedBy        String?          @map("reviewed_by")
+   861→  reviewedAt        DateTime?        @map("reviewed_at")
+   862→  
+   863→  createdAt         DateTime         @default(now())
+   864→  updatedAt         DateTime         @updatedAt
+   865→
+   866→  runs              PlaybookRun[]
+   867→  incidents         IncidentPlaybook[]
+   868→
+   869→  @@index([category])
+   870→  @@index([isActive])
+   871→  @@index([isAutoExecutable])
+   872→  @@map("playbooks")
+   873→}
+   874→
+   875→model PlaybookRun {
+   876→  id                String           @id @default(cuid())
+   877→  playbookId        String           @map("playbook_id")
+   878→  incidentId        String?          @map("incident_id") // Optional: can run without incident
+   879→  
+   880→  status            String           @default("running") // running, completed, failed, cancelled, waiting_approval
+   881→  triggeredBy       String           @map("triggered_by") // User ID or 'automatic'
+   882→  triggeredAt       DateTime         @map("triggered_at") @default(now())
+   883→  completedAt       DateTime?        @map("completed_at")
+   884→  
+   885→  // Execution Context
+   886→  inputParameters   Json             @map("input_parameters")
+   887→  currentStep       Int              @default(0) @map("current_step")
+   888→  stepResults       Json?            @map("step_results") // Results from each step
+   889→  
+   890→  // Output
+   891→  output            Json?            // Final output/artifacts
+   892→  error             String?          @db.Text
+   893→  actionsTaken      Json?            @map("actions_taken") // Log of all actions taken
+   894→  
+   895→  // Approval
+   896→  approvalStatus    String?          @map("approval_status") // pending, approved, rejected
+   897→  approvedBy        String?          @map("approved_by")
+   898→  approvedAt        DateTime?        @map("approved_at")
+   899→  rejectionReason   String?          @map("rejection_reason")
+   900→  
+   901→  createdAt         DateTime         @default(now())
+   902→  updatedAt         DateTime         @updatedAt
+   903→
+   904→  playbook          Playbook         @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+   905→
+   906→  @@index([playbookId])
+   907→  @@index([incidentId])
+   908→  @@index([status])
+   909→  @@index([triggeredAt])
+   910→  @@map("playbook_runs")
+   911→}
+   912→
+   913→model IncidentPlaybook {
+   914→  incidentId        String           @map("incident_id")
+   915→  playbookId        String           @map("playbook_id")
+   916→  
+   917→  appliedAt         DateTime         @map("applied_at") @default(now())
+   918→  appliedBy         String           @map("applied_by")
+   919→  status            String           @default("active") // active, completed, superseded
+   920→  
+   921→  incident          Incident         @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+   922→  playbook          Playbook         @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+   923→
+   924→  @@id([incidentId, playbookId])
+   925→  @@map("incident_playbooks")
+   926→}
+   927→
+   928→// ============================================================
+   929→// DOMAIN 7: AUDIT & COMPLIANCE
+   930→// ============================================================
+   931→
+   932→model AuditLog {
+   933→  id                String           @id @default(cuid())
+   934→  
+   935→  // Action
+   936→  action            String           // create, read, update, delete, login, logout, export, execute, approve
+   937→  entityType        String           @map("entity_type") // User, Incident, Event, IOC, etc.
+   938→  entityId          String           @map("entity_id")
+   939→  
+   940→  // Actor
+   941→  userId            String?          @map("user_id")
+   942→  ipAddress         String           @map("ip_address")
+   943→  userAgent         String?          @map("user_agent")
+   944→  sessionId         String?          @map("session_id")
+   945→  
+   946→  // Changes
+   947→  oldValue          Json?            @map("old_value")
+   948→  newValue          Json?            @map("new_value")
+   949→  sensitiveFields   String[]         @default([]) @map("sensitive_fields") // Fields containing PII
+   950→  
+   951→  // Context
+   952→  resourceId        String?          @map("resource_id") // Additional resource context
+   953→  description       String?          @db.Text
+   954→  
+   955→  // Result
+   956→  isSuccess         Boolean          @default(true) @map("is_success")
+   957→  errorMessage      String?          @map("error_message")
+   958→  
+   959→  timestamp         DateTime         @default(now())
+   960→
+   961→  user              User?            @relation(fields: [userId], references: [id])
+   962→
+   963→  @@index([userId])
+   964→  @@index([action])
+   965→  @@index([entityType])
+   966→  @@index([entityId])
+   967→  @@index([timestamp])
+   968→  @@index([ipAddress])
+   969→  @@map("audit_logs")
+   970→}
+   971→
+   972→// ============================================================
+   973→// DOMAIN 8: SYSTEM CONFIGURATION & HEALTH
+   974→// ============================================================
+   975→
+   976→model SystemConfig {
+   977→  id                String           @id @default(cuid())
+   978→  key               String           @unique
+   979→  value             Json
+   980→  type              String           // string, number, boolean, json
+   981→  category          String           // general, security, integration, ui, notification
+   982→  description       String?
+   983→  isSensitive       Boolean          @default(false) @map("is_sensitive") // Mask in UI
+   984→  isReadOnly        Boolean          @default(false) @map("is_read_only") // Cannot change via UI
+   985→  
+   986→  // Environment Override
+   987→  environment       String           @default("*") // *, development, staging, production (* = all)
+   988→  
+   989→  // Versioning
+   990→  version           Int              @default(1)
+   991→  previousValue     Json?            @map("previous_value")
+   992→  
+   993→  updatedBy         String?          @map("updated_by")
+   994→  updatedAt         DateTime         @updatedAt
+   995→  createdAt         DateTime         @default(now())
+   996→
+   997→  @@index([category])
+   998→  @@index([environment])
+   999→  @@map("system_config")
+  1000→}
+  1001→
+  1002→model IntegrationHealth {
+  1003→  id                String           @id @default(cuid())
+  1004→  
+  1005→  // Integration Identification
+  1006→  name              String           @unique // wazuh, elasticsearch, thehive, cortex, misp, kafka, etc.
+  1007→  type              String           // siem, edr, soar, ti, nsm, vuln, messaging, database
+  1008→  category          String           // internal, external, cloud
+  1009→  
+  1010→  // Connection Info (encrypted)
+  1011→  endpoint          String?          // URL/API endpoint (masked in responses)
+  1012→  credentialsId     String?          @map("credentials_id") // Reference to secure credential store
+  1013→  
+  1014→  // Health Status
+  1015→  status            String           @default("unknown") // healthy, degraded, unhealthy, unknown, disabled
+  1016→  lastCheckAt       DateTime         @map("check_at") @default(now())
+  1017→  responseTimeMs    Int?             @map("response_time_ms")
+  1018→  uptimePercent    Float?           @map("uptime_percent")
+  1019→  
+  1020→  // Error Tracking
+  1021→  consecutiveFailures Int            @default(0) @map("consecutive_failures")
+  1022→  lastError         String?          @map("last_error") @db.Text
+  1023→  lastErrorAt       DateTime?        @map("error_at")
+  1024→  
+  1025→  // Statistics
+  1026→  requestsTotal     Int              @default(0) @map("requests_total")
+  1027→  requestsSuccess   Int              @default(0) @map("requests_success")
+  1028→  requestsFailed    Int              @default(0) @map("requests_failed")
+  1029→  dataPointsIngested BigInt          @default(0) @map("data_points_ingested")
+  1030→  
+  1031→  // Configuration
+  1032→  config            Json             // Integration-specific configuration
+  1033→  isEnabled         Boolean          @default(true) @map("is_enabled")
+  1034→  alertThreshold    Int              @default(3) @map("alert_threshold") // Alert after N failures
+  1035→  
+  1036→  // Maintenance
+  1037→  maintenanceWindow Json?            @map("maintenance_window") // {start, end, reason}
+  1038→  version           String?          // Connected tool version
+  1039→  
+  1040→  updatedAt         DateTime         @updatedAt
+  1041→  createdAt         DateTime         @default(now())
+  1042→
+  1043→  @@index([status])
+  1044→  @@index([type])
+  1045→  @@index([isEnabled])
+  1046→  @@map("integration_health")
+  1047→}
+  1048→
+  1049→// ============================================================
+  1050→// DOMAIN 9: NOTIFICATIONS & ALERTING
+  1051→// ============================================================
+  1052→
+  1053→model Notification {
+  1054→  id                String           @id @default(cuid())
+  1055→  
+  1056→  // Recipient
+  1057→  userId            String?          @map("user_id") // Null = system/broadcast
+  1058→  channel           String           // email, sms, webhook, push, slack, teams, pagerduty
+  1059→  recipientAddress  String           @map("recipient_address") // Email, phone, webhook URL
+  1060→  
+  1061→  // Content
+  1062→  subject           String
+  1063→  body              String           @db.Text
+  1064→  bodyHtml          String?          @map("body_html")
+  1065→  templateId        String?          @map("template_id")
+  1066→  templateData      Json?            @map("template_data")
+  1067→  
+  1068→  // Priority & Type
+  1069→  priority          String           @default("normal") // low, normal, high, urgent, critical
+  1070→  category          String           // incident_assigned, incident_updated, system_alert, digest, mention, report_ready
+  1071→  type              String           // transactional, marketing, system, alert
+  1072→  
+  1073→  // Status
+  1074→  status            String           @default("pending") // pending, sent, delivered, failed, cancelled
+  1075→  sendAttempts      Int              @default(0) @map("send_attempts")
+  1076→  maxAttempts       Int              @default(3) @map("max_attempts")
+  1077→  
+  1078→  // Timing
+  1079→  scheduledAt       DateTime?        @map("scheduled_at")
+  1080→  sentAt            DateTime?         @map("sent_at")
+  1081→  deliveredAt       DateTime?        @map("delivered_at")
+  1082→  failedAt          DateTime?        @map("failed_at")
+  1083→  nextRetryAt       DateTime?        @map("next_retry_at")
+  1084→  
+  1085→  // Error Handling
+  1086→  errorCode         String?          @map("error_code")
+  1087→  errorMessage      String?          @map("error_message")
+  1088→  
+  1089→  // Read Receipt
+  1090→  readAt            DateTime?         @map("read_at")
+  1091→  
+  1092→  // Metadata
+  1093→  relatedEntityType String?          @map("related_entity_type")
+  1094→  relatedEntityId   String?          @map("related_entity_id")
+  1095→  metadata          Json?
+  1096→  
+  1097→  createdBy         String?          @map("created_by")
+  1098→  createdAt         DateTime         @default(now())
+  1099→  updatedAt         DateTime         @updatedAt
+  1100→
+  1101→  @@index([userId])
+  1102→  @@index([channel])
+  1103→  @@index([status])
+  1104→  @@index([priority])
+  1105→  @@index([scheduledAt])
+  1106→  @@index([createdAt])
+  1107→  @@map("notifications")
+  1108→}
+  1109→
+  1110→model NotificationPreference {
+  1111→  id                String           @id @default(cuid())
+  1112→  userId            String           @map("user_id")
+  1113→  category          String           // Which notification categories
+  1114→  channel           String           // email, sms, push, webhook, etc.
+  1115→  isEnabled         Boolean          @default(true) @map("is_enabled")
+  1116→  quietHoursEnabled Boolean          @default(false) @map("quiet_hours_enabled")
+  1117→  quietHoursStart   String?          @map("quiet_hours_start") // HH:mm
+  1118→  quietHoursEnd     String?          @map("quiet_hours_end") // HH:mm
+  1119→  
+  1120→  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1121→
+  1122→  @@id([userId, category, channel])
+  1123→  @@map("notification_preferences")
+  1124→}
+  1125→
