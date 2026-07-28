@@ -1,0 +1,218 @@
+# ============================================================
+# Djezzy SOC Platform - Prometheus Alerting Rules (Production)
+# Phase 10: Monitoring & Alerting
+# ============================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: soc-platform-alerts
+  namespace: monitoring
+  labels:
+    team: soc
+    severity: critical
+spec:
+  groups:
+    # ============================================================
+    # CRITICAL ALERTS - Immediate Response Required
+    # ============================================================
+    - name: soc-platform-critical
+      interval: 30s
+      rules:
+        # Application Down
+        - alert: SOCPlatformDown
+          expr: up{job="soc-platform"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: soc
+            pagerduty: pd-soc-critical
+          annotations:
+            summary: "SOC Platform is DOWN"
+            description: "The Djezzy SOC Platform instance {{ $labels.instance }} has been down for more than 1 minute."
+            runbook: "https://wiki.djezzy.dz/soc/runbooks/platform-down"
+            
+        # High Error Rate
+        - alert: SOCPlatformHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{job="soc-platform", status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{job="soc-platform"}[5m]))
+            ) * 100 > 10
+          for: 5m
+          labels:
+            severity: critical
+            team: soc
+          annotations:
+            summary: "High error rate detected (>10%)"
+            description: "Error rate is {{ $value }}% on instance {{ $labels.instance }}"
+            runbook: "https://wiki.djezzy.dz/soc/runbooks/high-error-rate"
+            
+        # Database Connection Failure
+        - alert: SOCDatabaseConnectionFailure
+          expr: soc_db_connections_active == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: soc
+          annotations:
+            summary: "Database connection failure"
+            description: "No active database connections to PostgreSQL"
+            
+        # Memory Critical
+        - alert: SOCMemoryCritical
+          expr: |
+            container_memory_usage_bytes{namespace="soc-production"} 
+            / container_spec_memory_limit_bytes{namespace="soc-production"} > 0.95
+          for: 5m
+          labels:
+            severity: critical
+            team: soc
+          annotations:
+            summary: "Memory usage critically high (>95%)"
+            description: "Container {{ $labels.container }} is using {{ $value | humanize1024 }} of memory"
+
+    # ============================================================
+    # WARNING ALERTS - Attention Required
+    # ============================================================
+    - name: soc-platform-warnings
+      interval: 1m
+      rules:
+        # High Latency
+        - alert: SOCHighLatency
+          expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="soc-platform"}[5m])) > 2
+          for: 10m
+          labels:
+            severity: warning
+            team: soc
+          annotations:
+            summary: "High API latency detected (>2s P95)"
+            description: "P95 latency is {{ $value }}s on endpoint {{ $labels.endpoint }}"
+            
+        # CPU High Usage
+        - alert: SOCCPUHighUsage
+          expr: |
+            sum(rate(container_cpu_usage_seconds_total{namespace="soc-production"}[5m])) 
+            by (pod) / sum(kube_pod_container_resource_limits{namespace="soc-production", unit="core"}) by (pod) > 0.8
+          for: 15m
+          labels:
+            severity: warning
+            team: soc
+          annotations:
+            summary: "High CPU usage (>80%)"
+            description: "Pod {{ $labels.pod }} has sustained high CPU usage"
+            
+        # Disk Space Low
+        - alert: SOCDiskSpaceLow
+          expr: |
+            (node_filesystem_avail_bytes{mountpoint="/var/lib/kubelet/pods"} 
+            / node_filesystem_size_bytes{mountpoint="/var/lib/kubelet/pods"}) * 100 < 20
+          for: 10m
+          labels:
+            severity: warning
+            team: infra
+          annotations:
+            summary: "Disk space running low (<20% available)"
+            description: "Node {{ $labels.node }} has low disk space"
+            
+        # Pod Restarting Frequently
+        - alert: SOCPodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="soc-production"}[1h]) > 5
+          for: 15m
+          labels:
+            severity: warning
+            team: soc
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            description: "Container {{ $labels.container }} has restarted more than 5 times in the last hour"
+            
+        # Certificate Expiring Soon
+        - alert: SOCCertificateExpiringSoon
+          expr: |
+            tls_certificate_expiry_seconds{namespace="soc-production"} < 86400 * 7
+          for: 1h
+          labels:
+            severity: warning
+            team: infra
+          annotations:
+            summary: "TLS certificate expiring soon"
+            description: "Certificate for {{ $labels.subject }} expires in {{ $value | humanizeDuration }}"
+
+    # ============================================================
+    # INFO ALERTS - Informational
+    # ============================================================
+    - name: soc-platform-info
+      interval: 5m
+      rules:
+        # Scale Up Event
+        - alert: SOCScaleUpEvent
+          expr: |
+            kube_horizontalpodautoscaler_status_current_replicas{namespace="soc-production"}
+            >
+            kube_horizontalpodautoscaler_status_desired_replicas{namespace="soc-production"} offset 5m
+          for: 0m
+          labels:
+            severity: info
+            team: soc
+          annotations:
+            summary: "SOC Platform scaling up"
+            description: "HPA {{ $labels.horizontalpodautoscaler }} is scaling from {{ $value }} replicas"
+            
+        # New Deployment Detected
+        - alert: SOCNewDeployment
+          expr: |
+            time() - kube_pod_created{namespace="soc-production"} < 300
+          for: 0m
+          labels:
+            severity: info
+            team: soc
+          annotations:
+            summary: "New deployment detected"
+            description: "New pod {{ $labels.pod }} created at {{ $value | humanizeTimestamp }}"
+---
+# ============================================================
+# SLA Alert Rules
+# ============================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: soc-platform-sla-alerts
+  namespace: monitoring
+  labels:
+    team: soc
+    type: sla
+spec:
+  groups:
+    - name: soc-sla-objectives
+      interval: 1m
+      rules:
+        # Availability SLA Breach Risk
+        - alert: SOCAvailabilitySLARisk
+          expr: |
+            (
+              sum(rate(up{job="soc-platform"}[1h])) 
+              / count(up{job="soc-platform"})
+            ) * 100 < 99.9
+          for: 30m
+          labels:
+            severity: warning
+            sla: availability
+          annotations:
+            summary: "Availability SLA at risk (<99.9%)"
+            description: "Current availability: {{ $value }}%. Target: 99.95%"
+            
+        # Response Time SLA Breach
+        - alert: SOCResponseTimeSLABreach
+          expr: |
+            histogram_quantile(0.95, 
+              sum(rate(http_request_duration_seconds_bucket{job="soc-platform"}[1h])) by (le)
+            ) > 3
+          for: 20m
+          labels:
+            severity: critical
+            sla: response_time
+          annotations:
+            summary: "Response time SLA breached"
+            description: "P95 response time: {{ $value }}s. Target: <2s"

@@ -1,0 +1,131 @@
+# ============================================================
+# Djezzy SOC Platform - Pod Security Standards (Production)
+# Phase 10: Security Hardening
+# ============================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: soc-production
+  labels:
+    name: soc-production
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+---
+# Resource Quotas for SOC Production Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: soc-compute-resources
+  namespace: soc-production
+spec:
+  hard:
+    # Compute Resources
+    requests.cpu: "10"
+    requests.memory: 20Gi
+    limits.cpu: "20"
+    limits.memory: 40Gi
+    
+    # Object Counts
+    pods: "50"
+    services: "20"
+    secrets: "30"
+    configmaps: "30"
+    persistentvolumeclaims: "10"
+---
+# Limit Range for default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: soc-resource-limits
+  namespace: soc-production
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: PersistentVolumeClaim
+      max:
+        storage: 100Gi
+      min:
+        storage: 1Gi
+---
+# Pod Disruption Budget for High Availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: soc-platform-pdb
+  namespace: soc-production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: soc-platform
+---
+# Service Account with minimal permissions
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: soc-platform-sa
+  namespace: soc-production
+automountServiceAccountToken: false
+---
+# RBAC: Role for the application
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: soc-platform-role
+  namespace: soc-production
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list"]
+    resourceNames:
+      - soc-app-config
+      - soc-database-credentials
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: soc-platform-rolebinding
+  namespace: soc-production
+subjects:
+  - kind: ServiceAccount
+    name: soc-platform-sa
+    namespace: soc-production
+roleRef:
+  kind: Role
+  name: soc-platform-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Security Context Constraints (Pod-level)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-context-config
+  namespace: soc-production
+data:
+  security-context.yaml: |
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault

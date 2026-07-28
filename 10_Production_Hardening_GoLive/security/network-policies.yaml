@@ -1,0 +1,136 @@
+# ============================================================
+# Djezzy SOC Platform - Network Policies (Production)
+# Phase 10: Security Hardening
+# ============================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: soc-platform-deny-all-ingress
+  namespace: soc-production
+  labels:
+    app: soc-platform
+    tier: security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: soc-platform-allow-ingress
+  namespace: soc-production
+  labels:
+    app: soc-platform
+    tier: security
+spec:
+  podSelector:
+    matchLabels:
+      app: soc-platform
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow traffic from NGINX Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+          name: http
+    # Allow traffic from monitoring stack
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: soc-platform-egress-policy
+  namespace: soc-production
+  labels:
+    app: soc-platform
+    tier: security
+spec:
+  podSelector:
+    matchLabels:
+      app: soc-platform
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+          name: dns
+        - protocol: TCP
+          port: 53
+          name: dns-tcp
+    
+    # Allow HTTPS outbound (for API calls, threat intel feeds)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+          name: https
+    
+    # Allow database access
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+          name: postgresql
+    
+    # Allow Redis access (for caching/sessions)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+          name: redis
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-isolate-policy
+  namespace: soc-production
+  labels:
+    app: soc-platform
+    tier: security
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only allow connections from the application pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app: soc-platform
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress:
+    # Database only needs to connect to its volume (no egress needed)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 0.0.0.0/0
