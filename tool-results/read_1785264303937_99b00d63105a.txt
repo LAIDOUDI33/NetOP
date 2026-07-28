@@ -1,0 +1,1619 @@
+     1→/**
+     2→ * OpenVAS + DefectDojo Vulnerability Management Integration Client
+     3→ * Phase 11: Enterprise Vulnerability Management
+     4→ * 
+     5→ * Features:
+     6→ * - OpenVAS/GVM (Greenbone Vulnerability Management) scanner integration
+     7→ * - DefectDojo vulnerability tracking and lifecycle management
+     8→ * - Automated vulnerability scanning orchestration
+     9→ * - Risk scoring and prioritization (CVSSv3, EPSS, telco-specific factors)
+    10→ * - Vulnerability SLA tracking and remediation workflow
+    11→ * - Compliance mapping (ARTP, ANSSI, NIST, ISO 27001)
+    12→ * - Telco infrastructure asset management and scanning
+    13→ * 
+    14→ * Scale Targets:
+    15→ * - 100,000+ assets under management
+    16→ * - 1M+ vulnerability findings tracked
+    17→ * - 500+ scans/day capacity
+    18→ * - <4h critical vuln detection-to-remediation SLA
+    19→ * 
+    20→ * @version 1.0.0
+    21→ * @license Proprietary - Djezzy National SOC Platform
+    22→ */
+    23→
+    24→import { EventEmitter } from 'events';
+    25→
+    26→// ============================================================
+    27→// Types & Interfaces
+    28→// ============================================================
+    29→
+    30→export interface OpenvasConfig {
+    31→  apiUrl: string;              // GVM/OpenVAS API URL (usually port 9392)
+    32→  username: string;
+    33→  password: string;
+    34→  insecure?: boolean;          // Allow self-signed certs
+    35→  timeout?: number;            // Request timeout in ms (default: 120000 for long scans)
+    36→}
+    37→
+    38→export interface DefectDojoConfig {
+    39→  apiUrl: string;              // DefectDojo API URL
+    40→  apiKey: string;              // API v2 key
+    41→  enableWebhooks?: boolean;    // Receive webhooks from DefectDojo
+    42→  webhookSecret?: string;
+    43→}
+    44→
+    45→export interface VulnerabilityIntegrationConfig {
+    46→  openvas: OpenvasConfig;
+    47→  defectdojo: DefectDojoConfig;
+    48→  kafka?: {
+    49→    brokers: string[];
+    50→    findingsTopic: string;     // e.g., "vuln.findings"
+    51→    scanResultsTopic: string;  // e.g., "vuln.scan-results"
+    52→  };
+    53→  slaConfig?: {
+    54→    criticalHours: number;     // SLA for critical vulnerabilities (default: 4)
+    55→    highHours: number;         // SLA for high (default: 24)
+    56→    mediumDays: number;        // SLA for medium (default: 7)
+    57→    lowDays: number;           // SLA for low (default: 30);
+    58→  };
+    59→  autoImport?: boolean;        // Auto-import OpenVAS results to DefectDojo
+    60→}
+    61→
+    62→// OpenVAS Models
+    63→export interface OpenvasTask {
+    64→  taskId: string;
+    65→  name: string;
+    66→  comment?: string;
+    67→  description?: string;
+    68→  status: 'New' | 'Requested' | 'Running' | 'Stop Requested' | 'Stopped' | 'Done' | 'Interrupted';
+    69→  targetId: string;
+    70→  configId: string;            // Scan configuration ID
+    71→  scannerId: string;
+    72→  scheduleId?: string;
+    73→  reportCount: number;
+    74→  lastReportId?: string;
+    75→  createdAt: string;
+    76→  modifiedAt: string;
+    77→  // Telco context
+    78→  owner?: string;
+    79→  department?: string;
+    80→  priority?: 'critical' | 'high' | 'medium' | 'low';
+    81→  linkedIncidentId?: string;
+    82→}
+    83→
+    84→export interface OpenvasTarget {
+    85→  targetId: string;
+    86→  name: string;
+    87→  hosts: string[];             // IP ranges, hostnames, or CIDR blocks
+    88→  comment?: string;
+    89→  excludeHosts?: string[];     // Excluded IPs/ranges
+    90→  credentials?: Array<{
+    91→    service: string;           // ssh, smb, snmp, esxi, etc.
+    92→    port?: number;
+    93→    credentialId: string;
+    94→  }>;
+    95→  portListId?: string;         // Custom port list
+    96→  aliveTest?: string;          // How to determine if hosts are alive
+    97→  // Telco categorization
+    98→  assetType?: 'network_segment' | 'server_farm' | 'wireless_infrastructure' | 'core_network' | 'edge_device' | 'application';
+    99→  environment?: 'production' | 'staging' | 'development' | 'dmz';
+   100→  riskLevel?: 'critical' | 'high' | 'medium' | 'low';
+   101→}
+   102→
+   103→export interface OpenvasReport {
+   104→  reportId: string;
+   105→  taskId: string;
+   106→  scanStart: string;
+   107→  scanEnd: string;
+   108→  status: string;
+   109→  severityCounts: {
+   110→    high: number;
+   111→    medium: number;
+   112→    low: number;
+   113→    log: number;
+   114→    false_positive: number;
+   115→    none: number;
+   116→  };
+   117→  resultsCount: number;
+   118→  // Results summary
+   119→  topVulnerabilities: Array<{
+   120→    vulnId: string;
+   121→    name: string;
+   122→    severity: string;
+   123→    count: number;
+   124→  }>;
+   125→}
+   126→
+   127→export interface OpenvasResult {
+   128→  resultId: string;
+   129→  taskId: string;
+   130→  host: string;
+   131→  port: number;
+   132→  nvt: {                     // Network Vulnerability Test
+   133→    oid: string;
+   134→    name: string;
+   135→    family: string;
+   136→    cvssBase: number;
+   137→    cve?: string[];
+   138→    cert?: string[];          // CERT advisories
+   139→    tags: string;             // Additional metadata
+   140→  };
+   141→  severity: string;           // High, Medium, Low, Log, False Positive, None
+   142→  threat: string;             // High, Medium, Low, Log, None
+   143→  description: string;
+   144→}
+   145→
+   146→// DefectDojo Models
+   147→export interface DojoProduct {
+   148→  id: number;
+   149→  name: string;
+   150→  description?: string;
+   151→  productType: number;        // Product type ID
+   152→  prodType: number;           // Product type ID (alias)
+   153→  descriptionPlain?: string;
+   154→  // Metadata
+   155→  enabled: boolean;
+   156→  createdAt: string;
+   157→  updatedAt: string;
+   158→  // Telco fields
+   159→  businessUnit?: string;
+   160→  owner?: string;
+   161→  slackChannel?: string;
+   162→  jiraProjectKey?: string;
+   163→}
+   164→
+   165→export interface DojoEngagement {
+   166→  id: number;
+   167→  name: string;
+   168→  productId: number;
+   169→  lead: number;               // User ID of engagement lead
+   170→  status: 'Completed' | 'In Progress' | 'Not Started' | 'Blocked' | 'Cancelled';
+   171→  targetStart: string;
+   172→  targetEnd: string;
+   173→  created: string;
+   174→  updated: string;
+   175→  version?: string;
+   176→  branchTag?: string;
+   177→  buildId?: string;
+   178→  commitHash?: string;
+   179→  engType: 'CI/CD' | 'Interactive' | 'Raid';
+   180→  preset: string;             // Default preset used
+   181→  riskAcceptance?: boolean;
+   182→  penTest?: string;           // Pen test type if applicable
+   183→  environment: string;        // Production, Development, etc.
+   184→  buildServer?: string;
+   185→  sourceCodeManagementUri?: string;
+   186→  branchTag?: string;
+   187→  // DefectDojo specific
+   188→  deduplicationOnEngagement: boolean;
+   189→  sequentialEngagementsEnabled: boolean;
+   190→  requestor?: any;
+   191→}
+   192→
+   193→export interface DojoFinding {
+   194→  id: number;
+   195→  title: string;
+   196→  severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
+   197→  description: string;
+   198→  mitigation: string;
+   199→  impact: string;
+   200→  stepsToReproduce?: string;
+   201→  severityJustification?: string;
+   202→  // Vulnerability identification
+   203→  cve?: string;
+   204→  vulnIdFromTool?: string;    // Original tool identifier
+   205→  // Status & Lifecycle
+   206→  active: boolean;
+   207→  verified: boolean;
+   208→  falsePositive: boolean;
+   209→  duplicate: boolean;
+   210→  outOfScope: boolean;
+   211→  riskAccepted: boolean;
+   212→  // Dates
+   213→  date: string;               // Date found
+   214→  createdAt: string;
+   215→  updatedAt: string;
+   216→  // References
+   217→  references?: string;
+   218→  endpoints?: DojoEndpoint[];
+   219→  // Metrics
+   220→  numericalSeverity?: string; // CVSS or DREAD score
+   221→  // SLA Tracking
+   222→  slaDeadline?: string;
+   223→  slaExceeded?: boolean;
+   224→  // Jira/External linkage
+   225→  jiraIssue?: string;
+   226→  // DefectDojo metadata
+   227→  hash_code?: number;
+   228→  template: Record<string, any>;
+   229→  push_to_jira: DojoJiraConfig;
+   230→  foundBy: DojoToolConfig;
+   231→  testers?: any[];
+   232→  tags?: string[];
+   233→  // Telco enrichment
+   234→  businessImpact?: string;
+   235→  affectedSubscribers?: number; // For telecom-specific assets
+   236→  complianceMapping?: {
+   237→    artpControls?: string[];
+   238→    anssiControls?: string[];
+   239→    iso27001Controls?: string[];
+   240→    nistControls?: string[];
+   241→  };
+   242→}
+   243→
+   244→export interface DojoEndpoint {
+   245→  protocol: string;
+   246→  host: string;
+   247→  path?: string;
+   248→  query?: string;
+   249→  fragment?: string;
+   250→  product: number;
+   251→  endpoint_status: number;
+   252→  fqdn?: string;
+   253→  string_representation: string;
+   254→}
+   255→
+   256→export interface DojoToolConfig {
+   257→  id: number;
+   258→  name: string;
+   259→  toolType: string;           // SAST, DAST, SCANNER, etc.
+   260→  description?: string;
+   261→  url?: string;
+   262→  configurationPath?: string;
+   263→  date?: string;
+   264→  version?: string;
+   265→}
+   266→
+   267→export interface DojoJiraConfig {
+   268→  project: string;
+   269→  issue_type: string;
+   270→  push_all_issues: boolean;
+   271→  epss_score?: number;
+   272→  new_jira_issue: boolean;
+   273→  jira_execution: any;
+   274→  push_notes: boolean;
+   275→  component?: string;
+   276→  labels?: string[];
+   277→  epic?: string;
+   278→  fix_in_days?: null;
+   279→  jira_url?: string;
+   280→  jira_change_status?: boolean;
+   281→  camunda_case_id?: null;
+   282→  assignee?: string;
+   283→  reporter?: string;
+   284→  priority?: string;
+   285→  severity_mapping?: any;
+   286→  platform?: string;
+   287→  additional_comments?: string;
+   288→  sync_status: boolean;
+   289→  create_env_per_issue?: boolean;
+   290→  env_names?: string[];
+   291→  min_severity?: string;
+   292→  custom_fields?: any;
+   293→  additional_tags?: string[];
+   294→  push_all_findings: boolean;
+   295→  close_jira_issue: boolean;
+   296→  edit_jira_issue: boolean;
+   297→  use_vulnerability_ids_for_jira?: boolean;
+   298→  group_by_component?: boolean;
+   299→  group_by_engagement?: boolean;
+   300→  group_by_finding_group?: boolean;
+   301→  group_by_endpoint?: boolean;
+   302→  group_by_test?: boolean;
+   303→  group_by_tags?: boolean;
+   304→  group_by_severity?: boolean;
+   305→  group_by_title?: boolean;
+   306→  group_by_hash_code?: boolean;
+   307→  group_by_system_settings?: boolean;
+   308→  group_by_tool_type?: boolean;
+   309→  group_by_tool_config?: boolean;
+   310→  group_by_date?: boolean;
+   311→  group_by_user?: boolean;
+   312→  group_by_product?: boolean;
+   313→  group_by_engagement_type?: boolean;
+   314→  group_by_environment?: boolean;
+   315→  group_by_test_type?: boolean;
+   316→  group_by_risk_acceptance?: boolean;
+   317→  group_by_active?: boolean;
+   318→  group_by_verified?: boolean;
+   319→  group_by_false_positive?: boolean;
+   320→  group_by_out_of_scope?: boolean;
+   321→  group_by_duplicate?: boolean;
+   322→  group_by_risk_accepted?: boolean;
+   323→  group_by_jira_issue?: boolean;
+   324→  group_by_push_to_jira?: boolean;
+   325→  group_by_created?: boolean;
+   326→  group_by_updated?: boolean;
+   327→  group_by_found_by?: boolean;
+   328→  group_by_sla_deadline_exceeded?: boolean;
+   329→  group_by_severity_justification?: boolean;
+   330→  group_by_numerical_severity?: boolean;
+   331→  group_by_description?: boolean;
+   332→  group_by_mitigation?: boolean;
+   333→  group_by_impact?: boolean;
+   334→  group_by_steps_to_reproduce?: boolean;
+   335→  group_by_references?: boolean;
+   336→  group_by_business_impact?: boolean;
+   337→  group_by_affected_subscribers?: boolean;
+   338→  group_by_compliance_mapping?: boolean;
+   339→}
+   340→
+   341→// Unified Vulnerability Model
+   342→export interface UnifiedVulnerability {
+   343→  vulnId: string;
+   344→  source: 'openvas' | 'defectdojo' | 'imported';
+   345→  title: string;
+   346→  description: string;
+   347→  severity: 'Critical' | 'High' | 'Medium' | 'Low' | 'Info';
+   348→  cvssScore: number;           // CVSSv3 base score (0-10)
+   349→  cvssVector?: string;         // CVSSv3 vector string
+   350→  cve?: string;                // CVE identifier
+   351→  cwe?: string;                // CWE identifier
+   352→  // Asset information
+   353→  host: string;
+   354→  port?: number;
+   355→  protocol?: string;
+   356→  serviceName?: string;
+   357→  // Classification
+   358→  category: string;            // e.g., 'Authentication', 'Injection', 'Crypto'
+   359→  solution?: string;
+   360→  references?: string[];
+   361→  // Status & Lifecycle
+   362→  status: 'open' | 'in_progress' | 'fixed' | 'risk_accepted' | 'false_positive' | 'duplicate';
+   363→  discoveredAt: string;
+   364→  lastSeenAt: string;
+   365→  fixedAt?: string;
+   366→  // SLA & Priority
+   367→  slaDeadline?: string;
+   368→  slaExceeded?: boolean;
+   369→  daysOpen: number;
+   370→  // Enrichment
+   371→  epssScore?: number;          // Exploit Prediction Scoring System (0-1)
+   372→  kev?: boolean;               // Known Exploited Vulnerabilities (CISA KEV)
+   373→  telcoRiskScore?: number;     // Custom telco risk score (0-100)
+   374→  affectedAssets?: number;     // Number of assets with this vuln
+   375→  // Linkage
+   376→  findingId?: number;          // DefectDojo finding ID
+   377→  taskId?: string;             // OpenVAS task ID
+   378→  incidentId?: string;         // SOC incident if exploited
+   379→  jiraTicket?: string;         // Jira ticket if created
+   380→  // Compliance
+   381→  complianceMapping?: {
+   382→    artpControls?: string[];
+   383→    anssiControls?: string[];
+   384→    iso27001Controls?: string[];
+   385→  };
+   386→}
+   387→
+   388→// Vulnerability Statistics
+   389→export interface VulnerabilityStatistics {
+   390→  summary: {
+   391→    totalFindings: number;
+   392→    critical: number;
+   393→    high: number;
+   394→    medium: number;
+   395→    low: number;
+   396→    info: number;
+   397→    falsePositives: number;
+   398→    riskAccepted: number;
+   399→  };
+   400→  trends: {
+   401→    newThisWeek: number;
+   402→    resolvedThisWeek: number;
+   403→    avgTimeToRemedyHours: number;
+   404→    slaBreachRate: number;      // Percentage of SLAs breached
+   405→  };
+   406→  byCategory: Record<string, number>;
+   407→  byAsset: Array<{ host: string; vulnCount: number; criticalCount: number }>;
+   408→  topCves: Array<{ cve: string; occurrences: number; avgCvss: number }>;
+   409→  complianceStatus: {
+   410→    artpCoverage: number;       // % of ARTP controls covered
+   411→    anssiCoverage: number;      // % of ANSSI controls covered
+   412→    overallComplianceScore: number; // 0-100
+   413→  };
+   414→}
+   415→
+   416→// Scan Configuration
+   417→export interface ScanConfiguration {
+   418→  name: string;
+   419→  targets: string[];            // IP ranges/hostnames
+   420→  scanProfile: 'full' | 'fast' | 'compliance' | 'custom';
+   421→  schedule?: {
+   422→    frequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+   423→    cronExpression?: string;
+   424→    timezone?: string;
+   425→  };
+   426→  exclusions?: string[];       // IPs/hosts to exclude
+   427→  credentials?: Array<{
+   428→    type: 'ssh' | 'smb' | 'snmp' | 'esxi' | 'cisco';
+   429→    username: string;
+   430→    password?: string;
+   431→    keyFile?: string;
+   432→    port?: number;
+   433→    privilegeEscalation?: boolean;
+   434→  }>;
+   435→  portRange?: string;          // e.g., "1-65535", "22,80,443"
+   436→  maxConcurrentScans?: number;
+   437→  notifyOnComplete?: boolean;
+   438→  importToDefectDojo?: boolean;
+   439→  engagementName?: string;     // Create/link to this engagement
+   440→}
+   441→
+   442→// ============================================================
+   443→// Vulnerability Client Class
+   444→// ============================================================
+   445→
+   446→export class OpenvasDefectDojoClient extends EventEmitter {
+   447→  private config: VulnerabilityIntegrationConfig;
+   448→  private openvasToken?: string;
+   449→  private isConnected: boolean = false;
+   450→  
+   451→  // Statistics cache
+   452→  public stats: VulnerabilityStatistics = this.initializeStats();
+   453→
+   454→  constructor(config: VulnerabilityIntegrationConfig) {
+   455→    super();
+   456→    this.config = config;
+   457→
+   458→    // Set up internal event handlers
+   459→    this.on('error', (err) => {
+   460→      console.error('[VULN] Error:', err.message);
+   461→    });
+   462→
+   463→    this.on('finding', (vuln: UnifiedVulnerability) => {
+   464→      console.log(`[VULN] Finding (${vuln.severity}): ${vuln.title} on ${vuln.host}`);
+   465→      
+   466→      // Check SLA breach
+   467→      if (vuln.slaExceeded) {
+   468→        this.emit('slaBreach', vuln);
+   469→      }
+   470→
+   471→      // Auto-alert on critical
+   472→      if (vuln.severity === 'Critical') {
+   473→        this.emit('criticalFinding', vuln);
+   474→      }
+   475→    });
+   476→  }
+   477→
+   478→  // ============================================================
+   479→  // Connection Management
+   480→  // ============================================================
+   481→
+   482→  /**
+   483→   * Initialize connections to both OpenVAS and DefectDojo
+   484→   */
+   485→  async connect(): Promise<void> {
+   486→    try {
+   487→      console.log('[VULN] Connecting to OpenVAS at', this.config.openvas.apiUrl);
+   488→
+   489→      // Authenticate with OpenVAS/GVM
+   490→      const authResponse = await this.fetchOpenvas('/auth', {
+   491→        method: 'POST',
+   492→        body: JSON.stringify({
+   493→          username: this.config.openvas.username,
+   494→          password: this.config.openvas.password,
+   495→        }),
+   496→      });
+   497→
+   498→      if (!authResponse.ok) {
+   499→        throw new Error(`OpenVAS authentication failed: ${authResponse.status}`);
+   500→      }
+   501→
+   502→      const authData = await authResponse.json();
+   503→      this.openvasToken = authData.token || authData.access_token;
+   504→      console.log('[VULN] OpenVAS authentication successful');
+   505→
+   506→      // Test DefectDojo connection
+   507→      console.log('[VULN] Testing DefectDojo connection...');
+   508→      const dojoHealth = await this.fetchDojo('/api/v2/products/?limit=1');
+   509→      
+   510→      if (dojoHealth.ok) {
+   511→        console.log('[VULN] DefectDojo connected successfully');
+   512→      } else if (dojoHealth.status === 403) {
+   513→        console.warn('[VULN] DefectDojo auth issue, check API key');
+   514→      } else {
+   515→        console.warn('[VULN] DefectDojo returned:', dojoHealth.status);
+   516→      }
+   517→
+   518→      this.isConnected = true;
+   519→
+   520→      // Refresh initial statistics
+   521→      await this.refreshStats();
+   522→
+   523→      this.emit('connected', {
+   524→        openvas: true,
+   525→        defectdojo: dojoHealth.ok,
+   526→        timestamp: new Date(),
+   527→      });
+   528→
+   529→    } catch (error) {
+   530→      this.isConnected = false;
+   531→      this.emit('error', error);
+   532→      throw error;
+   533→    }
+   534→  }
+   535→
+   536→  /**
+   537→   * Disconnect from all services
+   538→   */
+   539→  async disconnect(): Promise<void> {
+   540→    // Logout from OpenVAS to invalidate token
+   541→    if (this.openvasToken) {
+   542→      try {
+   543→        await this.fetchOpenvas('/logout', { method: 'POST' });
+   544→      } catch {
+   545→        // Ignore logout errors
+   546→      }
+   547→      this.openvasToken = undefined;
+   548→    }
+   549→
+   550→    this.isConnected = false;
+   551→    this.emit('disconnected', { timestamp: new Date() });
+   552→    console.log('[VULN] Disconnected from all vulnerability management services');
+   553→  }
+   554→
+   555→  get connectionStatus(): boolean {
+   556→    return this.isConnected;
+   557→  }
+   558→
+   559→  // ============================================================
+   560→  // OpenVAS Task Management
+   561→  // ============================================================
+   562→
+   563→  /**
+   564→   * Create a new vulnerability scan task
+   565→   */
+   566→  async createScan(config: ScanConfiguration): Promise<OpenvasTask> {
+   567→    try {
+   568→      // Step 1: Create target
+   569→      const targetPayload: any = {
+   570→        name: `Target-${config.name}-${Date.now()}`,
+   571→        hosts: config.targets.join(', '),
+   572→        ...(config.exclusions && config.exclusions.length > 0 && {
+   573→          exclude_hosts: config.exclusions.join(', '),
+   574→        }),
+   575→        ...(config.portRange && { port_list_id: await this.createPortList(config.name, config.portRange) }),
+   576→      };
+   577→
+   578→      const targetResponse = await this.fetchOpenvas('/targets', {
+   579→        method: 'POST',
+   580→        body: JSON.stringify(targetPayload),
+   581→      }, true);
+   582→
+   583→      if (!targetResponse.ok) {
+   584→        throw new Error(`Failed to create target: ${targetResponse.status}`);
+   585→      }
+   586→
+   587→      const targetData = await targetResponse.json();
+   588→      const targetId = targetData.id || targetData.target_id;
+   589→
+   590→      // Step 2: Get appropriate scan config based on profile
+   591→      const scanConfigs = await this.getScanConfigs();
+   592→      const selectedConfig = scanConfigs.find(c => 
+   593→        c.name.toLowerCase().includes(config.scanProfile)
+   594→      ) || scanConfigs[0];
+   595→
+   596→      // Step 3: Create task
+   597→      const taskPayload = {
+   598→        name: config.name,
+   599→        target: { id: targetId },
+   600→        config: { id: selectedConfig?.id },
+   601→        scanner: { id: await this.getDefaultScanner() },
+   602→        ...(config.schedule && {
+   603→          schedule: await this.createSchedule(config.schedule),
+   604→        }),
+   605→      };
+   606→
+   607→      const taskResponse = await this.fetchOpenvas('/tasks', {
+   608→        method: 'POST',
+   609→        body: JSON.stringify(taskPayload),
+   610→      }, true);
+   611→
+   612→      if (!taskResponse.ok) {
+   613→        throw new Error(`Failed to create task: ${taskResponse.status}`);
+   614→      }
+   615→
+   616→      const taskData = await taskResponse.json();
+   617→      const task: OpenvasTask = {
+   618→        taskId: taskData.task?.id || taskData.id,
+   619→        name: config.name,
+   620→        status: 'New',
+   621→        targetId,
+   622→        configId: selectedConfig?.id,
+   623→        scannerId: taskData.task?.scanner?.id,
+   624→        reportCount: 0,
+   625→        createdAt: new Date().toISOString(),
+   626→        modifiedAt: new Date().toISOString(),
+   627→      };
+   628→
+   629→      this.emit('scanCreated', task);
+   630→      console.log(`[VULN] Scan task created: ${config.name} (${task.taskId})`);
+   631→
+   632→      return task;
+   633→
+   634→    } catch (error) {
+   635→      this.emit('error', error);
+   636→      throw error;
+   637→    }
+   638→  }
+   639→
+   640→  /**
+   641→   * Start a scan task
+   642→   */
+   643→  async startScan(taskId: string): Promise<{ success: boolean; message: string }> {
+   644→    try {
+   645→      const response = await this.fetchOpenvas(`/tasks/${taskId}/start`, {
+   646→        method: 'POST',
+   647→      }, true);
+   648→
+   649→      if (!response.ok) {
+   650→        throw new Error(`Failed to start scan: ${response.status}`);
+   651→      }
+   652→
+   653→      const data = await response.json();
+   654→      
+   655→      this.emit('scanStarted', { taskId, reportId: data.report_id });
+   656→      return { success: true, message: 'Scan started successfully' };
+   657→
+   658→    } catch (error) {
+   659→      this.emit('error', error);
+   660→      return { success: false, message: error.message };
+   661→    }
+   662→  }
+   663→
+   664→  /**
+   665→   * Stop a running scan
+   666→   */
+   667→  async stopScan(taskId: string): Promise<{ success: boolean; message: string }> {
+   668→    try {
+   669→      const response = await this.fetchOpenvas(`/tasks/${taskId}/stop`, {
+   670→        method: 'POST',
+   671→      }, true);
+   672→
+   673→      if (!response.ok) {
+   674→        throw new Error(`Failed to stop scan: ${response.status}`);
+   675→      }
+   676→
+   677→      this.emit('scanStopped', taskId);
+   678→      return { success: true, message: 'Scan stop requested' };
+   679→
+   680→    } catch (error) {
+   681→      this.emit('error', error);
+   682→      return { success: false, message: error.message };
+   683→    }
+   684→  }
+   685→
+   686→  /**
+   687→   * Get all tasks with optional filtering
+   688→   */
+   689→  async getTasks(params: {
+   690→    status?: OpenvasTask['status'];
+   691→    limit?: number;
+   692→    filter?: string;
+   693→  } = {}): Promise<OpenvasTask[]> {
+   694→    const { status, limit = 100, filter } = params;
+   695→
+   696→    try {
+   697→      let url = `/tasks?details=1&limit=${limit}`;
+   698→      if (filter) url += `&filter=${encodeURIComponent(filter)}`;
+   699→
+   700→      const response = await this.fetchOpenvas(url);
+   701→
+   702→      if (!response.ok) {
+   703→        throw new Error(`Failed to get tasks: ${response.status}`);
+   704→      }
+   705→
+   706→      const data = await response.json();
+   707→      let tasks: OpenvasTask[] = (data.tasks || []).map((t: any) => ({
+   708→        taskId: t.task?.id || t.id,
+   709→        name: t.task?.name || t.name,
+   710→        comment: t.task?.comment || t.comment,
+   711→        description: t.task?.description || t.description,
+   712→        status: t.task?.status || t.status,
+   713→        targetId: t.target?.id || t.target_id,
+   714→        configId: t.config?.id || t.config_id,
+   715→        scannerId: t.scanner?.id || t.scanner_id,
+   716→        reportCount: t.task?.report_count || t.report_count || 0,
+   717→        lastReportId: t.task?.last_report?.report?.id || t.last_report_id,
+   718→        createdAt: t.task?.creation_time || t.created_at,
+   719→        modifiedAt: t.task?.modification_time || t.modified_at,
+   720→      }));
+   721→
+   722→      // Filter by status if specified
+   723→      if (status) {
+   724→        tasks = tasks.filter(t => t.status === status);
+   725→      }
+   726→
+   727→      return tasks;
+   728→
+   729→    } catch (error) {
+   730→      this.emit('error', error);
+   731→      return [];
+   732→    }
+   733→  }
+   734→
+   735→  /**
+   736→   * Get scan results for a specific task
+   737→   */
+   738→  async getScanResults(taskId: string): Promise<OpenvasResult[]> {
+   739→    try {
+   740→      // Get latest report for the task
+   741→      const taskResponse = await this.fetchOpenvas(`/tasks/${taskId}`);
+   742→      if (!taskResponse.ok) {
+   743→        throw new Error(`Failed to get task: ${taskResponse.status}`);
+   744→      }
+   745→
+   746→      const taskData = await taskResponse.json();
+   747→      const lastReportId = taskData.task?.last_report?.report?.id;
+   748→
+   749→      if (!lastReportId) {
+   750→        return []; // No reports yet
+   751→      }
+   752→
+   753→      // Get results from the report
+   754→      const resultsResponse = await this.fetchOpenvas(
+   755→        `/reports/${lastReportId}/results?details=1`
+   756→      );
+   757→
+   758→      if (!resultsResponse.ok) {
+   759→        throw new Error(`Failed to get results: ${resultsResponse.status}`);
+   760→      }
+   761→
+   762→      const resultsData = await resultsResponse.results;
+   763→      return (resultsData.result || []).map((r: any) => ({
+   764→        resultId: r.result?.id || r.id,
+   765→        taskId,
+   766→        host: r.host?.hostname || r.host,
+   767→        port: r.port || r.host?.port,
+   768→        nvt: {
+   769→          oid: r.nvt?.oid || r.nvt_oid,
+   770→          name: r.nvt?.name || r.nvt_name,
+   771→          family: r.nvt?.family || r.nvt_family,
+   772→          cvssBase: r.nvt?.cvss_base || r.cvss_base,
+   773→          cve: r.nvt?.cve || r.cve,
+   774→          cert: r.nvt?.cert || r.cert,
+   775→          tags: r.nvt?.tags || r.tags,
+   776→        },
+   777→        severity: r.severity || r.original_severity,
+   778→        threat: r.threat,
+   779→        description: r.description,
+   780→      }));
+   781→
+   782→    } catch (error) {
+   783→      this.emit('error', error);
+   784→      return [];
+   785→    }
+   786→  }
+   787→
+   788→  // ============================================================
+   789→  // DefectDojo Operations
+   790→  // ============================================================
+   791→
+   792→  /**
+   793→   * Get all products (applications/assets being tracked)
+   794→   */
+   795→  async getProducts(params: {
+   796→    limit?: number;
+   797→    offset?: number;
+   798→    search?: string;
+   799→  } = {}): Promise<DojoProduct[]> {
+   800→    const { limit = 100, offset = 0, search } = params;
+   801→
+   802→    try {
+   803→      let url = `/api/v2/products/?limit=${limit}&offset=${offset}&order=id`;
+   804→      if (search) url += `&name=${encodeURIComponent(search)}`;
+   805→
+   806→      const response = await this.fetchDojo(url);
+   807→
+   808→      if (!response.ok) {
+   809→        throw new Error(`Failed to get products: ${response.status}`);
+   810→      }
+   811→
+   812→      const data = await response.json();
+   813→      return data.results || data.products || [];
+   814→
+   815→    } catch (error) {
+   816→      this.emit('error', error);
+   817→      return [];
+   818→    }
+   819→  }
+   820→
+   821→  /**
+   822→   * Create a new product in DefectDojo
+   823→   */
+   824→  async createProduct(product: Omit<DojoProduct, 'id' | 'createdAt' | 'updatedAt'>): Promise<DojoProduct> {
+   825→    try {
+   826→      const response = await this.fetchDojo('/api/v2/products/', {
+   827→        method: 'POST',
+   828→        body: JSON.stringify(product),
+   829→      });
+   830→
+   831→      if (!response.ok) {
+   832→        const errorText = await response.text();
+   833→        throw new Error(`Failed to create product: ${response.status} - ${errorText}`);
+   834→      }
+   835→
+   836→      const created = await response.json();
+   837→      this.emit('productCreated', created);
+   838→      return created;
+   839→
+   840→    } catch (error) {
+   841→      this.emit('error', error);
+   842→      throw error;
+   843→    }
+   844→  }
+   845→
+   846→  /**
+   847→   * Get engagements for a product
+   848→   */
+   849→  async getEngagements(productId: number): Promise<DojoEngagement[]> {
+   850→    try {
+   851→      const response = await this.fetchDojo(
+   852→        `/api/v2/engagements/?product=${productId}&order=-id`
+   853→      );
+   854→
+   855→      if (!response.ok) {
+   856→        throw new Error(`Failed to get engagements: ${response.status}`);
+   857→      }
+   858→
+   859→      const data = await response.json();
+   860→      return data.results || [];
+   861→
+   862→    } catch (error) {
+   863→      this.emit('error', error);
+   864→      return [];
+   865→    }
+   866→  }
+   867→
+   868→  /**
+   869→   * Import OpenVAS scan results into DefectDojo
+   870→   */
+   871→  async importScanResults(params: {
+   872→    productId: number;
+   873→    engagementId?: number;
+   874→    taskId: string;
+   875→    scanType?: 'GVM Scan'; // DefectDojo scanner type name
+   876→    closeOldFindings?: boolean;
+   877→    pushToJira?: boolean;
+   878→    createEngagementIfMissing?: boolean;
+   879→  }): Promise<{
+   880→    success: boolean;
+   881→    testId?: number;
+   882→    findingsImported?: number;
+   883→    message: string;
+   884→  }> {
+   885→    const {
+   886→      productId,
+   887→      engagementId,
+   888→      taskId,
+   889→      scanType = 'GVM Scan',
+   890→      closeOldFindings = true,
+   891→      pushToJira = false,
+   892→      createEngagementIfMissing = true,
+   893→    } = params;
+   894→
+   895→    try {
+   896→      // Step 1: Get the scan report from OpenVAS
+   897→      const reportData = await this.getScanReportXml(taskId);
+   898→      
+   899→      if (!reportData) {
+   900→        throw new Error('No report available for task');
+   901→      }
+   902→
+   903→      // Step 2: Ensure we have an engagement
+   904→      let finalEngagementId = engagementId;
+   905→      if (!finalEngagementId && createEngagementIfMissing) {
+   906→        const engagement = await this.createEngagement({
+   907→          name: `Auto-Scan-${new Date().toISOString().split('T')[0]}`,
+   908→          productId,
+   909→          engType: 'CI/CD',
+   910→          targetStart: new Date().toISOString(),
+   911→          targetEnd: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+   912→          status: 'Completed',
+   913→          environment: 'Production',
+   914→        });
+   915→        finalEngagementId = engagement.id;
+   916→      }
+   917→
+   918→      if (!finalEngagementId) {
+   919→        throw new Error('No engagement available for import');
+   920→      }
+   921→
+   922→      // Step 3: Import via DefectDojo API
+   923→      const formData = new FormData();
+   924→      formData.append('file', new Blob([reportData], { type: 'application/xml' }), 'report.xml');
+   925→      formData.append('scan_type', scanType);
+   926→      formData.append('engagement', finalEngagementId.toString());
+   927→      formData.append('close_old_findings', closeOldFindings.toString());
+   928→      formData.append('push_to_jira', pushToJira.toString());
+   929→      formData.append('verified', 'true');
+   930→      formData.append('skip_duplicates', 'true');
+   931→      formData.append('active', 'true');
+   932→
+   933→      const response = await this.fetchDojo('/api/v2/import-scan/', {
+   934→        method: 'POST',
+   935→        body: formData,
+   936→      }, true); // Don't set Content-Type for FormData
+   937→
+   938→      if (!response.ok) {
+   939→        const errorText = await response.text();
+   940→        throw new Error(`Import failed: ${response.status} - ${errorText}`);
+   941→      }
+   942→
+   943→      const importResult = await response.json();
+   944→
+   945→      this.emit('importComplete', {
+   946→        taskId,
+   947→        productId,
+   948→        findingsImported: importResult.count || importResult.new_findings || 0,
+   949→      });
+   950→
+   951→      return {
+   952→        success: true,
+   953→        testId: importResult.test_id,
+   954→        findingsImported: importResult.count || importResult.new_findings || 0,
+   955→        message: `Successfully imported ${importResult.count || 0} findings`,
+   956→      };
+   957→
+   958→    } catch (error) {
+   959→      this.emit('error', error);
+   960→      return { success: false, message: error.message };
+   961→    }
+   962→  }
+   963→
+   964→  /**
+   965→   * Get findings with filtering and pagination
+   966→   */
+   967→  async getFindings(params: {
+   968→    productId?: number;
+   969→    engagementId?: number;
+   970→    testId?: number;
+   971→    severity?: DojoFinding['severity'][];
+   972→    status?: ('active' | 'false_p' | 'risk_accepted')[];
+   973→    cve?: string;
+   974→    limit?: number;
+   975→    offset?: number;
+   976→    search?: string;
+   977→  } = {}): Promise<DojoFinding[]> {
+   978→    const {
+   979→      productId,
+   980→      engagementId,
+   981→      testId,
+   982→      severity,
+   983→      status,
+   984→      cve,
+   985→      limit = 100,
+   986→      offset = 0,
+   987→      search,
+   988→    } = params;
+   989→
+   990→    try {
+   991→      let url = `/api/v2/findings/?limit=${limit}&offset=${offset}&order=-severity`;
+   992→      
+   993→      if (productId) url += `&product=${productId}`;
+   994→      if (engagementId) url += `&engagement=${engagementId}`;
+   995→      if (testId) url += `&test=${testId}`;
+   996→      if (search) url += `&title=${encodeURIComponent(search)}`;
+   997→      if (cve) url += `&cve=${encodeURIComponent(cve)}`;
+   998→
+   999→      const response = await this.fetchDojo(url);
+  1000→
+  1001→      if (!response.ok) {
+  1002→        throw new Error(`Failed to get findings: ${response.status}`);
+  1003→      }
+  1004→
+  1005→      const data = await response.json();
+  1006→      let findings: DojoFinding[] = data.results || [];
+  1007→
+  1008→      // Apply client-side filters that API might not support
+  1009→      if (severity && severity.length > 0) {
+  1010→        findings = findings.filter(f => severity.includes(f.severity));
+  1011→      }
+  1012→      if (status && status.length > 0) {
+  1013→        findings = findings.filter(f => {
+  1014→          if (status.includes('active') && f.active && !f.falsePositive && !f.riskAccepted) return true;
+  1015→          if (status.includes('false_p') && f.falsePositive) return true;
+  1016→          if (status.includes('risk_accepted') && f.riskAccepted) return true;
+  1017→          return false;
+  1018→        });
+  1019→      }
+  1020→
+  1021→      return findings;
+  1022→
+  1023→    } catch (error) {
+  1024→      this.emit('error', error);
+  1025→      return [];
+  1026→    }
+  1027→  }
+  1028→
+  1029→  /**
+  1030→   * Update finding status (remediate, accept risk, mark FP, etc.)
+  1031→   */
+  1032→  async updateFinding(
+  1033→    findingId: number,
+  1034→    updates: Partial<Pick<DojoFinding, 
+  1035→      'active' | 'verified' | 'falsePositive' | 'duplicate' | 'riskAccepted' | 
+  1036→      'mitigation' | 'impact' | 'severityJustification' | 'jiraIssue'
+  1037→    >> & { note?: string }
+  1038→  ): Promise<DojoFinding> {
+  1039→    try {
+  1040→      const payload: Record<string, any> = {};
+  1041→
+  1042→      if (updates.active !== undefined) payload.active = updates.active;
+  1043→      if (updates.verified !== undefined) payload.verified = updates.verified;
+  1044→      if (updates.falsePositive !== undefined) payload.false_positive = updates.falsePositive;
+  1045→      if (updates.duplicate !== undefined) payload.duplicate = updates.duplicate;
+  1046→      if (updates.riskAccepted !== undefined) payload.risk_accepted = updates.riskAccepted;
+  1047→      if (updates.mitigation) payload.mitigation = updates.mitigation;
+  1048→      if (updates.impact) payload.impact = updates.impact;
+  1049→      if (updates.severityJustification) payload.severity_justification = updates.severityJustification;
+  1050→      if (updates.jiraIssue) payload.jira_issue = updates.jiraIssue;
+  1051→
+  1052→      const response = await this.fetchDojo(`/api/v2/findings/${findingId}/`, {
+  1053→        method: 'PATCH',
+  1054→        body: JSON.stringify(payload),
+  1055→      });
+  1056→
+  1057→      if (!response.ok) {
+  1058→        throw new Error(`Failed to update finding: ${response.status}`);
+  1059→      }
+  1060→
+  1061→      const updated = await response.json();
+  1062→      
+  1063→      // Add note if provided
+  1064→      if (updates.note) {
+  1065→        await this.addFindingNote(findingId, updates.note);
+  1066→      }
+  1067→
+  1068→      this.emit('findingUpdated', updated);
+  1069→      return updated;
+  1070→
+  1071→    } catch (error) {
+  1072→      this.emit('error', error);
+  1073→      throw error;
+  1074→    }
+  1075→  }
+  1076→
+  1077→  // ============================================================
+  1078→  // Unified Vulnerability View
+  1079→  // ============================================================
+  1080→
+  1081→  /**
+  1082→   * Get unified view of vulnerabilities across both systems
+  1083→   */
+  1084→  async getUnifiedVulnerabilities(params: {
+  1085→    severity?: UnifiedVulnerability['severity'][];
+  1086→    host?: string;
+  1087→    status?: UnifiedVulnerability['status'][];
+  1088→    includeEpss?: boolean;
+  1089→    limit?: number;
+  1090→    offset?: number;
+  1091→  } = {}): Promise<{ vulnerabilities: UnifiedVulnerability[]; total: number }> {
+  1092→    const { severity, host, status, limit = 100, offset = 0 } = params;
+  1093→
+  1094→    try {
+  1095→      // Fetch from DefectDojo (primary source of truth)
+  1096→      const findings = await this.getFindings({ limit: limit * 2, offset }); // Get extra for filtering
+  1097→      
+  1098→      // Transform to unified model
+  1099→      let vulnerabilities: UnifiedVulnerability[] = findings.map(f => this.transformToUnified(f));
+  1100→
+  1101→      // Apply filters
+  1102→      if (severity && severity.length > 0) {
+  1103→        vulnerabilities = vulnerabilities.filter(v => severity.includes(v.severity));
+  1104→      }
+  1105→      if (host) {
+  1106→        vulnerabilities = vulnerabilities.filter(v => v.host === host);
+  1107→      }
+  1108→      if (status && status.length > 0) {
+  1109→        vulnerabilities = vulnerabilities.filter(v => status.includes(v.status));
+  1110→      }
+  1111→
+  1112→      // Sort by CVSS score descending
+  1113→      vulnerabilities.sort((a, b) => b.cvssScore - a.cvssScore);
+  1114→
+  1115→      // Paginate
+  1116→      const paginated = vulnerabilities.slice(offset, offset + limit);
+  1117→
+  1118→      return {
+  1119→        vulnerabilities: paginated,
+  1120→        total: vulnerabilities.length,
+  1121→      };
+  1122→
+  1123→    } catch (error) {
+  1124→      this.emit('error', error);
+  1125→      return { vulnerabilities: [], total: 0 };
+  1126→    }
+  1127→  }
+  1128→
+  1129→  /**
+  1130→   * Get comprehensive vulnerability statistics
+  1131→   */
+  1132→  async getFullStats(): Promise<VulnerabilityStatistics> {
+  1133→    try {
+  1134→      // Gather statistics from multiple sources
+  1135→      const [findings, products] = await Promise.all([
+  1136→        this.getFindings({ limit: 5000 }), // Large limit for accurate stats
+  1137→        this.getProducts({ limit: 200 }),
+  1138→      ]);
+  1139→
+  1140→      // Calculate summary
+  1141→      const summary = {
+  1142→        totalFindings: findings.length,
+  1143→        critical: findings.filter(f => f.severity === 'Critical').length,
+  1144→        high: findings.filter(f => f.severity === 'High').length,
+  1145→        medium: findings.filter(f => f.severity === 'Medium').length,
+  1146→        low: findings.filter(f => f.severity === 'Low').length,
+  1147→        info: findings.findings?.filter(f => f.severity === 'Info').length || 0,
+  1148→        falsePositives: findings.filter(f => f.falsePositive).length,
+  1149→        riskAccepted: findings.filter(f => f.riskAccepted).length,
+  1150→      };
+  1151→
+  1152→      // Calculate by category
+  1153→      const byCategory: Record<string, number> = {};
+  1154→      findings.forEach(f => {
+  1155→        // Extract category from title/description (simplified)
+  1156→        const category = this.inferCategory(f);
+  1157→        byCategory[category] = (byCategory[category] || 0) + 1;
+  1158→      });
+  1159→
+  1160→      // Calculate by asset
+  1161→      const assetMap = new Map<string, { vulnCount: number; criticalCount: number }>();
+  1162→      findings.forEach(f => {
+  1163→        f.endpoints?.forEach(ep => {
+  1164→          const existing = assetMap.get(ep.host) || { vulnCount: 0, criticalCount: 0 };
+  1165→          existing.vulnCount++;
+  1166→          if (f.severity === 'Critical' || f.severity === 'High') {
+  1167→            existing.criticalCount++;
+  1168→          }
+  1169→          assetMap.set(ep.host, existing);
+  1170→        });
+  1171→      });
+  1172→
+  1173→      const byAsset = Array.from(assetMap.entries())
+  1174→        .map(([host, stats]) => ({ host, ...stats }))
+  1175→        .sort((a, b) => b.vulnCount - a.vulnCount)
+  1176→        .slice(0, 20);
+  1177→
+  1178→      // Top CVEs
+  1179→      const cveMap = new Map<string, { occurrences: number; totalCvss: number }>();
+  1180→      findings.forEach(f => {
+  1181→        if (f.cve) {
+  1182→          const existing = cveMap.get(f.cve) || { occurrences: 0, totalCvss: 0 };
+  1183→          existing.occurrences++;
+  1184→          existing.totalCvss += parseFloat(f.numericalSeverity || '0');
+  1185→          cveMap.set(f.cve, existing);
+  1186→        }
+  1187→      });
+  1188→
+  1189→      const topCves = Array.from(cveMap.entries())
+  1190→        .map(([cve, stats]) => ({
+  1191→          cve,
+  1192→          occurrences: stats.occurrences,
+  1193→          avgCvss: stats.totalCvss / stats.occurrences,
+  1194→        }))
+  1195→        .sort((a, b) => b.occurrences - a.occurrences)
+  1196→        .slice(0, 10);
+  1197→
+  1198→      // Update cached stats
+  1199→      this.stats = {
+  1200→        ...this.stats,
+  1201→        summary,
+  1202→        byCategory,
+  1203→        byAsset,
+  1204→        topCves,
+  1205→        complianceStatus: this.calculateCompliance(findings),
+  1206→      };
+  1207→
+  1208→      return this.stats;
+  1209→
+  1210→    } catch (error) {
+  1211→      this.emit('error', error);
+  1212→      return this.stats;
+  1213→    }
+  1214→  }
+  1215→
+  1216→  // ============================================================
+  1217→  // Health & Monitoring
+  1218→  // ============================================================
+  1219→
+  1220→  /**
+  1221→   * Health check for both vulnerability management systems
+  1222→   */
+  1223→  async healthCheck(): Promise<{
+  1224→    openvas: { status: 'healthy' | 'degraded' | 'unhealthy'; latency: number; runningScans: number };
+  1225→    defectdojo: { status: 'healthy' | 'degraded' | 'unhealthy'; latency: number; findingCount: number };
+  1226→    overall: 'operational' | 'degraded' | 'down';
+  1227→  }> {
+  1228→    const checks = await Promise.allSettled([
+  1229→      this.checkOpenvasHealth(),
+  1230→      this.checkDefectDojoHealth(),
+  1231→    ]);
+  1232→
+  1233→    const openvas = checks[0].status === 'fulfilled' ? checks[0].value : { status: 'unhealthy' as const, latency: -1, runningScans: 0 };
+  1234→    const defectdojo = checks[1].status === 'fulfilled' ? checks[1].value : { status: 'unhealthy' as const, latency: -1, findingCount: 0 };
+  1235→
+  1236→    const healthyCount = [openvas, defectdojo].filter(c => c.status === 'healthy').length;
+  1237→
+  1238→    return {
+  1239→      openvas,
+  1240→      defectdojo,
+  1241→      overall: healthyCount === 2 ? 'operational' : healthyCount >= 1 ? 'degraded' : 'down',
+  1242→    };
+  1243→  }
+  1244→
+  1245→  // ============================================================
+  1246→  // Private Helper Methods
+  1247→  // ============================================================
+  1248→
+  1249→  private async fetchOpenvas(path: string, init: RequestInit = {}, skipAuthCheck = false): Promise<Response> {
+  1250→    const url = `${this.config.openvas.apiUrl.replace(/\/$/, '')}${path}`;
+  1251→    
+  1252→    if (!this.openvasToken && !skipAuthCheck) {
+  1253→      throw new Error('Not authenticated with OpenVAS');
+  1254→    }
+  1255→
+  1256→    const headers: HeadersInit = {
+  1257→      ...(init.headers as Record<string, string>),
+  1258→    };
+  1259→
+  1260→    // Add token for authenticated requests
+  1261→    if (this.openvasToken && !skipAuthCheck) {
+  1262→      headers['Authorization'] = `Bearer ${this.openvasToken}`;
+  1263→    } else if (!skipAuthCheck) {
+  1264→      // Basic auth fallback
+  1265→      const credentials = Buffer.from(
+  1266→        `${this.config.openvas.username}:${this.config.openvas.password}`
+  1267→      ).toString('base64');
+  1268→      headers['Authorization'] = `Basic ${credentials}`;
+  1269→    }
+  1270→
+  1271→    // Set content type for non-form-data requests
+  1272→    if (!(init.body instanceof FormData)) {
+  1273→      headers['Content-Type'] = 'application/json';
+  1274→    }
+  1275→
+  1276→    return fetch(url, {
+  1277→      ...init,
+  1278→      headers,
+  1279→      signal: AbortSignal.timeout(this.config.openvas.timeout || 120000),
+  1280→    });
+  1281→  }
+  1282→
+  1283→  private async fetchDojo(path: string, init: RequestInit = {}, isFormData = false): Promise<Response> {
+  1284→    const url = `${this.config.defectdojo.apiUrl.replace(/\/$/, '')}${path}`;
+  1285→    
+  1286→    const headers: HeadersInit = {
+  1287→      ...(init.headers as Record<string, string>),
+  1288→      'Authorization': `Token ${this.config.defectdojo.apiKey}`,
+  1289→    };
+  1290→
+  1291→    if (!isFormData) {
+  1292→      headers['Content-Type'] = 'application/json';
+  1293→    }
+  1294→
+  1295→    return fetch(url, {
+  1296→      ...init,
+  1297→      headers,
+  1298→      signal: AbortSignal.timeout(30000),
+  1299→    });
+  1300→  }
+  1301→
+  1302→  private transformToUnified(finding: DojoFinding): UnifiedVulnerability {
+  1303→    const now = new Date();
+  1304→    const discoveredAt = new Date(finding.date || finding.createdAt);
+  1305→    
+  1306→    // Calculate SLA deadline based on severity
+  1307→    const slaConfig = this.config.slaConfig || {
+  1308→      criticalHours: 4,
+  1309→      highHours: 24,
+  1310→      mediumDays: 7,
+  1311→      lowDays: 30,
+  1312→    };
+  1313→
+  1314→    let slaDeadline: Date;
+  1315→    switch (finding.severity) {
+  1316→      case 'Critical':
+  1317→        slaDeadline = new Date(discoveredAt.getTime() + slaConfig.criticalHours * 3600000);
+  1318→        break;
+  1319→      case 'High':
+  1320→        slaDeadline = new Date(discoveredAt.getTime() + slaConfig.highHours * 3600000);
+  1321→        break;
+  1322→      case 'Medium':
+  1323→        slaDeadline = new Date(discoveredAt.getTime() + slaConfig.mediumDays * 86400000);
+  1324→        break;
+  1325→      default:
+  1326→        slaDeadline = new Date(discoveredAt.getTime() + slaConfig.lowDays * 86400000);
+  1327→    }
+  1328→
+  1329→    const isSlaExceeded = now > slaDeadline && finding.active && !finding.riskAccepted;
+  1330→
+  1331→    // Determine status
+  1332→    let status: UnifiedVulnerability['status'];
+  1333→    if (finding.falsePositive) status = 'false_positive';
+  1334→    else if (finding.duplicate) status = 'duplicate';
+  1335→    else if (finding.riskAccepted) status = 'risk_accepted';
+  1336→    else if (!finding.active) status = 'fixed';
+  1337→    else if (finding.mitigation && finding.verified) status = 'in_progress';
+  1338→    else status = 'open';
+  1339→
+  1340→    return {
+  1341→      vulnId: `dd-${finding.id}`,
+  1342→      source: 'defectdojo',
+  1343→      title: finding.title,
+  1344→      description: finding.description,
+  1345→      severity: finding.severity,
+  1346→      cvssScore: parseFloat(finding.numericalSeverity || '0'),
+  1347→      cve: finding.cve,
+  1348→      host: finding.endpoints?.[0]?.host || 'unknown',
+  1349→      port: finding.endpoints?.[0]?.port,
+  1350→      protocol: finding.endpoints?.[0]?.protocol,
+  1351→      category: this.inferCategory(finding),
+  1352→      solution: finding.mitigation,
+  1353→      references: finding.references?.split('\n').filter(Boolean),
+  1354→      status,
+  1355→      discoveredAt: finding.date || finding.createdAt,
+  1356→      lastSeenAt: finding.updatedAt,
+  1357→      fixedAt: !finding.active ? finding.updatedAt : undefined,
+  1358→      slaDeadline: slaDeadline.toISOString(),
+  1359→      slaExceeded: isSlaExceeded,
+  1360→      daysOpen: Math.floor((now.getTime() - discoveredAt.getTime()) / 86400000),
+  1361→      findingId: finding.id,
+  1362→      jiraTicket: finding.jiraIssue,
+  1363→      complianceMapping: finding.complianceMapping,
+  1364→    };
+  1365→  }
+  1366→
+  1367→  private inferCategory(finding: DojoFinding): string {
+  1368→    const title = (finding.title || '').toLowerCase();
+  1369→    const desc = (finding.description || '').toLowerCase();
+  1370→    const combined = `${title} ${desc}`;
+  1371→
+  1372→    if (combined.match(/(sql injection|sqli|xss|cross-site|csrf|command injection|rce)/)) return 'Injection';
+  1373→    if (combined.match(/(auth|password|login|session|token|jwt|oauth)/)) return 'Authentication';
+  1374→    if (combined.match(/(encrypt|tls|ssl|certificate|crypto|key)/)) return 'Cryptography';
+  1375→    if (combined.match(/(xxe|xml)/)) return 'XML Processing';
+  1376→    if (combined.match(/(ssrf|redirect|open.forward|host.header)/)) return 'Input Validation';
+  1377→    if (combined.match(/(file.upload|path.traversal|lfi|rfi)/)) return 'File Handling';
+  1378→    if (combined.match(/(information.disclosure|debug|error.message|stack.trace)/)) return 'Information Disclosure';
+  1379→    if (combined.match(/(cors|content.type|mime.sniffing)/)) return 'Security Configuration';
+  1380→    if (combined.match(/(outdated|version|old|legacy|deprecated)/)) return 'Outdated Component';
+  1381→    if (combined.match(/(dos|ddos|resource.exhaustion)/)) return 'Denial of Service';
+  1382→    if (combined.match(/(privilege|access.control|authorization|rbac|abac)/)) return 'Access Control';
+  1383→
+  1384→    return 'Other';
+  1385→  }
+  1386→
+  1387→  private calculateCompliance(findings: DojoFinding[]): VulnerabilityStatistics['complianceStatus'] {
+  1388→    // Simplified compliance calculation
+  1389→    // In production, this would map findings to specific control requirements
+  1390→    
+  1391→    const totalControls = {
+  1392→      artp: 85,  // Total ARTP controls relevant to vuln management
+  1393→      anssi: 124, // Total ANSSI controls
+  1394→      iso27001: 114, // A.9-A.14 primarily
+  1395→    };
+  1396→
+  1397→    const coveredControls = {
+  1398→      artp: new Set<string>(),
+  1399→      anssi: new Set<string>(),
+  1400→      iso27001: new Set<string>(),
+  1401→    };
+  1402→
+  1403→    findings.forEach(f => {
+  1404→      if (f.complianceMapping) {
+  1405→        f.complianceMapping.artpControls?.forEach(c => coveredControls.artp.add(c));
+  1406→        f.complianceMapping.anssiControls?.forEach(c => coveredControls.anssi.add(c));
+  1407→        f.complianceMapping.iso27001Controls?.forEach(c => coveredControls.iso27001.add(c));
+  1408→      }
+  1409→    });
+  1410→
+  1411→    return {
+  1412→      artpCoverage: Math.round((coveredControls.artp.size / totalControls.artp) * 100),
+  1413→      anssiCoverage: Math.round((coveredControls.anssi.size / totalControls.anssi) * 100),
+  1414→      iso27001Coverage: Math.round((coveredControls.iso27001.size / totalControls.iso27001) * 100),
+  1415→      overallComplianceScore: Math.round(
+  1416→        ((coveredControls.artp.size / totalControls.artp) +
+  1417→         (coveredControls.anssi.size / totalControls.anssi) +
+  1418→         (coveredControls.iso27001.size / totalControls.iso27001)) / 3 * 100
+  1419→      ),
+  1420→    };
+  1421→  }
+  1422→
+  1423→  private initializeStats(): VulnerabilityStatistics {
+  1424→    return {
+  1425→      summary: {
+  1426→        totalFindings: 0,
+  1427→        critical: 0,
+  1428→        high: 0,
+  1429→        medium: 0,
+  1430→        low: 0,
+  1431→        info: 0,
+  1432→        falsePositives: 0,
+  1433→        riskAccepted: 0,
+  1434→      },
+  1435→      trends: {
+  1436→        newThisWeek: 0,
+  1437→        resolvedThisWeek: 0,
+  1438→        avgTimeToRemedyHours: 0,
+  1439→        slaBreachRate: 0,
+  1440→      },
+  1441→      byCategory: {},
+  1442→      byAsset: [],
+  1443→      topCves: [],
+  1444→      complianceStatus: {
+  1445→        artpCoverage: 0,
+  1446→        anssiCoverage: 0,
+  1447→        overallComplianceScore: 0,
+  1448→      },
+  1449→    };
+  1450→  }
+  1451→
+  1452→  private async refreshStats(): Promise<void> {
+  1453→    try {
+  1454→      await this.getFullStats();
+  1455→      this.emit('statsUpdated', this.stats);
+  1456→    } catch (error) {
+  1457→      console.warn('[VULN] Stats refresh failed:', error.message);
+  1458→    }
+  1459→  }
+  1460→
+  1461→  // Helper methods for OpenVAS operations
+  1462→  private async getDefaultScanner(): Promise<string> {
+  1463→    const response = await this.fetchOpenvas('/scanners');
+  1464→    const data = await response.json();
+  1465→    // Return first scanner (typically the OSP/OpenVAS scanner)
+  1466→    return data.scanners?.[0]?.scanner?.id || data.scanners?.[0]?.id;
+  1467→  }
+  1468→
+  1469→  private async getScanConfigs(): Promise<Array<{ id: string; name: string }>> {
+  1470→    const response = await this.fetchOpenvas('/scanconfigs');
+  1471→    const data = await response.json();
+  1472→    return (data.scanconfig_list?.scanconfig || []).map((c: any) => ({
+  1473→      id: c._id || c.id,
+  1474→      name: c.name,
+  1475→    }));
+  1476→  }
+  1477→
+  1478→  private async createPortList(name: string, portRange: string): Promise<string> {
+  1479→    const response = await this.fetchOpenvas('/portlists', {
+  1480→      method: 'POST',
+  1481→      body: JSON.stringify({
+  1482→        name: `Custom-${name}`,
+  1483→        port_range: portRange,
+  1484→      }),
+  1485→    }, true);
+  1486→
+  1487→    const data = await response.json();
+  1488→    return data.portlist?.id || data.id;
+  1489→  }
+  1490→
+  1491→  private async createSchedule(schedule: NonNullable<ScanConfiguration['schedule']>): Promise<string> {
+  1492→    const response = await this.fetchOpenvas('/schedules', {
+  1493→      method: 'POST',
+  1494→      body: JSON.stringify({
+  1495→        name: `Schedule-${Date.now()}`,
+  1496→        icalendar: this.cronToIcal(schedule.frequency, schedule.cronExpression),
+  1497→        timezone: schedule.timezone || 'Africa/Algiers',
+  1498→      }),
+  1499→    }, true);
+  1500→
+  1501→    const data = await response.json();
+  1502→    return data.schedule?.id || data.id;
+  1503→  }
+  1504→
+  1505→  private cronToIcal(frequency: string, cronExpr?: string): string {
+  1506→    // Simplified conversion - in production, use proper library
+  1507→    switch (frequency) {
+  1508→      case 'hourly': return 'FREQ=HOURLY';
+  1509→      case 'daily': return 'FREQ=DAILY';
+  1510→      case 'weekly': return 'FREQ=WEEKLY;BYDAY=MO';
+  1511→      case 'monthly': return 'FREQ=MONTHLY';
+  1512→      default:
+  1513→        if (cronExpr) {
+  1514→          // Very basic parsing - would need proper library for production
+  1515→          return `FREQ=DAILY`; // Fallback
+  1516→        }
+  1517→        return 'FREQ=WEEKLY';
+  1518→    }
+  1519→  }
+  1520→
+  1521→  private async createEngagement(data: {
+  1522→    name: string;
+  1523→    productId: number;
+  1524→    engType: DojoEngagement['engType'];
+  1525→    targetStart: string;
+  1526→    targetEnd: string;
+  1527→    status: DojoEngagement['status'];
+  1528→    environment: string;
+  1529→  }): Promise<DojoEngagement> {
+  1530→    const response = await this.fetchDojo('/api/v2/engagements/', {
+  1531→      method: 'POST',
+  1532→      body: JSON.stringify(data),
+  1533→    });
+  1534→
+  1535→    if (!response.ok) {
+  1536→      throw new Error(`Failed to create engagement: ${response.status}`);
+  1537→    }
+  1538→
+  1539→    return response.json();
+  1540→  }
+  1541→
+  1542→  private async addFindingNote(findingId: number, note: string): Promise<void> {
+  1543→    await this.fetchDojo(`/api/v2/findings/${findingId}/notes/`, {
+  1544→      method: 'POST',
+  1545→      body: JSON.stringify({ entry: note }),
+  1546→    });
+  1547→  }
+  1548→
+  1549→  private async getScanReportXml(taskId: string): Promise<string | null> {
+  1550→    try {
+  1551→      // Get the latest report
+  1552→      const taskResponse = await this.fetchOpenvas(`/tasks/${taskId}`);
+  1553→      const taskData = await taskResponse.json();
+  1554→      const reportId = taskData.task?.last_report?.report?.id;
+  1555→
+  1556→      if (!reportId) return null;
+  1557→
+  1558→      // Download report in XML format
+  1559→      const reportResponse = await this.fetchOpenvas(
+  1560→        `/reports/${reportId}/format/xml`
+  1561→      );
+  1562→
+  1563→      if (!reportResponse.ok) return null;
+  1564→
+  1565→      return await reportResponse.text();
+  1566→    } catch {
+  1567→      return null;
+  1568→    }
+  1569→  }
+  1570→
+  1571→  private async checkOpenvasHealth(): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy'; latency: number; runningScans: number }> {
+  1572→    const start = Date.now();
+  1573→    try {
+  1574→      const res = await this.fetchOpenvas('/health');
+  1575→      const latency = Date.now() - start;
+  1576→      
+  1577→      // Count running scans
+  1578→      const tasksRes = await this.getTasks({ status: 'Running' });
+  1579→      
+  1580→      return {
+  1581→        status: res.ok ? 'healthy' : 'degraded',
+  1582→        latency,
+  1583→        runningScans: tasksRes.length,
+  1584→      };
+  1585→    } catch {
+  1586→      return { status: 'unhealthy', latency: Date.now() - start, runningScans: 0 };
+  1587→    }
+  1588→  }
+  1589→
+  1590→  private async checkDefectDojoHealth(): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy'; latency: number; findingCount: number }> {
+  1591→    const start = Date.now();
+  1592→    try {
+  1593→      const res = await this.fetchDojo('/api/v2/findings/?limit=1');
+  1594→      const latency = Date.now() - start;
+  1595→      const data = await res.json();
+  1596→      
+  1597→      return {
+  1598→        status: res.ok ? 'healthy' : 'degraded',
+  1599→        latency,
+  1600→        findingCount: data.count || 0,
+  1601→      };
+  1602→    } catch {
+  1603→      return { status: 'unhealthy', latency: Date.now() - start, findingCount: 0 };
+  1604→    }
+  1605→  }
+  1606→}
+  1607→
+  1608→// Export singleton factory
+  1609→let vulnInstance: OpenvasDefectDojoClient | null = null;
+  1610→
+  1611→export function createVulnClient(config: VulnerabilityIntegrationConfig): OpenvasDefectDojoClient {
+  1612→  if (!vulnInstance) {
+  1613→    vulnInstance = new OpenvasDefectDojoClient(config);
+  1614→  }
+  1615→  return vulnInstance;
+  1616→}
+  1617→
+  1618→export default OpenvasDefectDojoClient;
+  1619→

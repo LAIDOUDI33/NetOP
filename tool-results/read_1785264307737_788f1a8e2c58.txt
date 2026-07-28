@@ -1,0 +1,1178 @@
+     1→/**
+     2→ * Integration Service Layer Coordinator
+     3→ * Phase 11: Unified Security Integration Hub
+     4→ * 
+     5→ * This module provides a unified interface to all security tool integrations,
+     6→ * enabling cross-tool correlation, automated response, and centralized management.
+     7→ * 
+     8→ * Features:
+     9→ * - Single entry point for all security operations
+    10→ * - Cross-tool event correlation and deduplication
+    11→ * - Automated response orchestration (EDR + NSM + Vuln)
+    12→ * - Centralized health monitoring and alerting
+    13→ * - Event routing to Kafka for downstream processing
+    14→ * - Telco-specific workflow automation
+    15→ * 
+    16→ * Architecture:
+    17→ * ┌─────────────────────────────────────────────────────┐
+    18→ * │              IntegrationCoordinator                 │
+    19→ * ├─────────┬──────────┬──────────┬──────────┬──────────┤
+    20→ * │   EDR    │   NSM    │  SIEM    │   TI     │  VULN    │
+    21→ * │ (GRR)    │(Suricata)│ (Wazuh)  │(OpenCTI) │(OpenVAS)│
+    22→ * │          │          │          │          │          │
+    23→ * └──────────┴──────────┴──────────┴──────────┴──────────┘
+    24→ *                              │
+    25→ *                    ┌─────────▼─────────┐
+    26→ *                    │   Kafka Event Bus  │
+    27→ *                    │  (Event Streaming) │
+    28→ *                    └───────────────────┘
+    29→ *                              │
+    30→ *                    ┌─────────▼─────────┐
+    31→ *                    │   SOC Platform DB  │
+    32→ *                    │  (PostgreSQL/Prisma)│
+    33→ *                    └───────────────────┘
+    34→ * 
+    35→ * @version 1.0.0
+    36→ * @license Proprietary - Djezzy National SOC Platform
+    37→ */
+    38→
+    39→import { EventEmitter } from 'events';
+    40→import { GrrOsqueryEdrClient, EdrIntegrationConfig } from './edr/grr-osquery-client';
+    41→import { SuricataZeekArkimeClient, NsmIntegrationConfig } from './nsm/suricata-zeek-arkime-client';
+    42→import { WazuhElasticsearchClient, SiemIntegrationConfig } from './siem/wazuh-elasticsearch-client';
+    43→import { OpenctiClient, OpenctiIntegrationConfig } from './threat-intel/opencti-client';
+    44→import { MispClient, MispConfig } from './threat-intel/misp-client';
+    45→import { TheHiveCortexClient, SoarIntegrationConfig } from './soar/thehive-cortex-client';
+    46→import { OpenvasDefectDojoClient, VulnerabilityIntegrationConfig } from './vulnerability/openvas-defectdojo-client';
+    47→
+    48→// ============================================================
+    49→// Types & Interfaces
+    50→// ============================================================
+    51→
+    52→export interface PlatformIntegrationConfig {
+    53→  edr?: EdrIntegrationConfig;
+    54→  nsm?: NsmIntegrationConfig;
+    55→  siem?: SiemIntegrationConfig;
+    56→  opencti?: OpenctiIntegrationConfig;
+    57→  misp?: { config: MispConfig; kafka?: { brokers: string[]; topic: string } };
+    58→  soar?: SoarIntegrationConfig;
+    59→  vulnerability?: VulnerabilityIntegrationConfig;
+    60→  
+    61→  // Global settings
+    62→  kafka: {
+    63→    brokers: string[];
+    64→    topics: {
+    65→      alerts: string;           // "soc.alerts"
+    66→      events: string;           // "soc.events"
+    67→      incidents: string;        // "soc.incidents"
+    68→      threatIntel: string;      // "soc.threat-intel"
+    69→      correlation: string;      // "soc.correlation"
+    70→    };
+    71→    producerConfig?: Record<string, any>;
+    72→  };
+    73→  
+    74→  // Automation settings
+    75→  autoResponseEnabled: boolean;
+    76→  autoCorrelationEnabled: boolean;
+    77→  autoEscalationThreshold: 'critical' | 'critical-high' | 'all';
+    78→  
+    79→  // Logging & monitoring
+    80→  logLevel: 'debug' | 'info' | 'warn' | 'error';
+    81→  metricsEnabled: boolean;
+    82→}
+    83→
+    84→export interface CorrelatedEvent {
+    85→  eventId: string;
+    86→  timestamp: string;
+    87→  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+    88→  title: string;
+    89→  description: string;
+    90→  
+    91→  // Source events that were correlated
+    92→  sourceEvents: Array<{
+    93→    source: 'edr' | 'nsm' | 'siem' | 'ti' | 'vuln';
+    94→    originalId: string;
+    95→    summary: string;
+    96→    confidence: number;
+    97→  }>;
+    98→  
+    99→  // Correlation metadata
+   100→  correlationScore: number;    // 0-100 how confident we are in this correlation
+   101→  correlationType: string;     // e.g., "ip_match", "hash_match", "temporal_proximity"
+   102→  
+   103→  // Enrichment data
+   104→  threatIntelContext?: any;
+   105→  assetContext?: any;
+   106→  userContext?: any;
+   107→  
+   108→  // Actions taken or recommended
+   109→  actionsTaken?: Array<{
+   110→    action: string;
+   111→    target: string;
+   112→    result: 'success' | 'failed' | 'pending';
+   113→    timestamp: string;
+   114→  }>;
+   115→  recommendedActions?: string[];
+   116→  
+   117→  // Incident linkage
+   118→  incidentId?: string;
+   119→  caseId?: string;
+   120→}
+   121→
+   122→export interface SystemHealthStatus {
+   123→  overall: 'operational' | 'degraded' | 'down';
+   124→  components: {
+   125→    edr: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   126→    nsm: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   127→    siem: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   128→    opencti: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   129→    misp: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   130→    soar: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   131→    vulnerability: { status: 'connected' | 'disconnected' | 'error'; latency: number; lastCheck: string };
+   132→    kafka: { status: 'connected' | 'disconnected' | 'error'; messageCount: number };
+   133→    database: { status: 'connected' | 'disconnected' | 'error'; queryTime: number };
+   134→  };
+   135→  uptimeSeconds: number;
+   136→  eventsProcessedToday: number;
+   137→  errorsToday: number;
+   138→}
+   139→
+   140→export interface AutomatedResponseResult {
+   141→  success: boolean;
+   142→  action: string;
+   143→  target: string;
+   144→  result: any;
+   145→  timestamp: string;
+   146→  triggeredBy: {
+   147→    source: string;
+   148→    eventId: string;
+   149→    severity: string;
+   150→  };
+   151→}
+   152→
+   153→// ============================================================
+   154→// Integration Coordinator Class
+   155→// ============================================================
+   156→
+   157→export class IntegrationCoordinator extends EventEmitter {
+   158→  private config: PlatformIntegrationConfig;
+   159→  
+   160→  // Client instances
+   161→  private edrClient?: GrrOsqueryEdrClient;
+   162→  private nsmClient?: SuricataZeekArkimeClient;
+   163→  private siemClient?: WazuhElasticsearchClient;
+   164→  private openctiClient?: OpenctiClient;
+   165→  private mispClient?: MispClient;
+   166→  private soarClient?: TheHiveCortexClient;
+   167→  private vulnClient?: OpenvasDefectDojoClient;
+   168→  
+   169→  // State
+   170→  private isInitialized = false;
+   171→  private startTime: Date = new Date();
+   172→  private eventBuffer: CorrelatedEvent[] = [];
+   173→  private bufferFlushInterval: NodeJS.Timeout | null = null;
+   174→  
+   175→  // Statistics
+   176→  public stats = {
+   177→    eventsProcessed: 0,
+   178→    correlationsPerformed: 0,
+   179→    autoResponsesExecuted: 0,
+   180→    errorsEncountered: 0,
+   181→    lastEventTimestamp: null as Date | null,
+   182→    uptime: () => Math.floor((Date.now() - this.startTime.getTime()) / 1000),
+   183→  };
+   184→
+   185→  constructor(config: PlatformIntegrationConfig) {
+   186→    super();
+   187→    this.config = config;
+   188→
+   189→    // Set up internal handlers
+   190→    this.on('error', (err) => {
+   191→      console.error('[COORDINATOR] Error:', err.message);
+   192→      this.stats.errorsEncountered++;
+   193→    });
+   194→
+   195→    this.on('correlationComplete', (event: CorrelatedEvent) => {
+   196→      console.log(`[COORDINATOR] Correlation complete: ${event.title} (${event.sourceEvents.length} sources)`);
+   197→      
+   198→      // Auto-escalation if configured
+   199→      if (this.shouldAutoEscalate(event)) {
+   200→        this.executeAutoEscalation(event);
+   201→      }
+   202→    });
+   203→
+   204→    // Start buffer flush interval
+   205→    this.bufferFlushInterval = setInterval(() => this.flushEventBuffer(), 10000);
+   206→  }
+   207→
+   208→  // ============================================================
+   209→  // Initialization & Connection Management
+   210→  // ============================================================
+   211→
+   212→  /**
+   213→   * Initialize all configured integrations
+   214→   */
+   215→  async initialize(): Promise<void> {
+   216→    if (this.isInitialized) {
+   217→      console.warn('[COORDINATOR] Already initialized');
+   218→      return;
+   219→    }
+   220→
+   221→    console.log('[COORDINATOR] Initializing all integrations...');
+   222→
+   223→    try {
+   224→      // Initialize clients in order of dependency
+   225→      const initPromises: Promise<any>[] = [];
+   226→
+   227→      // EDR (GRR/Osquery)
+   228→      if (this.config.edr) {
+   229→        this.edrClient = new GrrOsqueryEdrClient(this.config.edr);
+   230→        initPromises.push(
+   231→          this.edrClient.connect()
+   232→            .then(() => console.log('[COORDINATOR] ✓ EDR connected'))
+   233→            .catch(err => { console.error('[COORDINATOR] ✗ EDR failed:', err.message); throw err; })
+   234→        );
+   235→      }
+   236→
+   237→      // NSM (Suricata/Zeek/Arkime)
+   238→      if (this.config.nsm) {
+   239→        this.nsmClient = new SuricataZeekArkimeClient(this.config.nsm);
+   240→        initPromises.push(
+   241→          this.nsmClient.connect()
+   242→            .then(() => console.log('[COORDINATOR] ✓ NSM connected'))
+   243→            .catch(err => { console.error('[COORDINATOR] ✗ NSM failed:', err.message); throw err; })
+   244→        );
+   245→      }
+   246→
+   247→      // SIEM (Wazuh/Elasticsearch)
+   248→      if (this.config.siem) {
+   249→        this.siemClient = new WazuhElasticsearchClient(this.config.siem);
+   250→        initPromises.push(
+   251→          this.siemClient.connect()
+   252→            .then(() => console.log('[COORDINATOR] ✓ SIEM connected'))
+   253→            .catch(err => { console.error('[COORDINATOR] ✗ SIEM failed:', err.message); throw err; })
+   254→        );
+   255→      }
+   256→
+   257→      // Threat Intelligence (OpenCTI)
+   258→      if (this.config.opencti) {
+   259→        this.openctiClient = new OpenctiClient(this.config.opencti);
+   260→        initPromises.push(
+   261→          this.openctiClient.connect()
+   262→            .then(() => console.log('[COORDINATOR] ✓ OpenCTI connected'))
+   263→            .catch(err => { console.error('[COORDINATOR] ✗ OpenCTI failed:', err.message); throw err; })
+   264→        );
+   265→      }
+   266→
+   267→      // Threat Intelligence (MISP)
+   268→      if (this.config.misp) {
+   269→        this.mispClient = new MispClient(this.config.misp.config);
+   270→        initPromises.push(
+   271→          this.mispClient.connect()
+   272→            .then(() => console.log('[COORDINATOR] ✓ MISP connected'))
+   273→            .catch(err => { console.error('[COORDINATOR] ✗ MISP failed:', err.message); throw err; })
+   274→        );
+   275→      }
+   276→
+   277→      // SOAR (TheHive/Cortex)
+   278→      if (this.config.soar) {
+   279→        this.soarClient = new TheHiveCortexClient(this.config.soar);
+   280→        initPromises.push(
+   281→          this.soarClient.connect()
+   282→            .then(() => console.log('[COORDINATOR] ✓ SOAR connected'))
+   283→            .catch(err => { console.error('[COORDINATOR] ✗ SOAR failed:', err.message); throw err; })
+   284→        );
+   285→      }
+   286→
+   287→      // Vulnerability Management (OpenVAS/DefectDojo)
+   288→      if (this.config.vulnerability) {
+   289→        this.vulnClient = new OpenvasDefectDojoClient(this.config.vulnerability);
+   290→        initPromises.push(
+   291→          this.vulnClient.connect()
+   292→            .then(() => console.log('[COORDINATOR] ✓ Vulnerability Management connected'))
+   293→            .catch(err => { console.error('[COORDINATOR] ✗ Vulnerability Management failed:', err.message); throw err; })
+   294→        );
+   295→      }
+   296→
+   297→      // Wait for all initializations (with partial failure tolerance)
+   298→      const results = await Promise.allSettled(initPromises);
+   299→
+   300→      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+   301→      const failed = results.filter(r => r.status === 'rejected').length;
+   302→
+   303→      console.log(`[COORDINATOR] Initialization complete: ${succeeded} succeeded, ${failed} failed`);
+   304→
+   305→      this.isInitialized = true;
+   306→      this.emit('initialized', { succeeded, failed, timestamp: new Date() });
+   307→
+   308→    } catch (error) {
+   309→      this.isInitialized = false;
+   310→      this.emit('error', error);
+   311→      throw error;
+   312→    }
+   313→  }
+   314→
+   315→  /**
+   316→   * Gracefully shutdown all connections
+   317→   */
+   318→  async shutdown(): Promise<void> {
+   319→    console.log('[COORDINATOR] Shutting down...');
+   320→
+   321→    // Clear intervals
+   322→    if (this.bufferFlushInterval) {
+   323→      clearInterval(this.bufferFlushInterval);
+   324→    }
+   325→
+   326→    // Flush remaining events
+   327→    await this.flushEventBuffer();
+   328→
+   329→    // Disconnect all clients
+   330→    const disconnectPromises: Promise<any>[] = [
+   331→      this.edrClient?.disconnect(),
+   332→      this.nsmClient?.disconnect(),
+   333→      this.siemClient?.disconnect(),
+   334→      this.openctiClient?.disconnect(),
+   335→      this.mispClient?.disconnect(),
+   336→      this.soarClient?.disconnect(),
+   337→      this.vulnClient?.disconnect(),
+   338→    ].filter(Boolean);
+   339→
+   340→    await Promise.allSettled(disconnectPromises);
+   341→
+   342→    this.isInitialized = false;
+   343→    this.emit('shutdown', { timestamp: new Date() });
+   344→    console.log('[COORDINATOR] Shutdown complete');
+   345→  }
+   346→
+   347→  get initialized(): boolean {
+   348→    return this.isInitialized;
+   349→  }
+   350→
+   351→  // ============================================================
+   352→  // Cross-Tool Event Processing
+   353→  // ============================================================
+   354→
+   355→  /**
+   356→   * Process an incoming event through correlation and enrichment pipeline
+   357→   */
+   358→  async processEvent(params: {
+   359→    source: 'edr' | 'nsm' | 'siem' | 'ti' | 'vuln' | 'manual';
+   360→    rawEvent: any;
+   361→    severity?: string;
+   362→    context?: Record<string, any>;
+   363→  }): Promise<CorrelatedEvent> {
+   364→    const { source, rawEvent, severity, context = {} } = params;
+   365→
+   366→    try {
+   367→      console.log(`[COORDINATOR] Processing ${source} event`);
+   368→
+   369→      // Step 1: Normalize event format
+   370→      const normalizedEvent = await this.normalizeEvent(source, rawEvent);
+   371→
+   372→      // Step 2: Enrich with additional context
+   373→      const enrichedEvent = await this.enrichEvent(normalizedEvent);
+   374→
+   375→      // Step 3: Correlate with other sources
+   376→      const correlatedEvent = await this.correlateEvent(enrichedEvent);
+   377→
+   378→      // Step 4: Determine if automated response should be triggered
+   379→      if (this.config.autoResponseEnabled && this.shouldAutoRespond(correlatedEvent)) {
+   380→        const responseResult = await this.executeAutomatedResponse(correlatedEvent);
+   381→        correlatedEvent.actionsTaken = correlatedEvent.actionsTaken || [];
+   382→        correlatedEvent.actionsTaken.push(responseResult);
+   383→      }
+   384→
+   385→      // Step 5: Publish to Kafka for downstream consumers
+   386→      await this.publishToKafka('alerts', correlatedEvent);
+   387→
+   388→      // Step 6: Buffer for batch processing
+   389→      this.eventBuffer.push(correlatedEvent);
+   390→
+   391→      // Update statistics
+   392→      this.stats.eventsProcessed++;
+   393→      this.stats.lastEventTimestamp = new Date();
+   394→
+   395→      this.emit('eventProcessed', correlatedEvent);
+   396→      return correlatedEvent;
+   397→
+   398→    } catch (error) {
+   399→      this.emit('error', error);
+   400→      throw error;
+   401→    }
+   402→  }
+   403→
+   404→  /**
+   405→   * Batch process multiple events
+   406→   */
+   407→  async processEvents(events: Array<{
+   408→    source: 'edr' | 'nsm' | 'siem' | 'ti' | 'vuln' | 'manual';
+   409→    rawEvent: any;
+   410→    severity?: string;
+   411→  }>): Promise<CorrelatedEvent[]> {
+   412→    console.log(`[COORDINATOR] Batch processing ${events.length} events`);
+   413→
+   414→    // Process in parallel batches for performance
+   415→    const batchSize = 10;
+   416→    const results: CorrelatedEvent[] = [];
+   417→
+   418→    for (let i = 0; i < events.length; i += batchSize) {
+   419→      const batch = events.slice(i, i + batchSize);
+   420→      const batchResults = await Promise.allSettled(
+   421→        batch.map(event => this.processEvent(event))
+   422→      );
+   423→
+   424→      batchResults.forEach(result => {
+   425→        if (result.status === 'fulfilled') {
+   426→          results.push(result.value);
+   427→        } else {
+   428→          console.error(`[COORDINATOR] Event processing failed:`, result.reason);
+   429→        }
+   430→      });
+   431→    }
+   432→
+   433→    return results;
+   434→  }
+   435→
+   436→  // ============================================================
+   437→  // Correlation Engine
+   438→  // ============================================================
+   439→
+   440→  /**
+   441→   * Correlate an event across all available data sources
+   442→   */
+   443→  private async correlateEvent(event: any): Promise<CorrelatedEvent> {
+   444→    if (!this.config.autoCorrelationEnabled) {
+   445→      return this.createMinimalCorrelation(event);
+   446→    }
+   447→
+   448→    const sourceEvents: CorrelatedEvent['sourceEvents'] = [];
+   449→    let correlationScore = 0;
+   450→    let correlationType = '';
+   451→
+   452→    // Extract key identifiers for correlation
+   453→    const ipAddresses = this.extractIPs(event);
+   454→    const hashes = this.extractHashes(event);
+   455→    const domains = this.extractDomains(event);
+   456→    const msisdns = this.extractMSISDNs(event);
+   457→
+   458→    // Search each integration for matching events
+   459→    const searchPromises: Promise<any>[] = [];
+   460→
+   461→    // NSM correlation (Suricata/Zeek)
+   462→    if (this.nsmClient && ipAddresses.length > 0) {
+   463→      searchPromises.push(
+   464→        this.nsmClient.correlateEvents({ sourceIp: ipAddresses[0], timeRangeMinutes: 60 })
+   465→          .then(nsmEvents => {
+   466→            nsmEvents.forEach((e: any) => {
+   467→              sourceEvents.push({
+   468→                source: 'nsm',
+   469→                originalId: e.eventId,
+   470→                summary: e.title,
+   471→                confidence: e.severity === 'critical' ? 90 : e.severity === 'high' ? 70 : 50,
+   472→              });
+   473→            });
+   474→            if (nsmEvents.length > 0) correlationScore += 30;
+   475→          })
+   476→          .catch(() => {})
+   477→      );
+   478→    }
+   479→
+   480→    // Threat Intel correlation (OpenCTI/MISP)
+   481→    if ((this.openctiClient || this.mispClient) && (ipAddresses.length > 0 || hashes.length > 0)) {
+   482→      const observableValue = ipAddresses[0] || hashes[0];
+   483→      const observableType = ipAddresses[0] ? 'IPv4-Addr' : 'File-Sha256';
+   484→
+   485→      if (this.openctiClient) {
+   486→        searchPromises.push(
+   487→          this.openctiClient.matchObservable({
+   488→            observableValue,
+   489→            observableType,
+   490→            includeContext: true,
+   491→          }).then(match => {
+   492→            if (match.matched) {
+   493→              match.indicators.forEach(indicator => {
+   494→                sourceEvents.push({
+   495→                  source: 'ti',
+   496→                  originalId: indicator.id,
+   497→                  summary: indicator.name || indicator.indicator_pattern,
+   498→                  confidence: indicator.x_opencti_score || 70,
+   499→                });
+   500→              });
+   501→              correlationScore += 40;
+   502→              correlationType = 'ioc_match';
+   503→              
+   504→              // Attach threat intel context
+   505→              event.threatIntelContext = match.context;
+   506→            }
+   507→          })
+   508→          .catch(() => {})
+   509→        );
+   510→      }
+   511→    }
+   512→
+   513→    // EDR correlation (if we have host info)
+   514→    if (this.edrClient && event.hostname) {
+   515→      searchPromises.push(
+   516→        this.edrClient.searchClients({ query: event.hostname, limit: 5 })
+   517→          .then(clients => {
+   518→            if (clients.clients.length > 0) {
+   519→              sourceEvents.push({
+   520→                source: 'edr',
+   521→                originalId: clients.clients[0].clientId,
+   522→                summary: `Endpoint found: ${clients.clients[0].hostname}`,
+   523→                confidence: 85,
+   524→              });
+   525→              correlationScore += 25;
+   526→              correlationType = 'asset_correlation';
+   527→              
+   528→              // Attach asset context
+   529→              event.assetContext = clients.clients[0];
+   530→            }
+   531→          })
+   532→          .catch(() => {})
+   533→      );
+   534→    }
+   535→
+   536→    // Vulnerability correlation
+   537→    if (this.vulnClient && event.host) {
+   538→      searchPromises.push(
+   539→        this.vulnClient.getUnifiedVulnerabilities({ host: event.host, limit: 10 })
+   540→          .then(vulns => {
+   541→            vulns.vulnerabilities.filter(v => v.status === 'open').forEach(vuln => {
+   542→              sourceEvents.push({
+   543→                source: 'vuln',
+   544→                originalId: vuln.vulnId,
+   545→                summary: `${vuln.severity}: ${vuln.title}`,
+   546→                confidence: vuln.cvssScore > 7 ? 90 : 70,
+   547→              });
+   548→            });
+   549→            if (vulns.vulnerabilities.some(v => v.status === 'open')) {
+   550→              correlationScore += 20;
+   551→            }
+   552→          })
+   553→          .catch(() => {})
+   554→      );
+   555→    }
+   556→
+   557→    // Execute all searches in parallel
+   558→    await Promise.allSettled(searchPromises);
+   559→
+   560→    // Create correlated event
+   561→    const correlatedEvent: CorrelatedEvent = {
+   562→      eventId: `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+   563→      timestamp: new Date().toISOString(),
+   564→      severity: this.calculateCorrelatedSeverity(event, sourceEvents),
+   565→      title: this.generateCorrelationTitle(event, sourceEvents),
+   566→      description: this.generateCorrelationDescription(event, sourceEvents),
+   567→      sourceEvents,
+   568→      correlationScore: Math.min(100, correlationScore),
+   569→      correlationType,
+   570→      ...event,
+   571→    };
+   572→
+   573→    // Generate recommendations based on findings
+   574→    correlatedEvent.recommendedActions = this.generateRecommendations(correlatedEvent);
+   575→
+   576→    this.stats.correlationsPerformed++;
+   577→    this.emit('correlationComplete', correlatedEvent);
+   578→
+   579→    return correlatedEvent;
+   580→  }
+   581→
+   582→  // ============================================================
+   583→  // Automated Response Engine
+   584→  // ============================================================
+   585→
+   586→  /**
+   587→   * Determine if automated response should be triggered
+   588→   */
+   589→  private shouldAutoRespond(event: CorrelatedEvent): boolean {
+   590→    switch (this.config.autoEscalationThreshold) {
+   591→      case 'critical':
+   592→        return event.severity === 'critical';
+   593→      case 'critical-high':
+   594→        return event.severity === 'critical' || event.severity === 'high';
+   595→      case 'default':
+   596→        return event.severity !== 'info';
+   597→    }
+   598→  }
+   599→
+   600→  /**
+   601→   * Should this event be auto-escalated to incident?
+   602→   */
+   603→  private shouldAutoEscalate(event: CorrelatedEvent): boolean {
+   604→    return (
+   605→      event.severity === 'critical' ||
+   606→      (event.severity === 'high' && event.correlationScore > 60) ||
+   607→      (event.sourceEvents.length >= 3)
+   608→    );
+   609→  }
+   610→
+   611→  /**
+   612→   * Execute automated response actions
+   613→   */
+   614→  private async executeAutomatedResponse(event: CorrelatedEvent): Promise<AutomatedResponseResult> {
+   615→    const action = this.determineBestAction(event);
+   616→    
+   617→    try {
+   618→      let result: any;
+   619→
+   620→      switch (action.type) {
+   621→        case 'isolate_endpoint':
+   622→          if (this.edrClient && event.assetContext?.clientId) {
+   623→            result = await this.edrClient.isolateEndpoint(
+   624→              event.assetContext.clientId,
+   625→              `Automated isolation due to ${event.title}`,
+   626→              'SOC Platform'
+   627→            );
+   628→          }
+   629→          break;
+   630→
+   631→        case 'block_ip':
+   632→          // Would integrate with firewall/network device API
+   633→          result = { success: true, blockedIp: action.target };
+   634→          break;
+   635→
+   636→        case 'create_incident':
+   637→          if (this.soarClient) {
+   638→            result = await this.soarClient.createCase({
+   639→              title: `[AUTO] ${event.title}`,
+   640→              description: event.description,
+   641→              severity: event.severity.toUpperCase(),
+   642→              tags: ['auto-generated', 'automated-response'],
+   643→              tlp: 3, // AMBER by default for auto-generated
+   644→            });
+   645→          }
+   646→          break;
+   647→
+   648→        case 'alert_analyst':
+   649→          // Just emit alert, no automatic action
+   650→          result = { success: true, alerted: true };
+   651→          break;
+   652→
+   653→        default:
+   654→          result = { success: true, action: 'none' };
+   655→      }
+   656→
+   657→      const responseResult: AutomatedResponseResult = {
+   658→        success: result.success ?? true,
+   659→        action: action.type,
+   660→        target: action.target || 'N/A',
+   661→        result,
+   662→        timestamp: new Date().toISOString(),
+   663→        triggeredBy: {
+   664→          source: event.sourceEvents[0]?.source || 'unknown',
+   665→          eventId: event.eventId,
+   666→          severity: event.severity,
+   667→        },
+   668→      };
+   669→
+   670→      this.stats.autoResponsesExecuted++;
+   671→      this.emit('automatedResponse', responseResult);
+   672→
+   673→      return responseResult;
+   674→
+   675→    } catch (error) {
+   676→      this.emit('error', error);
+   677→      return {
+   678→        success: false,
+   679→        action: action.type,
+   680→        target: action.target || 'N/A',
+   681→        result: { error: error.message },
+   682→        timestamp: new Date().toISOString(),
+   683→        triggeredBy: {
+   684→          source: event.sourceEvents[0]?.source || 'unknown',
+   685→          eventId: event.eventId,
+   686→          severity: event.severity,
+   687→        },
+   688→      };
+   689→    }
+   690→  }
+   691→
+   692→  /**
+   693→   * Execute auto-escalation (create incident/case)
+   694→   */
+   695→  private async executeAutoEscalation(event: CorrelatedEvent): Promise<void> {
+   696→    if (!this.soarClient) {
+   697→      console.warn('[COORDINATOR] No SOAR client configured for escalation');
+   698→      return;
+   699→    }
+   700→
+   701→    try {
+   702→      const caseData = await this.soarClient.createCase({
+   703→        title: `[ESCALATED] ${event.title}`,
+   704→        description: `
+   705→## Automated Escalation Summary
+   706→
+   707→**Severity:** ${event.severity.toUpperCase()}
+   708→**Correlation Score:** ${event.correlationScore}/100
+   709→**Source Events:** ${event.sourceEvents.length}
+   710→
+   711→### Description
+   712→${event.description}
+   713→
+   714→### Source Events
+   715→${event.sourceEvents.map(s => `- **[${s.source.toUpperCase()}]** ${s.summary} (Confidence: ${s.confidence}%)`).join('\n')}
+   716→
+   717→### Recommended Actions
+   718→${event.recommendedActions?.map(r => `- [ ] ${r}`).join('\n') || 'None identified'}
+   719→
+   720→---
+   721→*This case was automatically escalated by the SOC Platform*
+   722→`.trim(),
+   723→        severity: event.severity.toUpperCase() === 'CRITICAL' ? 1 : 
+   724→                   event.severity.toUpperCase() === 'HIGH' ? 2 : 3,
+   725→        tags: ['escalated', 'auto-correlated', ...event.sourceEvents.map(s => s.source)],
+   726→        tlp: 2, // AMBER for escalated cases
+   727→      });
+   728→
+   729→      event.incidentId = caseData.id;
+   730→      event.caseId = caseData.caseId;
+   731→
+   732→      this.emit('incidentCreated', { event, caseId: caseData.id });
+   733→      console.log(`[COORDINATOR] 🔥 Incident created: ${caseData.id}`);
+   734→
+   735→    } catch (error) {
+   736→      this.emit('error', error);
+   737→    }
+   738→  }
+   739→
+   740→  // ============================================================
+   741→  // Health Monitoring
+   742→  // ============================================================
+   743→
+   744→  /**
+   745→   * Get comprehensive system health status
+   746→   */
+   747→  async getHealthStatus(): Promise<SystemHealthStatus> {
+   748→    const componentChecks = await Promise.allSettled([
+   749→      this.checkComponentHealth('edr', () => this.edrClient?.connectionStatus),
+   750→      this.checkComponentHealth('nsm', () => this.nsmClient?.connectionStatus),
+   751→      this.checkComponentHealth('siem', () => this.siemClient?.connectionStatus),
+   752→      this.checkComponentHealth('opencti', () => this.openctiClient?.connectionStatus),
+   753→      this.checkComponentHealth('misp', () => this.mispClient?.connectionStatus),
+   754→      this.checkComponentHealth('soar', () => this.soarClient?.connectionStatus),
+   755→      this.checkComponentHealth('vulnerability', () => this.vulnClient?.connectionStatus),
+   756→    ]);
+   757→
+   758→    const components: any = {};
+   759→    let operationalCount = 0;
+   760→
+   761→    componentChecks.forEach((result, index) => {
+   762→      const names = ['edr', 'nsm', 'siem', 'opencti', 'misp', 'soar', 'vulnerability'];
+   763→      const name = names[index];
+   764→      
+   765→      if (result.status === 'fulfilled') {
+   766→        components[name] = result.value;
+   767→        if (result.value.status === 'connected') operationalCount++;
+   768→      } else {
+   769→        components[name] = { status: 'error', latency: -1, lastCheck: new Date().toISOString() };
+   770→      }
+   771→    });
+   772→
+   773→    const overall = operationalCount >= 6 ? 'operational' : 
+   774→                    operationalCount >= 4 ? 'degraded' : 'down';
+   775→
+   776→    return {
+   777→      overall,
+   778→      components,
+   779→      uptimeSeconds: this.stats.uptime(),
+   780→      eventsProcessedToday: this.stats.eventsProcessed,
+   781→      errorsToday: this.stats.errorsEncountered,
+   782→    };
+   783→  }
+   784→
+   785→  // ============================================================
+   786→  // Public API Methods (Proxy to underlying clients)
+   787→  // ============================================================
+   788→
+   789→  // EDR Operations
+   790→  async searchEndpoints(query: string) {
+   791→    return this.edrClient?.searchClients({ query }) || [];
+   792→  }
+   793→
+   794→  async createHunt(params: Parameters<GrrOsqueryEdrClient['createHunt']>[0]) {
+   795→    return this.edrClient?.createHunt(params);
+   796→  }
+   797→
+   798→  async runOsqueryQuery(preset: Parameters<GrrOsqueryEdrClient['runSecurityPreset']>[0]) {
+   799→    return this.edrClient?.runSecurityPreset(preset);
+   800→  }
+   801→
+   802→  // NSM Operations
+   803→  async getAlerts(params: Parameters<SuricataZeekArkimeClient['getAlerts']>[0]) {
+   804→    return this.nsmClient?.getAlerts(params);
+   805→  }
+   806→
+   807→  async correlateNetworkEvents(params: Parameters<SuricataZeekArkimeClient['correlateEvents']>[0]) {
+   808→    return this.nsmClient?.correlateEvents(params);
+   809→  }
+   810→
+   811→  async requestPcap(params: Parameters<SuricataZeekArkimeClient['requestPcap']>[0]) {
+   812→    return this.nsmClient?.requestPcap(params);
+   813→  }
+   814→
+   815→  // Threat Intelligence Operations
+   816→  async matchIndicator(params: Parameters<OpenctiClient['matchObservable']>[0]) {
+   817→    return this.openctiClient?.matchObservable(params);
+   818→  }
+   819→
+   820→  async bulkMatchIndicators(observables: Parameters<OpenctiClient['bulkMatchObservables']>[0]) {
+   821→    return this.openctiClient?.bulkMatchObservables(observables);
+   822→  }
+   823→
+   824→  async addTelcoIntel(intel: Parameters<OpenctiClient['addTelcoIntel']>[0]) {
+   825→    return this.openctiClient?.addTelcoIntel(intel);
+   826→  }
+   827→
+   828→  // Vulnerability Operations
+   829→  async createScan(params: Parameters<OpenvasDefectDojoClient['createScan']>[0]) {
+   830→    return this.vulnClient?.createScan(params);
+   831→  }
+   832→
+   833→  async getVulnerabilities(params: Parameters<OpenvasDefectDojoClient['getUnifiedVulnerabilities']>[0]) {
+   834→    return this.vulnClient?.getUnifiedVulnerabilities(params);
+   835→  }
+   836→
+   837→  async importScanResults(params: Parameters<OpenvasDefectDojoClient['importScanResults']>[0]) {
+   838→    return this.vulnClient?.importScanResults(params);
+   839→  }
+   840→
+   841→  // SOAR Operations
+   842→  async createCase(params: Parameters<TheHiveCortexClient['createCase']>[0]) {
+   843→    return this.soarClient?.createCase(params);
+   844→  }
+   845→
+   846→  async analyzeObservable(params: Parameters<TheHiveCortexClient['analyzeWithCortex']>[0]) {
+   847→    return this.soarClient?.analyzeWithCortex(params);
+   848→  }
+   849→
+   850→  // ============================================================
+   851→  // Private Helper Methods
+   852→  // ============================================================
+   853→
+   854→  private async normalizeEvent(source: string, rawEvent: any): Promise<any> {
+   855→    // Each source has different formats, normalize to common structure
+   856→    const baseEvent = {
+   857→      source,
+   858→      rawEvent,
+   859→      receivedAt: new Date().toISOString(),
+   860→    };
+   861→
+   862→    switch (source) {
+   863→      case 'edr':
+   864→        return {
+   865→          ...baseEvent,
+   866→          hostname: rawEvent.hostname,
+   867→          clientId: rawEvent.clientId,
+   868→          category: rawEvent.category,
+   869→          severity: rawEvent.severity,
+   870→          title: rawEvent.title || `EDR Alert on ${rawEvent.hostname}`,
+   871→          description: rawEvent.description,
+   872→        };
+   873→
+   874→      case 'nsm':
+   875→        return {
+   876→          ...baseEvent,
+   877→          sourceIp: rawEvent.sourceIp,
+   878→          destIp: rawEvent.destinationIp,
+   879→          host: rawEvent.sourceIp || rawEvent.destinationIp,
+   880→          protocol: rawEvent.protocol,
+   881→          severity: rawEvent.severity,
+   882→          title: rawEvent.title || `NSM Alert: ${rawEvent.alert?.signature || 'Unknown'}`,
+   883→          description: rawEvent.description,
+   884→        };
+   885→
+   886→      case 'siem':
+   887→        return {
+   888→          ...baseEvent,
+   889→          hostname: rawEvent.agent?.name || rawEvent.host,
+   890→          rule: rawEvent.rule?.description || rawEvent.rule?.id,
+   891→          severity: rawEvent.rule?.level || rawEvent.severity,
+   892→          title: rawEvent.rule?.description || `SIEM Alert`,
+   893→          description: rawEvent.fullLog || rawEvent.description,
+   894→        };
+   895→
+   896→      case 'ti':
+   897→        return {
+   898→          ...baseEvent,
+   899→          iocValue: rawEvent.value || rawEvent.indicator_pattern,
+   900→          iocType: rawEvent.type,
+   901→          score: rawEvent.score || rawEvent.x_opencti_score,
+   902→          severity: this.scoreToSeverity(rawEvent.score || rawEvent.x_opencti_score || 50),
+   903→          title: `TI Match: ${rawEvent.name || rawEvent.value}`,
+   904→          description: rawEvent.description,
+   905→        };
+   906→
+   907→      case 'vuln':
+   908→        return {
+   909→          ...baseEvent,
+   910→          host: rawEvent.host,
+   911→          port: rawEvent.port,
+   912→          cve: rawEvent.cve,
+   913→          cvssScore: rawEvent.cvssScore,
+   914→          severity: rawEvent.severity,
+   915→          title: `Vulnerability: ${rawEvent.title}`,
+   916→          description: rawEvent.description,
+   917→        };
+   918→
+   919→      default:
+   920→        return {
+   921→          ...baseEvent,
+   922→          ...rawEvent,
+   923→        };
+   924→    }
+   925→  }
+   926→
+   927→  private async enrichEvent(event: any): Promise<any> {
+   928→    // Add geo-IP enrichment if IP present
+   929→    if (event.sourceIp || event.destIp) {
+   930→      // In production, call GeoIP service
+   931→      event.geoLocation = {
+   932→        country: 'DZ', // Default Algeria for telco context
+   933→        city: 'Algiers',
+   934→      };
+   935→    }
+   936→
+   937→    // Add subscriber context if MSISDN present
+   938→    if (event.msisdn) {
+   939→      // In production, look up in subscriber database
+   940→      event.subscriberContext = {
+   941→        msisdn: event.msisdn,
+   942→        riskLevel: 'normal',
+   943→      };
+   944→    }
+   945→
+   946→    return event;
+   947→  }
+   948→
+   949→  private createMinimalCorrelation(event: any): CorrelatedEvent {
+   950→    return {
+   951→      eventId: `corr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+   952→      timestamp: new Date().toISOString(),
+   953→      severity: event.severity || 'info',
+   954→      title: event.title || 'Uncorrelated Event',
+   955→      description: event.description || '',
+   956→      sourceEvents: [{
+   957→        source: event.source,
+   958→        originalId: event.rawEvent?.id || 'unknown',
+   959→        summary: event.title || 'No summary',
+   960→        confidence: 75,
+   961→      }],
+   962→      correlationScore: 10, // Minimal score for uncorrelated events
+   963→      correlationType: 'single_source',
+   964→      ...event,
+   965→    };
+   966→  }
+   967→
+   968→  private extractIPs(event: any): string[] {
+   969→    const ips: string[] = [];
+   970→    if (event.sourceIp && this.isValidIP(event.sourceIp)) ips.push(event.sourceIp);
+   971→    if (event.destIp && this.isValidIP(event.destIp)) ips.push(event.destIp);
+   972→    if (event.host && this.isValidIP(event.host)) ips.push(event.host);
+   973→    return [...new Set(ips)]; // Deduplicate
+   974→  }
+   975→
+   976→  private extractHashes(event: any): string[] {
+   977→    const hashes: string[] = [];
+   978→    if (event.md5 && /^[a-fA-F0-9]{32}$/.test(event.md5)) hashes.push(event.md5);
+   979→    if (event.sha1 && /^[a-fA-F0-9]{40}$/.test(event.sha1)) hashes.push(event.sha1);
+   980→    if (event.sha256 && /^[a-fA-F0-9]{64}$/.test(event.sha256)) hashes.push(event.sha256);
+   981→    return hashes;
+   982→  }
+   983→
+   984→  private extractDomains(event: any): string[] {
+   985→    const domains: string[] = [];
+   986→    if (event.domain && event.domain.includes('.')) domains.push(event.domain.toLowerCase());
+   987→    if (event.hostname && event.hostname.includes('.') && !this.isValidIP(event.hostname)) {
+   988→      domains.push(event.hostname.toLowerCase());
+   989→    }
+   990→    return [...new Set(domains)];
+   991→  }
+   992→
+   993→  private extractMSISDNs(event: any): string[] {
+   994→    const msisdns: string[] = [];
+   995→    // Common patterns for MSISDN extraction
+   996→    const patterns = [/213\d{9}$/, /\+213\d{9}$/, /0[5-7]\d{8}$/];
+   997→    
+   998→    Object.values(event).forEach(value => {
+   999→      if (typeof value === 'string') {
+  1000→        patterns.forEach(pattern => {
+  1001→          const match = value.match(pattern);
+  1002→          if (match) msisdns.push(match[0]);
+  1003→        });
+  1004→      }
+  1005→    });
+  1006→
+  1007→    return [...new Set(msisdns)];
+  1008→  }
+  1009→
+  1010→  private isValidIP(ip: string): boolean {
+  1011→    return /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+  1012→  }
+  1013→
+  1014→  private calculateCorrelatedSeverity(event: any, sourceEvents: any[]): CorrelatedEvent['severity'] {
+  1015→    // Start with base severity
+  1016→    let baseSeverity = (event.severity || 'info').toLowerCase();
+  1017→    
+  1018→    // Upgrade severity based on correlation strength
+  1019→    if (sourceEvents.length >= 3 && baseSeverity !== 'critical') {
+  1020→      baseSeverity = 'high';
+  1021→    } else if (sourceEvents.length === 2 && ['low', 'info'].includes(baseSeverity)) {
+  1022→      baseSeverity = 'medium';
+  1023→    }
+  1024→
+  1025→    // Check for critical indicators in source events
+  1026→    const hasCriticalSource = sourceEvents.some(s => s.confidence > 85);
+  1027→    if (hasCriticalSource && baseSeverity !== 'critical') {
+  1028→      baseSeverity = 'high';
+  1029→    }
+  1030→
+  1031→    return baseSeverity as CorrelatedEvent['severity'];
+  1032→  }
+  1033→
+  1034→  private generateCorrelationTitle(event: any, sourceEvents: any[]): string {
+  1035→    const sources = sourceEvents.map(s => s.source.toUpperCase()).filter((v, i, a) => a.indexOf(v) === i);
+  1036→    
+  1037→    if (sources.length <= 1) {
+  1038→      return event.title || 'Security Event';
+  1039→    }
+  1040→
+  1041→    return `Cross-Source Correlation (${sources.join('+')})`;
+  1042→  }
+  1043→
+  1044→  private generateCorrelationDescription(event: any, sourceEvents: any[]): string {
+  1045→    const lines = [
+  1046→      `**Correlation Analysis Report**\n`,
+  1047→      `**Sources Analyzed:** ${sourceEvents.length}`,
+  1048→      `**Correlation Score:** ${Math.min(100, 20 + sourceEvents.length * 15)}%`,
+  1049→      '',
+  1050→      '**Source Events:**',
+  1051→      ...sourceEvents.map(s => `- [${s.source.toUpperCase()}] ${s.summary} (Confidence: ${s.confidence}%)`),
+  1052→      '',
+  1053→      '**Original Event:**',
+  1054→      event.description || 'No description available',
+  1055→    ];
+  1056→
+  1057→    return lines.join('\n');
+  1058→  }
+  1059→
+  1060→  private generateRecommendations(event: CorrelatedEvent): string[] {
+  1061→    const recommendations: string[] = [];
+  1062→
+  1063→    // Based on severity
+  1064→    if (event.severity === 'critical') {
+  1065→      recommendations.push('Immediate containment required - consider isolating affected endpoint');
+  1066→      recommendations.push('Escalate to incident response team immediately');
+  1067→    }
+  1068→
+  1069→    // Based on correlation type
+  1070→    if (event.correlationType === 'ioc_match') {
+  1071→      recommendations.push('Review threat intelligence context for attacker TTPs');
+  1072→      recommendations.push('Search for additional IOCs from same threat actor');
+  1073→    }
+  1074→
+  1075→    if (event.correlationType === 'asset_correlation') {
+  1076→      recommendations.push('Review endpoint history for related alerts');
+  1077→      recommendations.push('Consider full forensic artifact collection');
+  1078→    }
+  1079→
+  1080→    // Based on involved sources
+  1081→    const sources = event.sourceEvents.map(s => s.source);
+  1082→    if (sources.includes('vuln')) {
+  1083→      recommendations.push('Initiate patching/remediation workflow for identified vulnerabilities');
+  1084→    }
+  1085→    if (sources.includes('nsm')) {
+  1086→      recommendations.push('Review PCAP data for network-level details');
+  1087→    }
+  1088→    if (sources.includes('edr')) {
+  1089→      recommendations.push('Collect endpoint forensics for deeper analysis');
+  1090→    }
+  1091→
+  1092→    // Always include general recommendation
+  1093→    recommendations.push('Document findings and update detection rules as needed');
+  1094→
+  1095→    return recommendations;
+  1096→  }
+  1097→
+  1098→  private determineBestAction(event: CorrelatedEvent): { type: string; target: string } {
+  1099→    // Critical severity with endpoint -> isolate
+  1100→    if (event.severity === 'critical' && event.assetContext?.clientId) {
+  1101→      return { type: 'isolate_endpoint', target: event.assetContext.clientId };
+  1102→    }
+  1103→
+  1104→    // Critical/high with IP -> block
+  1105→    if ((event.severity === 'critical' || event.severity === 'high') && event.sourceIp) {
+  1106→      return { type: 'block_ip', target: event.sourceIp };
+  1107→    }
+  1108→
+  1109→    // High correlation score -> create incident
+  1110→    if (event.correlationScore > 60) {
+  1111→      return { type: 'create_incident', target: 'SOAR' };
+  1112→    }
+  1113→
+  1114→    // Default -> just alert
+  1115→    return { type: 'alert_analyst', target: 'SOC Analyst' };
+  1116→  }
+  1117→
+  1118→  private scoreToSeverity(score: number): string {
+  1119→    if (score >= 80) return 'critical';
+  1120→    if (score >= 60) return 'high';
+  1121→    if (score >= 40) return 'medium';
+  1122→    if (score >= 20) return 'low';
+  1123→    return 'info';
+  1124→  }
+  1125→
+  1126→  private async publishToKafka(topic: string, event: any): Promise<void> {
+  1127→    // In production, this would use the Kafka client to publish
+  1128→    // For now, just emit an event
+  1129→    this.emit('kafkaPublish', { topic, event });
+  1130→  }
+  1131→
+  1132→  private async flushEventBuffer(): Promise<void> {
+  1133→    if (this.eventBuffer.length === 0) return;
+  1134→
+  1135→    const events = [...this.eventBuffer];
+  1136→    this.eventBuffer = [];
+  1137→
+  1138→    // Publish batch to Kafka
+  1139→    await this.publishToKafka('correlation', events);
+  1140→
+  1141→    console.log(`[COORDINATOR] Flushed ${events.length} correlated events`);
+  1142→    this.emit('batchFlushed', { count: events.length });
+  1143→  }
+  1144→
+  1145→  private async checkComponentHealth(
+  1146→    name: string, 
+  1147→    getStatusFn: () => boolean | undefined
+  1148→  ): Promise<{ status: string; latency: number; lastCheck: string }> {
+  1149→    const start = Date.now();
+  1150→    try {
+  1151→      const status = getStatusFn();
+  1152→      return {
+  1153→        status: status ? 'connected' : 'disconnected',
+  1154→        latency: Date.now() - start,
+  1155→        lastCheck: new Date().toISOString(),
+  1156→      };
+  1157→    } catch {
+  1158→      return {
+  1159→        status: 'error',
+  1160→        latency: Date.now() - start,
+  1161→        lastCheck: new Date().toISOString(),
+  1162→      };
+  1163→    }
+  1164→  }
+  1165→}
+  1166→
+  1167→// Export singleton factory
+  1168→let coordinatorInstance: IntegrationCoordinator | null = null;
+  1169→
+  1170→export function createIntegrationCoordinator(config: PlatformIntegrationConfig): IntegrationCoordinator {
+  1171→  if (!coordinatorInstance) {
+  1172→    coordinatorInstance = new IntegrationCoordinator(config);
+  1173→  }
+  1174→  return coordinatorInstance;
+  1175→}
+  1176→
+  1177→export default IntegrationCoordinator;
+  1178→
