@@ -1,6 +1,16 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { demoHoursAgo, demoDaysAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const createReportSchema = z.object({
+  type: z.enum(['daily', 'weekly', 'sla', 'son', 'qoe']),
+  format: z.string().optional(),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  filters: z.record(z.string(), z.any()).optional(),
+});
 
 // ── Statistics helpers ──
 function stats(values: number[]) {
@@ -28,6 +38,8 @@ function extractField(items: any[], field: string): number[] {
 }
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'daily';
   const technology = searchParams.get('technology');
@@ -90,6 +102,7 @@ async function handleKpiReport(
       dropRate: true,
       prbUtilization: true,
     },
+    take: 500,
   });
 
   const metricFields = [
@@ -137,7 +150,7 @@ async function handleSlaReport(techFilter: string | undefined) {
   const targetWhere: Record<string, any> = { enabled: true };
   if (techFilter) targetWhere.technology = techFilter;
 
-  const targets = await db.sLATarget.findMany({ where: targetWhere });
+  const targets = await db.sLATarget.findMany({ where: targetWhere, take: 50 });
   const oneHourAgo = await demoHoursAgo(1);
 
   const techAvgs = await db.kpiMetric.groupBy({
@@ -235,6 +248,7 @@ async function handleSonReport(techFilter: string | undefined) {
         take: 50,
       },
     },
+    take: 50,
   });
 
   const moduleSummaries = modules.map((mod) => {
@@ -343,6 +357,7 @@ async function handleQoeReport(
       site: { select: { region: true, technology: true, name: true, code: true } },
     },
     orderBy: { timestamp: 'desc' },
+    take: 500,
   });
 
   // Latest metric per site
@@ -470,16 +485,15 @@ async function handleQoeReport(
 // POST: Create a report metadata record
 // ────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { type, format, name, description, filters } = body;
-
-    if (!type || !['daily', 'weekly', 'sla', 'son', 'qoe'].includes(type)) {
-      return NextResponse.json(
-        { error: 'Invalid or missing report type. Must be: daily, weekly, sla, son, qoe' },
-        { status: 400 },
-      );
+    const parsed = createReportSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { type, format, name, description, filters } = parsed.data;
 
     const reportId = `RPT-${Date.now().toString(36).toUpperCase()}`;
     const now = new Date();

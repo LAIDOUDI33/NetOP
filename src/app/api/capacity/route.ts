@@ -1,7 +1,19 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const createCapacitySchema = z.object({
+  siteId: z.string().min(1),
+  technology: z.string().min(1),
+  metric: z.string().min(1),
+  currentValue: z.number(),
+  forecastValue: z.number(),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const region = searchParams.get('region');
@@ -17,6 +29,7 @@ export async function GET(request: NextRequest) {
       where,
       include: { site: { select: { name: true, code: true, region: true } } },
       orderBy: { timestamp: 'desc' },
+      take: 200,
     });
 
     const mapped = forecasts.map((f) => ({
@@ -71,16 +84,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { siteId, technology, metric, currentValue, forecastValue } = body;
-
-    if (!siteId || !technology || !metric || currentValue === undefined || forecastValue === undefined) {
-      return NextResponse.json(
-        { error: 'Missing required fields: siteId, technology, metric, currentValue, forecastValue' },
-        { status: 400 },
-      );
+    const parsed = createCapacitySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { siteId, technology, metric, currentValue, forecastValue } = parsed.data;
 
     // Auto-set region from site
     const site = await db.networkSite.findUnique({ where: { id: siteId }, select: { region: true, technology: true } });

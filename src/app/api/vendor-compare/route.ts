@@ -1,10 +1,13 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const VALID_TECHNOLOGIES = ['2G', '3G', '4G', '5G'];
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const authed = await checkApiAuth(request);
   if (!authed) return authError();
 

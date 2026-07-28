@@ -1,7 +1,16 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const patchParameterSchema = z.object({
+  paramId: z.string().min(1),
+  currentValue: z.union([z.string(), z.number()]),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology') || 'all';
   const category = searchParams.get('category') || 'all';
@@ -14,6 +23,7 @@ export async function GET(request: NextRequest) {
     const params = await db.networkParameter.findMany({
       where,
       orderBy: [{ technology: 'asc' }, { category: 'asc' }],
+      take: 200,
     });
 
     return NextResponse.json({
@@ -36,8 +46,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
-    const { paramId, currentValue } = await request.json();
+    const body = await request.json();
+    const parsed = patchParameterSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+    const { paramId, currentValue } = parsed.data;
     const param = await db.networkParameter.findUnique({ where: { id: paramId } });
     if (!param) return NextResponse.json({ error: 'Parameter not found' }, { status: 404 });
 

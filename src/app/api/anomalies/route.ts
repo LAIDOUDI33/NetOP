@@ -1,7 +1,16 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const patchAnomalySchema = z.object({
+  anomalyId: z.string().min(1),
+  status: z.enum(['detected', 'investigating', 'resolved', 'false_positive']),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const severity = searchParams.get('severity');
@@ -21,7 +30,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Statistics
-    const allAnomalies = await db.anomalyEvent.findMany({ where });
+    const allAnomalies = await db.anomalyEvent.findMany({ where, take: 500 });
     const stats = {
       total: allAnomalies.length,
       bySeverity: { critical: 0, major: 0, minor: 0 },
@@ -50,11 +59,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
-    const { anomalyId, status } = await request.json();
-    if (!anomalyId || !status) {
-      return NextResponse.json({ error: 'Missing anomalyId or status' }, { status: 400 });
+    const body = await request.json();
+    const parsed = patchAnomalySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { anomalyId, status } = parsed.data;
 
     const anomaly = await db.anomalyEvent.findUnique({ where: { id: anomalyId } });
     if (!anomaly) return NextResponse.json({ error: 'Anomaly not found' }, { status: 404 });

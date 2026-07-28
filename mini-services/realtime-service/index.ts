@@ -29,11 +29,13 @@ function jitterInt(value: number, pct: number): number {
 }
 
 // ── 1. Continuous Data Generation (every 30 seconds) ─────────────────────────
+// Optimized: Batch queries instead of N+1 per site
 
 async function generateFreshKpiData() {
   try {
     const sites = await prisma.networkSite.findMany({
       select: { id: true, technology: true, status: true },
+      take: 200,
     });
 
     if (sites.length === 0) {
@@ -41,24 +43,42 @@ async function generateFreshKpiData() {
       return;
     }
 
-    const created = [];
+    const siteIds = sites.map(s => s.id);
+
+    // Batch: get latest KPI per site in a single query
+    const latestKpis = await prisma.$queryRaw<Array<{ siteId: string; rssi: number | null; rsrp: number | null; rsrq: number | null; sinr: number | null; rscp: number | null; ecno: number | null; rxlev: number | null; cqichannel: number | null; downloadThroughput: number | null; uploadThroughput: number | null; latency: number | null; jitter: number | null; packetLoss: number | null; availability: number | null; activeUsers: number | null; handoverSuccessRate: number | null; dropRate: number | null; blockedCallRate: number | null; prbUtilization: number | null }>>`
+      SELECT k.* FROM KpiMetric k
+      INNER JOIN (
+        SELECT siteId, MAX(timestamp) as maxTs
+        FROM KpiMetric
+        WHERE siteId IN (${siteIds.map(() => '?').join(',')})
+        GROUP BY siteId
+      ) latest ON k.siteId = latest.siteId AND k.timestamp = latest.maxTs
+    `;
+
+    // Build lookup map
+    const kpiMap = new Map(latestKpis.map(k => [k.siteId, k]));
+
+    const now = new Date();
+    const kpiRecords: Array<Record<string, unknown>> = [];
+    const alertRecords: Array<Record<string, unknown>> = [];
+
+    const alertMetricOptions = [
+      { field: "rsrp" as const, threshold: -110, condition: "<" as const, severity: "warning" as const },
+      { field: "sinr" as const, threshold: -3, condition: "<" as const, severity: "critical" as const },
+      { field: "availability" as const, threshold: 95, condition: "<" as const, severity: "critical" as const },
+      { field: "dropRate" as const, threshold: 2, condition: ">" as const, severity: "warning" as const },
+      { field: "latency" as const, threshold: 50, condition: ">" as const, severity: "warning" as const },
+    ];
 
     for (const site of sites) {
-      // Get the latest KPI for this site
-      const latest = await prisma.kpiMetric.findFirst({
-        where: { siteId: site.id },
-        orderBy: { timestamp: "desc" },
-      });
+      const base = kpiMap.get(site.id);
+      if (!base) continue;
 
-      if (!latest) continue;
-
-      // Generate realistic variations
-      const base = latest;
-      const data: Record<string, any> = {
+      const data: Record<string, unknown> = {
         siteId: site.id,
         technology: site.technology,
-        timestamp: new Date(),
-        // Signal metrics: small variation
+        timestamp: now,
         rssi: base.rssi != null ? jitter(base.rssi, 0.03) : null,
         rsrp: base.rsrp != null ? jitter(base.rsrp, 0.03) : null,
         rsrq: base.rsrq != null ? jitter(base.rsrq, 0.04) : null,
@@ -67,60 +87,55 @@ async function generateFreshKpiData() {
         ecno: base.ecno != null ? jitter(base.ecno, 0.04) : null,
         rxlev: base.rxlev != null ? jitter(base.rxlev, 0.03) : null,
         cqichannel: base.cqichannel != null ? jitter(base.cqichannel, 0.04) : null,
-        // Throughput: moderate variation
         downloadThroughput: base.downloadThroughput != null ? jitter(base.downloadThroughput, 0.08) : null,
         uploadThroughput: base.uploadThroughput != null ? jitter(base.uploadThroughput, 0.08) : null,
-        // Latency: small variation
         latency: base.latency != null ? jitter(base.latency, 0.05) : null,
         jitter: base.jitter != null ? jitter(base.jitter, 0.06) : null,
         packetLoss: base.packetLoss != null ? jitter(base.packetLoss, 0.10) : null,
-        // Availability: very small variation, keep high
         availability: base.availability != null ? jitter(base.availability, 0.005) : null,
-        // Active users: larger variation (±15%)
         activeUsers: base.activeUsers != null ? jitterInt(base.activeUsers, 0.15) : null,
-        // KPIs: small variation
         handoverSuccessRate: base.handoverSuccessRate != null ? jitter(base.handoverSuccessRate, 0.01) : null,
         dropRate: base.dropRate != null ? Math.max(0, jitter(base.dropRate, 0.15)) : null,
         blockedCallRate: base.blockedCallRate != null ? Math.max(0, jitter(base.blockedCallRate, 0.15)) : null,
         prbUtilization: base.prbUtilization != null ? jitter(base.prbUtilization, 0.06) : null,
       };
 
-      const record = await prisma.kpiMetric.create({ data });
-      created.push(record);
+      kpiRecords.push(data);
 
-      // Occasionally generate alerts on threshold breach (5% chance per site)
+      // 5% chance to generate alert
       if (Math.random() < 0.05) {
-        const metrics = [
-          { field: "rsrp" as const, threshold: -110, condition: "<" as const, severity: "warning" as const },
-          { field: "sinr" as const, threshold: -3, condition: "<" as const, severity: "critical" as const },
-          { field: "availability" as const, threshold: 95, condition: "<" as const, severity: "critical" as const },
-          { field: "dropRate" as const, threshold: 2, condition: ">" as const, severity: "warning" as const },
-          { field: "latency" as const, threshold: 50, condition: ">" as const, severity: "warning" as const },
-        ];
-
-        const m = metrics[Math.floor(Math.random() * metrics.length)];
+        const m = alertMetricOptions[Math.floor(Math.random() * alertMetricOptions.length)];
         const val = data[m.field];
         if (val != null) {
-          const breached = m.condition === "<" ? val < m.threshold : val > m.threshold;
+          const breached = m.condition === "<" ? (val as number) < m.threshold : (val as number) > m.threshold;
           if (breached) {
-            await prisma.alert.create({
-              data: {
-                siteId: site.id,
-                technology: site.technology,
-                metric: m.field,
-                value: val,
-                threshold: m.threshold,
-                condition: m.condition,
-                severity: m.severity,
-                message: `${site.technology} ${m.field} ${m.condition} ${m.threshold}: current ${val.toFixed(1)}`,
-              },
+            alertRecords.push({
+              siteId: site.id,
+              technology: site.technology,
+              metric: m.field,
+              value: val,
+              threshold: m.threshold,
+              condition: m.condition,
+              severity: m.severity,
+              message: `${site.technology} ${m.field} ${m.condition} ${m.threshold}: current ${(val as number).toFixed(1)}`,
             });
           }
         }
       }
     }
 
-    console.log(`[DataGen] Generated ${created.length} fresh KPI records at ${new Date().toISOString()}`);
+    // Batch insert all KPI records (chunked for SQLite limits)
+    const CHUNK = 50;
+    for (let i = 0; i < kpiRecords.length; i += CHUNK) {
+      await prisma.kpiMetric.createMany({ data: kpiRecords.slice(i, i + CHUNK) });
+    }
+
+    // Batch insert alerts
+    if (alertRecords.length > 0) {
+      await prisma.alert.createMany({ data: alertRecords });
+    }
+
+    console.log(`[DataGen] Generated ${kpiRecords.length} KPI records, ${alertRecords.length} alerts at ${now.toISOString()}`);
   } catch (error) {
     console.error("[DataGen] Error:", error);
   }

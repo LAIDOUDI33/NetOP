@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 const startTime = Date.now();
 
@@ -8,7 +9,9 @@ const startTime = Date.now();
  * Returns 200 OK with service status, uptime, and DB connectivity.
  * NO JWT required — this must be reachable by infrastructure probes.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const now = new Date();
   let dbStatus: 'ok' | 'degraded' | 'down' = 'ok';
   let dbLatencyMs = 0;

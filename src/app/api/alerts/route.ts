@@ -1,7 +1,18 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const patchAlertSchema = z.object({
+  action: z.enum(['acknowledge', 'resolve', 'toggleRule']),
+  alertId: z.string().min(1).optional(),
+  ruleId: z.string().min(1).optional(),
+  enabled: z.boolean().optional(),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const severity = searchParams.get('severity');
   const technology = searchParams.get('technology');
@@ -20,10 +31,10 @@ export async function GET(request: NextRequest) {
       take: 100,
     });
 
-    const rules = await db.alertRule.findMany({ orderBy: { createdAt: 'desc' } });
+    const rules = await db.alertRule.findMany({ orderBy: { createdAt: 'desc' }, take: 200 });
 
     // Stats
-    const allUnresolved = await db.alert.findMany({ where: { resolvedAt: null } });
+    const allUnresolved = await db.alert.findMany({ where: { resolvedAt: null }, take: 500 });
     const stats = {
       total: allUnresolved.length,
       critical: allUnresolved.filter(a => a.severity === 'critical').length,
@@ -70,9 +81,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { alertId, action, ruleId, enabled } = body;
+    const parsed = patchAlertSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+    const { alertId, action, ruleId, enabled } = parsed.data;
 
     if (action === 'acknowledge' && alertId) {
       await db.alert.update({ where: { id: alertId }, data: { acknowledged: true } });

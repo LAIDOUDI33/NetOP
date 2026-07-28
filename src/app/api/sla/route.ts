@@ -1,10 +1,13 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
-    const targets = await db.sLATarget.findMany({ where: { enabled: true } });
+    const targets = await db.sLATarget.findMany({ where: { enabled: true }, take: 50 });
     const oneHourAgo = await demoHoursAgo(1);
 
     // Get latest KPI averages per technology

@@ -1,7 +1,32 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const createIncidentSchema = z.object({
+  title: z.string().min(1),
+  technology: z.string().min(1),
+  severity: z.string().min(1),
+  description: z.string().optional(),
+  siteId: z.string().optional(),
+  category: z.string().optional(),
+  priority: z.number().int().min(1).max(10).optional(),
+  assignedTo: z.string().optional(),
+  mttrTarget: z.number().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+const patchIncidentSchema = z.object({
+  id: z.string().min(1),
+  action: z.enum(['resolve', 'assign', 'investigate']),
+  assignedTo: z.string().optional(),
+  rootCause: z.string().optional(),
+  resolution: z.string().optional(),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const severity = searchParams.get('severity');
@@ -19,6 +44,7 @@ export async function GET(request: NextRequest) {
       where,
       include: { site: { select: { name: true, code: true, region: true, technology: true } } },
       orderBy: { createdAt: 'desc' },
+      take: 500,
     });
 
     const mapped = incidents.map((inc) => ({
@@ -86,16 +112,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { title, technology, severity, description, siteId, category, priority, assignedTo, mttrTarget, tags } = body;
-
-    if (!title || !technology || !severity) {
-      return NextResponse.json(
-        { error: 'Missing required fields: title, technology, severity' },
-        { status: 400 },
-      );
+    const parsed = createIncidentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { title, technology, severity, description, siteId, category, priority, assignedTo, mttrTarget, tags } = parsed.data;
 
     const incident = await db.incident.create({
       data: {
@@ -150,13 +175,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { id, action, assignedTo, rootCause, resolution } = body;
-
-    if (!id || !action) {
-      return NextResponse.json({ error: 'Missing required fields: id, action' }, { status: 400 });
+    const parsed = patchIncidentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { id, action, assignedTo, rootCause, resolution } = parsed.data;
 
     const existing = await db.incident.findUnique({ where: { id } });
     if (!existing) {

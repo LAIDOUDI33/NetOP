@@ -1,14 +1,17 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const oneHourAgo = await demoHoursAgo(1);
     const oneDayAgo = await demoHoursAgo(24);
 
     // Site counts by technology and status
-    const allSites = await db.networkSite.findMany();
+    const allSites = await db.networkSite.findMany({ take: 1000 });
     const sitesByTech: Record<string, number> = { '2G': 0, '3G': 0, '4G': 0, '5G': 0 };
     const sitesByStatus: Record<string, number> = { active: 0, degraded: 0, down: 0, maintenance: 0 };
 

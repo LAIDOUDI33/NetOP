@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const { searchParams } = request.nextUrl;
     const category = searchParams.get('category');
@@ -15,6 +18,7 @@ export async function GET(request: NextRequest) {
       where,
       orderBy: { createdAt: 'desc' },
       include: { steps: { orderBy: { stepNumber: 'asc' } } },
+      take: 100,
     });
 
     const byCategory: Record<string, number> = {};

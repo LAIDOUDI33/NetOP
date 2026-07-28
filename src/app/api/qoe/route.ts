@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const siteId = searchParams.get('siteId');
   const technology = searchParams.get('technology');
@@ -21,6 +24,7 @@ export async function GET(request: NextRequest) {
           timestamp: { gte: sixHoursAgo },
         },
         orderBy: { timestamp: 'asc' },
+        take: 500,
       });
 
       // Bucket into hourly intervals
@@ -87,6 +91,7 @@ export async function GET(request: NextRequest) {
           take: 1,
         },
       },
+      take: 1000,
     });
 
     const siteSummaries = sites

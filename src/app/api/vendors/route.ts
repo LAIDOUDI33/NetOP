@@ -1,10 +1,31 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
-export async function GET() {
+const createVendorSchema = z.object({
+  vendor: z.string().min(1),
+  displayName: z.string().min(1),
+  technologies: z.array(z.string()).optional(),
+  apiType: z.enum(['rest', 'netconf', 'snmp', 'cli']).optional(),
+  apiEndpoint: z.string().nullable().optional(),
+  credentials: z.any().optional(),
+  status: z.string().optional(),
+});
+
+const patchVendorSchema = z.object({
+  vendorId: z.string().min(1),
+  action: z.enum(['update_status', 'sync']),
+  status: z.string().optional(),
+});
+
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const vendors = await db.vendorProfile.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 50,
     });
 
     return NextResponse.json({
@@ -28,21 +49,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { vendor, displayName, technologies, apiType, apiEndpoint, credentials, status } = body;
-
-    if (!vendor || !displayName) {
-      return NextResponse.json({ error: 'Missing required fields: vendor, displayName' }, { status: 400 });
+    const parsed = createVendorSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
-
-    const validApiTypes = ['rest', 'netconf', 'snmp', 'cli'];
-    if (apiType && !validApiTypes.includes(apiType)) {
-      return NextResponse.json(
-        { error: `Invalid apiType. Must be one of: ${validApiTypes.join(', ')}` },
-        { status: 400 },
-      );
-    }
+    const { vendor, displayName, technologies, apiType, apiEndpoint, credentials, status } = parsed.data;
 
     const profile = await db.vendorProfile.create({
       data: {
@@ -86,13 +101,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { vendorId, action, status: newStatus, ...rest } = body;
-
-    if (!vendorId || !action) {
-      return NextResponse.json({ error: 'Missing required fields: vendorId, action' }, { status: 400 });
+    const parsed = patchVendorSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { vendorId, action, status: newStatus } = parsed.data;
 
     const existing = await db.vendorProfile.findUnique({ where: { id: vendorId } });
 

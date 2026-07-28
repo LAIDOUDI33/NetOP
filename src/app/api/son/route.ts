@@ -1,7 +1,27 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const createSonModuleSchema = z.object({
+  name: z.string().min(1),
+  displayName: z.string().min(1),
+  technology: z.enum(['2G', '3G', '4G', '5G', 'ALL']),
+  description: z.string().optional(),
+  enabled: z.boolean().optional(),
+  mode: z.enum(['open-loop', 'semi-automated', 'closed-loop']).optional(),
+  schedule: z.string().nullable().optional(),
+  parameters: z.record(z.string(), z.any()).optional(),
+});
+
+const patchSonModuleSchema = z.object({
+  moduleId: z.string().min(1),
+  action: z.enum(['toggle', 'execute', 'rollback']),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
 
@@ -14,6 +34,7 @@ export async function GET(request: NextRequest) {
     const modules = await db.sonModule.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 50,
     });
 
     const result = await Promise.all(
@@ -76,23 +97,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { name, displayName, technology, description, enabled, mode, schedule, parameters } = body;
-
-    if (!name || !displayName || !technology) {
-      return NextResponse.json({ error: 'Missing required fields: name, displayName, technology' }, { status: 400 });
+    const parsed = createSonModuleSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
-
-    const validTechs = ['2G', '3G', '4G', '5G', 'ALL'];
-    if (!validTechs.includes(technology)) {
-      return NextResponse.json({ error: `Invalid technology. Must be one of: ${validTechs.join(', ')}` }, { status: 400 });
-    }
-
-    const validModes = ['open-loop', 'semi-automated', 'closed-loop'];
-    if (mode && !validModes.includes(mode)) {
-      return NextResponse.json({ error: `Invalid mode. Must be one of: ${validModes.join(', ')}` }, { status: 400 });
-    }
+    const { name, displayName, technology, description, enabled, mode, schedule, parameters } = parsed.data;
 
     const newModule = await db.sonModule.create({
       data: {
@@ -134,18 +147,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { moduleId, action } = body;
-
-    if (!moduleId || !action) {
-      return NextResponse.json({ error: 'Missing required fields: moduleId, action' }, { status: 400 });
+    const parsed = patchSonModuleSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
-
-    const validActions = ['toggle', 'execute', 'rollback'];
-    if (!validActions.includes(action)) {
-      return NextResponse.json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` }, { status: 400 });
-    }
+    const { moduleId, action } = parsed.data;
 
     const existing = await db.sonModule.findUnique({
       where: { id: moduleId },

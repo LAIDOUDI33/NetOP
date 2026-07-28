@@ -1,10 +1,13 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     // Sites
-    const allSites = await db.networkSite.findMany({ select: { technology: true, status: true } });
+    const allSites = await db.networkSite.findMany({ select: { technology: true, status: true }, take: 1000 });
     const totalSites = allSites.length;
     const sitesByTech: Record<string, number> = {};
     const sitesByStatus: Record<string, number> = {};

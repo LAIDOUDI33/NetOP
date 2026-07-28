@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 // ── Pearson correlation coefficient ──
 function pearson(xs: number[], ys: number[]): number {
@@ -23,6 +24,8 @@ function pearson(xs: number[], ys: number[]): number {
 }
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'kpi';
   const technology = searchParams.get('technology');
@@ -60,6 +63,7 @@ async function handleAlarmCorrelation(
       site: { select: { id: true, name: true, code: true, region: true } },
     },
     orderBy: { createdAt: 'asc' },
+    take: 500,
   });
 
   // Correlation window: 5 minutes
@@ -205,6 +209,7 @@ async function handleKpiCorrelation(
       activeUsers: true,
       prbUtilization: true,
     },
+    take: 500,
   });
 
   // Define correlation pairs: [label, fieldA, fieldB]

@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const authed = await checkApiAuth(request);
   if (!authed) return authError();
   const { searchParams } = new URL(request.url);
@@ -18,6 +21,7 @@ export async function GET(request: NextRequest) {
       where,
       include: { servingCell: { select: { name: true, code: true, region: true } } },
       orderBy: { timestamp: 'desc' },
+      take: 500,
     });
 
     const mapped = records.map((r) => ({

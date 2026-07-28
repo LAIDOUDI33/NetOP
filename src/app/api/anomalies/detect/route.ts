@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const sixHoursAgo = await demoHoursAgo(6);
     const oneHourAgo = await demoHoursAgo(1);
@@ -16,6 +19,7 @@ export async function POST(request: NextRequest) {
         downloadThroughput: true, latency: true, availability: true,
         sinr: true, dropRate: true, prbUtilization: true,
       },
+      take: 500,
     });
 
     // Get latest KPI per site
@@ -28,6 +32,7 @@ export async function POST(request: NextRequest) {
         downloadThroughput: true, latency: true, availability: true,
         sinr: true, dropRate: true, prbUtilization: true,
       },
+      take: 500,
     });
 
     const metrics = ['downloadThroughput', 'latency', 'availability', 'sinr', 'dropRate', 'prbUtilization'] as const;
@@ -48,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Compute stats and detect anomalies
     const detected: Array<{ siteId: string; technology: string; metric: string; actualValue: number; expectedValue: number; zScore: number; severity: string; description: string }> = [];
-    const sites = await db.networkSite.findMany({ select: { id: true, name: true, technology: true } });
+    const sites = await db.networkSite.findMany({ select: { id: true, name: true, technology: true }, take: 1000 });
     const siteMap = new Map(sites.map(s => [s.id, s]));
 
     for (const latest of latestKpis) {

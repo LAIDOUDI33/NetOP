@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const region = searchParams.get('region');
@@ -23,6 +26,7 @@ export async function GET(request: NextRequest) {
           take: 1,
         },
       },
+      take: 1000,
     });
 
     const siteData = sites.map(s => {

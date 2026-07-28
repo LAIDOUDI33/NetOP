@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const { searchParams } = request.nextUrl;
     const technology = searchParams.get('technology');
@@ -15,7 +18,7 @@ export async function GET(request: NextRequest) {
     if (category) where.category = category;
     if (riskLevel) where.riskLevel = riskLevel;
 
-    const changes = await db.changeRequest.findMany({ where, orderBy: { createdAt: 'desc' } });
+    const changes = await db.changeRequest.findMany({ where, orderBy: { createdAt: 'desc' }, take: 200 });
 
     const byStatus: Record<string, number> = {};
     const byCategory: Record<string, number> = {};

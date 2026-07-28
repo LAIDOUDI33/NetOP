@@ -1,7 +1,16 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const patchSonActionSchema = z.object({
+  actionId: z.string().min(1),
+  action: z.enum(['apply', 'rollback']),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const moduleId = searchParams.get('moduleId');
   const technology = searchParams.get('technology');
@@ -72,17 +81,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { actionId, action } = body; // action = 'apply' | 'rollback'
-
-    if (!actionId || !action) {
-      return NextResponse.json({ error: 'Missing required fields: actionId, action' }, { status: 400 });
+    const parsed = patchSonActionSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
-
-    if (action !== 'apply' && action !== 'rollback') {
-      return NextResponse.json({ error: 'Invalid action. Must be "apply" or "rollback"' }, { status: 400 });
-    }
+    const { actionId, action } = parsed.data;
 
     const existing = await db.sonAction.findUnique({
       where: { id: actionId },

@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology') || '4G';
   const oneHourAgo = await demoHoursAgo(1);
@@ -19,6 +22,7 @@ export async function GET(request: NextRequest) {
           take: 1,
         },
       },
+      take: 1000,
     });
 
     const siteSummaries = sites.map(site => {
@@ -60,6 +64,7 @@ export async function GET(request: NextRequest) {
     const trendKpis = await db.kpiMetric.findMany({
       where: { technology, timestamp: { gte: sixHoursAgo } },
       orderBy: { timestamp: 'asc' },
+      take: 500,
     });
 
     const buckets: Record<string, { rsrp: number[]; sinr: number[]; dl: number[]; ul: number[]; lat: number[]; users: number[]; avail: number[] }> = {};

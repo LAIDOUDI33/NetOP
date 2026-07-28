@@ -1,10 +1,35 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
-export async function GET() {
+const createPolicySchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  technology: z.string().min(1),
+  triggerType: z.enum(['kpi_breach', 'anomaly_detected', 'schedule', 'manual']),
+  triggerConfig: z.record(z.string(), z.any()).optional(),
+  actionModules: z.array(z.any()).optional(),
+  scope: z.string().optional(),
+  scopeValue: z.string().nullable().optional(),
+  priority: z.number().int().min(1).max(10).optional(),
+  enabled: z.boolean().optional(),
+  cooldownMins: z.number().int().min(0).optional(),
+});
+
+const patchPolicySchema = z.object({
+  policyId: z.string().min(1),
+  action: z.enum(['toggle', 'trigger']),
+  triggerReason: z.string().optional(),
+});
+
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const policies = await db.policy.findMany({
       orderBy: { createdAt: 'desc' },
+      take: 100,
     });
 
     const result = await Promise.all(
@@ -73,8 +98,14 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
+    const parsed = createPolicySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
     const {
       name,
       description,
@@ -87,22 +118,7 @@ export async function POST(request: NextRequest) {
       priority,
       enabled,
       cooldownMins,
-    } = body;
-
-    if (!name || !technology || !triggerType) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, technology, triggerType' },
-        { status: 400 },
-      );
-    }
-
-    const validTriggerTypes = ['kpi_breach', 'anomaly_detected', 'schedule', 'manual'];
-    if (!validTriggerTypes.includes(triggerType)) {
-      return NextResponse.json(
-        { error: `Invalid triggerType. Must be one of: ${validTriggerTypes.join(', ')}` },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     const policy = await db.policy.create({
       data: {
@@ -151,13 +167,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { policyId, action, ...rest } = body;
-
-    if (!policyId || !action) {
-      return NextResponse.json({ error: 'Missing required fields: policyId, action' }, { status: 400 });
+    const parsed = patchPolicySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { policyId, action, ...rest } = parsed.data;
 
     const existing = await db.policy.findUnique({ where: { id: policyId } });
 

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const authed = await checkApiAuth(request);
   if (!authed) return authError();
   try {
@@ -16,7 +19,7 @@ export async function GET(request: NextRequest) {
     if (severity) where.severity = severity;
     if (status) where.status = status;
 
-    const holes = await db.coverageHole.findMany({ where, orderBy: { createdAt: 'desc' } });
+    const holes = await db.coverageHole.findMany({ where, orderBy: { createdAt: 'desc' }, take: 500 });
 
     const bySeverity: Record<string, number> = {};
     const byStatus: Record<string, number> = {};

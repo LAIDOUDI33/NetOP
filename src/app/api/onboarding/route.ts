@@ -1,7 +1,33 @@
+import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const createOnboardingSchema = z.object({
+  siteName: z.string().min(1),
+  siteCode: z.string().min(1),
+  technology: z.string().min(1),
+  region: z.string().min(1),
+  vendor: z.string().min(1),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  altitude: z.number().optional(),
+  frequency: z.string().optional(),
+  bandwidth: z.number().optional(),
+  maxCapacity: z.number().optional(),
+  initialNeighbors: z.array(z.any()).optional(),
+});
+
+const patchOnboardingSchema = z.object({
+  onboardingId: z.string().min(1),
+  action: z.enum(['advance', 'error']),
+  status: z.string().optional(),
+  errorMessage: z.string().optional(),
+});
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const technology = searchParams.get('technology');
@@ -15,6 +41,7 @@ export async function GET(request: NextRequest) {
       db.siteOnboarding.findMany({
         where,
         orderBy: { createdAt: 'desc' },
+        take: 200,
       }),
       db.siteOnboarding.groupBy({
         by: ['status'],
@@ -59,8 +86,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
+    const parsed = createOnboardingSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
     const {
       siteName,
       siteCode,
@@ -74,14 +107,7 @@ export async function POST(request: NextRequest) {
       bandwidth,
       maxCapacity,
       initialNeighbors,
-    } = body;
-
-    if (!siteName || !siteCode || !technology || !region || !vendor) {
-      return NextResponse.json(
-        { error: 'Missing required fields: siteName, siteCode, technology, region, vendor' },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Check for duplicate site code
     const existing = await db.siteOnboarding.findUnique({ where: { siteCode } });
@@ -136,13 +162,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { onboardingId, action, status: newStatus, errorMessage } = body;
-
-    if (!onboardingId || !action) {
-      return NextResponse.json({ error: 'Missing required fields: onboardingId, action' }, { status: 400 });
+    const parsed = patchOnboardingSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { onboardingId, action, status: newStatus, errorMessage } = parsed.data;
 
     const existing = await db.siteOnboarding.findUnique({ where: { id: onboardingId } });
 

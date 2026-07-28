@@ -1,8 +1,17 @@
+import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { demoHoursAgo } from '@/lib/demo-time';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
-export async function GET() {
+const optimizerSchema = z.object({
+  prompt: z.string().min(1),
+  healthSummary: z.array(z.any()).optional(),
+});
+
+export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const optimizations = await db.optimizationLog.findMany({
       orderBy: { createdAt: 'desc' },
@@ -10,7 +19,7 @@ export async function GET() {
     });
 
     // Get network health summary for context
-    const sites = await db.networkSite.findMany();
+    const sites = await db.networkSite.findMany({ take: 1000 });
     const oneHourAgo = await demoHoursAgo(1);
 
     const latestKpis = await db.kpiMetric.groupBy({
@@ -60,9 +69,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     const body = await request.json();
-    const { prompt, healthSummary } = body;
+    const parsed = optimizerSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+    const { prompt, healthSummary } = parsed.data;
 
     // Use LLM SDK for AI-powered optimization
     const ZAI = (await import('z-ai-web-dev-sdk')).default;

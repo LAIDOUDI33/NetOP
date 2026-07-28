@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const servingCellId = searchParams.get('servingCellId');
   const technology = searchParams.get('technology');
@@ -29,6 +32,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { lastUpdated: 'desc' },
+      take: 500,
     });
 
     return NextResponse.json({

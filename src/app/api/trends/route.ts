@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology');
   const metric = searchParams.get('metric');
@@ -17,6 +20,7 @@ export async function GET(request: NextRequest) {
       where,
       include: { site: { select: { name: true, code: true, technology: true, region: true } } },
       orderBy: { createdAt: 'desc' },
+      take: 200,
     });
 
     const mapped = records.map((r) => ({

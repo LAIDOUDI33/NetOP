@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
 
   try {
     const users = await db.user.findMany({
       select: { id: true, email: true, name: true, isActive: true, createdAt: true, updatedAt: true },
       orderBy: { createdAt: 'desc' },
+      take: 100,
     });
     const roles = await db.userRole.findMany({
       include: { role: { select: { name: true } } },
+      take: 100,
     });
 
     const roleMap = new Map<string, string[]>();

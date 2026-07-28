@@ -1,7 +1,10 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const sourceTech = searchParams.get('sourceTech');
   const targetTech = searchParams.get('targetTech');
@@ -16,6 +19,7 @@ export async function GET(request: NextRequest) {
     const records = await db.evolutionPlan.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 200,
     });
 
     const mapped = records.map((r) => ({

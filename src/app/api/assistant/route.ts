@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
+import { z } from 'zod';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+
+const assistantSchema = z.object({
+  question: z.string().min(1),
+  context: z.string().optional(),
+});
 
 let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null;
 
@@ -11,12 +18,15 @@ async function getZai() {
 }
 
 export async function POST(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
-    const { question, context } = await request.json();
-
-    if (!question || typeof question !== 'string') {
-      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    const body = await request.json();
+    const parsed = assistantSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten().fieldErrors }, { status: 400 });
     }
+    const { question, context } = parsed.data;
 
     const zai = await getZai();
 

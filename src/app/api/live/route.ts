@@ -1,8 +1,11 @@
 import { db } from '@/lib/db';
 import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
+  const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
+  if (limited) return rateLimitResponse(resetMs);
   try {
     // 1. KPI metrics - latest per site
     const since = await demoHoursAgo(24);
@@ -10,6 +13,7 @@ export async function GET(request: NextRequest) {
       where: { timestamp: { gte: since } },
       orderBy: { timestamp: 'desc' },
       include: { site: { select: { id: true, name: true, code: true, technology: true, region: true, status: true } } },
+      take: 500,
     });
 
     const siteKpiMap = new Map<string, (typeof allKpis)[number]>();
@@ -84,6 +88,7 @@ export async function GET(request: NextRequest) {
     const allEnergy = await db.energyMetric.findMany({
       where: { timestamp: { gte: since } },
       orderBy: { timestamp: 'desc' },
+      take: 500,
     });
     const energySiteMap = new Map<string, (typeof allEnergy)[number]>();
     for (const e of allEnergy) {
