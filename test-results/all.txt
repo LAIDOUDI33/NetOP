@@ -1,0 +1,146 @@
+# DB TEST
+NetworkSite|77
+KpiMetric|2387
+AlertRule|12
+Alert|64
+OptimizationLog|12
+NetworkParameter|18
+SLATarget|16
+AnomalyEvent|50
+FaultPrediction|20
+SonModule|8
+SonAction|41
+NeighborRelation|60
+Policy|6
+PolicyExecution|15
+QoEMetric|80
+VendorProfile|5
+SiteOnboarding|8
+CapacityForecast|40
+NetworkSlice|12
+EnergyMetric|264
+SubscriberSegment|8
+Incident|15
+ConfigTemplate|10
+HealthScore|77
+BenchmarkRecord|147
+HandoverKpi|60
+CellLoad|77
+InterferenceEvent|25
+CoverageHole|20
+ChangeRequest|25
+OutageEvent|15
+Playbook|12
+PlaybookStep|51
+SimulationScenario|15
+TrendForecast|40
+RoiRecord|20
+SpectrumBlock|16
+EvolutionPlan|8
+NpiRecord|77
+ServiceOrchestration|30
+AuditLog|9
+AuditTrail|40
+User|6
+Role|6
+Permission|90
+UserRole|6
+RolePermission|249
+
+# API ROUTES TEST
+GET /api/health-check|000
+GET /api/dashboard|000
+GET /api/alerts|000
+GET /api/kpi|000
+GET /api/live|000
+GET /api/monitoring|000
+GET /api/health|000
+GET /api/coverage|000
+GET /api/coverage-holes|000
+GET /api/qoe|000
+GET /api/sla|000
+GET /api/anomalies|000
+GET /api/incidents|000
+GET /api/outages|000
+GET /api/faults|000
+GET /api/interference|000
+GET /api/spectrum|000
+GET /api/handover|000
+GET /api/load|000
+GET /api/energy|000
+GET /api/son|000
+GET /api/son/actions|000
+GET /api/son/neighbors|000
+GET /api/parameters|000
+GET /api/policies|000
+GET /api/policies/executions|000
+GET /api/playbooks|000
+GET /api/config|000
+GET /api/optimizer|000
+GET /api/simulations|000
+GET /api/subscribers|000
+GET /api/trends|000
+GET /api/evolution|000
+GET /api/capacity|000
+GET /api/benchmark|000
+GET /api/npi|000
+GET /api/roi|000
+GET /api/vendors|000
+GET /api/vendor-compare|000
+GET /api/correlation|000
+GET /api/slicing|000
+GET /api/services|000
+GET /api/audit|000
+GET /api/changes|000
+GET /api/onboarding|000
+GET /api/executive|000
+GET /api/settings/roles|000
+GET /api/settings/users|000
+GET /api/settings/audit|000
+POST /api/anomalies/detect|000
+POST /api/assistant|000
+GET /api/multi-agent|000
+GET /api/integration-hub|000
+GET /api/data-pipeline|000
+GET /api/integrations/oss|000
+GET /api/integrations/crm|000
+GET /api/integrations/billing|000
+
+# FEATURE TESTS
+i18n_en|EXISTS
+i18n_fr|EXISTS
+i18n_ar|EXISTS
+dark_theme|YES
+websocket|000
+views_count|51
+ui_components|48
+api_routes|62
+db_size|2.3M
+schema_models|47
+total_ts_files|199
+total_loc|48782
+seed_lines|2892
+env_production|MISSING
+env_gitignored|YES
+git_branch|main
+git_commits|110
+git_sync|AHEAD
+rate_limited_routes|62
+zod_validated_routes|62
+query_limited_routes|62
+rbac_roles|158
+rbac_permissions|90
+db_users|6
+db_roles|6
+rate_limited_routes|62
+zod_validated_routes|62
+query_limited_routes|62
+
+# PERF
+api/health-check|0.000135s
+api/dashboard|0.000106s
+api/alerts|0.000093s
+api/kpi|0.000095s
+api/live|0.000096s
+api/monitoring|0.000094s
+api/executive|0.000097s
