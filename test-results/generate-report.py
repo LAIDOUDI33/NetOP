@@ -123,7 +123,7 @@ story.append(Paragraph('Full Feature Testing and Deployment Readiness Assessment
 story.append(Spacer(1, 20*mm))
 meta_data = [
     ['Document Type', 'Platform Audit Report'],
-    ['Date', datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')],
+    ['Date', datetime.now().strftime('%Y-%m-%d %H:%M UTC')],
     ['Platform', 'NetOP Algerie - Telecom NOC'],
     ['Version', '0.2.0'],
     ['Framework', 'Next.js 16.1.3 + React 19 + Prisma 6'],
@@ -131,6 +131,7 @@ meta_data = [
     ['Total Code', '48,782 lines across 199 TypeScript files'],
     ['Git Repository', 'github.com/LAIDOUDI33/NetOP (main branch, 110 commits)'],
 ]
+avail = PAGE_W - L_MARGIN - R_MARGIN
 story.append(make_table(['Field', 'Value'], meta_data, [55*mm, avail-55*mm]))
 story.append(PageBreak())
 
@@ -155,7 +156,6 @@ story.append(Paragraph(
     'and a role-based access control system with 6 roles and 90 permissions. The codebase totals 48,782 lines of TypeScript across 199 files, '
     'with 110 git commits pushed to the production repository.', styles['Body']))
 
-avail = PAGE_W - L_MARGIN - R_MARGIN
 summary_data = [
     ['Frontend Views', '51', 'PASS', 'All components exist, zero broken imports'],
     ['API Routes (Real DB)', '55', 'PASS', 'Query real Prisma data, rate-limited, Zod-validated'],
