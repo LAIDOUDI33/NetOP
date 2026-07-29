@@ -1656,7 +1656,7 @@ export class SuricataZeekArkimeClient extends EventEmitter {
   private transformSuricataAlert(raw: any): SuricataAlert {
     return {
       alertId: raw._id || raw.alert_id || `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: raw.timestamp || raw.@timestamp,
+      timestamp: raw.timestamp || raw['@timestamp'],
       sourceIp: raw.src_ip || raw.sourceIp,
       sourcePort: raw.src_port || raw.sourcePort,
       destinationIp: raw.dest_ip || raw.destinationIp,

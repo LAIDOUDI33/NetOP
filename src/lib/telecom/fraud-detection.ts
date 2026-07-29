@@ -813,7 +813,7 @@ class FraudDetectionEngine {
       db.fraudCase.groupBy({ by: ['type'], _count: { id: true }, where: { createdAt: { gte: since } } }),
       db.fraudCase.groupBy({ by: ['status'], _count: { id: true }, where: { createdAt: { gte: since } } }),
       db.fraudCase.aggregate({ _sum: { estimatedLossDZD: true }, where: { createdAt: { gte: since } } }),
-      db.fraudCase.count({ where: { artpReportable: true, status: { notIn: ['RESOLVED', 'CLOSED'] }, createdAt: { gte: since } }),
+      db.fraudCase.count({ where: { artpReportable: true, status: { notIn: ['RESOLVED', 'CLOSED'] }, createdAt: { gte: since } } }),
       db.fraudCase.count({ where: { status: 'RESOLVED', resolvedAt: { gte: since } } })
     ]);
 

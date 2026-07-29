@@ -950,7 +950,7 @@ export class GrrOsqueryEdrClient extends EventEmitter {
         })),
         total: data.count || 0,
         completed: data.completed || 0,
-        data.errors || 0,
+        errors: data.errors || 0,
       };
 
     } catch (error) {
