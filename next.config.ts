@@ -13,10 +13,8 @@ const nextConfig: NextConfig = {
     'localhost:3000',
     '127.0.0.1:3000',
   ],
-  // Experimental features
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-  },
+  // Server external packages (moved from experimental)
+  serverExternalPackages: ['@prisma/client'],
 };
 
 export default nextConfig;

@@ -155,7 +155,8 @@ async function handleAnomalyDetection(body: AnomalyDetectionRequest): Promise<Ne
   }
 
   try {
-    const { detectAnomalies, DJEZZY_ANALYTICS_DEFAULTS, type DataPoint } = await getAnomalyDetection();
+    const { detectAnomalies, DJEZZY_ANALYTICS_DEFAULTS } = await getAnomalyDetection();
+    type DataPoint = Awaited<ReturnType<typeof detectAnomalies>> extends (infer T)[] ? T : never;
 
     // Convert input to internal format
     const dataPoints: any[] = body.data.map(d => ({

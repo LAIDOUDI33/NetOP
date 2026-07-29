@@ -290,8 +290,8 @@ export default function SOCDashboard() {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   const filteredModules = socModules.filter(module =>
-    module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    module.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (module.name && module.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (module.description && module.description.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   return (
