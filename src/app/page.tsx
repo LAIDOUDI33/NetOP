@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
+import { useAuth } from '@/hooks/useAuth';
+import { SignOut, UserCircle } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 
 import DashboardView from '@/components/views/DashboardView';
 import MonitoringView from '@/components/views/MonitoringView';
@@ -262,9 +265,14 @@ const NAV_GROUP_KEYS: Record<string, string> = {
 };
 
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
-  const { currentView, setCurrentView } = useAppStore();
+  const { currentView, setCurrentView, allowedViews } = useAppStore();
   const t = useT();
   const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
+
+  // Filter nav items based on user permissions
+  const visibleNavItems = allowedViews.size > 0
+    ? NAV_ITEMS.filter((item) => allowedViews.has(item.view))
+    : NAV_ITEMS;
 
   const renderGroup = (items: typeof NAV_ITEMS, label: string) => {
     if (items.length === 0) return null;
@@ -302,7 +310,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
   return (
     <nav className="flex flex-col gap-3 px-2 py-4" role="navigation" aria-label={t('app.mainNav')}>
       {groups.map(g => {
-        const items = NAV_ITEMS.filter(n => n.group === g);
+        const items = visibleNavItems.filter(n => n.group === g);
         return items.length > 0 ? <div key={g}>{renderGroup(items, g)}</div> : null;
       })}
     </nav>
@@ -378,10 +386,13 @@ function ViewRenderer() {
 
 
 export default function Home() {
-  const { sidebarOpen, toggleSidebar } = useAppStore();
+  const { sidebarOpen, toggleSidebar, user } = useAppStore();
   const { currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
+
+  // Fetch user session and compute allowed views
+  useAuth();
 
   const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
 
@@ -448,6 +459,23 @@ export default function Home() {
               <NotificationCenter />
               <LocaleToggle />
               <ThemeToggle />
+              {user && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <UserCircle className="h-4 w-4" />
+                        <span className="hidden xl:inline max-w-24 truncate">{user.name}</span>
+                        <SignOut className="h-3 w-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{user.email} · {user.roles?.[0] ?? ''}</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </header>
 

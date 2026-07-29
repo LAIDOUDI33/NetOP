@@ -46,15 +46,17 @@ async function generateFreshKpiData() {
     const siteIds = sites.map(s => s.id);
 
     // Batch: get latest KPI per site in a single query
-    const latestKpis = await prisma.$queryRaw<Array<{ siteId: string; rssi: number | null; rsrp: number | null; rsrq: number | null; sinr: number | null; rscp: number | null; ecno: number | null; rxlev: number | null; cqichannel: number | null; downloadThroughput: number | null; uploadThroughput: number | null; latency: number | null; jitter: number | null; packetLoss: number | null; availability: number | null; activeUsers: number | null; handoverSuccessRate: number | null; dropRate: number | null; blockedCallRate: number | null; prbUtilization: number | null }>>`
-      SELECT k.* FROM KpiMetric k
-      INNER JOIN (
-        SELECT siteId, MAX(timestamp) as maxTs
-        FROM KpiMetric
-        WHERE siteId IN (${siteIds.map(() => '?').join(',')})
-        GROUP BY siteId
-      ) latest ON k.siteId = latest.siteId AND k.timestamp = latest.maxTs
-    `;
+    const placeholders = siteIds.map(() => '?').join(',');
+    const latestKpis = await prisma.$queryRawUnsafe(
+      `SELECT k.* FROM KpiMetric k
+       INNER JOIN (
+         SELECT siteId, MAX(timestamp) as maxTs
+         FROM KpiMetric
+         WHERE siteId IN (${placeholders})
+         GROUP BY siteId
+       ) latest ON k.siteId = latest.siteId AND k.timestamp = latest.maxTs`,
+      ...siteIds
+    ) as Array<{ siteId: string; rssi: number | null; rsrp: number | null; rsrq: number | null; sinr: number | null; rscp: number | null; ecno: number | null; rxlev: number | null; cqichannel: number | null; downloadThroughput: number | null; uploadThroughput: number | null; latency: number | null; jitter: number | null; packetLoss: number | null; availability: number | null; activeUsers: number | null; handoverSuccessRate: number | null; dropRate: number | null; blockedCallRate: number | null; prbUtilization: number | null }>;
 
     // Build lookup map
     const kpiMap = new Map(latestKpis.map(k => [k.siteId, k]));
@@ -156,8 +158,8 @@ async function broadcastKpiUpdate() {
       avg_activeUsers: number | null;
       avg_sinr: number | null;
       sites: bigint;
-    }> = await prisma.$queryRaw`
-      SELECT
+    }> = await prisma.$queryRawUnsafe(
+      `SELECT
         technology,
         AVG(downloadThroughput) AS avg_downloadThroughput,
         AVG(uploadThroughput)   AS avg_uploadThroughput,
@@ -167,9 +169,19 @@ async function broadcastKpiUpdate() {
         AVG(sinr)               AS avg_sinr,
         COUNT(*)                AS sites
       FROM KpiMetric
-      WHERE timestamp >= ${oneHourAgo}
-      GROUP BY technology
-    `;
+      WHERE timestamp >= ?
+      GROUP BY technology`,
+      oneHourAgo
+    ) as Array<{
+      technology: string;
+      avg_downloadThroughput: number | null;
+      avg_uploadThroughput: number | null;
+      avg_latency: number | null;
+      avg_availability: number | null;
+      avg_activeUsers: number | null;
+      avg_sinr: number | null;
+      sites: bigint;
+    }>;
 
     const payload = results.map((row) => ({
       technology: row.technology,

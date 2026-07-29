@@ -2,6 +2,8 @@
 import { useT } from '@/lib/i18n';
 
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
+import { useSocket, type KpiUpdateItem } from '@/hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -127,11 +129,46 @@ export default function LiveView() {
   }>({
     queryKey: ['live'],
     queryFn: () => fetch('/api/live').then(r => { if (!r.ok) throw new Error('Live API error: ' + r.status); return r.json(); }),
-    refetchInterval: 5000,
   });
 
+  const { isConnected, onKpiUpdate } = useSocket();
+
+  // Store latest WebSocket KPI data in state (needed for render)
+  const [wsKpiData, setWsKpiData] = useState<KpiUpdateItem[]>([]);
+
+  useEffect(() => {
+    const unsub = onKpiUpdate((kpiData) => {
+      setWsKpiData(kpiData);
+    });
+    return unsub;
+  }, [onKpiUpdate]);
+
+  // Merge WebSocket KPI data into query data
   const overview = data?.overview;
-  const byTech = data?.byTech ?? [];
+  const byTech = useMemo(() => {
+    const base = data?.byTech ?? [];
+    if (wsKpiData.length === 0) return base;
+    // Merge WS kpi-update into byTech: update matching technology rows
+    return base.map((row) => {
+      const wsItem = wsKpiData.find((w) => w.technology === row.technology);
+      if (!wsItem) return row;
+      return {
+        ...row,
+        users: wsItem.activeUsers,
+        download: wsItem.downloadThroughput,
+        upload: wsItem.uploadThroughput,
+        availability: wsItem.availability,
+      };
+    });
+  }, [data?.byTech, wsKpiData]);
+
+  const mergedOverview = useMemo(() => {
+    if (!overview) return overview;
+    if (wsKpiData.length === 0) return overview;
+    const totalUsers = wsKpiData.reduce((sum, item) => sum + item.activeUsers, 0);
+    return { ...overview, totalUsers };
+  }, [overview, wsKpiData]);
+
   const topLoaded = data?.topLoadedSites ?? [];
   const recentAlerts = data?.recentAlerts ?? [];
   const energy = data?.energySummary;
@@ -182,7 +219,7 @@ export default function LiveView() {
   const kpiCards = [
     {
       label: 'Active Users',
-      value: overview?.totalUsers.toLocaleString() ?? '0',
+      value: mergedOverview?.totalUsers.toLocaleString() ?? '0',
       icon: Users,
       color: 'text-emerald-600 dark:text-emerald-400',
       bg: 'bg-emerald-500/10',
@@ -190,7 +227,7 @@ export default function LiveView() {
     },
     {
       label: 'Download',
-      value: `${(overview?.totalDownloadMbps ?? 0).toFixed(1)} Mbps`,
+      value: `${(mergedOverview?.totalDownloadMbps ?? 0).toFixed(1)} Mbps`,
       icon: Download,
       color: 'text-cyan-600 dark:text-cyan-400',
       bg: 'bg-cyan-500/10',
@@ -198,7 +235,7 @@ export default function LiveView() {
     },
     {
       label: 'Upload',
-      value: `${(overview?.totalUploadMbps ?? 0).toFixed(1)} Mbps`,
+      value: `${(mergedOverview?.totalUploadMbps ?? 0).toFixed(1)} Mbps`,
       icon: Upload,
       color: 'text-teal-600 dark:text-teal-400',
       bg: 'bg-teal-500/10',
@@ -206,15 +243,15 @@ export default function LiveView() {
     },
     {
       label: 'Availability',
-      value: `${(overview?.avgAvailability ?? 0).toFixed(1)}%`,
+      value: `${(mergedOverview?.avgAvailability ?? 0).toFixed(1)}%`,
       icon: Wifi,
       color: 'text-emerald-600 dark:text-emerald-400',
       bg: 'bg-emerald-500/10',
-      trend: (overview?.avgAvailability ?? 0) >= 99 ? 'up' : (overview?.avgAvailability ?? 0) >= 97 ? 'neutral' as const : 'down' as const,
+      trend: (mergedOverview?.avgAvailability ?? 0) >= 99 ? 'up' : (mergedOverview?.avgAvailability ?? 0) >= 97 ? 'neutral' as const : 'down' as const,
     },
     {
       label: t('live.power'),
-      value: `${((overview?.totalPowerW ?? 0) / 1000).toFixed(1)} kW`,
+      value: `${((mergedOverview?.totalPowerW ?? 0) / 1000).toFixed(1)} kW`,
       icon: Zap,
       color: 'text-amber-600 dark:text-amber-400',
       bg: 'bg-amber-500/10',
@@ -222,11 +259,11 @@ export default function LiveView() {
     },
     {
       label: 'Active Alerts',
-      value: String(overview?.activeAlerts ?? 0),
+      value: String(mergedOverview?.activeAlerts ?? 0),
       icon: AlertTriangle,
       color: 'text-red-600 dark:text-red-400',
       bg: 'bg-red-500/10',
-      trend: (overview?.activeAlerts ?? 0) > 5 ? 'down' as const : 'neutral' as const,
+      trend: (mergedOverview?.activeAlerts ?? 0) > 5 ? 'down' as const : 'neutral' as const,
     },
   ];
 
@@ -248,7 +285,7 @@ export default function LiveView() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
           </span>
-          ● LIVE
+          {isConnected ? '● LIVE (WebSocket)' : '● LIVE'}
         </div>
         <ExportButton data={topLoaded as unknown as Record<string, any>[]} filenamePrefix="live" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'prbUtilization', header: 'Load (%)' }, { key: 'activeUsers', header: 'Users' }]} />
       </div>

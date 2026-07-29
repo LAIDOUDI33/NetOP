@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '@/store/app';
 import { useT, timeAgo } from '@/lib/i18n';
+import { useSocket } from '@/hooks/useSocket';
+import { useEffect, useRef } from 'react';
 import type { AlertItem } from '@/types';
 import { TECH_BG_CLASSES } from '@/lib/constants';
 
@@ -15,16 +17,28 @@ export function NotificationCenter() {
   const { setCurrentView } = useAppStore();
   const t = useT();
 
+  const { isConnected, onAlertPulse } = useSocket();
+  const criticalCountRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const unsub = onAlertPulse((pulseData) => {
+      // Invalidate alerts query when critical count changes
+      if (criticalCountRef.current !== pulseData.unresolvedCritical) {
+        criticalCountRef.current = pulseData.unresolvedCritical;
+        queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      }
+    });
+    return unsub;
+  }, [onAlertPulse, queryClient]);
+
   const { data, isLoading } = useQuery<{ alerts: AlertItem[]; stats: { critical: number } }>({
     queryKey: ['alerts', 'critical-notifications'],
     queryFn: () => fetch('/api/alerts?severity=critical&resolved=false').then((r) => r.json()),
-    refetchInterval: 30000,
   });
 
   const { data: allAlertsData } = useQuery<{ alerts: AlertItem[] }>({
     queryKey: ['alerts', 'notification-list'],
     queryFn: () => fetch('/api/alerts?resolved=false').then((r) => r.json()),
-    refetchInterval: 30000,
   });
 
   const markAllRead = useMutation({
@@ -55,6 +69,9 @@ export function NotificationCenter() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={t('notif.title')}>
           <Bell className={`h-4 w-4 ${criticalCount > 0 ? 'text-foreground' : 'text-muted-foreground'}`} />
+          {isConnected && (
+            <span className="absolute -bottom-0.5 -left-0.5 rounded-[3px] bg-emerald-500/80 px-[3px] text-[7px] font-bold uppercase leading-none text-white">ws</span>
+          )}
           {criticalCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white animate-pulse">
               {criticalCount > 99 ? '99+' : criticalCount}

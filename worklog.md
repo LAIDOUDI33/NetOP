@@ -421,3 +421,41 @@ Stage Summary:
 - Validation errors return 400 with structured fieldErrors map
 - Skipped anomalies/detect/route.ts POST (no request body)
 - Build clean, no regressions
+---
+Task ID: 1
+Agent: Main
+Task: Create useSocket hook and update LiveView + NotificationCenter to use WebSocket
+
+Work Log:
+- Created src/hooks/useSocket.ts with singleton Socket.IO hook:
+  - Module-level singleton socket instance via `getOrCreateSocket()`
+  - SSR-safe (checks `typeof window` before connecting)
+  - Connects via gateway `io("/?XTransformPort=3003")`
+  - Reconnection config: attempts=10, delay=3000ms
+  - Reference-counted lifecycle (disconnects when last consumer unmounts)
+  - Exports: socket, isConnected, lastKpiUpdate, lastAlertPulse, onKpiUpdate(cb), onAlertPulse(cb)
+  - Event handlers store data in both state + refs; subscriber callbacks fire from refs for stability
+  - onAlertPulse only fires subscribers when critical count changes (dedup optimization)
+  - Exported KpiUpdateItem and AlertPulseData types for consumers
+- Updated LiveView.tsx:
+  - Imported useSocket + KpiUpdateItem type
+  - Removed `refetchInterval: 5000` from useQuery (WebSocket replaces polling)
+  - Added useEffect subscribing to onKpiUpdate, storing data in state
+  - Added useMemo to merge WebSocket KPI data into byTech (activeUsers, download, upload, availability)
+  - Added useMemo to compute mergedOverview with totalUsers from WebSocket data
+  - Updated KPI cards to use mergedOverview instead of overview
+  - LIVE indicator now shows "● LIVE (WebSocket)" when connected, "● LIVE" when not
+- Updated NotificationCenter.tsx:
+  - Imported useSocket, useEffect, useRef
+  - Removed `refetchInterval: 30000` from both useQuery calls
+  - Added useEffect subscribing to onAlertPulse, invalidating ['alerts'] query on critical count change
+  - Added subtle green "ws" badge at bottom-left of bell icon when WebSocket connected
+- Lint passed with zero errors
+
+Stage Summary:
+- 3 files created/modified: useSocket.ts (new, 151 lines), LiveView.tsx (updated), NotificationCenter.tsx (updated)
+- WebSocket singleton hook enables real-time data across the app without duplicate connections
+- LiveView: initial load via API, then WebSocket merges KPI data into per-tech table + overview cards
+- NotificationCenter: WebSocket triggers query invalidation when critical alert count changes
+- Both views show visual indicators of WebSocket connectivity
+- Polling fully replaced by WebSocket for live data streams
