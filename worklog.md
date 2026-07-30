@@ -573,3 +573,46 @@ Stage Summary:
 - 4 new API route files created under /api/geomarketing/
 - All routes use consistent rate limiting (60s/100), safe pagination (take:500), and error handling
 - Lint passed with zero errors for the geomarketing directory
+
+---
+Task ID: 10-fr
+Agent: i18n-fr Agent
+Task: Add new French i18n keys for Geomarketing Phase 3
+
+Work Log:
+- Read worklog.md for context
+- Added ~40 new geo.* i18n keys to fr.ts
+
+Stage Summary:
+- All new French geomarketing keys added for charts, coverage gaps tab, region filter
+
+---
+Task ID: 3
+Agent: Main
+Task: Geomarketing Phase 3 - Charts, Coverage Gaps, Demographics Map, Region Filter
+
+Work Log:
+- Added GeoCoverageGap Prisma model (14 fields: gapName, region, lat/lng, radiusKm, populationServed, coveragePct, gapSeverity, currentSites, requiredSites, estimatedRevenue, priorityScore, technology, recommendedAction, timestamps)
+- Pushed schema with db:push, regenerated Prisma client
+- Added 15 seed coverage gap records across 12 Algerian wilayas (4 critical, 5 high, 4 medium, 2 low severity)
+- Created /api/geomarketing/coverage-gaps route with summary aggregations (byRegion, byTech, byAction)
+- Complete rewrite of GeomarketingView.tsx (from 931 lines to 1621 lines):
+  - Added recharts: BarChart, PieChart, RadarChart, ResponsiveContainer, Tooltip, Legend
+  - Added 8 new chart components: RevenueByRegionChart, TierDistributionChart, ChurnSeverityChart, ChurnCauseChart, CompetitorShareChart, CompetitorTechChart, ScorerRadarChart, ScorerROIChart, DemographicsBarChart, GapsSeverityChart, GapsActionChart
+  - Added DemographicsMapTab (population map with color-coded circles)
+  - Added 6th tab "Coverage Gaps" with GapsSummaryCards, GapsMapTab, GapsSeverityChart, GapsActionChart, GapsTable
+  - Added RegionFilter component using shadcn Select dropdown
+  - Added useRegionFilter hook for filtering all tab data by region
+  - Added CustomTooltip for consistent recharts tooltips
+  - Added GeoCoverageGapRow interface and ACTION_BADGE constants
+  - Imported WifiOff, Wifi, ShieldAlert icons from lucide-react
+- Added ~35 new i18n keys to fr.ts, en.ts, ar.ts (geo.allRegions, geo.tabGaps, geo.revenueByRegion, geo.tierDistribution, geo.severityLabel.*, geo.causeBreakdown, geo.marketShare, geo.techMix, geo.scoreDimensions, geo.roiDistribution, geo.populationMap, geo.popVsYouth, geo.coverageGaps, geo.popAffected, geo.sitesNeeded, geo.potentialRevenue, geo.gapMap, geo.gapBySeverity, geo.gapByAction, geo.gapName, geo.coverage, geo.priorityScore, geo.currentSites, geo.requiredSites, geo.recommendedAction, geo.action.*)
+- Fixed DemographicsSummary JSX closing bug
+- Lint passed with zero errors on GeomarketingView.tsx and all other modified files
+- All 6 geomarketing APIs verified: Main(30 zones, 12 demos), Churn(15 clusters), Competitor(25 sites), Scorer(12 candidates), Demographics(7.65M pop), Coverage Gaps(15 gaps, 27 sites needed)
+
+Stage Summary:
+- Geomarketing module now has 6 tabs: Revenue Map, Churn Geography, Competitor Intelligence, Site Scorer, Demographics, Coverage Gaps
+- Every tab has: summary cards, interactive Leaflet map, recharts analytics (bar/pie/radar), and data table
+- Region filter dropdown in header filters all tabs simultaneously
+- 6 Prisma models, 5 API routes, 1621-line view component, 90+ i18n keys across 3 locales

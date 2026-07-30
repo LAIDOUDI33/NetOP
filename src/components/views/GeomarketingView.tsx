@@ -5,18 +5,24 @@ import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Users, DollarSign, TrendingDown, Building2,
   Layers, MapPin, AlertTriangle, Target, BarChart3, Radar,
+  Wifi, WifiOff, ShieldAlert,
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar as RRadar,
+} from 'recharts';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -127,6 +133,24 @@ interface GeoSiteAcquisitionRow {
   techPriority: string;
 }
 
+interface GeoCoverageGapRow {
+  id: string;
+  gapName: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  radiusKm: number;
+  populationServed: number;
+  coveragePct: number;
+  gapSeverity: string;
+  currentSites: number;
+  requiredSites: number;
+  estimatedRevenue: number;
+  priorityScore: number;
+  technology: string;
+  recommendedAction: string;
+}
+
 // ==================== CONSTANTS ====================
 
 const COMPETITOR_COLORS: Record<string, string> = {
@@ -173,9 +197,18 @@ const TREND_ICONS: Record<string, string> = {
   improving: 'text-emerald-500',
 };
 
+const ACTION_BADGE: Record<string, string> = {
+  new_site: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+  upgrade_site: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+  optimize: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+};
+
+const CHART_COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#84CC16', '#A855F7', '#E11D48'];
+
 // ==================== HELPERS ====================
 
 function formatNum(n: number): string {
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'B';
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
   return String(n);
@@ -188,7 +221,55 @@ function formatCurrency(n: number): string {
 const MAP_CENTER: [number, number] = [28.0, 2.0];
 const MAP_ZOOM = 5;
 
-// ==================== COMPONENTS ====================
+type TFn = (k: string) => string;
+
+// ==================== REGION FILTER ====================
+
+function RegionFilter({ regions, value, onChange, t }: { regions: string[]; value: string; onChange: (v: string) => void; t: TFn }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground whitespace-nowrap">{t('th.region')}:</span>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-[180px] h-8 text-xs">
+          <SelectValue placeholder={t('geo.allRegions')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('geo.allRegions')}</SelectItem>
+          {regions.map((r) => (
+            <SelectItem key={r} value={r}>{r}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function useRegionFilter<T extends { region: string }>(data: T[], filterRegion: string): T[] {
+  return useMemo(() => {
+    if (!filterRegion || filterRegion === 'all') return data;
+    return data.filter((d) => d.region === filterRegion);
+  }, [data, filterRegion]);
+}
+
+// ==================== CHART COMPONENTS ====================
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-popover border border-border rounded-lg p-2.5 shadow-lg text-xs">
+      <p className="font-semibold mb-1.5">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-mono font-medium">{typeof p.value === 'number' ? p.value.toLocaleString() : p.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ==================== SCORE BAR ====================
 
 function ScoreBar({ value, max = 100 }: { value: number; max?: number }) {
   const pct = Math.min(100, (value / max) * 100);
@@ -208,6 +289,7 @@ function ScoreBar({ value, max = 100 }: { value: number; max?: number }) {
 export default function GeomarketingView() {
   const t = useT();
   const [activeTab, setActiveTab] = useState('revenue');
+  const [regionFilter, setRegionFilter] = useState('all');
 
   // ---- Data queries ----
   const { data: mainData, isLoading: mainLoading } = useQuery({
@@ -239,30 +321,44 @@ export default function GeomarketingView() {
     enabled: activeTab === 'demographics',
   });
 
+  const { data: gapsData, isLoading: gapsLoading } = useQuery({
+    queryKey: ['geomarketing-gaps'],
+    queryFn: () => fetch('/api/geomarketing/coverage-gaps').then((r) => r.json()),
+    enabled: activeTab === 'gaps',
+  });
+
   const summary = mainData?.summary;
-  const demographics = (demoData?.demographics ?? mainData?.demographics ?? []) as GeoDemographicRow[];
-  const revenueZones = mainData?.revenueZones ?? [] as GeoRevenueZoneRow[];
-  const competitorSites = (competitorData?.sites ?? mainData?.competitorSites ?? []) as GeoCompetitorSiteRow[];
-  const churnClusters = churnData?.clusters ?? [] as GeoChurnClusterRow[];
-  const candidateSites = scorerData?.sites ?? [] as GeoSiteAcquisitionRow[];
+  const allDemographics = (demoData?.demographics ?? mainData?.demographics ?? []) as GeoDemographicRow[];
+  const allRevenueZones = mainData?.revenueZones ?? [] as GeoRevenueZoneRow[];
+  const allCompetitorSites = (competitorData?.sites ?? mainData?.competitorSites ?? []) as GeoCompetitorSiteRow[];
+  const allChurnClusters = churnData?.clusters ?? [] as GeoChurnClusterRow[];
+  const allCandidateSites = scorerData?.sites ?? [] as GeoSiteAcquisitionRow[];
+  const allCoverageGaps = gapsData?.gaps ?? [] as GeoCoverageGapRow[];
 
   const churnSummary = churnData?.summary;
   const compSummary = competitorData?.summary;
   const scorerSummary = scorerData?.summary;
   const demoSummary = demoData?.summary;
+  const gapsSummary = gapsData?.summary;
 
-  const maxRevenue = useMemo(
-    () => Math.max(...revenueZones.map((z) => z.totalRevenue), 1),
-    [revenueZones],
-  );
-  const maxPopulation = useMemo(
-    () => Math.max(...demographics.map((d) => d.population), 1),
-    [demographics],
-  );
-  const maxChurn = useMemo(
-    () => Math.max(...churnClusters.map((c) => c.avgChurnRate), 1),
-    [churnClusters],
-  );
+  // Region filter
+  const demographics = useRegionFilter(allDemographics, regionFilter);
+  const revenueZones = useRegionFilter(allRevenueZones, regionFilter);
+  const competitorSites = useRegionFilter(allCompetitorSites, regionFilter);
+  const churnClusters = useRegionFilter(allChurnClusters, regionFilter);
+  const candidateSites = useRegionFilter(allCandidateSites, regionFilter);
+  const coverageGaps = useRegionFilter(allCoverageGaps, regionFilter);
+
+  // All unique regions for filter dropdown
+  const allRegions = useMemo(() => {
+    const set = new Set<string>();
+    [...allDemographics, ...allRevenueZones, ...allChurnClusters, ...allCandidateSites, ...allCoverageGaps].forEach(d => set.add(d.region));
+    return Array.from(set).sort();
+  }, [allDemographics, allRevenueZones, allChurnClusters, allCandidateSites, allCoverageGaps]);
+
+  const maxRevenue = useMemo(() => Math.max(...revenueZones.map((z) => z.totalRevenue), 1), [revenueZones]);
+  const maxPopulation = useMemo(() => Math.max(...demographics.map((d) => d.population), 1), [demographics]);
+  const maxChurn = useMemo(() => Math.max(...churnClusters.map((c) => c.avgChurnRate), 1), [churnClusters]);
 
   // ---- Summary cards ----
   const summaryCards = [
@@ -275,12 +371,15 @@ export default function GeomarketingView() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <MapPin className="h-6 w-6 text-emerald-500" />
-          {t('geo.title')}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">{t('geo.subtitle')}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <MapPin className="h-6 w-6 text-emerald-500" />
+            {t('geo.title')}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">{t('geo.subtitle')}</p>
+        </div>
+        <RegionFilter regions={allRegions} value={regionFilter} onChange={setRegionFilter} t={t} />
       </div>
 
       {/* Summary Cards */}
@@ -291,9 +390,7 @@ export default function GeomarketingView() {
             <Card key={card.label}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-lg p-2.5 ${card.bg}`}>
-                    <Icon className={`h-5 w-5 ${card.color}`} />
-                  </div>
+                  <div className={`rounded-lg p-2.5 ${card.bg}`}><Icon className={`h-5 w-5 ${card.color}`} /></div>
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground truncate">{card.label}</p>
                     <p className="text-xl font-bold tracking-tight">{card.value}</p>
@@ -323,19 +420,26 @@ export default function GeomarketingView() {
           <TabsTrigger value="demographics" className="text-xs gap-1.5">
             <BarChart3 className="h-3.5 w-3.5" /> {t('geo.tabDemographics')}
           </TabsTrigger>
+          <TabsTrigger value="gaps" className="text-xs gap-1.5">
+            <WifiOff className="h-3.5 w-3.5" /> {t('geo.tabGaps')}
+          </TabsTrigger>
         </TabsList>
 
         {/* ==================== TAB 1: REVENUE MAP ==================== */}
         <TabsContent value="revenue" className="space-y-4 mt-4">
           <RevenueMapTab
             revenueZones={revenueZones}
-            competitorSites={competitorSites}
-            demographics={demographics}
+            competitorSites={allCompetitorSites}
+            demographics={allDemographics}
             maxRevenue={maxRevenue}
             maxPopulation={maxPopulation}
             loading={mainLoading}
             t={t}
           />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <RevenueByRegionChart revenueZones={revenueZones} loading={mainLoading} t={t} />
+            <TierDistributionChart revenueZones={revenueZones} loading={mainLoading} t={t} />
+          </div>
           <RevenueZonesTable revenueZones={revenueZones} loading={mainLoading} t={t} />
         </TabsContent>
 
@@ -343,6 +447,10 @@ export default function GeomarketingView() {
         <TabsContent value="churn" className="space-y-4 mt-4">
           <ChurnSummaryCards summary={churnSummary} loading={churnLoading} t={t} />
           <ChurnMapTab clusters={churnClusters} maxChurn={maxChurn} loading={churnLoading} t={t} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChurnSeverityChart clusters={churnClusters} loading={churnLoading} t={t} />
+            <ChurnCauseChart clusters={churnClusters} loading={churnLoading} t={t} />
+          </div>
           <ChurnTable clusters={churnClusters} loading={churnLoading} t={t} />
         </TabsContent>
 
@@ -350,6 +458,10 @@ export default function GeomarketingView() {
         <TabsContent value="competitor" className="space-y-4 mt-4">
           <CompetitorSummary summary={compSummary} loading={compLoading} t={t} />
           <CompetitorMapTab sites={competitorSites} loading={compLoading} t={t} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <CompetitorShareChart sites={competitorSites} loading={compLoading} t={t} />
+            <CompetitorTechChart sites={competitorSites} loading={compLoading} t={t} />
+          </div>
           <CompetitorTable sites={competitorSites} loading={compLoading} t={t} />
         </TabsContent>
 
@@ -357,13 +469,30 @@ export default function GeomarketingView() {
         <TabsContent value="scorer" className="space-y-4 mt-4">
           <ScorerSummary summary={scorerSummary} loading={scorerLoading} t={t} />
           <ScorerMapTab sites={candidateSites} loading={scorerLoading} t={t} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ScorerRadarChart sites={candidateSites} loading={scorerLoading} t={t} />
+            <ScorerROIChart sites={candidateSites} loading={scorerLoading} t={t} />
+          </div>
           <ScorerTable sites={candidateSites} loading={scorerLoading} t={t} />
         </TabsContent>
 
         {/* ==================== TAB 5: DEMOGRAPHICS ==================== */}
         <TabsContent value="demographics" className="space-y-4 mt-4">
           <DemographicsSummary summary={demoSummary} loading={demoLoading} t={t} />
+          <DemographicsMapTab demographics={demographics} maxPopulation={maxPopulation} loading={demoLoading} t={t} />
+          <DemographicsBarChart demographics={demographics} loading={demoLoading} t={t} />
           <DemographicsTable demographics={demographics} loading={demoLoading} t={t} />
+        </TabsContent>
+
+        {/* ==================== TAB 6: COVERAGE GAPS ==================== */}
+        <TabsContent value="gaps" className="space-y-4 mt-4">
+          <GapsSummaryCards summary={gapsSummary} loading={gapsLoading} t={t} />
+          <GapsMapTab gaps={coverageGaps} loading={gapsLoading} t={t} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <GapsSeverityChart gaps={coverageGaps} loading={gapsLoading} t={t} />
+            <GapsActionChart gaps={coverageGaps} loading={gapsLoading} t={t} />
+          </div>
+          <GapsTable gaps={coverageGaps} loading={gapsLoading} t={t} />
         </TabsContent>
       </Tabs>
     </div>
@@ -379,7 +508,7 @@ function RevenueMapTab({ revenueZones, competitorSites, demographics, maxRevenue
   maxRevenue: number;
   maxPopulation: number;
   loading: boolean;
-  t: (k: string) => string;
+  t: TFn;
 }) {
   return (
     <Card className="overflow-hidden">
@@ -459,7 +588,71 @@ function RevenueMapTab({ revenueZones, competitorSites, demographics, maxRevenue
   );
 }
 
-function RevenueZonesTable({ revenueZones, loading, t }: { revenueZones: GeoRevenueZoneRow[]; loading: boolean; t: (k: string) => string }) {
+function RevenueByRegionChart({ revenueZones, loading, t }: { revenueZones: GeoRevenueZoneRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const z of revenueZones) {
+      map.set(z.region, (map.get(z.region) || 0) + z.totalRevenue);
+    }
+    return Array.from(map.entries())
+      .map(([name, revenue]) => ({ name, revenue }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 12);
+  }, [revenueZones]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.revenueByRegion')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" tickFormatter={(v) => formatNum(v)} fontSize={11} />
+              <YAxis dataKey="name" type="category" width={100} fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Bar dataKey="revenue" name={t('geo.revenue')} fill="#10B981" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function TierDistributionChart({ revenueZones, loading, t }: { revenueZones: GeoRevenueZoneRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const z of revenueZones) {
+      map.set(z.tier, (map.get(z.tier) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name: t(`geo.tierLabel.${name}`), value, key: name }));
+  }, [revenueZones, t]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.tierDistribution')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={{ strokeWidth: 1 }}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={TIER_COLORS[entry.key] ?? CHART_COLORS[i]} />
+                ))}
+              </Pie>
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <RTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RevenueZonesTable({ revenueZones, loading, t }: { revenueZones: GeoRevenueZoneRow[]; loading: boolean; t: TFn }) {
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.revenueZones')}</CardTitle></CardHeader>
@@ -513,7 +706,7 @@ function RevenueZonesTable({ revenueZones, loading, t }: { revenueZones: GeoReve
 
 // ==================== CHURN TAB ====================
 
-function ChurnSummaryCards({ summary, loading, t }: { summary: any; loading: boolean; t: (k: string) => string }) {
+function ChurnSummaryCards({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
   const cards = [
     { label: t('geo.churnClusters'), value: summary?.totalClusters ?? '—', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
     { label: t('geo.totalAtRisk'), value: summary ? formatNum(summary.totalAtRisk) : '—', icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -542,7 +735,7 @@ function ChurnSummaryCards({ summary, loading, t }: { summary: any; loading: boo
   );
 }
 
-function ChurnMapTab({ clusters, maxChurn, loading, t }: { clusters: GeoChurnClusterRow[]; maxChurn: number; loading: boolean; t: (k: string) => string }) {
+function ChurnMapTab({ clusters, maxChurn, loading, t }: { clusters: GeoChurnClusterRow[]; maxChurn: number; loading: boolean; t: TFn }) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
@@ -588,7 +781,72 @@ function ChurnMapTab({ clusters, maxChurn, loading, t }: { clusters: GeoChurnClu
   );
 }
 
-function ChurnTable({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; loading: boolean; t: (k: string) => string }) {
+function ChurnSeverityChart({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of clusters) {
+      map.set(c.severity, (map.get(c.severity) || 0) + 1);
+    }
+    return ['critical', 'high', 'medium', 'low']
+      .filter((s) => map.has(s))
+      .map((s) => ({ name: t(`geo.severityLabel.${s}`), value: map.get(s)!, key: s }));
+  }, [clusters, t]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.severityDistribution')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={{ strokeWidth: 1 }}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={SEVERITY_COLORS[entry.key] ?? CHART_COLORS[i]} />
+                ))}
+              </Pie>
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <RTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChurnCauseChart({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of clusters) {
+      const label = t(`geo.cause.${c.primaryCause}`);
+      map.set(label, (map.get(label) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [clusters, t]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.causeBreakdown')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={10} angle={-20} textAnchor="end" height={60} />
+              <YAxis fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Bar dataKey="value" name={t('geo.churnClusters')} fill="#F59E0B" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChurnTable({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; loading: boolean; t: TFn }) {
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.churnClusters')}</CardTitle></CardHeader>
@@ -642,7 +900,7 @@ function ChurnTable({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; 
 
 // ==================== COMPETITOR TAB ====================
 
-function CompetitorSummary({ summary, loading, t }: { summary: any; loading: boolean; t: (k: string) => string }) {
+function CompetitorSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   return (
@@ -656,7 +914,7 @@ function CompetitorSummary({ summary, loading, t }: { summary: any; loading: boo
   );
 }
 
-function CompetitorMapTab({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: (k: string) => string }) {
+function CompetitorMapTab({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: TFn }) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
@@ -708,7 +966,79 @@ function CompetitorMapTab({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]
   );
 }
 
-function CompetitorTable({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: (k: string) => string }) {
+function CompetitorShareChart({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of sites) {
+      map.set(s.competitorName, (map.get(s.competitorName) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }));
+  }, [sites]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.marketShare')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={{ strokeWidth: 1 }}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={COMPETITOR_COLORS[entry.name] ?? CHART_COLORS[i]} />
+                ))}
+              </Pie>
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <RTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CompetitorTechChart({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, Record<string, number>>();
+    for (const s of sites) {
+      if (!map.has(s.competitorName)) map.set(s.competitorName, {});
+      const r = map.get(s.competitorName)!;
+      r[s.technology] = (r[s.technology] || 0) + 1;
+    }
+    return Array.from(map.entries()).map(([name, techs]) => ({ name, ...techs }));
+  }, [sites]);
+
+  const techKeys = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of sites) set.add(s.technology);
+    return Array.from(set).sort();
+  }, [sites]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.techMix')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={11} />
+              <YAxis fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              {techKeys.map((key, i) => (
+                <Bar key={key} dataKey={key} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[4, 4, 0, 0]} stackId="a" />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function CompetitorTable({ sites, loading, t }: { sites: GeoCompetitorSiteRow[]; loading: boolean; t: TFn }) {
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.competitors')}</CardTitle></CardHeader>
@@ -750,7 +1080,7 @@ function CompetitorTable({ sites, loading, t }: { sites: GeoCompetitorSiteRow[];
 
 // ==================== SITE SCORER TAB ====================
 
-function ScorerSummary({ summary, loading, t }: { summary: any; loading: boolean; t: (k: string) => string }) {
+function ScorerSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   return (
@@ -763,7 +1093,7 @@ function ScorerSummary({ summary, loading, t }: { summary: any; loading: boolean
   );
 }
 
-function ScorerMapTab({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: (k: string) => string }) {
+function ScorerMapTab({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: TFn }) {
   const recColors: Record<string, string> = { deploy: '#10B981', review: '#F59E0B', defer: '#94A3B8' };
   return (
     <Card className="overflow-hidden">
@@ -817,7 +1147,78 @@ function ScorerMapTab({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; l
   );
 }
 
-function ScorerTable({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: (k: string) => string }) {
+function ScorerRadarChart({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    if (sites.length === 0) return [];
+    const top = sites.slice(0, 5);
+    return [
+      { metric: t('geo.demandScore'), ...Object.fromEntries(top.map((s, i) => [`site${i + 1}`, s.demandScore])) },
+      { metric: t('geo.competitiveScore'), ...Object.fromEntries(top.map((s, i) => [`site${i + 1}`, s.competitiveScore])) },
+      { metric: t('geo.demographicScore'), ...Object.fromEntries(top.map((s, i) => [`site${i + 1}`, s.demographicScore])) },
+      { metric: t('geo.coverageScore'), ...Object.fromEntries(top.map((s, i) => [`site${i + 1}`, s.coverageScore])) },
+      { metric: t('geo.financialScore'), ...Object.fromEntries(top.map((s, i) => [`site${i + 1}`, s.financialScore])) },
+    ];
+  }, [sites, t]);
+
+  const siteKeys = useMemo(() => {
+    const top = sites.slice(0, 5);
+    return top.map((s, i) => ({ key: `site${i + 1}`, name: s.siteName.split(' ').slice(-1)[0] }));
+  }, [sites]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.scoreDimensions')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={300}>
+            <RadarChart data={chartData}>
+              <PolarGrid strokeDasharray="3 3" />
+              <PolarAngleAxis dataKey="metric" fontSize={11} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={10} />
+              {siteKeys.map((s, i) => (
+                <RRadar key={s.key} name={s.name} dataKey={s.key} stroke={CHART_COLORS[i]} fill={CHART_COLORS[i]} fillOpacity={0.15} strokeWidth={2} />
+              ))}
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+              <RTooltip content={<CustomTooltip />} />
+            </RadarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ScorerROIChart({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    return sites
+      .slice(0, 12)
+      .map((s) => ({ name: s.siteName.split('-').pop()?.trim() ?? s.siteName, roi: s.estimatedROI, score: s.overallScore }))
+      .sort((a, b) => b.roi - a.roi);
+  }, [sites]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.roiDistribution')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={10} angle={-25} textAnchor="end" height={60} />
+              <YAxis fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="roi" name="ROI %" fill="#10B981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="score" name={t('geo.overallScore')} fill="#3B82F6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ScorerTable({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; loading: boolean; t: TFn }) {
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.candidateSites')}</CardTitle></CardHeader>
@@ -863,7 +1264,7 @@ function ScorerTable({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; lo
 
 // ==================== DEMOGRAPHICS TAB ====================
 
-function DemographicsSummary({ summary, loading, t }: { summary: any; loading: boolean; t: (k: string) => string }) {
+function DemographicsSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   const cards = [
@@ -881,7 +1282,89 @@ function DemographicsSummary({ summary, loading, t }: { summary: any; loading: b
   );
 }
 
-function DemographicsTable({ demographics, loading, t }: { demographics: GeoDemographicRow[]; loading: boolean; t: (k: string) => string }) {
+function DemographicsMapTab({ demographics, maxPopulation, loading, t }: { demographics: GeoDemographicRow[]; maxPopulation: number; loading: boolean; t: TFn }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <Users className="h-4 w-4 text-blue-500" />
+          {t('geo.populationMap')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <Skeleton className="h-[420px] w-full rounded-none" />
+        ) : (
+          <div className="h-[420px]" role="application" aria-label="Demographics map">
+            <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} className="h-full w-full" style={{ height: '100%', width: '100%' }}>
+              <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {demographics.map((d) => {
+                const radius = Math.max(10, Math.min(40, (d.population / maxPopulation) * 40));
+                const popColor = d.population > 800000 ? '#EF4444' : d.population > 400000 ? '#F59E0B' : '#3B82F6';
+                return (
+                  <CircleMarker key={`demo-${d.id}`} center={[d.latitude, d.longitude]} radius={radius} pathOptions={{ fillColor: popColor, fillOpacity: 0.35, color: popColor, weight: 2 }}>
+                    <Popup>
+                      <div className="space-y-2 min-w-[220px] text-sm font-sans">
+                        <div className="font-semibold" style={{ color: popColor }}>{d.region}</div>
+                        <Badge variant="outline" className="text-[10px]">{d.wilayaCode}</Badge>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                          <div><span className="text-gray-500">{t('geo.totalPop')}:</span> <span className="font-mono font-bold">{formatNum(d.population)}</span></div>
+                          <div><span className="text-gray-500">{t('geo.area')}:</span> <span className="font-mono">{d.areaKm2.toFixed(0)} km²</span></div>
+                          <div><span className="text-gray-500">{t('geo.density')}:</span> <span className="font-mono">{d.density.toFixed(0)}</span></div>
+                          <div><span className="text-gray-500">{t('geo.urban')}:</span> <span className="font-mono">{d.urbanPct.toFixed(1)}%</span></div>
+                          <div><span className="text-gray-500">{t('geo.youth')}:</span> <span className="font-mono">{d.youthPct.toFixed(1)}%</span></div>
+                          <div><span className="text-gray-500">{t('geo.smartphone')}:</span> <span className="font-mono">{d.smartphonePct.toFixed(1)}%</span></div>
+                          <div><span className="text-gray-500">{t('geo.internet')}:</span> <span className="font-mono">{d.internetPct.toFixed(1)}%</span></div>
+                          <div><span className="text-gray-500">{t('geo.income')}:</span> <span className="font-mono">{formatCurrency(d.avgIncome)}</span></div>
+                        </div>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DemographicsBarChart({ demographics, loading, t }: { demographics: GeoDemographicRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    return demographics
+      .slice(0, 12)
+      .map((d) => ({
+        name: d.region,
+        population: d.population,
+        youth: d.youthPct,
+        smartphone: d.smartphonePct,
+      }))
+      .sort((a, b) => b.population - a.population);
+  }, [demographics]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.popVsYouth')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={10} angle={-25} textAnchor="end" height={60} />
+              <YAxis fontSize={11} tickFormatter={(v) => formatNum(v)} />
+              <RTooltip content={<CustomTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="population" name={t('geo.totalPop')} fill="#3B82F6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DemographicsTable({ demographics, loading, t }: { demographics: GeoDemographicRow[]; loading: boolean; t: TFn }) {
   return (
     <Card>
       <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.demographics')}</CardTitle></CardHeader>
@@ -918,6 +1401,213 @@ function DemographicsTable({ demographics, loading, t }: { demographics: GeoDemo
                     <TableCell className="text-right font-mono">{d.smartphonePct.toFixed(1)}%</TableCell>
                     <TableCell className="text-right font-mono">{d.internetPct.toFixed(1)}%</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(d.avgIncome)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ==================== COVERAGE GAPS TAB ====================
+
+function GapsSummaryCards({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+  if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
+  if (!summary) return null;
+  const cards = [
+    { label: t('geo.coverageGaps'), value: summary.totalGaps, icon: WifiOff, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { label: t('geo.popAffected'), value: formatNum(summary.totalPopServed), icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { label: t('geo.sitesNeeded'), value: summary.totalSitesNeeded, icon: Wifi, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: t('geo.potentialRevenue'), value: formatNum(summary.totalEstRevenue), icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  ];
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((c) => {
+        const Icon = c.icon;
+        return (
+          <Card key={c.label}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`rounded-lg p-2.5 ${c.bg}`}><Icon className={`h-5 w-5 ${c.color}`} /></div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">{c.label}</p>
+                  <p className="text-xl font-bold tracking-tight">{c.value}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function GapsMapTab({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: boolean; t: TFn }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-red-500" />
+            {t('geo.gapMap')}
+          </CardTitle>
+          <div className="flex gap-3 ml-auto text-xs">
+            {Object.entries(SEVERITY_COLORS).map(([sev, color]) => (
+              <span key={sev} className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />{t(`geo.severityLabel.${sev}`)}
+              </span>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <Skeleton className="h-[420px] w-full rounded-none" />
+        ) : (
+          <div className="h-[420px]" role="application" aria-label="Coverage gaps map">
+            <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} className="h-full w-full" style={{ height: '100%', width: '100%' }}>
+              <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {gaps.map((g) => {
+                const color = SEVERITY_COLORS[g.gapSeverity] ?? '#F59E0B';
+                const radius = Math.max(10, Math.min(35, (g.priorityScore / 100) * 35));
+                return (
+                  <CircleMarker key={`gap-${g.id}`} center={[g.latitude, g.longitude]} radius={radius} pathOptions={{ fillColor: color, fillOpacity: 0.3, color, weight: 2, dashArray: g.gapSeverity === 'critical' ? '8,4' : undefined }}>
+                    <Popup>
+                      <div className="space-y-2 min-w-[240px] text-sm font-sans">
+                        <div className="font-semibold" style={{ color }}>{g.gapName}</div>
+                        <div className="flex gap-2">
+                          <Badge variant="outline" className={`${SEVERITY_BADGE[g.gapSeverity] ?? ''} text-[10px]`}>{g.gapSeverity.toUpperCase()}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">{g.technology}</Badge>
+                          <Badge variant="outline" className={ACTION_BADGE[g.recommendedAction] ?? ''}>{t(`geo.action.${g.recommendedAction}`)}</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                          <div><span className="text-gray-500">{t('geo.totalPop')}:</span> <span className="font-mono">{formatNum(g.populationServed)}</span></div>
+                          <div><span className="text-gray-500">{t('geo.coverage')}:</span> <span className="font-mono font-bold text-red-500">{g.coveragePct.toFixed(0)}%</span></div>
+                          <div><span className="text-gray-500">{t('geo.currentSites')}:</span> <span className="font-mono">{g.currentSites}</span></div>
+                          <div><span className="text-gray-500">{t('geo.requiredSites')}:</span> <span className="font-mono font-bold">{g.requiredSites}</span></div>
+                          <div><span className="text-gray-500">{t('geo.priorityScore')}:</span> <span className="font-mono font-bold">{g.priorityScore.toFixed(1)}</span></div>
+                          <div><span className="text-gray-500">{t('geo.revenue')}:</span> <span className="font-mono">{formatNum(g.estimatedRevenue)}</span></div>
+                        </div>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GapsSeverityChart({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const g of gaps) {
+      map.set(g.gapSeverity, (map.get(g.gapSeverity) || 0) + 1);
+    }
+    return ['critical', 'high', 'medium', 'low']
+      .filter((s) => map.has(s))
+      .map((s) => ({ name: t(`geo.severityLabel.${s}`), value: map.get(s)!, key: s }));
+  }, [gaps, t]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.gapBySeverity')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={{ strokeWidth: 1 }}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={SEVERITY_COLORS[entry.key] ?? CHART_COLORS[i]} />
+                ))}
+              </Pie>
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
+              <RTooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GapsActionChart({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const g of gaps) {
+      const label = t(`geo.action.${g.recommendedAction}`);
+      map.set(label, (map.get(label) || 0) + 1);
+    }
+    return Array.from(map.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [gaps, t]);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.gapByAction')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[280px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={11} />
+              <YAxis fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Bar dataKey="value" name={t('geo.coverageGaps')} fill="#EF4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function GapsTable({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: boolean; t: TFn }) {
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.coverageGaps')}</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="p-6 space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+        ) : (
+          <ScrollArea className="max-h-96">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('geo.gapName')}</TableHead>
+                  <TableHead>{t('th.region')}</TableHead>
+                  <TableHead className="text-right">{t('geo.coverage')}</TableHead>
+                  <TableHead className="text-right">{t('geo.priorityScore')}</TableHead>
+                  <TableHead className="text-right">{t('geo.currentSites')}</TableHead>
+                  <TableHead className="text-right">{t('geo.requiredSites')}</TableHead>
+                  <TableHead>{t('geo.technology')}</TableHead>
+                  <TableHead>{t('geo.severity')}</TableHead>
+                  <TableHead>{t('geo.recommendedAction')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {gaps.map((g) => (
+                  <TableRow key={g.id}>
+                    <TableCell className="font-medium text-xs">{g.gapName}</TableCell>
+                    <TableCell>{g.region}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      <span className={g.coveragePct < 35 ? 'text-red-500 font-bold' : g.coveragePct < 50 ? 'text-amber-500' : 'text-emerald-500'}>
+                        {g.coveragePct.toFixed(0)}%
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right font-mono"><ScoreBar value={g.priorityScore} /></TableCell>
+                    <TableCell className="text-right font-mono">{g.currentSites}</TableCell>
+                    <TableCell className="text-right font-mono font-bold">{g.requiredSites}</TableCell>
+                    <TableCell><Badge variant="secondary" className="text-[10px]">{g.technology}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={`${SEVERITY_BADGE[g.gapSeverity] ?? ''} text-[10px]`}>{g.gapSeverity.toUpperCase()}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={ACTION_BADGE[g.recommendedAction] ?? ''}>{t(`geo.action.${g.recommendedAction}`)}</Badge></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
