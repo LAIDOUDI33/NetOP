@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'kpi';
   const technology = searchParams.get('technology');
-  const now = getDemoNow();
-  const sixHoursAgo = demoHoursAgo(6);
+  const now = await getDemoNow();
+  const sixHoursAgo = await demoHoursAgo(6);
 
   try {
     if (type === 'alarm') {

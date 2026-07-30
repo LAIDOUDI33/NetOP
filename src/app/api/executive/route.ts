@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const avgMos = qoeAgg._avg.mosScore ?? 0;
 
     // SON actions today
-    const todayStart = new Date(getDemoNow());
+    const todayStart = await getDemoNow();
     todayStart.setHours(0, 0, 0, 0);
     const sonActionsToday = await db.sonAction.count({ where: { createdAt: { gte: todayStart } } });
 
