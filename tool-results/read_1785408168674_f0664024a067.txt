@@ -1,0 +1,608 @@
+     1→'use client'
+     2→
+     3→import React, { useState } from 'react'
+     4→import {
+     5→  Shield, AlertTriangle, Activity, Clock, Users, Server,
+     6→  Globe, Lock, Eye, TrendingUp, Bell, Search, Filter,
+     7→  CheckCircle, XCircle, AlertCircle, ChevronRight, ChevronDown,
+     8→  RefreshCw, Wifi, Database, Cpu, HardDrive, Network, Zap,
+     9→  Scale, Target, Radar, Crosshair, Bot, FileSearch, Play,
+    10→  Settings, BarChart3, Brain, ShieldCheck, Fingerprint, Key,
+    11→  Radio, Phone, Signal, Router, Cloud, DatabaseBackup,
+    12→  BookOpen, ClipboardCheck, Award, FileText, Bug, UserCheck,
+    13→  LayoutDashboard, LineChart, PieChart, Monitor, Terminal,
+    14→  ArrowRight, Menu, X, Home, Grid3X3, Layers, Workflow,
+    15→  CreditCard, FolderOpen, List
+    16→} from 'lucide-react'
+    17→
+    18→// ============================================================
+    19→// COMPLETE MODULE STRUCTURE FOR DJEZZY NATIONAL SOC PLATFORM
+    20→// All 8 Phases with Sub-modules
+    21→// ============================================================
+    22→
+    23→interface Module {
+    24→  id: string
+    25→  name: string
+    26→  icon: React.ReactNode
+    27→  description: string
+    28→  status: 'active' | 'coming-soon' | 'beta'
+    29→  phase: number
+    30→  subModules?: SubModule[]
+    31→  path?: string
+    32→}
+    33→
+    34→interface SubModule {
+    35→  id: string
+    36→  name: string
+    37→  icon: React.ReactNode
+    38→  description: string
+    39→  itemCount?: number
+    40→  badge?: string
+    41→}
+    42→
+    43→// Complete Module Definition
+    44→const socModules: Module[] = [
+    45→  // ══════════════════════════════════════════════════════
+    46→  // PHASE 1-4: FOUNDATION & CORE INFRASTRUCTURE
+    47→  // ══════════════════════════════════════════════════════
+    48→  {
+    49→    id: 'siem',
+    50→    name: 'SIEM Platform',
+    51→    icon: <LayoutDashboard className="w-5 h-5" />,
+    52→    description: 'Security Information & Event Management',
+    53→    status: 'active',
+    54→    phase: 1,
+    55→    subModules: [
+    56→      { id: 'siem-dashboard', name: 'SIEM Dashboard', icon: <Monitor className="w-4 h-4" />, description: 'Real-time security monitoring', itemCount: 847 },
+    57→      { id: 'log-management', name: 'Log Management', icon: <FileText className="w-4 h-4" />, description: 'Centralized log collection & storage', itemCount: 2847 },
+    58→      { id: 'correlation-engine', name: 'Correlation Engine', icon: <Brain className="w-4 h-4" />, description: 'Multi-source event correlation', badge: 'AI-Powered' },
+    59→      { id: 'rule-management', name: 'Rule Management', icon: <Settings className="w-4 h-4" />, description: 'Detection rules & policies', itemCount: 1247 },
+    60→      { id: 'log-analytics', name: 'Log Analytics', icon: <LineChart className="w-4 h-4" />, description: 'Advanced log search & analysis' }
+    61→    ]
+    62→  },
+    63→  {
+    64→    id: 'edr',
+    65→    name: 'EDR/XDR',
+    66→    icon: <ShieldCheck className="w-5 h-5" />,
+    67→    description: 'Endpoint Detection & Response',
+    68→    status: 'active',
+    69→    phase: 2,
+    70→    subModules: [
+    71→      { id: 'endpoint-monitoring', name: 'Endpoint Monitoring', icon: <Monitor className="w-4 h-4" />, description: 'Real-time endpoint visibility', itemCount: 2847 },
+    72→      { id: 'threat-hunting-edr', name: 'Threat Hunting', icon: <Crosshair className="w-4 h-4" />, description: 'Proactive threat detection' },
+    73→      { id: 'incident-response', name: 'Incident Response', icon: <Target className="w-4 h-4" />, description: 'Automated response actions', badge: 'SOAR' },
+    74→      { id: 'forensics', name: 'Digital Forensics', icon: <Search className="w-4 h-4" />, description: 'Endpoint forensics & analysis' }
+    75→    ]
+    76→  },
+    77→  {
+    78→    id: 'network-security',
+    79→    name: 'Network Security',
+    80→    icon: <Router className="w-5 h-5" />,
+    81→    description: 'Network Detection & Response (NDR)',
+    82→    status: 'active',
+    83→    phase: 3,
+    84→    subModules: [
+    85→      { id: 'ids-ips', name: 'IDS/IPS', icon: <Shield className="w-4 h-4" />, description: 'Intrusion detection & prevention', itemCount: 156 },
+    86→      { id: 'traffic-analysis', name: 'Traffic Analysis', icon: <Activity className="w-4 h-4" />, description: 'Network traffic monitoring', itemCount: 4521 },
+    87→      { id: 'vulnerability-scanner', name: 'Vulnerability Scanner', icon: <Bug className="w-4 h-4" />, description: 'Network vulnerability assessment', badge: 'Auto' },
+    88→      { id: 'firewall-mgmt', name: 'Firewall Management', icon: <Lock className="w-4 h-4" />, description: 'Firewall rule management' }
+    89→    ]
+    90→  },
+    91→
+    92→  // ══════════════════════════════════════════════════════
+    93→  // TELECOM-SPECIFIC MODULES (Djezzy Special)
+    94→  // ══════════════════════════════════════════════════════
+    95→  {
+    96→    id: 'telecom-security',
+    97→    name: 'Telecom Security',
+    98→    icon: <Phone className="w-5 h-5" />,
+    99→    description: 'Telecom Protocol Security (SS7/Diameter/SIP/GTP)',
+   100→    status: 'active',
+   101→    phase: 4,
+   102→    subModules: [
+   103→      { id: 'ss7-firewall', name: 'SS7 Firewall', icon: <Radio className="w-4 h-4" />, description: 'SS7 signaling protection', itemCount: 23, badge: 'Critical' },
+   104→      { id: 'gtp-inspector', name: 'GTP Inspector', icon: <Signal className="w-4 h-4" />, description: 'GTP tunnel inspection', itemCount: 12 },
+   105→      { id: 'diameter-analyzer', name: 'Diameter Analyzer', icon: <Wifi className="w-4 h-4" />, description: 'Diameter protocol analysis', itemCount: 8 },
+   106→      { id: 'sip-sentry', name: 'SIP Sentry', icon: <Phone className="w-4 h-4" />, description: 'VoIP/SIP fraud prevention', itemCount: 34 },
+   107→      { id: 'ims-protection', name: 'IMS Protection', icon: <Cloud className="w-4 h-4" />, description: 'IMS network security' },
+   108→      { id: 'sim-swap-detector', name: 'SIM Swap Detection', icon: <Fingerprint className="w-4 h-4" />, description: 'Fraud detection system', badge: 'AI' }
+   109→    ]
+   110→  },
+   111→  {
+   112→    id: 'fraud-detection',
+   113→    name: 'Fraud Prevention',
+   114→    icon: <UserCheck className="w-5 h-5" />,
+   115→    description: 'Telecom Fraud Detection & Prevention',
+   116→    status: 'active',
+   117→    phase: 4,
+   118→    subModules: [
+   119→      { id: 'fraud-dashboard', name: 'Fraud Dashboard', icon: <BarChart3 className="w-4 h-4" />, description: 'Fraud analytics overview', itemCount: 89 },
+   120→      { id: 'subscription-fraud', name: 'Subscription Fraud', icon: <UserCheck className="w-4 h-4" />, description: 'Subscription fraud detection' },
+   121→      { id: 'billing-fraud', name: 'Billing Fraud', icon: <CreditCard className="w-4 h-4" />, description: 'Billing bypass detection' },
+   122→      { id: 'roaming-fraud', name: 'Roaming Fraud', icon: <Globe className="w-4 h-4" />, description: 'IRSF & roaming fraud' }
+   123→    ]
+   124→  },
+   125→
+   126→  // ══════════════════════════════════════════════════════
+   127→  // PHASE 5: ANALYTICS ENGINE
+   128→  // ══════════════════════════════════════════════════════
+   129→  {
+   130→    id: 'analytics',
+   131→    name: 'Analytics Engine',
+   132→    icon: <BarChart3 className="w-5 h-5" />,
+   133→    description: 'Advanced Security Analytics & Intelligence',
+   134→    status: 'active',
+   135→    phase: 5,
+   136→    subModules: [
+   137→      { id: 'threat-intel', name: 'Threat Intelligence', icon: <Radar className="w-4 h-4" />, description: 'Threat feeds & IOC management', itemCount: 14, badge: 'Live' },
+   138→      { id: 'behavioral-analytics', name: 'Behavioral Analytics', icon: <Brain className="w-4 h-4" />, description: 'UBA & entity behavior', badge: 'ML' },
+   139→      { id: 'threat-scoring', name: 'Threat Scoring', icon: <Target className="w-4 h-4" />, description: 'Risk scoring engine' },
+   140→      { id: 'ml-predictions', name: 'ML Predictions', icon: <TrendingUp className="w-4 h-4" />, description: 'Predictive threat analysis', badge: 'Beta' },
+   141→      { id: 'reporting', name: 'Reporting', icon: <FileText className="w-4 h-4" />, description: 'Custom reports & dashboards', itemCount: 24 }
+   142→    ]
+   143→  },
+   144→
+   145→  // ══════════════════════════════════════════════════════
+   146→  // PHASE 6: COMPLIANCE AUTOMATION
+   147→  // ══════════════════════════════════════════════════════
+   148→  {
+   149→    id: 'compliance',
+   150→    name: 'Compliance Center',
+   151→    icon: <Scale className="w-5 h-5" />,
+   152→    description: 'Regulatory Compliance & Audit Management',
+   153→    status: 'active',
+   154→    phase: 6,
+   155→    subModules: [
+   156→      { id: 'artp-reporting', name: 'ARTP Reporting', icon: <ClipboardCheck className="w-4 h-4" />, description: 'Algerian telecom regulator reports', itemCount: 12, badge: 'Auto' },
+   157→      { id: 'anssi-alignment', name: 'ANSSI Alignment', icon: <Award className="w-4 h-4" />, description: 'French security framework alignment', score: '87%' },
+   158→      { id: 'iso27001', name: 'ISO 27001', icon: <BookOpen className="w-4 h-4" />, description: 'Information security management', score: '94%' },
+   159→      { id: 'nist-framework', name: 'NIST CSF', icon: <Shield className="w-4 h-4" />, description: 'NIST Cybersecurity Framework', score: '82%' },
+   160→      { id: 'evidence-vault', name: 'Evidence Vault', icon: <DatabaseBackup className="w-4 h-4" />, description: 'Audit evidence management', itemCount: 342 },
+   161→      { id: 'gap-analysis', name: 'Gap Analysis', icon: <LineChart className="w-4 h-4" />, description: 'Compliance gap tracking' }
+   162→    ]
+   163→  },
+   164→
+   165→  // ══════════════════════════════════════════════════════
+   166→  // PHASE 7: ML/ANALYTICS INTEGRATION
+   167→  // ══════════════════════════════════════════════════════
+   168→  {
+   169→    id: 'ml-platform',
+   170→    name: 'ML/AI Platform',
+   171→    icon: <Brain className="w-5 h-5" />,
+   172→    description: 'Machine Learning & AI Capabilities',
+   173→    status: 'active',
+   174→    phase: 7,
+   175→    subModules: [
+   176→      { id: 'anomaly-detection', name: 'Anomaly Detection', icon: <Radar className="w-4 h-4" />, description: 'ML-powered anomaly detection', accuracy: '96.1%' },
+   177→      { id: 'predictive-analytics', name: 'Predictive Analytics', icon: <TrendingUp className="w-4 h-4" />, description: 'Threat prediction models', accuracy: '94.2%' },
+   178→      { id: 'uba-engine', name: 'UBA Engine', icon: <Users className="w-4 h-4" />, description: 'User behavior analytics', accuracy: '89.7%' },
+   179→      { id: 'model-management', name: 'Model Management', icon: <Settings className="w-4 h-4" />, description: 'ML model versioning & A/B testing', itemCount: 8 },
+   180→      { id: 'automated-response-ai', name: 'AI Response', icon: <Bot className="w-4 h-4" />, description: 'AI-driven incident response' }
+   181→    ]
+   182→  },
+   183→
+   184→  // ══════════════════════════════════════════════════════
+   185→  // PHASE 8: THREAT HUNTING & SOAR (NEW!)
+   186→  // ══════════════════════════════════════════════════════
+   187→  {
+   188→    id: 'threat-hunting',
+   189→    name: 'Threat Hunting',
+   190→    icon: <Crosshair className="w-5 h-5" />,
+   191→    description: 'Proactive Threat Hunting Operations',
+   192→    status: 'active',
+   193→    phase: 8,
+   194→    subModules: [
+   195→      { id: 'hunt-sessions', name: 'Hunt Sessions', icon: <Play className="w-4 h-4" />, description: 'Active hunting operations', itemCount: 4, badge: 'Active' },
+   196→      { id: 'hypothesis-builder', name: 'Hypothesis Builder', icon: <Target className="w-4 h-4" />, description: 'Create hunting hypotheses', itemCount: 12 },
+   197→      { id: 'query-workbench', name: 'Query Workbench', icon: <Terminal className="w-4 h-4" />, description: 'Advanced threat queries' },
+   198→      { id: 'ioc-extraction', name: 'IOC Extraction', icon: <FileSearch className="w-4 h-4" />, description: 'Automatic IOC extraction', itemCount: 38 },
+   199→      { id: 'timeline-analysis', name: 'Timeline Analysis', icon: <Clock className="w-4 h-4" />, description: 'Attack timeline reconstruction' }
+   200→    ]
+   201→  },
+   202→  {
+   203→    id: 'soar',
+   204→    name: 'SOAR Platform',
+   205→    icon: <Workflow className="w-5 h-5" />,
+   206→    description: 'Security Orchestration, Automation & Response',
+   207→    status: 'active',
+   208→    phase: 8,
+   209→    subModules: [
+   210→      { id: 'playbooks', name: 'Playbooks', icon: <Play className="w-4 h-4" />, description: 'Response playbooks library', itemCount: 6, badge: '561 Runs' },
+   211→      { id: 'case-management', name: 'Case Management', icon: <FolderOpen className="w-4 h-4" />, description: 'Investigation case management', itemCount: 5 },
+   212→      { id: 'automation-rules', name: 'Automation Rules', icon: <Zap className="w-4 h-4" />, description: 'Automation rule engine', itemCount: 47 },
+   213→      { id: 'task-automation', name: 'Task Automation', icon: <Workflow className="w-4 h-4" />, description: 'Automated task workflows' },
+   214→      { id: 'integration-hub', name: 'Integration Hub', icon: <Grid3X3 className="w-4 h-4" />, description: 'Third-party integrations', itemCount: 12 }
+   215→    ]
+   216→  },
+   217→
+   218→  // ══════════════════════════════════════════════════════
+   219→  // OPERATIONAL MODULES
+   220→  // ══════════════════════════════════════════════════════
+   221→  {
+   222→    id: 'incidents',
+   223→    name: 'Incident Management',
+   224→    icon: <AlertTriangle className="w-5 h-5" />,
+   225→    description: 'Incident Lifecycle Management',
+   226→    status: 'active',
+   227→    phase: 1,
+   228→    subModules: [
+   229→      { id: 'incident-queue', name: 'Incident Queue', icon: <List className="w-4 h-4" />, description: 'Active incidents', itemCount: 8, badge: '2 Critical' },
+   230→      { id: 'response-playbooks', name: 'Response Playbooks', icon: <BookOpen className="w-4 h-4" />, description: 'Standard procedures' },
+   231→      { id: 'escalation', name: 'Escalation Matrix', icon: <ArrowRight className="w-4 h-4" />, description: 'Escalation procedures' },
+   232→      { id: 'post-incident', name: 'Post-Incident Review', icon: <FileText className="w-4 h-4" />, description: 'Lessons learned' }
+   233→    ]
+   234→  },
+   235→  {
+   236→    id: 'vulnerability',
+   237→    name: 'Vulnerability Mgmt',
+   238→    icon: <Bug className="w-5 h-5" />,
+   239→    description: 'Vulnerability Assessment & Patching',
+   240→    status: 'beta',
+   241→    phase: 3,
+   242→    subModules: [
+   243→      { id: 'vuln-scanner', name: 'Scanner', icon: <Radar className="w-4 h-4" />, description: 'Vulnerability scanning', itemCount: 234 },
+   244→      { id: 'patch-mgmt', name: 'Patch Management', icon: <Settings className="w-4 h-4" />, description: 'Patch deployment' },
+   245→      { id: 'risk-prioritization', name: 'Risk Prioritization', icon: <Target className="w-4 h-4" />, description: 'CVSS-based prioritization' }
+   246→    ]
+   247→  },
+   248→  {
+   249→    id: 'identity',
+   250→    identity: 'Identity & Access',
+   251→    icon: <Key className="w-5 h-5" />,
+   252→    description: 'IAM & Privileged Access Management',
+   253→    status: 'active',
+   254→    phase: 2,
+   255→    subModules: [
+   256→      { id: 'ldap-sync', name: 'LDAP Sync', icon: <Users className="w-4 h-4" />, description: 'Directory synchronization', badge: 'Synced' },
+   257→      { id: 'pam', name: 'Privileged Access', icon: <Lock className="w-4 h-4" />, description: 'PAM console access' },
+   258→      { id: 'mfa', name: 'MFA Management', icon: <Fingerprint className="w-4 h-4" />, description: 'Multi-factor authentication' },
+   259→      { id: 'sso', name: 'SSO/SAML', icon: <Key className="w-4 h-4" />, description: 'Single sign-on' }
+   260→    ]
+   261→  }
+   262→]
+   263→
+   264→// Helper Components
+   265→const StatusBadge = ({ status }: { status: Module['status'] }) => {
+   266→  const styles = {
+   267→    active: 'bg-green-500/20 text-green-400 border-green-500/30',
+   268→    'coming-soon': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+   269→    beta: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+   270→  }
+   271→  return (
+   272→    <span className={`px-2 py-0.5 rounded text-xs border ${styles[status]}`}>
+   273→      {status === 'active' ? '● Active' : status === 'beta' ? 'β Beta' : '○ Coming Soon'}
+   274→    </span>
+   275→  )
+   276→}
+   277→
+   278→const PhaseBadge = ({ phase }: { phase: number }) => (
+   279→  <span className="px-2 py-0.5 rounded text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+   280→    Phase {phase}
+   281→  </span>
+   282→)
+   283→
+   284→// Note: CreditCard, FolderOpen, and List are already imported from lucide-react
+   285→
+   286→export default function SOCDashboard() {
+   287→  const [selectedModule, setSelectedModule] = useState<string | null>(null)
+   288→  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+   289→  const [searchQuery, setSearchQuery] = useState('')
+   290→  const [showMobileMenu, setShowMobileMenu] = useState(false)
+   291→
+   292→  const filteredModules = socModules.filter(module =>
+   293→    (module.name && module.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+   294→    (module.description && module.description.toLowerCase().includes(searchQuery.toLowerCase()))
+   295→  )
+   296→
+   297→  return (
+   298→    <div className="min-h-screen bg-slate-950 text-white">
+   299→      {/* Header */}
+   300→      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 sticky top-0 z-50">
+   301→        <div className="flex items-center justify-between">
+   302→          <div className="flex items-center gap-4">
+   303→            <div className="flex items-center gap-3">
+   304→              <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center">
+   305→                <Shield className="w-6 h-6 text-white" />
+   306→              </div>
+   307→              <div>
+   308→                <h1 className="text-xl font-bold">National SOC</h1>
+   309→                <p className="text-xs text-slate-400">Djezzy Security Operations Center • Algeria</p>
+   310→              </div>
+   311→            </div>
+   312→          </div>
+   313→
+   314→          <div className="hidden md:flex items-center gap-6">
+   315→            {/* Quick Stats */}
+   316→            <div className="flex items-center gap-4 text-sm">
+   317→              <div className="flex items-center gap-2">
+   318→                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+   319→                <span className="text-slate-300">All Systems Operational</span>
+   320→              </div>
+   321→              <div className="text-cyan-400 font-mono">{new Date().toLocaleTimeString()}</div>
+   322→            </div>
+   323→
+   324→            {/* Actions */}
+   325→            <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+   326→              <RefreshCw className="w-5 h-5" />
+   327→            </button>
+   328→            <button className="relative p-2 hover:bg-slate-800 rounded-lg transition-colors">
+   329→              <Bell className="w-5 h-5" />
+   330→              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+   331→            </button>
+   332→          </div>
+   333→
+   334→          {/* Mobile Menu Button */}
+   335→          <button 
+   336→            className="md:hidden p-2 hover:bg-slate-800 rounded-lg"
+   337→            onClick={() => setShowMobileMenu(!showMobileMenu)}
+   338→          >
+   339→            {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+   340→          </button>
+   341→        </div>
+   342→      </header>
+   343→
+   344→      <div className="flex">
+   345→        {/* Sidebar Navigation - Full Module View */}
+   346→        <aside className={`${showMobileMenu ? 'block' : 'hidden'} md:block w-full md:w-80 lg:w-96 bg-slate-900/50 border-r border-slate-800 min-h-screen p-6 overflow-y-auto`}>
+   347→          <div className="space-y-6">
+   348→            {/* Search & Filters */}
+   349→            <div className="space-y-4">
+   350→              <div className="relative">
+   351→                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+   352→                <input
+   353→                  type="text"
+   354→                  placeholder="Search modules..."
+   355→                  value={searchQuery}
+   356→                  onChange={(e) => setSearchQuery(e.target.value)}
+   357→                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+   358→                />
+   359→              </div>
+   360→
+   361→              <div className="flex items-center justify-between">
+   362→                <span className="text-sm text-slate-400">{filteredModules.length} Modules Available</span>
+   363→                <div className="flex gap-1">
+   364→                  <button
+   365→                    onClick={() => setViewMode('grid')}
+   366→                    className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-400 hover:text-white'}`}
+   367→                  >
+   368→                    <Grid3X3 className="w-4 h-4" />
+   369→                  </button>
+   370→                  <button
+   371→                    onClick={() => setViewMode('list')}
+   372→                    className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-400 hover:text-white'}`}
+   373→                  >
+   374→                    <List className="w-4 h-4" />
+   375→                  </button>
+   376→                </div>
+   377→              </div>
+   378→            </div>
+   379→
+   380→            {/* Phase Legend */}
+   381→            <div className="bg-slate-800/30 rounded-lg p-3 border border-slate-700">
+   382→              <div className="text-xs font-medium text-slate-300 mb-2">Implementation Phases</div>
+   383→              <div className="grid grid-cols-2 gap-2 text-xs">
+   384→                {[1,2,3,4,5,6,7,8].map(phase => (
+   385→                  <div key={phase} className="flex items-center gap-1.5 text-slate-400">
+   386→                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+   387→                    Phase {phase}
+   388→                  </div>
+   389→                ))}
+   390→              </div>
+   391→            </div>
+   392→
+   393→            {/* Modules Grid/List */}
+   394→            <div className={viewMode === 'grid' ? 'space-y-3' : 'space-y-2'}>
+   395→              {filteredModules.map((module) => (
+   396→                <div
+   397→                  key={module.id}
+   398→                  className={`group bg-slate-800/30 rounded-xl border transition-all cursor-pointer ${
+   399→                    selectedModule === module.id
+   400→                      ? 'border-cyan-500 bg-cyan-500/10'
+   401→                      : 'border-slate-700 hover:border-slate-600 hover:bg-slate-800/50'
+   402→                  }`}
+   403→                  onClick={() => setSelectedModule(selectedModule === module.id ? null : module.id)}
+   404→                >
+   405→                  {/* Module Header */}
+   406→                  <div className="p-4">
+   407→                    <div className="flex items-start justify-between mb-2">
+   408→                      <div className="flex items-center gap-3">
+   409→                        <div className={`p-2 rounded-lg ${
+   410→                          module.status === 'active' ? 'bg-cyan-500/20 text-cyan-400' :
+   411→                          module.status === 'beta' ? 'bg-yellow-500/20 text-yellow-400' :
+   412→                          'bg-slate-700 text-slate-400'
+   413→                        }`}>
+   414→                          {module.icon}
+   415→                        </div>
+   416→                        <div>
+   417→                          <h3 className="font-semibold text-sm group-hover:text-cyan-400 transition-colors">
+   418→                            {module.name}
+   419→                          </h3>
+   420→                          <p className="text-xs text-slate-400 mt-0.5">{module.description}</p>
+   421→                        </div>
+   422→                      </div>
+   423→                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${
+   424→                        selectedModule === module.id ? 'rotate-180' : ''
+   425→                      }`} />
+   426→                    </div>
+   427→
+   428→                    <div className="flex items-center gap-2 flex-wrap">
+   429→                      <PhaseBadge phase={module.phase} />
+   430→                      <StatusBadge status={module.status} />
+   431→                    </div>
+   432→                  </div>
+   433→
+   434→                  {/* Sub-modules (Expandable) */}
+   435→                  {selectedModule === module.id && module.subModules && (
+   436→                    <div className="border-t border-slate-700 p-3 space-y-1 max-h-64 overflow-y-auto">
+   437→                      {module.subModules.map((sub) => (
+   438→                        <div
+   439→                          key={sub.id}
+   440→                          className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-700/50 transition-colors group/sub"
+   441→                        >
+   442→                          <div className="flex items-center gap-2.5 min-w-0">
+   443→                            <sub.icon className="w-4 h-4 text-slate-400 group-hover/sub:text-cyan-400 flex-shrink-0" />
+   444→                            <div className="min-w-0">
+   445→                              <div className="text-sm font-medium truncate group-hover/sub:text-cyan-400">
+   446→                                {sub.name}
+   447→                              </div>
+   448→                              <div className="text-xs text-slate-500 truncate">{sub.description}</div>
+   449→                            </div>
+   450→                          </div>
+   451→                          <div className="flex items-center gap-2 flex-shrink-0">
+   452→                            {sub.badge && (
+   453→                              <span className="px-1.5 py-0.5 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+   454→                                {sub.badge}
+   455→                              </span>
+   456→                            )}
+   457→                            {sub.score && (
+   458→                              <span className="px-1.5 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
+   459→                                {sub.score}
+   460→                              </span>
+   461→                            )}
+   462→                            {sub.accuracy && (
+   463→                              <span className="px-1.5 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400">
+   464→                                {sub.accuracy}
+   465→                              </span>
+   466→                            )}
+   467→                            {sub.itemCount !== undefined && (
+   468→                              <span className="text-xs text-slate-400 font-mono min-w-[28px] text-right">
+   469→                                {sub.itemCount}
+   470→                              </span>
+   471→                            )}
+   472→                            <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover/sub:text-cyan-400 opacity-0 group-hover/sub:opacity-100 transition-opacity" />
+   473→                          </div>
+   474→                        </div>
+   475→                      ))}
+   476→                    </div>
+   477→                  )}
+   478→                </div>
+   479→              ))}
+   480→            </div>
+   481→          </div>
+   482→        </aside>
+   483→
+   484→        {/* Main Content Area */}
+   485→        <main className="flex-1 p-6 overflow-y-auto">
+   486→          {/* Welcome Banner */}
+   487→          <div className="bg-gradient-to-r from-cyan-600/20 to-blue-600/20 rounded-2xl border border-cyan-500/30 p-6 mb-6">
+   488→            <div className="flex items-start justify-between">
+   489→              <div>
+   490→                <h2 className="text-2xl font-bold mb-2">Welcome to Djezzy National SOC</h2>
+   491→                <p className="text-slate-300 max-w-2xl">
+   492→                  Complete Security Operations Center platform with <strong>13 major modules</strong> and <strong>60+ sub-modules</strong>. 
+   493→                  Select a module from the sidebar to explore its features.
+   494→                </p>
+   495→                <div className="flex items-center gap-4 mt-4 text-sm">
+   496→                  <div className="flex items-center gap-2">
+   497→                    <CheckCircle className="w-4 h-4 text-green-400" />
+   498→                    <span>All 8 Phases Implemented</span>
+   499→                  </div>
+   500→                  <div className="flex items-center gap-2">
+   501→                    <Activity className="w-4 h-4 text-cyan-400" />
+   502→                    <span>Real-time Monitoring Active</span>
+   503→                  </div>
+   504→                  <div className="flex items-center gap-2">
+   505→                    <Shield className="w-4 h-4 text-purple-400" />
+   506→                    <span>Production Ready</span>
+   507→                  </div>
+   508→                </div>
+   509→              </div>
+   510→              <div className="hidden lg:block">
+   511→                <Layers className="w-24 h-24 text-cyan-400/20" />
+   512→              </div>
+   513→            </div>
+   514→          </div>
+   515→
+   516→          {/* Quick Stats Grid */}
+   517→          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+   518→            {[
+   519→              { label: 'Total Modules', value: '13', icon: <Grid3X3 className="w-5 h-5" />, color: 'text-cyan-400' },
+   520→              { label: 'Sub-Modules', value: '60+', icon: <Layers className="w-5 h-5" />, color: 'text-purple-400' },
+   521→              { label: 'API Endpoints', value: '21', icon: <Terminal className="w-5 h-5" />, color: 'text-green-400' },
+   522→              { label: 'Integration Points', value: '12', icon: <Zap className="w-5 h-5" />, color: 'text-yellow-400' }
+   523→            ].map((stat, idx) => (
+   524→              <div key={idx} className="bg-slate-900 rounded-xl border border-slate-800 p-4">
+   525→                <div className="flex items-center justify-between mb-2">
+   526→                  <span className="text-slate-400 text-sm">{stat.label}</span>
+   527→                  <div className={stat.color}>{stat.icon}</div>
+   528→                </div>
+   529→                <div className="text-2xl font-bold">{stat.value}</div>
+   530→              </div>
+   531→            ))}
+   532→          </div>
+   533→
+   534→          {/* Featured Modules Grid */}
+   535→          <div className="mb-6">
+   536→            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+   537→              <Star className="w-5 h-5 text-yellow-400" />
+   538→              Key Modules for CEO Presentation
+   539→            </h3>
+   540→            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+   541→              {[
+   542→                socModules.find(m => m.id === 'telecom-security'),
+   543→                socModules.find(m => m.id === 'compliance'),
+   544→                socModules.find(m => m.id === 'soar'),
+   545→                socModules.find(m => m.id === 'threat-hunting'),
+   546→                socModules.find(m => m.id === 'ml-platform'),
+   547→                socModules.find(m => m.id === 'fraud-detection')
+   548→              ].map((module, idx) => module && (
+   549→                <div
+   550→                  key={idx}
+   551→                  className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border border-slate-700 p-5 hover:border-cyan-500/50 transition-all cursor-pointer group"
+   552→                >
+   553→                  <div className="flex items-center gap-3 mb-3">
+   554→                    <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 group-hover:bg-cyan-500/30 transition-colors">
+   555→                      {module.icon}
+   556→                    </div>
+   557→                    <div>
+   558→                      <h4 className="font-semibold group-hover:text-cyan-400 transition-colors">{module.name}</h4>
+   559→                      <p className="text-xs text-slate-400">{module.description}</p>
+   560→                    </div>
+   561→                  </div>
+   562→                  <div className="flex items-center gap-2 text-xs text-slate-400">
+   563→                    <PhaseBadge phase={module.phase} />
+   564→                    <span>{module.subModules?.length || 0} Sub-modules</span>
+   565→                  </div>
+   566→                </div>
+   567→              ))}
+   568→            </div>
+   569→          </div>
+   570→
+   571→          {/* System Health Overview */}
+   572→          <div className="bg-slate-900 rounded-xl border border-slate-800 p-6">
+   573→            <h3 className="font-semibold mb-4 flex items-center gap-2">
+   574→              <Server className="w-5 h-5 text-cyan-400" />
+   575→              Platform Health Overview
+   576→            </h3>
+   577→            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+   578→              {[
+   579→                { name: 'SIEM Core', status: 'operational', uptime: '99.97%' },
+   580→                { name: 'Database', status: 'operational', uptime: '99.99%' },
+   581→                { name: 'ML Engine', status: 'operational', uptime: '99.95%' },
+   582→                { name: 'SS7 Firewall', status: 'operational', uptime: '100%' },
+   583→                { name: 'Threat Intel', status: 'degraded', uptime: '98.5%' },
+   584→                { name: 'SOAR Engine', status: 'operational', uptime: '99.98%' }
+   585→              ].map((system, idx) => (
+   586→                <div key={idx} className="text-center p-3 rounded-lg bg-slate-800/50">
+   587→                  <div className={`w-2 h-2 rounded-full mx-auto mb-2 ${
+   588→                    system.status === 'operational' ? 'bg-green-400' : 'bg-yellow-400 animate-pulse'
+   589→                  }`} />
+   590→                  <div className="text-sm font-medium">{system.name}</div>
+   591→                  <div className="text-xs text-slate-400 mt-1">{system.uptime}</div>
+   592→                </div>
+   593→              ))}
+   594→            </div>
+   595→          </div>
+   596→        </main>
+   597→      </div>
+   598→    </div>
+   599→  )
+   600→}
+   601→
+   602→// Additional missing icons
+   603→const Star = ({ className }: { className?: string }) => (
+   604→  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+   605→    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+   606→  </svg>
+   607→)
+   608→

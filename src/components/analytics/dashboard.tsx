@@ -501,12 +501,22 @@ export function AnalyticsDashboard({ onRefresh, isRefreshing = false }: Analytic
     { title: 'Correlations', value: 8, change: 3, icon: <Target />, trend: 'up', color: 'danger' as const },
   ];
 
-  const mockAnomalies: AnomalyDataPoint[] = Array.from({ length: 50 }, (_, i) => ({
-    timestamp: new Date(Date.now() - (49 - i) * 3600000).toISOString(),
-    value: Math.random() * 80 + 20 + (Math.random() > 0.92 ? Math.random() * 100 : 0),
-    isAnomalous: Math.random() > 0.92,
-    anomalyScore: Math.random() > 0.92 ? Math.floor(Math.random() * 40) + 60 : undefined,
-  }));
+  // Mock data for demonstration - initialized empty to prevent hydration mismatch
+  const [mockAnomalies, setMockAnomalies] = React.useState<AnomalyDataPoint[]>([]);
+  const [dataMounted, setDataMounted] = React.useState(false);
+
+  // Generate mock data only on client-side after mount
+  React.useEffect(() => {
+    setDataMounted(true);
+    setMockAnomalies(
+      Array.from({ length: 50 }, (_, i) => ({
+        timestamp: new Date(Date.now() - (49 - i) * 3600000).toISOString(),
+        value: Math.random() * 80 + 20 + (Math.random() > 0.92 ? Math.random() * 100 : 0),
+        isAnomalous: Math.random() > 0.92,
+        anomalyScore: Math.random() > 0.92 ? Math.floor(Math.random() * 40) + 60 : undefined,
+      }))
+    );
+  }, []);
 
   const mockThreats: ThreatAlert[] = [
     { id: '1', title: 'SS7 Signaling Flood', score: 95, level: 'critical', type: 'ddos', time: '2 min ago', source: 'ss7_probe' },

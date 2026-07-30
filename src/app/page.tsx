@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Shield, AlertTriangle, Activity, Clock, Users, Server,
   Globe, Lock, Eye, TrendingUp, Bell, Search, Filter,
@@ -38,6 +38,32 @@ interface SubModule {
   description: string
   itemCount?: number
   badge?: string
+}
+
+// ============================================================
+// CLIENT-SAFE CLOCK COMPONENT - Prevents Hydration Mismatch
+// Only renders time on client-side after mount
+// ============================================================
+function ClockDisplay() {
+  const [time, setTime] = useState<string>('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    setTime(new Date().toLocaleTimeString())
+    
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  if (!mounted) {
+    return <div className="text-cyan-400 font-mono w-20">&nbsp;</div>
+  }
+
+  return <div className="text-cyan-400 font-mono">{time}</div>
 }
 
 // Complete Module Definition
@@ -318,7 +344,7 @@ export default function SOCDashboard() {
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                 <span className="text-slate-300">All Systems Operational</span>
               </div>
-              <div className="text-cyan-400 font-mono">{new Date().toLocaleTimeString()}</div>
+              <ClockDisplay />
             </div>
 
             {/* Actions */}
