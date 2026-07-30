@@ -23,9 +23,10 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
-import { useAuth } from '@/hooks/useAuth';
-import { UserCircle } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+// AUTH DISABLED — imports kept for re-activation:
+// import { useAuth } from '@/hooks/useAuth';
+// import { UserCircle } from 'lucide-react';
+// import { signOut } from 'next-auth/react';
 
 import DashboardView from '@/components/views/DashboardView';
 import MonitoringView from '@/components/views/MonitoringView';
@@ -391,7 +392,7 @@ export default function Home() {
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
 
-  useAuth();
+  // useAuth(); // AUTH DISABLED
 
   const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
 
@@ -458,6 +459,7 @@ export default function Home() {
               <NotificationCenter />
               <LocaleToggle />
               <ThemeToggle />
+              {/* AUTH DISABLED — user badge hidden
               {user && (
                 <TooltipProvider>
                   <Tooltip>
@@ -475,6 +477,7 @@ export default function Home() {
                   </Tooltip>
                 </TooltipProvider>
               )}
+              */}
             </div>
           </header>
 
