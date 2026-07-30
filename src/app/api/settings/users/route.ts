@@ -32,7 +32,8 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ users: result });
-  } catch {
-    return NextResponse.json({ users: [] }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message, users: [] }, { status: 500 });
   }
 }

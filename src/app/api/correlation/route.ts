@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
 
 // ── Pearson correlation coefficient ──
 function pearson(xs: number[], ys: number[]): number {
@@ -29,8 +30,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'kpi';
   const technology = searchParams.get('technology');
-  const now = new Date();
-  const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
+  const now = getDemoNow();
+  const sixHoursAgo = demoHoursAgo(6);
 
   try {
     if (type === 'alarm') {

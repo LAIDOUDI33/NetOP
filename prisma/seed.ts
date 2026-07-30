@@ -8,6 +8,12 @@ const vendors = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
 function rand(min: number, max: number) { return Math.random() * (max - min) + min; }
 function randInt(min: number, max: number) { return Math.floor(rand(min, max + 1)); }
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function pickWeighted(items: [string, number][]): string {
+  const total = items.reduce((s, [, w]) => s + w, 0);
+  let r = Math.random() * total;
+  for (const [item, w] of items) { r -= w; if (r <= 0) return item; }
+  return items[0][0];
+}
 function pickStatus(tech: string): string {
   const r = Math.random();
   if (tech === '5G') return r < 0.1 ? r < 0.03 ? 'down' : 'degraded' : 'active';
@@ -2881,13 +2887,203 @@ async function main() {
   await db.auditTrail.createMany({ data: auditData });
   console.log(`  AuditTrails: ${auditData.length}`);
 
+  // ========== NEW MODELS SEED ==========
+
+  // 18. AiAgent (7 records - exact mock data)
+  console.log('Seeding AiAgents...');
+  const aiAgentData = [
+    { id: 'agent-optimizer', name: 'Network Optimizer', type: 'optimization', description: 'Autonomous parameter tuning based on KPI targets', model: 'gpt-4o', status: 'active', tasksCompleted: 1847, tasksFailed: 23, avgLatencyMs: 2340, successRate: 98.8 },
+    { id: 'agent-anomaly', name: 'Anomaly Detector', type: 'detection', description: 'Real-time anomaly detection across all KPIs', model: 'gpt-4o', status: 'active', tasksCompleted: 3210, tasksFailed: 45, avgLatencyMs: 1200, successRate: 98.6 },
+    { id: 'agent-rca', name: 'Root Cause Analyzer', type: 'analysis', description: 'Multi-layer root cause analysis with evidence chain', model: 'gpt-4o', status: 'active', tasksCompleted: 856, tasksFailed: 12, avgLatencyMs: 4500, successRate: 98.6 },
+    { id: 'agent-forecast', name: 'Demand Forecaster', type: 'forecasting', description: 'Capacity and traffic demand forecasting', model: 'gpt-4o-mini', status: 'active', tasksCompleted: 2100, tasksFailed: 8, avgLatencyMs: 890, successRate: 99.6 },
+    { id: 'agent-son', name: 'SON Coordinator', type: 'automation', description: 'Self-Organizing Network action orchestration', model: 'gpt-4o', status: 'idle', tasksCompleted: 4320, tasksFailed: 67, avgLatencyMs: 3200, successRate: 98.5 },
+    { id: 'agent-slicing', name: 'Slice Manager', type: 'orchestration', description: 'Network slice lifecycle management', model: 'gpt-4o', status: 'active', tasksCompleted: 645, tasksFailed: 3, avgLatencyMs: 1800, successRate: 99.5 },
+    { id: 'agent-energy', name: 'Energy Advisor', type: 'optimization', description: 'Energy-saving recommendation engine', model: 'gpt-4o-mini', status: 'idle', tasksCompleted: 1580, tasksFailed: 22, avgLatencyMs: 1500, successRate: 98.6 },
+  ];
+  await db.aiAgent.createMany({ data: aiAgentData });
+  console.log(`  AiAgents: ${aiAgentData.length}`);
+
+  // 19. ExternalIntegration (6 records - exact mock data)
+  console.log('Seeding ExternalIntegrations...');
+  await db.externalIntegration.createMany({ data: [
+    { id: 'int-oss', name: 'OSS Integration', type: 'oss', vendor: 'Ericsson', protocol: 'REST/SOAP', endpoint: 'https://oss.algtelecom.dz/api/v2', status: 'connected', lastSync: subMinutes(now, 3), syncIntervalMin: 5, totalSyncs: 45230, failedSyncs: 12, dataPoints: 2840000, latencyMs: 450, version: 'v2.4.1' },
+    { id: 'int-crm', name: 'CRM Integration', type: 'crm', vendor: 'Salesforce', protocol: 'REST', endpoint: 'https://crm.algtelecom.dz/api/v1', status: 'connected', lastSync: subMinutes(now, 10), syncIntervalMin: 30, totalSyncs: 12800, failedSyncs: 5, dataPoints: 1450000, latencyMs: 1200, version: 'v1.8.0' },
+    { id: 'int-billing', name: 'Billing Integration', type: 'billing', vendor: 'Amdocs', protocol: 'REST', endpoint: 'https://billing.algtelecom.dz/api/v1', status: 'connected', lastSync: subMinutes(now, 60), syncIntervalMin: 120, totalSyncs: 3200, failedSyncs: 2, dataPoints: 890000, latencyMs: 2300, version: 'v3.1.0' },
+    { id: 'int-son', name: 'SON Platform', type: 'son', vendor: 'Huawei', protocol: 'NETCONF', endpoint: 'netconf://son.algtelecom.dz:830', status: 'connected', lastSync: subMinutes(now, 1), syncIntervalMin: 1, totalSyncs: 892000, failedSyncs: 45, dataPoints: 5600000, latencyMs: 180, version: 'v5.2.3' },
+    { id: 'int-nms', name: 'NMS Gateway', type: 'nms', vendor: 'Nokia', protocol: 'SNMP/REST', endpoint: 'https://nms.algtelecom.dz:8080', status: 'degraded', lastSync: subMinutes(now, 120), syncIntervalMin: 15, totalSyncs: 23000, failedSyncs: 340, dataPoints: 3200000, latencyMs: 5600, version: 'v4.0.2' },
+    { id: 'int-geo', name: 'GIS Platform', type: 'geo', vendor: 'Esri', protocol: 'REST', endpoint: 'https://geo.algtelecom.dz/arcgis', status: 'connected', lastSync: subMinutes(now, 1440), syncIntervalMin: 1440, totalSyncs: 730, failedSyncs: 0, dataPoints: 45000, latencyMs: 890, version: 'v11.2' },
+  ] });
+  console.log('  ExternalIntegrations: 6');
+
+  // 20. DataPipeline (8 records - exact mock data)
+  console.log('Seeding DataPipelines...');
+  await db.dataPipeline.createMany({ data: [
+    { id: 'pipe-kpi-ingest', name: 'KPI Metrics Ingestion', source: 'OSS Poller', target: 'Time-Series DB', schedule: '*/5 * * * *', status: 'running', lastRun: subMinutes(now, 2), nextRun: subMinutes(now, -3), recordsProcessed: 184200, errorRate: 0.02, avgDurationMs: 2300 },
+    { id: 'pipe-alarm-stream', name: 'Alarm Stream Processing', source: 'OSS Alarm Feed', target: 'Alert Engine', schedule: 'realtime', status: 'running', lastRun: subMinutes(now, 1), nextRun: null, recordsProcessed: 45600, errorRate: 0.1, avgDurationMs: 120 },
+    { id: 'pipe-crm-sync', name: 'CRM Customer Sync', source: 'CRM API', target: 'Subscriber DB', schedule: '0 */2 * * *', status: 'running', lastRun: subMinutes(now, 60), nextRun: subMinutes(now, -60), recordsProcessed: 32400, errorRate: 0.05, avgDurationMs: 8500 },
+    { id: 'pipe-billing-etl', name: 'Billing ETL', source: 'Billing System', target: 'Revenue DW', schedule: '0 2 * * *', status: 'completed', lastRun: subHours(now, 8), nextRun: subMinutes(now, -480), recordsProcessed: 12800, errorRate: 0.0, avgDurationMs: 12000 },
+    { id: 'pipe-son-actions', name: 'SON Action Logger', source: 'SON Engine', target: 'Audit Trail', schedule: 'realtime', status: 'running', lastRun: subMinutes(now, 1), nextRun: null, recordsProcessed: 8900, errorRate: 0.0, avgDurationMs: 80 },
+    { id: 'pipe-forecast-train', name: 'Forecast Model Training', source: 'KPI History', target: 'ML Models', schedule: '0 3 * * 0', status: 'scheduled', lastRun: subHours(now, 48), nextRun: new Date(now.getTime() + 120 * 60000), recordsProcessed: 500000, errorRate: 0.5, avgDurationMs: 120000 },
+    { id: 'pipe-qoe-compute', name: 'QoE Score Computation', source: 'KPI + CEM Data', target: 'QoE Dashboard', schedule: '*/10 * * * *', status: 'running', lastRun: subMinutes(now, 5), nextRun: subMinutes(now, -5), recordsProcessed: 92000, errorRate: 0.03, avgDurationMs: 4500 },
+    { id: 'pipe-anomaly-label', name: 'Anomaly Labeling', source: 'Alert Engine', target: 'ML Training Set', schedule: '0 4 * * *', status: 'failed', lastRun: subHours(now, 2), nextRun: subHours(now, -2), recordsProcessed: 1200, errorRate: 3.2, avgDurationMs: 30000 },
+  ] });
+  console.log('  DataPipelines: 8');
+
+  // 21. OssNetworkElement (50 records)
+  console.log('Seeding OssNetworkElements...');
+  const ossRegions = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tlemcen', 'Tizi Ouzou', 'Batna', 'Béjaïa', 'Biskra', 'Ouargla'];
+  const ossVendors = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
+  const neTypesByTech: Record<string, string[]> = { '5G': ['gNodeB'], '4G': ['eNodeB'], '3G': ['RNC', 'NodeB'], '2G': ['BSC', 'BTS'] };
+  const neData: any[] = [];
+  let neIdx = 1;
+  for (let i = 0; i < 50; i++) {
+    const region = ossRegions[i % 12];
+    const vendor = ossVendors[i % 4];
+    const techRoll = Math.random();
+    let technology: string, type: string;
+    if (techRoll < 0.45) { technology = '5G'; type = 'gNodeB'; }
+    else if (techRoll < 0.80) { technology = '4G'; type = 'eNodeB'; }
+    else if (techRoll < 0.93) { technology = '3G'; type = pick(neTypesByTech['3G']); }
+    else { technology = '2G'; type = pick(neTypesByTech['2G']); }
+    const statusRoll = Math.random();
+    const status = statusRoll < 0.82 ? 'active' : statusRoll < 0.90 ? 'degraded' : statusRoll < 0.96 ? 'maintenance' : 'down';
+    neData.push({
+      neId: `NE-${String(neIdx).padStart(4, '0')}`,
+      name: `${region}_${vendor[0]}_${type}_${String(i + 1).padStart(3, '0')}`,
+      type, technology, vendor, region,
+      siteName: `${region}_SITE_${String(i + 1).padStart(3, '0')}`,
+      status,
+      lastPoll: subMinutes(now, randInt(0, 5)),
+      cpuUsage: randInt(15, 90),
+      memoryUsage: randInt(30, 85),
+      carriers: randInt(1, 4),
+      siteId: Math.random() > 0.5 ? pick(phaseDSites).id : null,
+    });
+    neIdx++;
+  }
+  await db.ossNetworkElement.createMany({ data: neData });
+  console.log(`  OssNetworkElements: ${neData.length}`);
+
+  // 22. OssFaultEvent (25 records)
+  console.log('Seeding OssFaultEvents...');
+  const faultTypes = ['Link Down', 'High CPU', 'High Memory', 'Interface Flap', 'Sync Loss', 'Power Alarm', 'Temperature', 'Card Failure'];
+  const faultSeverities = ['critical', 'major', 'minor', 'warning'];
+  const faultData: any[] = [];
+  for (let i = 0; i < 25; i++) {
+    const ne = pick(neData);
+    const cat = pick(faultTypes);
+    faultData.push({
+      faultId: `FAULT-${String(i + 1).padStart(5, '0')}`,
+      neId: ne.neId,
+      neName: ne.name,
+      severity: pick(faultSeverities),
+      description: `${cat} detected on ${ne.name}`,
+      category: cat,
+      timestamp: subHours(now, randInt(0, 24)),
+      acknowledged: Math.random() > 0.5,
+    });
+  }
+  await db.ossFaultEvent.createMany({ data: faultData });
+  console.log(`  OssFaultEvents: ${faultData.length}`);
+
+  // 23. CrmCustomer (120 records)
+  console.log('Seeding CrmCustomers...');
+  const crmFirst = ['Ahmed', 'Mohamed', 'Youcef', 'Amine', 'Karim', 'Sofiane', 'Rami', 'Walid', 'Nabil', 'Fares', 'Lydia', 'Amina', 'Sarah', 'Nour', 'Imane', 'Lina', 'Yasmine', 'Rania', 'Sara', 'Meriem'];
+  const crmLast = ['Benali', 'Haddad', 'Bouzid', 'Kaci', 'Mebarki', 'Djebbar', 'Hamidi', 'Zerrouki', 'Boudiaf', 'Belkacem', 'Ait Ahmed', 'Cherif', 'Mansouri', 'Tlemcani', 'Boumediene', 'Amrani', 'Fekhar', 'Rahmani', 'Mokrani', 'Djamel'];
+  const crmSegments = ['prepaid', 'postpaid', 'corporate'];
+  const crmTiers = ['bronze', 'silver', 'gold', 'platinum'];
+  const crmServices = ['Mobile Data', 'Voice Only', 'Data + Voice', 'Enterprise', 'Family Plan'];
+  const crmData: any[] = [];
+  const crmIds: string[] = []; // store for linking to invoices
+  for (let i = 0; i < 120; i++) {
+    const segment = pick(crmSegments);
+    const tier = segment === 'corporate' ? pick(['gold', 'platinum']) : pick(crmTiers);
+    const arpuByTier: Record<string, [number, number]> = { bronze: [800, 3500], silver: [1500, 6500], gold: [3500, 15000], platinum: [8000, 25000] };
+    const [arpuMin, arpuMax] = arpuByTier[tier];
+    const arpu = randInt(arpuMin, arpuMax);
+    const churnBase: Record<string, number> = { bronze: 0.4, silver: 0.25, gold: 0.12, platinum: 0.05 };
+    const churnVal = churnBase[tier] + Math.random() * 0.2 - 0.1;
+    const churnRisk = churnVal > 0.5 ? 'critical' : churnVal > 0.3 ? 'high' : churnVal > 0.15 ? 'medium' : 'low';
+    const satisfaction = rand(2.5, 5.0);
+    const cid = `CRM-${String(i + 1).padStart(6, '0')}`;
+    const msisdn = `213${String(50000000 + i * 312457).padStart(9, '0')}`;
+    crmIds.push(cid);
+    crmData.push({
+      customerId: cid,
+      msisdn,
+      name: `${crmFirst[i % 20]} ${crmLast[i % 20]}`,
+      type: segment,
+      tier,
+      region: ossRegions[i % 12],
+      arpu,
+      churnRisk,
+      satisfactionScore: Number(satisfaction.toFixed(1)),
+      tenureMonths: randInt(1, 120),
+      dataUsageGb: Number(rand(2, 60).toFixed(1)),
+      status: Math.random() > 0.05 ? 'active' : 'suspended',
+      complaints: randInt(0, 6),
+      joinDate: subHours(now, randInt(720, 70080)),
+      serviceType: pick(crmServices),
+    });
+  }
+  await db.crmCustomer.createMany({ data: crmData });
+  console.log(`  CrmCustomers: ${crmData.length}`);
+
+  // 24. BillingInvoice (100 records)
+  console.log('Seeding BillingInvoices...');
+  const billingServices = ['Mobile Data', 'Voice Only', 'Data + Voice', 'Enterprise', 'Family Plan', 'Fixed Line', 'IoT Connectivity'];
+  const billingPaymentMethods = ['Carte DZ', 'CCP', 'Edahabia', 'Virement', 'Cash'];
+  const billingStatuses: [string, number][] = [['paid', 55], ['pending', 20], ['overdue', 15], ['partial', 10]];
+  const billingAmounts: Record<string, [number, number]> = {
+    'Mobile Data': [800, 3500], 'Voice Only': [500, 2000], 'Data + Voice': [1200, 5000],
+    'Enterprise': [15000, 80000], 'Family Plan': [2500, 8000], 'Fixed Line': [1500, 6000], 'IoT Connectivity': [3000, 12000],
+  };
+  const billingCycles: string[] = [];
+  for (let m = 11; m >= 0; m--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    billingCycles.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  }
+  const invoiceData: any[] = [];
+  for (let i = 0; i < 100; i++) {
+    const status = pickWeighted(billingStatuses);
+    const cycle = pick(billingCycles);
+    const serviceType = pick(billingServices);
+    const [amtMin, amtMax] = billingAmounts[serviceType] ?? [1000, 5000];
+    const amount = randInt(amtMin, amtMax);
+    const tax = Math.round(amount * 0.19);
+    const total = amount + tax;
+    const [y, m] = cycle.split('-').map(Number);
+    const dueDay = randInt(1, 28);
+    const dueDate = new Date(y, m - 1, dueDay);
+    const daysOverdue = (status === 'overdue' || status === 'partial') ? randInt(1, 120) : 0;
+    const paidDate = status === 'paid' ? new Date(y, m - 1, randInt(1, dueDay)) : null;
+    const crmIdx = i % 120;
+    invoiceData.push({
+      invoiceId: `INV-${String(i + 1).padStart(6, '0')}`,
+      customerId: crmIds[crmIdx],
+      customerName: `${crmFirst[crmIdx % 20]} ${crmLast[crmIdx % 20]}`,
+      msisdn: `213${String(50000000 + crmIdx * 312457).padStart(9, '0')}`,
+      region: ossRegions[crmIdx % 12],
+      serviceType,
+      billingCycle: cycle,
+      amount, tax, total,
+      status,
+      paymentMethod: (status === 'paid' || status === 'partial') ? pick(billingPaymentMethods) : null,
+      dueDate,
+      paidDate,
+      daysOverdue,
+    });
+  }
+  await db.billingInvoice.createMany({ data: invoiceData });
+  console.log(`  BillingInvoices: ${invoiceData.length}`);
+
   // ========== RBAC SEED ==========
   console.log('\n  Seeding RBAC (roles, permissions, users)...');
   await seedRbac();
   console.log('  ✅ RBAC seeded!');
 
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());

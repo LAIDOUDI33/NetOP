@@ -33,7 +33,8 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ actions: mapped, total: await db.sonAction.count() });
-  } catch {
-    return NextResponse.json({ actions: [], total: 0 }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message, actions: [], total: 0 }, { status: 500 });
   }
 }

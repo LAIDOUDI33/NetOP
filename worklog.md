@@ -459,3 +459,82 @@ Stage Summary:
 - NotificationCenter: WebSocket triggers query invalidation when critical alert count changes
 - Both views show visual indicators of WebSocket connectivity
 - Polling fully replaced by WebSocket for live data streams
+---
+Task ID: 4
+Agent: Sub-agent
+Task: Add Prisma models for 7 mock API routes
+
+Work Log:
+- Read existing schema.prisma (1050 lines, 30+ models) to understand patterns
+- Identified conventions: `@id @default(cuid())`, `@default(now())`, `@updatedAt`, SQLite provider, `@@index` for queried fields
+- Added 7 new models at end of schema under `// ========== MOCK ROUTE MODELS ==========`:
+  1. **AiAgent** — 7 fields + timestamps, indexes on type/status
+  2. **ExternalIntegration** — 14 fields + timestamps, indexes on type/status/vendor
+  3. **DataPipeline** — 11 fields + timestamps, indexes on status/source/target
+  4. **OssNetworkElement** — 15 fields + optional NetworkSite relation, indexes on neId/type/tech/region/status/siteId
+  5. **OssFaultEvent** — 9 fields + createdAt, indexes on faultId/neId/severity/category/timestamp
+  6. **CrmCustomer** — 17 fields + timestamps, indexes on customerId/msisdn/tier/region/churnRisk/status
+  7. **BillingInvoice** — 17 fields + timestamps, indexes on invoiceId/customerId/region/status/billingCycle/dueDate
+- Added reverse relation `ossNetworkElements OssNetworkElement[]` to existing NetworkSite model
+- Initially used `@db.Integer`/`@db.Real` annotations per instructions, but SQLite doesn't support native type annotations — removed them
+- Ran `npx prisma db push` successfully — database in sync, Prisma Client regenerated
+
+Stage Summary:
+- 7 new Prisma models added for mock route data persistence (AiAgent, ExternalIntegration, DataPipeline, OssNetworkElement, OssFaultEvent, CrmCustomer, BillingInvoice)
+- OssNetworkElement has optional foreign key to NetworkSite (onDelete: SetNull)
+- All models follow existing schema conventions (cuid IDs, now/updatedAt timestamps, appropriate indexes)
+- Database pushed and Prisma Client regenerated successfully
+
+---
+Task ID: 7
+Agent: Main
+Task: Write seed data for 7 new Prisma models
+
+Work Log:
+- Read worklog.md and prisma/schema.prisma for context on all 7 new models
+- Read existing prisma/seed.ts patterns (createMany, rand/pick/randInt helpers, subHours/subMinutes)
+- Read mock route files for exact data: multi-agent, integration-hub, data-pipeline, oss, crm, billing
+- Added `pickWeighted()` helper function to seed.ts for weighted random selection
+- Wrote seed data for all 7 models (sections 18-24):
+  1. **AiAgent** (7) — exact mock data with explicit IDs (agent-optimizer, agent-anomaly, etc.)
+  2. **ExternalIntegration** (6) — exact mock data with explicit IDs (int-oss, int-crm, etc.)
+  3. **DataPipeline** (8) — exact mock data with explicit IDs (pipe-kpi-ingest, pipe-alarm-stream, etc.)
+  4. **OssNetworkElement** (50) — generated: 12 Algerian regions × 4 vendors, 45% 5G / 35% 4G / 13% 3G / 7% 2G, 82% active / 8% degraded / 5% maintenance / 5% down, random CPU 15-90, memory 30-85, carriers 1-4, optional siteId link
+  5. **OssFaultEvent** (25) — generated: linked to random NE neIds, 8 fault types, 4 severities, timestamps within 24h
+  6. **CrmCustomer** (120) — generated: Algerian names, MSISDNs 213-prefix, 3 segments, 4 tiers, ARPU by tier ranges, churn risk, satisfaction 2.5-5.0, tenure 1-120mo, 2-60GB data, 95% active
+  7. **BillingInvoice** (100) — generated: linked to CRM customerIds, 7 service types with variable amounts, 19% tax, 55% paid / 20% pending / 15% overdue / 10% partial, Algerian payment methods, 12-month billing cycles
+- Updated final console.log to include new model counts
+- Ran `npx prisma db seed` — all seeded successfully, zero errors
+
+Stage Summary:
+- Seed data written for all 7 new models (316 total new records)
+- AiAgent, ExternalIntegration, DataPipeline use exact mock data for consistency with views
+- OssNetworkElement, OssFaultEvent, CrmCustomer, BillingInvoice use realistic Algerian telecom data
+- `pickWeighted` helper added for weighted status distribution in billing invoices
+- Seed runs cleanly end-to-end
+---
+Task ID: 8
+Agent: Main
+Task: Rewrite 7 mock API routes to use Prisma database queries
+
+Work Log:
+- Read worklog.md for project context (NetOP Algerie NOC dashboard)
+- Read all 7 route files to understand current mock data structures
+- Read lib/db.ts (PrismaClient singleton), lib/demo-time.ts (getDemoNow, demoHoursAgo)
+- Read prisma/schema.prisma for AiAgent, ExternalIntegration, DataPipeline, OssNetworkElement, OssFaultEvent, CrmCustomer, BillingInvoice models
+- Rewrote /api/route.ts stub with status/service/version/timestamp
+- Rewrote /api/multi-agent/route.ts: db.aiAgent.findMany(), static empty taskQueue, hourly metrics derived from agent stats, static chat log
+- Rewrote /api/integration-hub/route.ts: db.externalIntegration.findMany(), 20-entry syncHistory generated from integration data, static healthTimeline
+- Rewrote /api/data-pipeline/route.ts: db.dataPipeline.findMany(), static flowNodes/flowEdges, throughput derived from pipeline recordsProcessed
+- Rewrote /api/integrations/oss/route.ts: db.ossNetworkElement.findMany(take:500), db.ossFaultEvent.findMany(take:100,orderBy:timestamp:desc), aggregations from real NE data, static performanceTrend
+- Rewrote /api/integrations/crm/route.ts: db.crmCustomer.findMany(take:500), segmentDistribution/arpuByRegion/churnAnalysis computed from real data, satisfactionTrend derived from avg scores, topComplaints static
+- Rewrote /api/integrations/billing/route.ts: db.billingInvoice.findMany(take:500), revenueByMonth/revenueByRegion/revenueByService/paymentMethods/debtors all computed from real invoice data
+- All 7 files pass ESLint with zero errors
+- Field mappings preserved: ne.siteName→site, fault.faultId→id, customer.customerId→id/tier.satisfactionScore, invoice.invoiceId→id
+
+Stage Summary:
+- All 7 routes now query Prisma database instead of generating random in-memory data
+- Response JSON structures are identical to previous mock output (same keys, same nesting)
+- Rate limiting and try/catch error handling preserved in all routes
+- take: 500 limits on list queries as requested
+- getDemoNow() imported in routes that use time-aware logic

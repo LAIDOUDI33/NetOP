@@ -25,7 +25,8 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ roles: result });
-  } catch {
-    return NextResponse.json({ roles: [] }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message, roles: [] }, { status: 500 });
   }
 }

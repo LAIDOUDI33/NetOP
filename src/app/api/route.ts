@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   if (limited) return rateLimitResponse(resetMs);
 
   try {
-    return NextResponse.json({ message: "Hello, world!" });
+    return NextResponse.json({ status: 'ok', service: 'NetOP Algerie NOC', version: process.env.npm_package_version ?? '0.2.0', timestamp: new Date().toISOString() });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

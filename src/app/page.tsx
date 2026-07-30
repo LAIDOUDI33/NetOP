@@ -23,10 +23,9 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
-// AUTH DISABLED — uncomment to re-enable:
-// import { useAuth } from '@/hooks/useAuth';
-// import { SignOut, UserCircle } from 'lucide-react';
-// import { signOut } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
+import { UserCircle } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 
 import DashboardView from '@/components/views/DashboardView';
 import MonitoringView from '@/components/views/MonitoringView';
@@ -387,13 +386,12 @@ function ViewRenderer() {
 
 
 export default function Home() {
-  const { sidebarOpen, toggleSidebar } = useAppStore();
+  const { sidebarOpen, toggleSidebar, user } = useAppStore();
   const { currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
 
-  // AUTH DISABLED — uncomment to re-enable:
-  // useAuth();
+  useAuth();
 
   const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
 
@@ -460,7 +458,23 @@ export default function Home() {
               <NotificationCenter />
               <LocaleToggle />
               <ThemeToggle />
-              {/* AUTH DISABLED — user badge removed. Uncomment in page.tsx to re-enable. */}
+              {user && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <UserCircle className="h-4 w-4" />
+                        <span className="hidden xl:inline max-w-24 truncate">{user.name}</span>
+                        <PowerOff className="h-3 w-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{user.email} · {user.roles?.[0] ?? ''}</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </header>
 

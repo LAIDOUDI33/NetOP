@@ -1,77 +1,45 @@
 import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-
-const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 'Blida', 'Batna', 'Béjaïa', 'Tizi Ouzou', 'Biskra', 'Ouargla'];
-const VENDORS = ['Ericsson', 'Huawei', 'Nokia', 'ZTE'];
-const NE_TYPES: Record<string, string[]> = { '5G': ['gNodeB'], '4G': ['eNodeB'], '3G': ['RNC', 'NodeB'], '2G': ['BSC', 'BTS'], Core: ['MME', 'SGSN', 'MSC', 'AMF', 'SMF', 'UPF', 'HSS'] };
-const FAULT_TYPES = ['Link Down', 'High CPU', 'High Memory', 'Interface Flap', 'Sync Loss', 'Power Alarm', 'Temperature', 'Card Failure'];
-const SEVERITIES = ['critical', 'major', 'minor', 'warning'];
-const STATUSES = ['active', 'degraded', 'maintenance', 'down'];
-
-function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
-function rand(min: number, max: number) { return Math.round(min + Math.random() * (max - min)); }
-
-function generateNEs() {
-  const nes: any[] = [];
-  let id = 1;
-  for (const region of REGIONS) {
-    for (const vendor of VENDORS) {
-      const count = rand(3, 7);
-      for (let i = 0; i < count; i++) {
-        const techRoll = Math.random();
-        let technology: string, type: string;
-        if (techRoll < 0.45) { technology = '5G'; type = 'gNodeB'; }
-        else if (techRoll < 0.80) { technology = '4G'; type = 'eNodeB'; }
-        else if (techRoll < 0.93) { technology = '3G'; type = pick(NE_TYPES['3G']); }
-        else { technology = '2G'; type = pick(NE_TYPES['2G']); }
-        const statusRoll = Math.random();
-        const status = statusRoll < 0.82 ? 'active' : statusRoll < 0.90 ? 'degraded' : statusRoll < 0.96 ? 'maintenance' : 'down';
-        nes.push({
-          neId: `NE-${String(id).padStart(4, '0')}`, name: `${region}_${vendor[0]}_${type}_${String(i + 1).padStart(3, '0')}`,
-          type, technology, vendor, region, site: `${region}_SITE_${String(i + 1).padStart(3, '0')}`,
-          status, lastPoll: new Date(Date.now() - Math.random() * 300000).toISOString(),
-          cpuUsage: rand(15, 90), memoryUsage: rand(30, 85),
-          carriers: technology === 'Core' ? 0 : rand(1, 4),
-        });
-        id++;
-      }
-    }
-  }
-  for (const ct of NE_TYPES.Core) {
-    for (const vendor of VENDORS.slice(0, 3)) {
-      nes.push({
-        neId: `NE-${String(id).padStart(4, '0')}`, name: `CORE_${ct}_${vendor}`,
-        type: ct, technology: 'Core', vendor, region: 'Alger', site: `CORE_${ct}`,
-        status: 'active', lastPoll: new Date(Date.now() - Math.random() * 60000).toISOString(),
-        cpuUsage: rand(15, 55), memoryUsage: rand(40, 70), carriers: 0,
-      });
-      id++;
-    }
-  }
-  return nes;
-}
-
-function generateFaults(nes: any[]) {
-  return Array.from({ length: 25 }, (_, i) => {
-    const ne = nes[rand(0, nes.length - 1)];
-    const cat = pick(FAULT_TYPES);
-    return {
-      id: `FAULT-${String(i + 1).padStart(5, '0')}`, neId: ne.neId, neName: ne.name,
-      severity: pick(SEVERITIES),
-      description: `${cat} detected on ${ne.name}`, category: cat,
-      timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-      acknowledged: Math.random() > 0.5,
-    };
-  });
-}
+import { db } from '@/lib/db';
+import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
 
 export async function GET(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
 
   try {
-  const elements = generateNEs();
-  const faultEvents = generateFaults(elements);
+  const [neRows, faultRows] = await Promise.all([
+    db.ossNetworkElement.findMany({ take: 500 }),
+    db.ossFaultEvent.findMany({ take: 100, orderBy: { timestamp: 'desc' } }),
+  ]);
+
+  // Map NE rows to match mock response shape (siteName → site)
+  const elements = neRows.map(ne => ({
+    neId: ne.neId,
+    name: ne.name,
+    type: ne.type,
+    technology: ne.technology,
+    vendor: ne.vendor,
+    region: ne.region,
+    site: ne.siteName,
+    status: ne.status,
+    lastPoll: ne.lastPoll.toISOString(),
+    cpuUsage: ne.cpuUsage,
+    memoryUsage: ne.memoryUsage,
+    carriers: ne.carriers,
+  }));
+
+  // Map fault events (faultId → id)
+  const faultEvents = faultRows.map(f => ({
+    id: f.faultId,
+    neId: f.neId,
+    neName: f.neName,
+    severity: f.severity,
+    description: f.description,
+    category: f.category,
+    timestamp: f.timestamp.toISOString(),
+    acknowledged: f.acknowledged,
+  }));
 
   // Aggregations for charts
   const typeMap: Record<string, number> = {};
@@ -83,9 +51,14 @@ export async function GET(request: Request) {
   const neTypeDistribution = Object.entries(typeMap).map(([name, value]) => ({ name, value }));
   const vendorDistribution = Object.entries(vendorMap).map(([name, count]) => ({ name, count }));
 
+  // Static 24h performance trend
+  const avgCpu = elements.length > 0 ? Math.round(elements.reduce((s, n) => s + n.cpuUsage, 0) / elements.length) : 45;
+  const avgMem = elements.length > 0 ? Math.round(elements.reduce((s, n) => s + n.memoryUsage, 0) / elements.length) : 55;
   const performanceTrend = Array.from({ length: 24 }, (_, i) => ({
     time: `${String(i).padStart(2, '0')}:00`,
-    cpu: rand(30, 75), memory: rand(45, 75), throughput: rand(200, 700),
+    cpu: avgCpu + Math.round(((i * 7 + 3) % 20) - 10),
+    memory: avgMem + Math.round(((i * 5 + 1) % 16) - 8),
+    throughput: 350 + Math.round(((i * 11 + 7) % 30) - 15),
   }));
 
   const summary = {
@@ -93,8 +66,8 @@ export async function GET(request: Request) {
     active: elements.filter(n => n.status === 'active').length,
     degraded: elements.filter(n => n.status === 'degraded').length,
     down: elements.filter(n => n.status === 'down').length,
-    avgCpu: Math.round(elements.reduce((s, n) => s + n.cpuUsage, 0) / elements.length),
-    avgMemory: Math.round(elements.reduce((s, n) => s + n.memoryUsage, 0) / elements.length),
+    avgCpu: elements.length > 0 ? Math.round(elements.reduce((s, n) => s + n.cpuUsage, 0) / elements.length) : 0,
+    avgMemory: elements.length > 0 ? Math.round(elements.reduce((s, n) => s + n.memoryUsage, 0) / elements.length) : 0,
   };
 
   return NextResponse.json({ elements, neTypeDistribution, vendorDistribution, performanceTrend, faultEvents, summary });

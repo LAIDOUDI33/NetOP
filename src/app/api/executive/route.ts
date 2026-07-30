@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { getDemoNow } from '@/lib/demo-time';
 
 export async function GET(request: NextRequest) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     const avgMos = qoeAgg._avg.mosScore ?? 0;
 
     // SON actions today
-    const todayStart = new Date();
+    const todayStart = new Date(getDemoNow());
     todayStart.setHours(0, 0, 0, 0);
     const sonActionsToday = await db.sonAction.count({ where: { createdAt: { gte: todayStart } } });
 
