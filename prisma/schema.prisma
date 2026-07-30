@@ -1333,3 +1333,34 @@ model GeoCoverageGap {
   @@index([gapSeverity])
   @@index([technology])
 }
+
+model RevenueImpact {
+  id                String   @id @default(cuid())
+  zoneName          String
+  region            String
+  latitude          Float
+  longitude         Float
+  totalSubscribers  Int      @default(0)
+  affectedSubscribers Int    @default(0)
+  avgArpu           Int      @default(0)
+  churnProbability  Float    @default(0)
+  monthlyRevenueAtRisk Int   @default(0)
+  annualRevenueAtRisk  Int   @default(0)
+  degradationCause  String   @default("coverage_gap")
+  severity          String   @default("medium")
+  primaryKpi        String   @default("")
+  kpiBaseline       Float    @default(0)
+  kpiCurrent        Float    @default(0)
+  kpiDelta          Float    @default(0)
+  trendDirection    String   @default("stable")
+  recommendedAction String   @default("optimize")
+  estimatedFixCost  Int      @default(0)
+  priorityScore     Float    @default(0)
+  roiRatio          Float    @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([region])
+  @@index([severity])
+  @@index([degradationCause])
+  @@index([trendDirection])
+}

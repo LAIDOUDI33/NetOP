@@ -616,3 +616,31 @@ Stage Summary:
 - Every tab has: summary cards, interactive Leaflet map, recharts analytics (bar/pie/radar), and data table
 - Region filter dropdown in header filters all tabs simultaneously
 - 6 Prisma models, 5 API routes, 1621-line view component, 90+ i18n keys across 3 locales
+
+---
+Task ID: 1
+Agent: main
+Task: Build Revenue Impact Engine (RevenueImpact model, API, seed data, Geomarketing tab)
+
+Work Log:
+- Added RevenueImpact Prisma model with 20 fields (zoneName, region, lat/lng, subscribers, ARPU, churn probability, revenue at risk, degradation cause, KPI tracking, fix cost, ROI, etc.)
+- Pushed schema to SQLite database with db:push
+- Created 18 seed data records across 11 Algerian wilayas (Alger, Oran, Constantine, Annaba, Sétif, Tlemcen, Tizi Ouzou, Béjaïa, Batna, Biskra, Ouargla, Blida) with realistic revenue impact calculations
+- Created API route /api/geomarketing/revenue-impact/route.ts with comprehensive summary stats (bySeverity, byCause, byTrend, byAction, highestRiskZone)
+- Added 42 i18n keys in FR, EN, AR for revenue impact features
+- Added Revenue Impact as Tab 7 in GeomarketingView with:
+  - RevenueImpactSummary: 6 KPI cards (Annual Risk, Monthly Risk, Affected Subs, Churn Prob, Fix Cost, Avg ROI)
+  - RevenueImpactMap: Leaflet map with severity-colored proportional circles and rich popups
+  - RevenueImpactByRegionChart: Bar chart of risk by region (annual + monthly)
+  - RevenueImpactCauseChart: Donut chart of risk by degradation cause
+  - RevenueImpactTable: 12-column detailed table with color-coded badges
+- Added new icons (CircleDollarSign, TrendingUp, Wrench), ScatterChart import
+- Extended ACTION_BADGE and added CAUSE_COLORS constants
+- API verified: 18 zones, ~469M DZD total annual risk, ~39M DZD monthly risk
+
+Stage Summary:
+- Revenue Impact Engine is a P0 strategic differentiator (no Huawei/ZTE/Ericsson AUTI tool has this)
+- 44 Prisma models total (43 previous + 1 RevenueImpact)
+- 64 API routes total
+- 54 view components
+- 875+ i18n keys per locale

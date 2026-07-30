@@ -15,13 +15,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Users, DollarSign, TrendingDown, Building2,
   Layers, MapPin, AlertTriangle, Target, BarChart3, Radar,
-  Wifi, WifiOff, ShieldAlert,
+  Wifi, WifiOff, ShieldAlert, CircleDollarSign, TrendingUp, Wrench,
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar as RRadar,
+  ScatterChart, Scatter, ZAxis,
 } from 'recharts';
 
 import 'leaflet/dist/leaflet.css';
@@ -151,6 +152,31 @@ interface GeoCoverageGapRow {
   recommendedAction: string;
 }
 
+interface RevenueImpactRow {
+  id: string;
+  zoneName: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  totalSubscribers: number;
+  affectedSubscribers: number;
+  avgArpu: number;
+  churnProbability: number;
+  monthlyRevenueAtRisk: number;
+  annualRevenueAtRisk: number;
+  degradationCause: string;
+  severity: string;
+  primaryKpi: string;
+  kpiBaseline: number;
+  kpiCurrent: number;
+  kpiDelta: number;
+  trendDirection: string;
+  recommendedAction: string;
+  estimatedFixCost: number;
+  priorityScore: number;
+  roiRatio: number;
+}
+
 // ==================== CONSTANTS ====================
 
 const COMPETITOR_COLORS: Record<string, string> = {
@@ -201,6 +227,17 @@ const ACTION_BADGE: Record<string, string> = {
   new_site: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
   upgrade_site: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
   optimize: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+  add_carrier: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
+  pci_replan: 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30',
+  repair: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+};
+
+const CAUSE_COLORS: Record<string, string> = {
+  coverage_gap: '#EF4444',
+  capacity_exhaustion: '#F59E0B',
+  interference: '#8B5CF6',
+  quality_degradation: '#3B82F6',
+  outage: '#EC4899',
 };
 
 const CHART_COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#84CC16', '#A855F7', '#E11D48'];
@@ -327,6 +364,12 @@ export default function GeomarketingView() {
     enabled: activeTab === 'gaps',
   });
 
+  const { data: riData, isLoading: riLoading } = useQuery({
+    queryKey: ['geomarketing-revenue-impact'],
+    queryFn: () => fetch('/api/geomarketing/revenue-impact').then((r) => r.json()),
+    enabled: activeTab === 'revimpact',
+  });
+
   const summary = mainData?.summary;
   const allDemographics = (demoData?.demographics ?? mainData?.demographics ?? []) as GeoDemographicRow[];
   const allRevenueZones = mainData?.revenueZones ?? [] as GeoRevenueZoneRow[];
@@ -334,12 +377,14 @@ export default function GeomarketingView() {
   const allChurnClusters = churnData?.clusters ?? [] as GeoChurnClusterRow[];
   const allCandidateSites = scorerData?.sites ?? [] as GeoSiteAcquisitionRow[];
   const allCoverageGaps = gapsData?.gaps ?? [] as GeoCoverageGapRow[];
+  const allRevenueImpacts = riData?.zones ?? [] as RevenueImpactRow[];
 
   const churnSummary = churnData?.summary;
   const compSummary = competitorData?.summary;
   const scorerSummary = scorerData?.summary;
   const demoSummary = demoData?.summary;
   const gapsSummary = gapsData?.summary;
+  const riSummary = riData?.summary;
 
   // Region filter
   const demographics = useRegionFilter(allDemographics, regionFilter);
@@ -348,13 +393,14 @@ export default function GeomarketingView() {
   const churnClusters = useRegionFilter(allChurnClusters, regionFilter);
   const candidateSites = useRegionFilter(allCandidateSites, regionFilter);
   const coverageGaps = useRegionFilter(allCoverageGaps, regionFilter);
+  const revenueImpacts = useRegionFilter(allRevenueImpacts, regionFilter) as RevenueImpactRow[];
 
   // All unique regions for filter dropdown
   const allRegions = useMemo(() => {
     const set = new Set<string>();
-    [...allDemographics, ...allRevenueZones, ...allChurnClusters, ...allCandidateSites, ...allCoverageGaps].forEach(d => set.add(d.region));
+    [...allDemographics, ...allRevenueZones, ...allChurnClusters, ...allCandidateSites, ...allCoverageGaps, ...allRevenueImpacts].forEach(d => set.add(d.region));
     return Array.from(set).sort();
-  }, [allDemographics, allRevenueZones, allChurnClusters, allCandidateSites, allCoverageGaps]);
+  }, [allDemographics, allRevenueZones, allChurnClusters, allCandidateSites, allCoverageGaps, allRevenueImpacts]);
 
   const maxRevenue = useMemo(() => Math.max(...revenueZones.map((z) => z.totalRevenue), 1), [revenueZones]);
   const maxPopulation = useMemo(() => Math.max(...demographics.map((d) => d.population), 1), [demographics]);
@@ -422,6 +468,9 @@ export default function GeomarketingView() {
           </TabsTrigger>
           <TabsTrigger value="gaps" className="text-xs gap-1.5">
             <WifiOff className="h-3.5 w-3.5" /> {t('geo.tabGaps')}
+          </TabsTrigger>
+          <TabsTrigger value="revimpact" className="text-xs gap-1.5">
+            <CircleDollarSign className="h-3.5 w-3.5" /> {t('geo.tabRevenueImpact')}
           </TabsTrigger>
         </TabsList>
 
@@ -493,6 +542,17 @@ export default function GeomarketingView() {
             <GapsActionChart gaps={coverageGaps} loading={gapsLoading} t={t} />
           </div>
           <GapsTable gaps={coverageGaps} loading={gapsLoading} t={t} />
+        </TabsContent>
+
+        {/* ==================== TAB 7: REVENUE IMPACT ENGINE ==================== */}
+        <TabsContent value="revimpact" className="space-y-4 mt-4">
+          <RevenueImpactSummary summary={riSummary} loading={riLoading} t={t} />
+          <RevenueImpactMap zones={revenueImpacts} loading={riLoading} t={t} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <RevenueImpactByRegionChart zones={revenueImpacts} loading={riLoading} t={t} />
+            <RevenueImpactCauseChart zones={revenueImpacts} loading={riLoading} t={t} />
+          </div>
+          <RevenueImpactTable zones={revenueImpacts} loading={riLoading} t={t} />
         </TabsContent>
       </Tabs>
     </div>
@@ -1610,6 +1670,204 @@ function GapsTable({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: b
                     <TableCell><Badge variant="outline" className={ACTION_BADGE[g.recommendedAction] ?? ''}>{t(`geo.action.${g.recommendedAction}`)}</Badge></TableCell>
                   </TableRow>
                 ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ==================== REVENUE IMPACT TAB ====================
+
+function RevenueImpactSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+  const cards = [
+    { label: t('geo.totalAnnualRisk'), value: summary ? formatCurrency(summary.totalAnnualRisk) : '—', icon: CircleDollarSign, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { label: t('geo.totalMonthlyRisk'), value: summary ? formatCurrency(summary.totalMonthlyRisk) : '—', icon: DollarSign, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { label: t('geo.totalAffected'), value: summary ? formatNum(summary.totalAffected) : '—', icon: Users, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { label: t('geo.avgChurnProb'), value: summary ? `${(summary.avgChurnProb * 100).toFixed(1)}%` : '—', icon: TrendingDown, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { label: t('geo.totalFixCost'), value: summary ? formatCurrency(summary.totalFixCost) : '—', icon: Wrench, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+    { label: t('geo.avgRoi'), value: summary ? `${summary.avgRoiRatio.toFixed(2)}x` : '—', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  ];
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {cards.map((c) => {
+        const Icon = c.icon;
+        return (
+          <Card key={c.label}>
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`rounded-lg p-2 ${c.bg}`}><Icon className={`h-4 w-4 ${c.color}`} /></div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-muted-foreground truncate">{c.label}</p>
+                  <p className="text-sm font-bold tracking-tight">{loading ? <Skeleton className="h-4 w-16" /> : c.value}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function RevenueImpactMap({ zones, loading, t }: { zones: RevenueImpactRow[]; loading: boolean; t: TFn }) {
+  const maxRisk = Math.max(...zones.map(z => z.annualRevenueAtRisk), 1);
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.revenueRiskMap')}</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {loading ? <Skeleton className="h-[420px] w-full" /> : (
+          <MapContainer center={MAP_CENTER} zoom={MAP_ZOOM} className="h-[420px] w-full z-0" style={{ background: 'var(--muted)' }}>
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" attribution='&copy; OSM' />
+            {zones.map((z) => {
+              const ratio = z.annualRevenueAtRisk / maxRisk;
+              const radius = 8 + ratio * 28;
+              const fillColor = z.severity === 'critical' ? '#EF4444' : z.severity === 'high' ? '#F59E0B' : z.severity === 'medium' ? '#3B82F6' : '#10B981';
+              return (
+                <CircleMarker key={z.id} center={[z.latitude, z.longitude]} radius={radius} pathOptions={{ fillColor, color: fillColor, weight: 2, opacity: 0.85, fillOpacity: 0.35 }}>
+                  <Popup>
+                    <div className="text-xs space-y-1.5 min-w-[200px]">
+                      <p className="font-bold">{z.zoneName}</p>
+                      <p>{t('th.region')}: {z.region}</p>
+                      <p>{t('geo.revenueAtRisk')}: <span className="font-mono font-bold text-red-500">{formatCurrency(z.annualRevenueAtRisk)}</span>/an</p>
+                      <p>{t('geo.affectedSubscribers')}: {formatNum(z.affectedSubscribers)}</p>
+                      <p>{t('geo.churnProb')}: <span className={z.churnProbability > 0.25 ? 'text-red-500 font-bold' : ''}>{(z.churnProbability * 100).toFixed(1)}%</span></p>
+                      <p>{t('geo.degradationCause')}: {t(`geo.cause.${z.degradationCause}`)}</p>
+                      <p>{t('geo.roiRatio')}: <span className="font-mono">{z.roiRatio.toFixed(2)}x</span></p>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
+          </MapContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RevenueImpactByRegionChart({ zones, loading, t }: { zones: RevenueImpactRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, { annualRisk: number; monthlyRisk: number }>();
+    zones.forEach(z => {
+      const existing = map.get(z.region) ?? { annualRisk: 0, monthlyRisk: 0 };
+      map.set(z.region, { annualRisk: existing.annualRisk + z.annualRevenueAtRisk, monthlyRisk: existing.monthlyRisk + z.monthlyRevenueAtRisk });
+    });
+    return Array.from(map.entries()).map(([region, data]) => ({
+      name: region,
+      [t('geo.annualRisk')]: data.annualRisk / 1_000_000,
+      [t('geo.monthlyRisk')]: data.monthlyRisk / 1_000_000,
+    })).sort((a, b) => b[t('geo.annualRisk')] - a[t('geo.annualRisk')]).slice(0, 10);
+  }, [zones, t]);
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.riskByRegion')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={10} angle={-30} textAnchor="end" height={50} />
+              <YAxis fontSize={11} />
+              <RTooltip content={<CustomTooltip />} />
+              <Legend fontSize={10} />
+              <Bar dataKey={t('geo.annualRisk')} fill="#EF4444" radius={[4, 4, 0, 0]} />
+              <Bar dataKey={t('geo.monthlyRisk')} fill="#F59E0B" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RevenueImpactCauseChart({ zones, loading, t }: { zones: RevenueImpactRow[]; loading: boolean; t: TFn }) {
+  const chartData = useMemo(() => {
+    const map = new Map<string, number>();
+    zones.forEach(z => {
+      map.set(z.degradationCause, (map.get(z.degradationCause) ?? 0) + z.annualRevenueAtRisk);
+    });
+    return Array.from(map.entries()).map(([cause, risk]) => ({
+      name: t(`geo.cause.${cause}`) ?? cause,
+      value: risk,
+      cause,
+    })).sort((a, b) => b.value - a.value);
+  }, [zones, t]);
+  return (
+    <Card>
+      <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('geo.riskByCause')}</CardTitle></CardHeader>
+      <CardContent className="p-4">
+        {loading ? <Skeleton className="h-[300px] w-full" /> : (
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} innerRadius={50} paddingAngle={2} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
+                {chartData.map((d) => (
+                  <Cell key={d.cause} fill={CAUSE_COLORS[d.cause] ?? '#6B7280'} />
+                ))}
+              </Pie>
+              <RTooltip formatter={(v: number) => formatCurrency(v)} />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RevenueImpactTable({ zones, loading, t }: { zones: RevenueImpactRow[]; loading: boolean; t: TFn }) {
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-base font-semibold">{t('geo.revenueAtRisk')} — {t('geo.impactSummary')}</CardTitle></CardHeader>
+      <CardContent className="p-0">
+        {loading ? (
+          <div className="p-6 space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
+        ) : (
+          <ScrollArea className="max-h-[480px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('geo.zoneName')}</TableHead>
+                  <TableHead>{t('th.region')}</TableHead>
+                  <TableHead className="text-right">{t('geo.affectedSubscribers')}</TableHead>
+                  <TableHead className="text-right">{t('geo.churnProb')}</TableHead>
+                  <TableHead className="text-right">{t('geo.annualRisk')}</TableHead>
+                  <TableHead className="text-right">{t('geo.riskPerSub')}</TableHead>
+                  <TableHead>{t('geo.degradationCause')}</TableHead>
+                  <TableHead>{t('geo.primaryKpi')}</TableHead>
+                  <TableHead>{t('geo.severity')}</TableHead>
+                  <TableHead className="text-right">{t('geo.estimatedFixCost')}</TableHead>
+                  <TableHead className="text-right">{t('geo.roiRatio')}</TableHead>
+                  <TableHead>{t('geo.recommendedAction')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {zones.map((z) => {
+                  const riskPerSub = z.affectedSubscribers > 0 ? z.monthlyRevenueAtRisk / z.affectedSubscribers : 0;
+                  return (
+                    <TableRow key={z.id}>
+                      <TableCell className="font-medium text-xs max-w-[180px] truncate">{z.zoneName}</TableCell>
+                      <TableCell><Badge variant="secondary" className="text-[10px]">{z.region}</Badge></TableCell>
+                      <TableCell className="text-right font-mono text-xs">{formatNum(z.affectedSubscribers)}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        <span className={z.churnProbability >= 0.3 ? 'text-red-500 font-bold' : z.churnProbability >= 0.2 ? 'text-amber-500' : 'text-emerald-500'}>
+                          {(z.churnProbability * 100).toFixed(1)}%
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs font-bold text-red-500">{formatCurrency(z.annualRevenueAtRisk)}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">{formatCurrency(Math.round(riskPerSub))}</TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px]" style={{ borderColor: CAUSE_COLORS[z.degradationCause] ?? '#6B7280', color: CAUSE_COLORS[z.degradationCause] ?? '#6B7280' }}>{t(`geo.cause.${z.degradationCause}`)}</Badge></TableCell>
+                      <TableCell className="text-xs font-mono">{z.primaryKpi}</TableCell>
+                      <TableCell><Badge variant="outline" className={`${SEVERITY_BADGE[z.severity] ?? ''} text-[10px]`}>{z.severity.toUpperCase()}</Badge></TableCell>
+                      <TableCell className="text-right font-mono text-xs">{formatCurrency(z.estimatedFixCost)}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        <span className={z.roiRatio >= 2 ? 'text-emerald-500 font-bold' : z.roiRatio >= 1 ? 'text-amber-500' : 'text-red-500'}>{z.roiRatio.toFixed(2)}x</span>
+                      </TableCell>
+                      <TableCell><Badge variant="outline" className={`${ACTION_BADGE[z.recommendedAction] ?? ''} text-[10px]`}>{t(`geo.action.${z.recommendedAction}`)}</Badge></TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </ScrollArea>
