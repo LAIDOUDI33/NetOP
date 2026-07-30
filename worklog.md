@@ -538,3 +538,38 @@ Stage Summary:
 - Rate limiting and try/catch error handling preserved in all routes
 - take: 500 limits on list queries as requested
 - getDemoNow() imported in routes that use time-aware logic
+
+---
+Task ID: 2-4
+Agent: Database Agent
+Task: Add Geomarketing Prisma models and seed data
+
+Work Log:
+- Added 3 new models to prisma/schema.prisma: GeoDemographic, GeoRevenueZone, GeoCompetitorSite
+- Added seed data to prisma/seed.ts: 12 wilayas demographic, 30 revenue zones, 25 competitor sites
+- Added deleteMany calls for new tables and other standalone tables (AiAgent, ExternalIntegration, DataPipeline, OssNetworkElement, OssFaultEvent, CrmCustomer, BillingInvoice) to make seed idempotent
+- Updated total records summary line to include new geomarketing counts
+- Ran db:push and db:seed successfully
+
+Stage Summary:
+- 3 new tables created in SQLite database (GeoDemographic, GeoRevenueZone, GeoCompetitorSite)
+- All seed data populated with realistic Algerian market data (12 demographics, 30 revenue zones, 25 competitor sites)
+- Competitor data covers Djezzy (9), Mobilis (9), Ooredoo (7) across 12 regions
+- Revenue zones distributed with 3 zones for 6 high-value regions and 2 zones for 6 others---
+Task ID: 2-a
+Agent: API Routes Agent
+Task: Create 4 geomarketing sub-API routes
+
+Work Log:
+- Read existing /api/geomarketing/route.ts for pattern (rate limiting, db import, error handling)
+- Created /api/geomarketing/churn-map/route.ts — GET handler querying geoChurnCluster, returns clusters + summary with severity counts
+- Created /api/geomarketing/site-scorer/route.ts — GET handler querying geoSiteAcquisition, returns sites + summary with recommendation counts and financial metrics
+- Created /api/geomarketing/competitor-map/route.ts — GET handler querying geoCompetitorSite, returns sites + summary with byCompetitor/byTech/byRegion breakdowns
+- Created /api/geomarketing/demographics/route.ts — GET handler querying geoDemographic, returns demographics + summary with population/density/income metrics
+- All files follow identical pattern: rateLimit import, db import, no getDemoNow, take:500, try/catch with error.message
+- Ran bun run lint — zero errors in src/app/api/geomarketing/
+
+Stage Summary:
+- 4 new API route files created under /api/geomarketing/
+- All routes use consistent rate limiting (60s/100), safe pagination (take:500), and error handling
+- Lint passed with zero errors for the geomarketing directory

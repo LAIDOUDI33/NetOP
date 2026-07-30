@@ -1213,3 +1213,100 @@ model BillingInvoice {
   @@index([billingCycle])
   @@index([dueDate])
 }
+
+model GeoDemographic {
+  id          String   @id @default(cuid())
+  region      String
+  wilayaCode  String
+  population  Int      @default(0)
+  areaKm2     Float    @default(0)
+  density     Float    @default(0)
+  urbanPct    Float    @default(0)
+  avgIncome   Int      @default(0)
+  youthPct    Float    @default(0)
+  smartphonePct Float   @default(0)
+  internetPct Float    @default(0)
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@index([region])
+  @@index([wilayaCode])
+}
+
+model GeoRevenueZone {
+  id            String   @id @default(cuid())
+  region        String
+  latitude      Float
+  longitude     Float
+  totalRevenue  Int      @default(0)
+  avgArpu       Int      @default(0)
+  subscriberCount Int     @default(0)
+  churnRate     Float    @default(0)
+  marketPenetration Float  @default(0)
+  growthRate    Float    @default(0)
+  tier          String   @default("medium")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([region])
+  @@index([tier])
+}
+
+model GeoCompetitorSite {
+  id            String   @id @default(cuid())
+  competitorName String
+  technology    String   @default("4G")
+  latitude      Float
+  longitude     Float
+  estimatedRadiusKm Float  @default(2)
+  region        String
+  confidence    Float    @default(0.7)
+  source        String   @default("crowdsourced")
+  detectedAt    DateTime @default(now())
+  @@index([competitorName])
+  @@index([region])
+  @@index([technology])
+}
+
+model GeoChurnCluster {
+  id             String   @id @default(cuid())
+  clusterName    String
+  region         String
+  latitude       Float
+  longitude      Float
+  radiusKm       Float    @default(5)
+  avgChurnRate   Float    @default(0)
+  subscriberCount Int     @default(0)
+  atRiskCount    Int      @default(0)
+  severity       String   @default("medium")
+  primaryCause   String   @default("coverage_gap")
+  trendDirection String   @default("stable")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@index([region])
+  @@index([severity])
+}
+
+model GeoSiteAcquisition {
+  id              String   @id @default(cuid())
+  siteName        String
+  region          String
+  latitude        Float
+  longitude       Float
+  overallScore    Float    @default(0)
+  demandScore     Float    @default(0)
+  competitiveScore Float   @default(0)
+  demographicScore Float   @default(0)
+  coverageScore   Float    @default(0)
+  financialScore  Float    @default(0)
+  estimatedROI    Float    @default(0)
+  capexEstimate   Int      @default(0)
+  opexAnnual      Int      @default(0)
+  paybackMonths   Int      @default(0)
+  recommendation  String   @default("review")
+  techPriority    String   @default("4G")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  @@index([region])
+  @@index([recommendation])
+}

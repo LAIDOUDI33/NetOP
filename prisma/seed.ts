@@ -129,6 +129,19 @@ function genKpi(siteId: string, tech: string, timestamp: Date) {
 
 async function main() {
   console.log('Clearing existing data...');
+  // Clear standalone / mock route tables
+  await db.geoSiteAcquisition.deleteMany();
+  await db.geoChurnCluster.deleteMany();
+  await db.geoCompetitorSite.deleteMany();
+  await db.geoRevenueZone.deleteMany();
+  await db.geoDemographic.deleteMany();
+  await db.billingInvoice.deleteMany();
+  await db.crmCustomer.deleteMany();
+  await db.ossFaultEvent.deleteMany();
+  await db.ossNetworkElement.deleteMany();
+  await db.dataPipeline.deleteMany();
+  await db.externalIntegration.deleteMany();
+  await db.aiAgent.deleteMany();
   // Clear Phase D tables first (FKs to NetworkSite or standalone)
   await db.auditTrail.deleteMany();
   await db.serviceOrchestration.deleteMany();
@@ -3077,13 +3090,156 @@ async function main() {
   await db.billingInvoice.createMany({ data: invoiceData });
   console.log(`  BillingInvoices: ${invoiceData.length}`);
 
+  // ========== GEOMARKETING SEED ==========
+  console.log('\n  Seeding Geomarketing (demographics, revenue zones, competitor sites)...');
+
+  // --- GeoDemographic (12 wilayas) ---
+  const geoDemoData = [
+    { region: 'Alger Centre', wilayaCode: '16', population: 1200000, areaKm2: 119, density: 10084, urbanPct: 95, avgIncome: 42000, youthPct: 28, smartphonePct: 78, internetPct: 82, latitude: 36.75, longitude: 3.06 },
+    { region: 'Oran', wilayaCode: '31', population: 950000, areaKm2: 2121, density: 448, urbanPct: 88, avgIncome: 38000, youthPct: 30, smartphonePct: 72, internetPct: 75, latitude: 35.70, longitude: -0.63 },
+    { region: 'Constantine', wilayaCode: '25', population: 750000, areaKm2: 2312, density: 324, urbanPct: 82, avgIncome: 35000, youthPct: 32, smartphonePct: 68, internetPct: 70, latitude: 36.37, longitude: 6.61 },
+    { region: 'Annaba', wilayaCode: '23', population: 600000, areaKm2: 1439, density: 417, urbanPct: 85, avgIncome: 36000, youthPct: 29, smartphonePct: 70, internetPct: 72, latitude: 36.91, longitude: 7.75 },
+    { region: 'Tlemcen', wilayaCode: '13', population: 500000, areaKm2: 9061, density: 55, urbanPct: 72, avgIncome: 30000, youthPct: 31, smartphonePct: 62, internetPct: 58, latitude: 34.88, longitude: -1.32 },
+    { region: 'Sétif', wilayaCode: '19', population: 650000, areaKm2: 6522, density: 100, urbanPct: 75, avgIncome: 32000, youthPct: 33, smartphonePct: 66, internetPct: 65, latitude: 36.19, longitude: 5.41 },
+    { region: 'Blida', wilayaCode: '09', population: 800000, areaKm2: 1541, density: 519, urbanPct: 80, avgIncome: 37000, youthPct: 27, smartphonePct: 74, internetPct: 76, latitude: 36.48, longitude: 2.83 },
+    { region: 'Batna', wilayaCode: '05', population: 550000, areaKm2: 12193, density: 45, urbanPct: 65, avgIncome: 28000, youthPct: 34, smartphonePct: 58, internetPct: 52, latitude: 35.56, longitude: 6.17 },
+    { region: 'Béjaïa', wilayaCode: '06', population: 450000, areaKm2: 3268, density: 138, urbanPct: 70, avgIncome: 31000, youthPct: 30, smartphonePct: 64, internetPct: 62, latitude: 36.75, longitude: 5.08 },
+    { region: 'Tizi Ouzou', wilayaCode: '15', population: 500000, areaKm2: 3568, density: 140, urbanPct: 68, avgIncome: 30000, youthPct: 32, smartphonePct: 66, internetPct: 64, latitude: 36.72, longitude: 4.05 },
+    { region: 'Biskra', wilayaCode: '07', population: 400000, areaKm2: 20458, density: 20, urbanPct: 58, avgIncome: 26000, youthPct: 35, smartphonePct: 55, internetPct: 48, latitude: 34.85, longitude: 5.73 },
+    { region: 'Ouargla', wilayaCode: '30', population: 300000, areaKm2: 211980, density: 1, urbanPct: 82, avgIncome: 34000, youthPct: 26, smartphonePct: 68, internetPct: 70, latitude: 31.95, longitude: 5.32 },
+  ];
+  await db.geoDemographic.createMany({ data: geoDemoData });
+  console.log(`  GeoDemographics: ${geoDemoData.length}`);
+
+  // --- GeoRevenueZone (30 zones across 12 regions) ---
+  const revenueZoneData = [
+    // Alger Centre (3 zones)
+    { region: 'Alger Centre', latitude: 36.753, longitude: 3.058, totalRevenue: 285000000, avgArpu: 3200, subscriberCount: 89000, churnRate: 1.2, marketPenetration: 78, growthRate: 4.5, tier: 'high' },
+    { region: 'Alger Centre', latitude: 36.740, longitude: 3.075, totalRevenue: 195000000, avgArpu: 2800, subscriberCount: 69500, churnRate: 1.8, marketPenetration: 65, growthRate: 3.2, tier: 'high' },
+    { region: 'Alger Centre', latitude: 36.768, longitude: 3.045, totalRevenue: 142000000, avgArpu: 2400, subscriberCount: 59200, churnRate: 2.5, marketPenetration: 52, growthRate: 2.1, tier: 'medium' },
+    // Oran (3 zones)
+    { region: 'Oran', latitude: 35.700, longitude: -0.630, totalRevenue: 210000000, avgArpu: 2900, subscriberCount: 72400, churnRate: 1.5, marketPenetration: 72, growthRate: 3.8, tier: 'high' },
+    { region: 'Oran', latitude: 35.690, longitude: -0.650, totalRevenue: 148000000, avgArpu: 2500, subscriberCount: 59200, churnRate: 2.1, marketPenetration: 60, growthRate: 2.9, tier: 'medium' },
+    { region: 'Oran', latitude: 35.710, longitude: -0.615, totalRevenue: 95000000, avgArpu: 2100, subscriberCount: 45200, churnRate: 3.0, marketPenetration: 45, growthRate: 1.8, tier: 'low' },
+    // Constantine (2 zones)
+    { region: 'Constantine', latitude: 36.370, longitude: 6.610, totalRevenue: 165000000, avgArpu: 2700, subscriberCount: 61100, churnRate: 1.7, marketPenetration: 68, growthRate: 3.5, tier: 'high' },
+    { region: 'Constantine', latitude: 36.360, longitude: 6.625, totalRevenue: 102000000, avgArpu: 2200, subscriberCount: 46300, churnRate: 2.8, marketPenetration: 50, growthRate: 2.0, tier: 'medium' },
+    // Annaba (3 zones)
+    { region: 'Annaba', latitude: 36.910, longitude: 7.760, totalRevenue: 128000000, avgArpu: 2600, subscriberCount: 49200, churnRate: 1.9, marketPenetration: 64, growthRate: 3.1, tier: 'high' },
+    { region: 'Annaba', latitude: 36.900, longitude: 7.780, totalRevenue: 78000000, avgArpu: 2000, subscriberCount: 39000, churnRate: 3.2, marketPenetration: 42, growthRate: 1.5, tier: 'low' },
+    { region: 'Annaba', latitude: 36.920, longitude: 7.745, totalRevenue: 95000000, avgArpu: 2200, subscriberCount: 43200, churnRate: 2.4, marketPenetration: 54, growthRate: 2.2, tier: 'medium' },
+    // Tlemcen (2 zones)
+    { region: 'Tlemcen', latitude: 34.885, longitude: -1.315, totalRevenue: 89000000, avgArpu: 2200, subscriberCount: 40500, churnRate: 2.2, marketPenetration: 55, growthRate: 2.4, tier: 'medium' },
+    { region: 'Tlemcen', latitude: 34.870, longitude: -1.330, totalRevenue: 52000000, avgArpu: 1800, subscriberCount: 28900, churnRate: 3.5, marketPenetration: 38, growthRate: 1.2, tier: 'low' },
+    // Sétif (3 zones)
+    { region: 'Sétif', latitude: 36.195, longitude: 5.405, totalRevenue: 135000000, avgArpu: 2500, subscriberCount: 54000, churnRate: 1.8, marketPenetration: 62, growthRate: 3.3, tier: 'high' },
+    { region: 'Sétif', latitude: 36.180, longitude: 5.420, totalRevenue: 92000000, avgArpu: 2100, subscriberCount: 43800, churnRate: 2.6, marketPenetration: 48, growthRate: 2.2, tier: 'medium' },
+    { region: 'Sétif', latitude: 36.205, longitude: 5.390, totalRevenue: 65000000, avgArpu: 1900, subscriberCount: 34200, churnRate: 3.1, marketPenetration: 40, growthRate: 1.6, tier: 'low' },
+    // Blida (3 zones)
+    { region: 'Blida', latitude: 36.485, longitude: 2.825, totalRevenue: 178000000, avgArpu: 2700, subscriberCount: 65900, churnRate: 1.6, marketPenetration: 70, growthRate: 3.7, tier: 'high' },
+    { region: 'Blida', latitude: 36.470, longitude: 2.845, totalRevenue: 120000000, avgArpu: 2300, subscriberCount: 52200, churnRate: 2.4, marketPenetration: 56, growthRate: 2.5, tier: 'medium' },
+    { region: 'Blida', latitude: 36.495, longitude: 2.810, totalRevenue: 82000000, avgArpu: 2000, subscriberCount: 41000, churnRate: 2.9, marketPenetration: 44, growthRate: 1.9, tier: 'low' },
+    // Batna (3 zones)
+    { region: 'Batna', latitude: 35.565, longitude: 6.170, totalRevenue: 71000000, avgArpu: 1900, subscriberCount: 37400, churnRate: 2.5, marketPenetration: 48, growthRate: 2.0, tier: 'medium' },
+    { region: 'Batna', latitude: 35.550, longitude: 6.185, totalRevenue: 42000000, avgArpu: 1600, subscriberCount: 26300, churnRate: 3.8, marketPenetration: 35, growthRate: 1.0, tier: 'low' },
+    { region: 'Batna', latitude: 35.580, longitude: 6.155, totalRevenue: 56000000, avgArpu: 1750, subscriberCount: 32000, churnRate: 3.0, marketPenetration: 41, growthRate: 1.5, tier: 'low' },
+    // Béjaïa (2 zones)
+    { region: 'Béjaïa', latitude: 36.755, longitude: 5.075, totalRevenue: 82000000, avgArpu: 2100, subscriberCount: 39000, churnRate: 2.3, marketPenetration: 52, growthRate: 2.6, tier: 'medium' },
+    { region: 'Béjaïa', latitude: 36.740, longitude: 5.095, totalRevenue: 51000000, avgArpu: 1800, subscriberCount: 28300, churnRate: 3.3, marketPenetration: 38, growthRate: 1.4, tier: 'low' },
+    // Tizi Ouzou (2 zones)
+    { region: 'Tizi Ouzou', latitude: 36.725, longitude: 4.045, totalRevenue: 88000000, avgArpu: 2000, subscriberCount: 44000, churnRate: 2.1, marketPenetration: 54, growthRate: 2.5, tier: 'medium' },
+    { region: 'Tizi Ouzou', latitude: 36.710, longitude: 4.065, totalRevenue: 55000000, avgArpu: 1700, subscriberCount: 32400, churnRate: 3.4, marketPenetration: 40, growthRate: 1.3, tier: 'low' },
+    // Biskra (2 zones)
+    { region: 'Biskra', latitude: 34.855, longitude: 5.725, totalRevenue: 58000000, avgArpu: 1800, subscriberCount: 32200, churnRate: 2.8, marketPenetration: 42, growthRate: 1.8, tier: 'low' },
+    { region: 'Biskra', latitude: 34.840, longitude: 5.745, totalRevenue: 35000000, avgArpu: 1500, subscriberCount: 23300, churnRate: 4.1, marketPenetration: 30, growthRate: 0.8, tier: 'low' },
+    // Ouargla (2 zones)
+    { region: 'Ouargla', latitude: 31.955, longitude: 5.315, totalRevenue: 95000000, avgArpu: 2600, subscriberCount: 36500, churnRate: 1.9, marketPenetration: 60, growthRate: 2.8, tier: 'high' },
+    { region: 'Ouargla', latitude: 31.940, longitude: 5.335, totalRevenue: 62000000, avgArpu: 2200, subscriberCount: 28200, churnRate: 2.7, marketPenetration: 46, growthRate: 1.7, tier: 'medium' },
+  ];
+  await db.geoRevenueZone.createMany({ data: revenueZoneData });
+  console.log(`  GeoRevenueZones: ${revenueZoneData.length}`);
+
+  // --- GeoCompetitorSite (25 sites) ---
+  const competitorSitesData = [
+    // Djezzy (9 sites)
+    { competitorName: 'Djezzy', technology: '4G', latitude: 36.756, longitude: 3.055, estimatedRadiusKm: 2.5, region: 'Alger Centre', confidence: 0.92, source: 'field_survey' },
+    { competitorName: 'Djezzy', technology: '4G', latitude: 36.745, longitude: 3.068, estimatedRadiusKm: 2.0, region: 'Alger Centre', confidence: 0.88, source: 'field_survey' },
+    { competitorName: 'Djezzy', technology: '3G', latitude: 35.705, longitude: -0.628, estimatedRadiusKm: 3.0, region: 'Oran', confidence: 0.85, source: 'crowdsourced' },
+    { competitorName: 'Djezzy', technology: '4G', latitude: 36.375, longitude: 6.615, estimatedRadiusKm: 2.2, region: 'Constantine', confidence: 0.90, source: 'field_survey' },
+    { competitorName: 'Djezzy', technology: '4G', latitude: 34.890, longitude: -1.310, estimatedRadiusKm: 2.8, region: 'Tlemcen', confidence: 0.78, source: 'crowdsourced' },
+    { competitorName: 'Djezzy', technology: '3G', latitude: 36.200, longitude: 5.410, estimatedRadiusKm: 3.2, region: 'Sétif', confidence: 0.82, source: 'crowdsourced' },
+    { competitorName: 'Djezzy', technology: '4G', latitude: 36.490, longitude: 2.820, estimatedRadiusKm: 2.3, region: 'Blida', confidence: 0.87, source: 'field_survey' },
+    { competitorName: 'Djezzy', technology: '3G', latitude: 36.730, longitude: 4.050, estimatedRadiusKm: 2.5, region: 'Tizi Ouzou', confidence: 0.80, source: 'crowdsourced' },
+    { competitorName: 'Djezzy', technology: '4G', latitude: 31.960, longitude: 5.310, estimatedRadiusKm: 3.5, region: 'Ouargla', confidence: 0.75, source: 'crowdsourced' },
+    // Mobilis (9 sites)
+    { competitorName: 'Mobilis', technology: '4G', latitude: 36.760, longitude: 3.048, estimatedRadiusKm: 2.8, region: 'Alger Centre', confidence: 0.95, source: 'regulatory_filing' },
+    { competitorName: 'Mobilis', technology: '4G', latitude: 35.695, longitude: -0.638, estimatedRadiusKm: 2.5, region: 'Oran', confidence: 0.91, source: 'regulatory_filing' },
+    { competitorName: 'Mobilis', technology: '4G', latitude: 36.915, longitude: 7.765, estimatedRadiusKm: 2.3, region: 'Annaba', confidence: 0.89, source: 'regulatory_filing' },
+    { competitorName: 'Mobilis', technology: '3G', latitude: 36.365, longitude: 6.620, estimatedRadiusKm: 2.8, region: 'Constantine', confidence: 0.86, source: 'crowdsourced' },
+    { competitorName: 'Mobilis', technology: '4G', latitude: 36.480, longitude: 2.835, estimatedRadiusKm: 2.2, region: 'Blida', confidence: 0.93, source: 'field_survey' },
+    { competitorName: 'Mobilis', technology: '3G', latitude: 35.570, longitude: 6.175, estimatedRadiusKm: 3.0, region: 'Batna', confidence: 0.77, source: 'crowdsourced' },
+    { competitorName: 'Mobilis', technology: '4G', latitude: 36.750, longitude: 5.085, estimatedRadiusKm: 2.4, region: 'Béjaïa', confidence: 0.84, source: 'field_survey' },
+    { competitorName: 'Mobilis', technology: '4G', latitude: 34.860, longitude: 5.720, estimatedRadiusKm: 3.8, region: 'Biskra', confidence: 0.72, source: 'crowdsourced' },
+    { competitorName: 'Mobilis', technology: '3G', latitude: 36.190, longitude: 5.400, estimatedRadiusKm: 2.6, region: 'Sétif', confidence: 0.81, source: 'crowdsourced' },
+    // Ooredoo (7 sites)
+    { competitorName: 'Ooredoo', technology: '4G', latitude: 36.748, longitude: 3.063, estimatedRadiusKm: 2.4, region: 'Alger Centre', confidence: 0.94, source: 'field_survey' },
+    { competitorName: 'Ooredoo', technology: '4G', latitude: 35.692, longitude: -0.642, estimatedRadiusKm: 2.6, region: 'Oran', confidence: 0.88, source: 'field_survey' },
+    { competitorName: 'Ooredoo', technology: '3G', latitude: 36.378, longitude: 6.608, estimatedRadiusKm: 2.9, region: 'Constantine', confidence: 0.83, source: 'crowdsourced' },
+    { competitorName: 'Ooredoo', technology: '4G', latitude: 34.875, longitude: -1.325, estimatedRadiusKm: 2.7, region: 'Tlemcen', confidence: 0.80, source: 'crowdsourced' },
+    { competitorName: 'Ooredoo', technology: '4G', latitude: 36.210, longitude: 5.395, estimatedRadiusKm: 2.5, region: 'Sétif', confidence: 0.85, source: 'field_survey' },
+    { competitorName: 'Ooredoo', technology: '3G', latitude: 36.715, longitude: 4.040, estimatedRadiusKm: 2.3, region: 'Tizi Ouzou', confidence: 0.79, source: 'crowdsourced' },
+    { competitorName: 'Ooredoo', technology: '4G', latitude: 31.945, longitude: 5.325, estimatedRadiusKm: 4.0, region: 'Ouargla', confidence: 0.73, source: 'crowdsourced' },
+  ];
+  await db.geoCompetitorSite.createMany({ data: competitorSitesData });
+  console.log(`  GeoCompetitorSites: ${competitorSitesData.length}`);
+
+  // --- GeoChurnCluster (15 clusters) ---
+  const churnClusterData = [
+    { clusterName: 'Alger Nord-Ouest', region: 'Alger Centre', latitude: 36.770, longitude: 3.035, radiusKm: 4.2, avgChurnRate: 6.8, subscriberCount: 32500, atRiskCount: 2210, severity: 'critical', primaryCause: 'coverage_gap', trendDirection: 'worsening' },
+    { clusterName: 'Alger Sud-Est', region: 'Alger Centre', latitude: 36.730, longitude: 3.080, radiusKm: 3.8, avgChurnRate: 4.2, subscriberCount: 28100, atRiskCount: 1180, severity: 'high', primaryCause: 'competitor_pressure', trendDirection: 'stable' },
+    { clusterName: 'Oran Centre-Ville', region: 'Oran', latitude: 35.698, longitude: -0.635, radiusKm: 3.5, avgChurnRate: 5.5, subscriberCount: 24600, atRiskCount: 1353, severity: 'high', primaryCause: 'price_sensitivity', trendDirection: 'worsening' },
+    { clusterName: 'Oran Est', region: 'Oran', latitude: 35.712, longitude: -0.610, radiusKm: 5.0, avgChurnRate: 3.8, subscriberCount: 19200, atRiskCount: 730, severity: 'medium', primaryCause: 'network_quality', trendDirection: 'improving' },
+    { clusterName: 'Constantine Sud', region: 'Constantine', latitude: 36.355, longitude: 6.630, radiusKm: 4.0, avgChurnRate: 5.1, subscriberCount: 21400, atRiskCount: 1091, severity: 'high', primaryCause: 'coverage_gap', trendDirection: 'stable' },
+    { clusterName: 'Annaba Industrial', region: 'Annaba', latitude: 36.925, longitude: 7.750, radiusKm: 3.2, avgChurnRate: 7.2, subscriberCount: 15800, atRiskCount: 1138, severity: 'critical', primaryCause: 'network_quality', trendDirection: 'worsening' },
+    { clusterName: 'Tlemcen Rural', region: 'Tlemcen', latitude: 34.860, longitude: -1.340, radiusKm: 8.5, avgChurnRate: 4.5, subscriberCount: 12400, atRiskCount: 558, severity: 'medium', primaryCause: 'coverage_gap', trendDirection: 'stable' },
+    { clusterName: 'Setif Zone Industriel', region: 'Sétif', latitude: 36.185, longitude: 5.425, radiusKm: 3.8, avgChurnRate: 3.9, subscriberCount: 18600, atRiskCount: 725, severity: 'medium', primaryCause: 'competitor_pressure', trendDirection: 'improving' },
+    { clusterName: 'Blida Banlieue', region: 'Blida', latitude: 36.465, longitude: 2.850, radiusKm: 4.5, avgChurnRate: 5.8, subscriberCount: 22100, atRiskCount: 1282, severity: 'high', primaryCause: 'price_sensitivity', trendDirection: 'worsening' },
+    { clusterName: 'Batna Peripherie', region: 'Batna', latitude: 35.545, longitude: 6.190, radiusKm: 7.0, avgChurnRate: 6.1, subscriberCount: 14200, atRiskCount: 866, severity: 'critical', primaryCause: 'coverage_gap', trendDirection: 'stable' },
+    { clusterName: 'Bejaia Coast', region: 'Béjaïa', latitude: 36.765, longitude: 5.060, radiusKm: 3.0, avgChurnRate: 3.4, subscriberCount: 16800, atRiskCount: 571, severity: 'medium', primaryCause: 'network_quality', trendDirection: 'improving' },
+    { clusterName: 'Tizi Ouzou Mountain', region: 'Tizi Ouzou', latitude: 36.700, longitude: 4.070, radiusKm: 6.5, avgChurnRate: 4.8, subscriberCount: 13500, atRiskCount: 648, severity: 'medium', primaryCause: 'coverage_gap', trendDirection: 'stable' },
+    { clusterName: 'Biskra Nord', region: 'Biskra', latitude: 34.870, longitude: 5.750, radiusKm: 5.5, avgChurnRate: 5.2, subscriberCount: 11200, atRiskCount: 582, severity: 'high', primaryCause: 'price_sensitivity', trendDirection: 'worsening' },
+    { clusterName: 'Ouargla Hassi Messaoud', region: 'Ouargla', latitude: 31.970, longitude: 5.340, radiusKm: 6.0, avgChurnRate: 3.6, subscriberCount: 19500, atRiskCount: 702, severity: 'medium', primaryCause: 'competitor_pressure', trendDirection: 'stable' },
+    { clusterName: 'Alger Bab Ezzouar', region: 'Alger Centre', latitude: 36.718, longitude: 3.183, radiusKm: 2.8, avgChurnRate: 2.9, subscriberCount: 28900, atRiskCount: 838, severity: 'low', primaryCause: 'network_quality', trendDirection: 'improving' },
+  ];
+  await db.geoChurnCluster.createMany({ data: churnClusterData });
+  console.log(`  GeoChurnClusters: ${churnClusterData.length}`);
+
+  // --- GeoSiteAcquisition (12 candidate sites) ---
+  const siteAcqData = [
+    { siteName: 'SA-ALG-001 Hydra', region: 'Alger Centre', latitude: 36.742, longitude: 3.028, overallScore: 92.4, demandScore: 95, competitiveScore: 88, demographicScore: 96, coverageScore: 90, financialScore: 92, estimatedROI: 185, capexEstimate: 45000000, opexAnnual: 3200000, paybackMonths: 14, recommendation: 'deploy', techPriority: '5G' },
+    { siteName: 'SA-ALG-002 Kouba', region: 'Alger Centre', latitude: 36.726, longitude: 3.060, overallScore: 87.1, demandScore: 90, competitiveScore: 82, demographicScore: 91, coverageScore: 85, financialScore: 87, estimatedROI: 162, capexEstimate: 42000000, opexAnnual: 2900000, paybackMonths: 16, recommendation: 'deploy', techPriority: '5G' },
+    { siteName: 'SA-ORA-001 Bir El Djir', region: 'Oran', latitude: 35.720, longitude: -0.600, overallScore: 83.5, demandScore: 86, competitiveScore: 80, demographicScore: 85, coverageScore: 82, financialScore: 84, estimatedROI: 148, capexEstimate: 38000000, opexAnnual: 2700000, paybackMonths: 18, recommendation: 'deploy', techPriority: '4G' },
+    { siteName: 'SA-CST-001 Ali Mendjeli', region: 'Constantine', latitude: 36.345, longitude: 6.650, overallScore: 78.2, demandScore: 80, competitiveScore: 75, demographicScore: 79, coverageScore: 78, financialScore: 79, estimatedROI: 130, capexEstimate: 35000000, opexAnnual: 2500000, paybackMonths: 20, recommendation: 'deploy', techPriority: '4G' },
+    { siteName: 'SA-ANB-001 El Bouni', region: 'Annaba', latitude: 36.935, longitude: 7.730, overallScore: 75.8, demandScore: 78, competitiveScore: 72, demographicScore: 76, coverageScore: 76, financialScore: 77, estimatedROI: 122, capexEstimate: 33000000, opexAnnual: 2400000, paybackMonths: 21, recommendation: 'review', techPriority: '4G' },
+    { siteName: 'SA-TLM-001 Remchi', region: 'Tlemcen', latitude: 34.850, longitude: -1.280, overallScore: 68.4, demandScore: 70, competitiveScore: 65, demographicScore: 68, coverageScore: 70, financialScore: 69, estimatedROI: 98, capexEstimate: 28000000, opexAnnual: 2100000, paybackMonths: 26, recommendation: 'review', techPriority: '4G' },
+    { siteName: 'SA-SET-001 Bouandas', region: 'Sétif', latitude: 36.220, longitude: 5.360, overallScore: 72.6, demandScore: 74, competitiveScore: 70, demographicScore: 72, coverageScore: 74, financialScore: 73, estimatedROI: 112, capexEstimate: 31000000, opexAnnual: 2300000, paybackMonths: 23, recommendation: 'review', techPriority: '4G' },
+    { siteName: 'SA-BLD-001 Boufarik', region: 'Blida', latitude: 36.510, longitude: 2.880, overallScore: 80.3, demandScore: 82, competitiveScore: 78, demographicScore: 82, coverageScore: 80, financialScore: 80, estimatedROI: 140, capexEstimate: 36000000, opexAnnual: 2600000, paybackMonths: 19, recommendation: 'deploy', techPriority: '5G' },
+    { siteName: "SA-BTN-001 N'Gaous", region: 'Batna', latitude: 35.590, longitude: 6.230, overallScore: 58.2, demandScore: 60, competitiveScore: 55, demographicScore: 58, coverageScore: 60, financialScore: 58, estimatedROI: 72, capexEstimate: 24000000, opexAnnual: 1900000, paybackMonths: 32, recommendation: 'defer', techPriority: '3G' },
+    { siteName: 'SA-BJA-001 Kherrata', region: 'Béjaïa', latitude: 36.780, longitude: 5.040, overallScore: 64.1, demandScore: 66, competitiveScore: 62, demographicScore: 64, coverageScore: 66, financialScore: 63, estimatedROI: 88, capexEstimate: 26000000, opexAnnual: 2000000, paybackMonths: 28, recommendation: 'review', techPriority: '4G' },
+    { siteName: 'SA-BSK-001 Tolga', region: 'Biskra', latitude: 34.720, longitude: 5.380, overallScore: 52.8, demandScore: 55, competitiveScore: 48, demographicScore: 52, coverageScore: 56, financialScore: 52, estimatedROI: 60, capexEstimate: 22000000, opexAnnual: 1800000, paybackMonths: 36, recommendation: 'defer', techPriority: '3G' },
+    { siteName: 'SA-WRG-001 Hassi Messaoud Sud', region: 'Ouargla', latitude: 31.920, longitude: 5.380, overallScore: 76.5, demandScore: 80, competitiveScore: 72, demographicScore: 68, coverageScore: 82, financialScore: 80, estimatedROI: 135, capexEstimate: 40000000, opexAnnual: 3000000, paybackMonths: 22, recommendation: 'deploy', techPriority: '4G' },
+  ];
+  await db.geoSiteAcquisition.createMany({ data: siteAcqData });
+  console.log(`  GeoSiteAcquisitions: ${siteAcqData.length}`);
+  console.log('  ✅ Geomarketing seeded!');
+
   // ========== RBAC SEED ==========
   console.log('\n  Seeding RBAC (roles, permissions, users)...');
   await seedRbac();
   console.log('  ✅ RBAC seeded!');
 
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());
