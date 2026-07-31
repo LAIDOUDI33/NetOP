@@ -82,6 +82,7 @@ const MultiAgentView = lazy(() => import('@/components/views/MultiAgentView'));
 const DataPipelineView = lazy(() => import('@/components/views/DataPipelineView'));
 const IntegrationHubView = lazy(() => import('@/components/views/IntegrationHubView'));
 const GeomarketingView = lazy(() => import('@/components/views/GeomarketingView'));
+const NetworkCommercialView = lazy(() => import('@/components/views/NetworkCommercialView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -107,6 +108,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'vendor-compare', labelKey: 'nav.vendorCompare', icon: GitCompare, group: 'Analytics' },
   { view: 'services', labelKey: 'nav.services', icon: Globe, group: 'Analytics' },
   { view: 'geomarketing', labelKey: 'nav.geomarketing', icon: Globe, group: 'Analytics' },
+  { view: 'network-commercial', labelKey: 'nav.networkCommercial', icon: ArrowLeftRight, group: 'Intelligence' },
   // Intelligence
   { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
@@ -197,6 +199,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'data-pipeline': 'title.dataPipeline',
   'integration-hub': 'title.integrationHub',
   geomarketing: 'geo.title',
+  'network-commercial': 'title.networkCommercial',
 };
 
 function ViewFallback() {
@@ -382,6 +385,7 @@ function ViewRenderer() {
           {currentView === 'data-pipeline' && <DataPipelineView />}
           {currentView === 'integration-hub' && <IntegrationHubView />}
           {currentView === 'geomarketing' && <GeomarketingView />}
+          {currentView === 'network-commercial' && <NetworkCommercialView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

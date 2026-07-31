@@ -644,3 +644,27 @@ Stage Summary:
 - 64 API routes total
 - 54 view components
 - 875+ i18n keys per locale
+
+---
+Task ID: 2
+Agent: main
+Task: Build Network-Commercial Correlation Intelligence module
+
+Work Log:
+- Added NetworkCommercialInsight Prisma model (26 fields: 9 network KPIs, 6 commercial KPIs, 6 Pearson R correlations, 3 composite scores, revenue leakage)
+- Pushed schema, seeded 18 zones across 13 Algerian wilayas with realistic correlation data
+- Created API route /api/network-commercial/route.ts with correlation matrix, summary stats, and by-region aggregation
+- Added 53 i18n keys in FR/EN/AR for the nc.* namespace
+- Built NetworkCommercialView.tsx (483 lines, 4 tabs):
+  - Tab 1: Correlation Matrix — color-coded table with R values, R², strength bars, strongest/weakest correlation cards
+  - Tab 2: Scatter Analysis — 3 scatter plots (RSRP vs Churn, Throughput vs ARPU, Availability vs Revenue)
+  - Tab 3: Zone Scores — Radar chart of top 5 zones + full zone ranking table with color-coded scores
+  - Tab 4: Revenue Leakage — Horizontal bar chart sorted by leakage + detail table
+- Wired into page.tsx: ViewType, NAV_ITEMS (Intelligence group), lazy import, conditional render
+
+Stage Summary:
+- API verified: 18 zones, avg composite score 67.4, 297M DZD total revenue leakage
+- Strongest correlation: Availability → Revenue (R=0.88)
+- Weakest: PRB Utilization → Throughput (R=-0.61)
+- 45 Prisma models, 65 API routes, 55 views, 3 languages
+- This is a standalone module under the 'Intelligence' nav group (NOT a geomarketing sub-tab)

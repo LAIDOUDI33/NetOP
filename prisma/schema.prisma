@@ -1364,3 +1364,48 @@ model RevenueImpact {
   @@index([degradationCause])
   @@index([trendDirection])
 }
+
+model NetworkCommercialInsight {
+  id                  String   @id @default(cuid())
+  zoneName            String
+  region              String
+  // Network KPIs (averages for the zone)
+  avgRsrp             Float
+  avgRsrq             Float
+  avgSinr             Float
+  avgThroughputDl     Float
+  avgThroughputUl     Float
+  avgAvailability     Float
+  avgDropRate         Float
+  avgLatencyMs        Float
+  avgPrbUtilization   Float
+  // Commercial KPIs
+  avgArpu             Int
+  totalRevenue        Int
+  subscriberCount     Int
+  churnRate           Float
+  marketPenetration   Float
+  satisfactionScore   Float
+  // Correlation coefficients (Pearson R, pre-computed)
+  rsrpVsChurn         Float
+  throughputVsArpu    Float
+  availabilityVsRevenue Float
+  dropRateVsChurn     Float
+  latencyVsSatisfaction Float
+  prbUtilVsThroughput Float
+  // Composite scores
+  networkScore        Float
+  commercialScore     Float
+  compositeScore      Float
+  // Revenue leakage
+  revenueLeakageEst   Int
+  // Period
+  periodMonth         String
+  periodYear          Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  @@index([region])
+  @@index([periodYear])
+  @@index([periodMonth])
+  @@unique([zoneName, periodMonth, periodYear])
+}
