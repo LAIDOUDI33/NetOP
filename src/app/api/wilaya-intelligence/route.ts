@@ -29,6 +29,10 @@ export async function GET(request: Request) {
       latitude: p.latitude,
       longitude: p.longitude,
       population: p.population,
+      dairas: p.dairas,
+      communes: p.communes,
+      superficieKm2: p.superficieKm2,
+      densiteHabKm2: p.densiteHabKm2,
       totalSites: p.totalSites,
       activeSites: p.activeSites,
       avgRsrp: p.avgRsrp,
@@ -43,11 +47,11 @@ export async function GET(request: Request) {
       tech2gSites: p.tech2gSites,
       totalSubscribers: p.totalSubscribers,
       avgArpu: p.avgArpu,
-      totalRevenue: p.totalRevenue,
+      totalRevenue: Number(p.totalRevenue),
       churnRate: p.churnRate,
       marketPenetration: p.marketPenetration,
       satisfactionScore: p.satisfactionScore,
-      revenueAtRisk: p.revenueAtRisk,
+      revenueAtRisk: Number(p.revenueAtRisk),
       competitorSites: p.competitorSites,
       coverageGaps: p.coverageGaps,
       churnHotspots: p.churnHotspots,
@@ -82,6 +86,10 @@ export async function GET(request: Request) {
         name,
         wilayaCount: wilayas.length,
         totalPopulation: sum('population'),
+        totalDairas: sum('dairas'),
+        totalCommunes: sum('communes'),
+        totalSuperficieKm2: sum('superficieKm2'),
+        avgDensite: avg('densiteHabKm2'),
         totalSites: sum('totalSites'),
         activeSites: sum('activeSites'),
         avgRsrp: avg('avgRsrp'),
@@ -118,6 +126,9 @@ export async function GET(request: Request) {
     // ── Global summary ─────────────────────────────────────────
     const totalWilayas = mapped.length;
     const totalPopulation = mapped.reduce((s, w) => s + w.population, 0);
+    const totalDairas = mapped.reduce((s, w) => s + (w as any).dairas, 0);
+    const totalCommunes = mapped.reduce((s, w) => s + (w as any).communes, 0);
+    const totalSuperficieKm2 = mapped.reduce((s, w) => s + (w as any).superficieKm2, 0);
     const totalSites = mapped.reduce((s, w) => s + w.totalSites, 0);
     const totalSubscribers = mapped.reduce((s, w) => s + w.totalSubscribers, 0);
     const totalRevenue = mapped.reduce((s, w) => s + w.totalRevenue, 0);

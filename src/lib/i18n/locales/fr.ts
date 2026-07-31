@@ -2394,6 +2394,13 @@ const fr: Record<string, string> = {
   'wi.clusterDetail': 'Détail par Cluster',
   'wi.avgCoverage': 'Couv. Moy.',
   'wi.avgSatisfaction': 'Satisf. Moy.',
+  'wi.searchWilaya': 'Rechercher wilaya...',
+  'wi.wilayaMap': 'Carte des 69 Wilayas',
+  'wi.cluster': 'Cluster',
+  'wi.dairas': 'Daïras',
+  'wi.communes': 'Communes',
+  'wi.superficie': 'Superficie (km²)',
+  'wi.densite': 'Densité (hab/km²)',
 };
 
 export default fr;

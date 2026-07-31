@@ -1419,6 +1419,11 @@ model WilayaProfile {
   latitude            Float    @default(0)
   longitude           Float    @default(0)
   population          Int      @default(0)
+  // Official administrative data
+  dairas              Int      @default(0)
+  communes            Int      @default(0)
+  superficieKm2       Float    @default(0)
+  densiteHabKm2       Float    @default(0)
   // Network KPIs
   totalSites          Int      @default(0)
   activeSites         Int      @default(0)
@@ -1435,11 +1440,11 @@ model WilayaProfile {
   // Commercial KPIs
   totalSubscribers    Int      @default(0)
   avgArpu             Int      @default(0)
-  totalRevenue        Int      @default(0)
+  totalRevenue        BigInt   @default(0)
   churnRate           Float    @default(0)
   marketPenetration   Float    @default(0)
   satisfactionScore   Float    @default(0)
-  revenueAtRisk       Int      @default(0)
+  revenueAtRisk       BigInt   @default(0)
   // Geomarketing
   competitorSites     Int      @default(0)
   coverageGaps        Int      @default(0)

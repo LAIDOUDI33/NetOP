@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useT } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import {
   BarChart3, Radio, DollarSign, MapPin, Layers, Users, TrendingUp, TrendingDown,
   Zap, Activity, ChevronDown,
@@ -18,6 +19,11 @@ import {
   ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   ComposedChart, Line, Legend, Cell,
 } from 'recharts';
+import dynamic from 'next/dynamic';
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
+const CircleMarker = dynamic(() => import('react-leaflet').then(m => m.CircleMarker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 
 // ==================== TYPES ====================
 
@@ -29,6 +35,10 @@ interface WilayaData {
  clusterOrder: number;
   latitude: number; longitude: number;
   population: number;
+  dairas: number;
+  communes: number;
+  superficieKm2: number;
+  densiteHabKm2: number;
   totalSites: number; activeSites: number;
   avgRsrp: number; avgSinr: number; avgThroughputDl: number;
   avgAvailability: number; avgDropRate: number; avgLatencyMs: number;
@@ -44,6 +54,10 @@ interface WilayaData {
 
 interface ClusterData {
   name: string; wilayaCount: number; totalPopulation: number;
+  totalDairas: number;
+  totalCommunes: number;
+  totalSuperficieKm2: number;
+  avgDensite: number;
   totalSites: number; activeSites: number;
   avgRsrp: number; avgSinr: number; avgThroughputDl: number;
   avgAvailability: number; avgDropRate: number; avgLatencyMs: number;
@@ -86,10 +100,14 @@ function scoreBg(s: number): string {
 const CLUSTER_COLORS: Record<string, string> = {
   'Grand Alger': '#059669',
   'Kabylie': '#06B6D4',
-  'Est': '#8B5CF6',
-  'Ouest': '#F59E0B',
-  'Sud': '#EF4444',
+  'Nord-Est': '#8B5CF6',
+  'Nord-Ouest': '#F59E0B',
   'Hauts Plateaux': '#EC4899',
+  'Sud-Est': '#EF4444',
+  'Sud-Ouest': '#F97316',
+  'Sahara': '#6B7280',
+  'Nouvelles 2023 Nord': '#14B8A6',
+  'Nouvelles 2023 Sud': '#A855F7',
 };
 
 const DIM_ICONS = { kpis: BarChart3, network: Radio, commercial: DollarSign, geomarketing: MapPin };
@@ -100,6 +118,9 @@ export default function WilayaIntelligenceView() {
   const t = useT();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedCluster, setSelectedCluster] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
 
   const { data, isLoading } = useQuery({
     queryKey: ['wilaya-intelligence', selectedCluster],
@@ -117,6 +138,30 @@ export default function WilayaIntelligenceView() {
     ['all', ...new Set(clusters.map(c => c.name))],
     [clusters],
   );
+
+  useEffect(() => {
+    if (typeof document !== 'undefined' && !document.querySelector('link[href*="leaflet.css"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  const filteredWilayas = useMemo(() => {
+    if (!searchQuery) return wilayas;
+    const q = searchQuery.toLowerCase();
+    return wilayas.filter(w =>
+      w.wilayaName.toLowerCase().includes(q) ||
+      w.wilayaCode.includes(q) ||
+      w.cluster.toLowerCase().includes(q)
+    );
+  }, [wilayas, searchQuery]);
+  const pagedWilayas = useMemo(() =>
+    filteredWilayas.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [filteredWilayas, page]
+  );
+  const totalPages = Math.ceil(filteredWilayas.length / PAGE_SIZE);
 
   const cards = [
     { label: t('wi.totalWilayas'), value: summary ? String(summary.totalWilayas) : '—', icon: Layers, color: 'text-violet-500', bg: 'bg-violet-500/10' },
@@ -151,6 +196,13 @@ export default function WilayaIntelligenceView() {
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         </div>
+        <input
+          type="text"
+          placeholder={t('wi.searchWilaya')}
+          value={searchQuery}
+          onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-ring"
+        />
       </div>
 
       {/* Summary cards */}
@@ -203,19 +255,19 @@ export default function WilayaIntelligenceView() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 mt-4">
-          <OverviewTab wilayas={wilayas} clusters={clusters} loading={isLoading} t={t} />
+          <OverviewTab wilayas={wilayas} filteredWilayas={filteredWilayas} pagedWilayas={pagedWilayas} page={page} totalPages={totalPages} setPage={setPage} clusters={clusters} loading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="kpis" className="space-y-4 mt-4">
-          <KpiDimensionTab wilayas={wilayas} clusters={clusters} loading={isLoading} t={t} />
+          <KpiDimensionTab wilayas={wilayas} filteredWilayas={filteredWilayas} clusters={clusters} loading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="network" className="space-y-4 mt-4">
-          <NetworkDimensionTab wilayas={wilayas} clusters={clusters} loading={isLoading} t={t} />
+          <NetworkDimensionTab wilayas={wilayas} filteredWilayas={filteredWilayas} clusters={clusters} loading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="commercial" className="space-y-4 mt-4">
-          <CommercialDimensionTab wilayas={wilayas} clusters={clusters} loading={isLoading} t={t} />
+          <CommercialDimensionTab wilayas={wilayas} filteredWilayas={filteredWilayas} clusters={clusters} loading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="geomarketing" className="space-y-4 mt-4">
-          <GeomarketingDimensionTab wilayas={wilayas} clusters={clusters} loading={isLoading} t={t} />
+          <GeomarketingDimensionTab wilayas={wilayas} filteredWilayas={filteredWilayas} clusters={clusters} loading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="clusters" className="space-y-4 mt-4">
           <ClusterComparisonTab clusters={clusters} wilayas={wilayas} loading={isLoading} t={t} />
@@ -227,8 +279,8 @@ export default function WilayaIntelligenceView() {
 
 // ==================== TAB: OVERVIEW ====================
 
-function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
-  const sorted = [...wilayas].sort((a, b) => b.compositeScore - a.compositeScore);
+function OverviewTab({ wilayas, filteredWilayas, pagedWilayas, page, totalPages, setPage, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; pagedWilayas: WilayaData[]; page: number; totalPages: number; setPage: (p: (prev: number) => number) => void; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+  const sorted = [...filteredWilayas].sort((a, b) => b.compositeScore - a.compositeScore);
 
   // Radar data for top 5
   const radarData = sorted.slice(0, 5).map(w => ({
@@ -250,6 +302,41 @@ function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('wi.wilayaMap')}</CardTitle></CardHeader>
+          <CardContent className="p-2">
+            {loading ? <Skeleton className="h-[350px] w-full" /> : (
+              <MapContainer center={[28.5, 2.5]} zoom={5} className="h-[350px] w-full rounded-lg z-0" style={{ zIndex: 0 }}>
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='© OpenStreetMap' />
+                {wilayas.map(w => (
+                  <CircleMarker
+                    key={w.id}
+                    center={[w.latitude, w.longitude]}
+                    radius={Math.max(4, Math.min(20, w.population / 200000))}
+                    pathOptions={{
+                      fillColor: CLUSTER_COLORS[w.cluster] ?? '#6B7280',
+                      color: CLUSTER_COLORS[w.cluster] ?? '#6B7280',
+                      weight: 1,
+                      fillOpacity: 0.7,
+                    }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <b>{w.wilayaName}</b> ({w.wilayaCode})<br />
+                        {t('wi.cluster')}: {w.cluster}<br />
+                        {t('wi.population')}: {w.population.toLocaleString()}<br />
+                        {t('wi.compositeScore')}: {w.compositeScore}<br />
+                        {t('wi.sites')}: {w.totalSites} | {t('wi.coverage')}: {w.coveragePercent}%
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+              </MapContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">{t('wi.topWilayasRadar')}</CardTitle></CardHeader>
         <CardContent className="p-4">
@@ -301,6 +388,9 @@ function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[];
                   <TableHead>{t('wi.wilayaName')}</TableHead>
                   <TableHead>{t('wi.cluster')}</TableHead>
                   <TableHead className="text-right">{t('wi.population')}</TableHead>
+                  <TableHead className="text-right">Daïras</TableHead>
+                  <TableHead className="text-right">Communes</TableHead>
+                  <TableHead className="text-right">Superficie (km²)</TableHead>
                   <TableHead className="text-right">{t('wi.sites')}</TableHead>
                   <TableHead className="text-right">{t('wi.subscribers')}</TableHead>
                   <TableHead className="text-right">{t('wi.networkScore')}</TableHead>
@@ -310,12 +400,15 @@ function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[];
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sorted.map((w, i) => (
+                {pagedWilayas.map((w, i) => (
                   <TableRow key={w.id}>
-                    <TableCell className="text-muted-foreground text-xs font-mono">{i + 1}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs font-mono">{page * 20 + i + 1}</TableCell>
                     <TableCell className="font-medium text-xs">{w.wilayaName}</TableCell>
                     <TableCell><Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: `${CLUSTER_COLORS[w.cluster] ?? '#6B7280'}20`, color: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }}>{w.cluster}</Badge></TableCell>
                     <TableCell className="text-right font-mono text-xs">{fmtNum(w.population)}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{w.dairas}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{w.communes}</TableCell>
+                    <TableCell className="text-right font-mono text-xs">{w.superficieKm2.toLocaleString()}</TableCell>
                     <TableCell className="text-right font-mono text-xs">{w.totalSites}</TableCell>
                     <TableCell className="text-right font-mono text-xs">{fmtNum(w.totalSubscribers)}</TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold" style={{ color: scoreColor(w.networkScore) }}>{w.networkScore}</TableCell>
@@ -327,6 +420,14 @@ function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[];
               </TableBody>
             </Table>
           </ScrollArea>
+          <div className="flex items-center justify-between px-4 py-2 border-t">
+            <span className="text-xs text-muted-foreground">{filteredWilayas.length} wilayas</span>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>←</Button>
+              <span className="text-xs px-2">{page + 1}/{totalPages}</span>
+              <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>→</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -335,10 +436,10 @@ function OverviewTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[];
 
 // ==================== TAB: KPIs ====================
 
-function KpiDimensionTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
-  const sorted = [...wilayas].sort((a, b) => a.avgRsrp - b.avgRsrp);
+function KpiDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+  const sorted = [...filteredWilayas].sort((a, b) => a.avgRsrp - b.avgRsrp);
 
-  const rsrpChart = sorted.map(w => ({ name: w.wilayaName, rsrp: w.avgRsrp, sinr: w.avgSinr, throughput: w.avgThroughputDl, fill: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }));
+  const rsrpChart = [...wilayas].sort((a, b) => a.avgRsrp - b.avgRsrp).map(w => ({ name: w.wilayaName, rsrp: w.avgRsrp, sinr: w.avgSinr, throughput: w.avgThroughputDl, fill: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }));
 
   const dropLatencyChart = [...wilayas].sort((a, b) => b.avgDropRate - a.avgDropRate).map(w => ({ name: w.wilayaName, dropRate: w.avgDropRate, latency: w.avgLatencyMs, fill: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }));
 
@@ -426,7 +527,7 @@ function KpiDimensionTab({ wilayas, clusters, loading, t }: { wilayas: WilayaDat
 
 // ==================== TAB: NETWORK ====================
 
-function NetworkDimensionTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function NetworkDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const techChart = [...wilayas].sort((a, b) => b.totalSites - a.totalSites).map(w => ({
     name: w.wilayaName,
     '4G': w.tech4gSites,
@@ -505,7 +606,7 @@ function NetworkDimensionTab({ wilayas, clusters, loading, t }: { wilayas: Wilay
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {wilayas.map(w => (
+                {filteredWilayas.map(w => (
                   <TableRow key={w.id}>
                     <TableCell className="font-medium text-xs">{w.wilayaName}</TableCell>
                     <TableCell className="text-right font-mono text-xs">{w.totalSites}</TableCell>
@@ -528,7 +629,7 @@ function NetworkDimensionTab({ wilayas, clusters, loading, t }: { wilayas: Wilay
 
 // ==================== TAB: COMMERCIAL ====================
 
-function CommercialDimensionTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function CommercialDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const revenueChart = [...wilayas].sort((a, b) => b.totalRevenue - a.totalRevenue).map(w => ({
     name: w.wilayaName,
     revenue: w.totalRevenue / 1_000_000,
@@ -603,7 +704,7 @@ function CommercialDimensionTab({ wilayas, clusters, loading, t }: { wilayas: Wi
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[...wilayas].sort((a, b) => b.totalRevenue - a.totalRevenue).map(w => (
+                {[...filteredWilayas].sort((a, b) => b.totalRevenue - a.totalRevenue).map(w => (
                   <TableRow key={w.id}>
                     <TableCell className="font-medium text-xs">{w.wilayaName}</TableCell>
                     <TableCell className="text-right font-mono text-xs">{fmtNum(w.totalSubscribers)}</TableCell>
@@ -626,7 +727,7 @@ function CommercialDimensionTab({ wilayas, clusters, loading, t }: { wilayas: Wi
 
 // ==================== TAB: GEOMARKETING ====================
 
-function GeomarketingDimensionTab({ wilayas, clusters, loading, t }: { wilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function GeomarketingDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const competitorChart = [...wilayas].sort((a, b) => b.competitorSites - a.competitorSites).map(w => ({
     name: w.wilayaName,
     competitors: w.competitorSites,
@@ -702,7 +803,7 @@ function GeomarketingDimensionTab({ wilayas, clusters, loading, t }: { wilayas: 
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {wilayas.map(w => (
+                {filteredWilayas.map(w => (
                   <TableRow key={w.id}>
                     <TableCell className="font-medium text-xs">{w.wilayaName}</TableCell>
                     <TableCell><Badge variant="secondary" className="text-[10px]" style={{ backgroundColor: `${CLUSTER_COLORS[w.cluster] ?? '#6B7280'}20`, color: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }}>{w.cluster}</Badge></TableCell>
@@ -746,7 +847,7 @@ function ClusterComparisonTab({ clusters, wilayas, loading, t }: { clusters: Clu
   return (
     <div className="space-y-4">
       {/* Cluster summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {clusters.map(c => (
           <Card key={c.name}>
             <CardContent className="p-3">

@@ -2273,6 +2273,13 @@ const ar: Record<string, string> = {
   'wi.clusterDetail': 'تفاصيل التجمعات',
   'wi.avgCoverage': 'متوسط التغطية',
   'wi.avgSatisfaction': 'متوسط الرضا',
+  'wi.searchWilaya': 'بحث عن ولاية...',
+  'wi.wilayaMap': 'خريطة 69 ولاية',
+  'wi.cluster': 'المجموعة',
+  'wi.dairas': 'الدوائر',
+  'wi.communes': 'البلديات',
+  'wi.superficie': 'المساحة (كم²)',
+  'wi.densite': 'الكثافة (نسم/كم²)',
 };
 
 export default ar;
