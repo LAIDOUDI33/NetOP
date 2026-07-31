@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCardIcon, Languages, Bot, FolderTree,
+  CreditCardIcon, Languages, Bot, FolderTree, Building2,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -83,6 +83,7 @@ const DataPipelineView = lazy(() => import('@/components/views/DataPipelineView'
 const IntegrationHubView = lazy(() => import('@/components/views/IntegrationHubView'));
 const GeomarketingView = lazy(() => import('@/components/views/GeomarketingView'));
 const NetworkCommercialView = lazy(() => import('@/components/views/NetworkCommercialView'));
+const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntelligenceView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -109,6 +110,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'services', labelKey: 'nav.services', icon: Globe, group: 'Analytics' },
   { view: 'geomarketing', labelKey: 'nav.geomarketing', icon: Globe, group: 'Analytics' },
   { view: 'network-commercial', labelKey: 'nav.networkCommercial', icon: ArrowLeftRight, group: 'Intelligence' },
+  { view: 'wilaya-intelligence', labelKey: 'nav.wilayaIntelligence', icon: Building2, group: 'Intelligence' },
   // Intelligence
   { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
@@ -200,6 +202,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'integration-hub': 'title.integrationHub',
   geomarketing: 'geo.title',
   'network-commercial': 'title.networkCommercial',
+  'wilaya-intelligence': 'title.wilayaIntelligence',
 };
 
 function ViewFallback() {
@@ -386,6 +389,7 @@ function ViewRenderer() {
           {currentView === 'integration-hub' && <IntegrationHubView />}
           {currentView === 'geomarketing' && <GeomarketingView />}
           {currentView === 'network-commercial' && <NetworkCommercialView />}
+          {currentView === 'wilaya-intelligence' && <WilayaIntelligenceView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

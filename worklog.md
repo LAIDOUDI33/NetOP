@@ -668,3 +668,27 @@ Stage Summary:
 - Weakest: PRB Utilization → Throughput (R=-0.61)
 - 45 Prisma models, 65 API routes, 55 views, 3 languages
 - This is a standalone module under the 'Intelligence' nav group (NOT a geomarketing sub-tab)
+---
+Task ID: 1
+Agent: Main
+Task: Build Wilaya Intelligence module (per-wilaya and per-cluster analysis across KPIs, Network, Commercial, Geomarketing)
+
+Work Log:
+- Created WilayaProfile Prisma model with 30+ fields per wilaya (network KPIs, commercial metrics, geomarketing data, composite scores)
+- Pushed schema to DB with bun run db:push
+- Seeded 18 wilaya profiles across 5 clusters (Grand Alger, Kabylie, Est, Ouest, Sud, Hauts Plateaux) with realistic Algerian telecom data
+- Created /api/wilaya-intelligence/route.ts with cluster/wilaya filtering, cluster aggregation, and global summary
+- Fixed arrow function syntax error (as any placement) in API route
+- Built WilayaIntelligenceView.tsx with 6 tabs: Overview, KPIs, Network, Commercial, Geomarketing, Cluster Comparison
+- Added 68 i18n keys in FR, EN, AR locales
+- Registered view in page.tsx (lazy import, nav item with Building2 icon, title key, render case)
+- Added 'wilaya-intelligence' to ViewType union
+- API verified: GET /api/wilaya-intelligence returns 200 with 18 wilayas, 6 clusters, full summary
+- Lint passed: zero errors in new files
+
+Stage Summary:
+- New WilayaProfile model (model #61) with per-wilaya aggregated data
+- 18 seed records across 5 clusters
+- New view with radar charts, bar charts, composed charts, detailed tables
+- Cluster-level aggregation with avg scores, total subscribers/revenue
+- API supports ?cluster= filtering
