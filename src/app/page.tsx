@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCardIcon, Languages, Bot, FolderTree, Building2,
+  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -84,6 +84,7 @@ const IntegrationHubView = lazy(() => import('@/components/views/IntegrationHubV
 const GeomarketingView = lazy(() => import('@/components/views/GeomarketingView'));
 const NetworkCommercialView = lazy(() => import('@/components/views/NetworkCommercialView'));
 const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntelligenceView'));
+const ValuePropositionView = lazy(() => import('@/components/views/ValuePropositionView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -111,6 +112,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'geomarketing', labelKey: 'nav.geomarketing', icon: Globe, group: 'Analytics' },
   { view: 'network-commercial', labelKey: 'nav.networkCommercial', icon: ArrowLeftRight, group: 'Intelligence' },
   { view: 'wilaya-intelligence', labelKey: 'nav.wilayaIntelligence', icon: Building2, group: 'Intelligence' },
+  { view: 'value-proposition', labelKey: 'nav.valueProposition', icon: Trophy, group: 'Intelligence' },
   // Intelligence
   { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
@@ -203,6 +205,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   geomarketing: 'geo.title',
   'network-commercial': 'title.networkCommercial',
   'wilaya-intelligence': 'title.wilayaIntelligence',
+  'value-proposition': 'title.valueProposition',
 };
 
 function ViewFallback() {
@@ -390,6 +393,7 @@ function ViewRenderer() {
           {currentView === 'geomarketing' && <GeomarketingView />}
           {currentView === 'network-commercial' && <NetworkCommercialView />}
           {currentView === 'wilaya-intelligence' && <WilayaIntelligenceView />}
+          {currentView === 'value-proposition' && <ValuePropositionView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

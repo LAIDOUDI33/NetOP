@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1748799/full",
+    "name": "Explainable AI-driven customer churn prediction: a multi-",
+    "snippet": "by A El Attar · 2026 · Cited by 8 — Customer churn prediction is critical for telecommunications companies to maintain profitability and inform retention strategies.",
+    "host_name": "www.frontiersin.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12929532",
+    "name": "Explainable AI-driven customer churn prediction - PMC - NIH",
+    "snippet": "by A El Attar · 2026 · Cited by 8 — Customer churn prediction is critical for telecommunications companies to maintain profitability and inform retention strategies.",
+    "host_name": "pmc.ncbi.nlm.nih.gov",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nature.com/articles/s41598-026-49443-w",
+    "name": "A new perspective on data leakage prevention and",
+    "snippet": "Customer churn prediction has therefore become a critical component for optimizing retention strategies and minimizing revenue loss. Telecom ...\n2026 — Customer churn prediction has therefore become a critical component for optimizing retention strategies and minimizing revenue loss. Telecom ...",
+    "host_name": "www.nature.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.iieta.org/download/file/fid/191322",
+    "name": "Explainable Customer Churn Prediction in Telecom Using",
+    "snippet": "The proposed framework offers a reliable and transparent tool for churn prediction applicable in business contexts requiring explainable AI.\nOct 23, 2025 — The proposed framework offers a reliable and transparent tool for churn prediction applicable in business contexts requiring explainable AI.",
+    "host_name": "www.iieta.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://link.springer.com/article/10.1007/s44196-026-01204-3",
+    "name": "Improving Predictive Performance in Telecom Churn Modeling",
+    "snippet": "by R Agrawal · 2026 · Cited by 1 — This study presented a comprehensive and systematic investigation into telecom customer churn prediction under severe class imbalance, a ...\n2026 · Cited by 1 — This study presented a comprehensive and systematic investigation into telecom customer churn prediction under severe class imbalance, a ...",
+    "host_name": "link.springer.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2509.22654v1",
+    "name": "A Comprehensive Analysis of Churn Prediction in",
+    "snippet": "In this work, we present a comprehensive framework for telecommunications churn prediction leveraging deep neural networks.",
+    "host_name": "arxiv.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/390642003_Customer_Churn_Prediction_A_Systematic_Review_of_Recent_Advances_Trends_and_Challenges_in_Machine_Learning_and_Deep_Learning",
+    "name": "(PDF) Customer Churn Prediction: A Systematic Review of",
+    "snippet": "Customer churn poses a significant challenge across various sectors, resulting in considerable revenue losses and increased customer acquisition costs.",
+    "host_name": "www.researchgate.net",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mdpi.com/1999-4893/17/6/231",
+    "name": "Prediction of Customer Churn Behavior in the",
+    "snippet": "by V Chang · 2024 · Cited by 132 — This study examines the use of ensemble learning models to analyze and forecast customer churn in the telecommunications business. This study applied five ...",
+    "host_name": "www.mdpi.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.preprints.org/manuscript/202512.1350",
+    "name": "SHAP-Based Feature Selection and Iterative",
+    "snippet": "Effective churn prediction enables telecom providers to implement targeted retention strategies, such as personalized incentives or service ...",
+    "host_name": "www.preprints.org",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.wipro.com/communications/articles/revenue-enhancement-and-churn-prevention-for-telecom-service-pro",
+    "name": "Telecom Revenue Enhancement and Churn Prevention",
+    "snippet": "telecom providers can expect to see a 12% to 25% reduction in churn and up to 40% increase in the average revenue per VIP user.",
+    "host_name": "www.wipro.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

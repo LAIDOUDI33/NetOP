@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.ericsson.com/en/network-management",
+    "name": "Network Management for telecom operations",
+    "snippet": "Allow us to manage your network operations and optimization leveraging the power of Ericsson Network Manager, while you concentrate on core activities",
+    "host_name": "www.ericsson.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/reports-and-papers/ericsson-technology-review/articles/technology-trends-2024",
+    "name": "Trends shaping the future of the telecom industry",
+    "snippet": "Ericsson has prepared a toolbox, equipped with a developer platform, network APIs, network exposure and network slicing to enable ...",
+    "host_name": "www.ericsson.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/core-network",
+    "name": "Core Network & Automation - Evolve your network",
+    "snippet": "Ericsson's cloud-native platform for 5G Core provides the capability and flexibility to meet new services, business models and use cases around 5G and IoT.\nSecure energy efficiency while handling exponential traffic growth through a high-performing core network . Learn how to break the energy curve in core networks . Read more",
+    "host_name": "www.ericsson.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://8928696.fs1.hubspotusercontent-na1.net/hubfs/8928696/Telco%20Sustainability%20Forum%202025/The%20Intelligent%20Operations%20guide_Ericsson.pdf",
+    "name": "Sustainable networks. The Intelligent Operations guide",
+    "snippet": "Ericsson OPEX features in commercial operation show significant reductions in energy bills through deploying methods like peak shaving, load-shifting ...\nEricsson OPEX features in commercial operation show significant reductions in energy bills through deploying methods like peak shaving, load-shifting features",
+    "host_name": "8928696.fs1.hubspotusercontent-na1.net",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.linkedin.com/posts/rajatkochhar_intent-driven-autonomous-network-operations-activity-7432264033036050432-Tb8q",
+    "name": "Ericsson's Autonomous Network Operations: Intent-Driven",
+    "snippet": "In the article, we outline how telecom networks are evolving toward intent-driven, self-optimizing architectures built on autonomous domains ( ...",
+    "host_name": "www.linkedin.com",
+    "rank": 4,
+    "date": "Mar 3, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/portfolio/cloud-software-and-services/network-management-services/network-service-operations-and-optimization",
+    "name": "Network Service Operations and Optimization",
+    "snippet": "Ericsson Network Service Operations and Optimization delivers a full end-to-end operational service across multi-vendor and multi-technology environments,\nIt transforms existing operations , including field operations , through a data-driven model that enhances network availability, speeds restoration, and reduces ... Read more",
+    "host_name": "www.ericsson.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://networkmatter.com/category/ossbsscem",
+    "name": "Category: OSS/BSS/CEM",
+    "snippet": "Our OSS/BSS/CEM coverage addresses this by looking at the billing and operation market dynamics, and the implications for the customer experience.",
+    "host_name": "networkmatter.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.5gamericas.org/wp-content/uploads/2024/12/AI-Cell-Networks-Id-.pdf",
+    "name": "Artificial Intelligence and Cellular Networks 1",
+    "snippet": "AI-driven automation and optimization will allow operators to deploy and manage RAN networks at a lower total cost of ownership (TCO) by facilitating autonomous.",
+    "host_name": "www.5gamericas.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://dataintelo.com/report/mobile-network-optimization-market",
+    "name": "Mobile Network Optimization Market Research Report 2034",
+    "snippet": "Ericsson maintained market leadership position through May 2026 with comprehensive optimization capabilities spanning RAN optimization, core network ...",
+    "host_name": "dataintelo.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/portfolio/cloud-software-and-services/network-management-and-automation/ericsson-network-manager",
+    "name": "Ericsson Network Manager",
+    "snippet": "Automate optimization and advanced troubleshooting for improved network performance ; Obtain best-in-class usability and workflow management for improved ... Read more",
+    "host_name": "www.ericsson.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]
