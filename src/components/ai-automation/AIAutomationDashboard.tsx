@@ -8,7 +8,7 @@ import {
   Brain, Zap, Shield, Activity, TrendingUp, AlertTriangle,
   Settings, Play, Pause, RefreshCw, CheckCircle, XCircle,
   Clock, Cpu, Database, Network, Bot, Target, LineChart,
-  BarChart3, Wrench, Sparkles, Rocket
+  BarChart3, Wrench, Sparkles, Rocket, Radar
 } from 'lucide-react'
 
 // ============================================================

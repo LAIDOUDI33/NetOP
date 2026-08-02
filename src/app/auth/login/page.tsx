@@ -64,45 +64,8 @@ export default function AuthPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [pendingCredentials, setPendingCredentials] = useState<{email?: string; username?: string; password: string} | null>(null);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    checkExistingSession();
-  }, []);
-
-  const checkExistingSession = async () => {
-    try {
-      const token = localStorage.getItem('soc_access_token');
-      if (token) {
-        const response = await fetch('/api/auth?action=me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-          router.push('/dashboard');
-        }
-      }
-    } catch (error) {
-      // No valid session, show login form
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = useCallback((field: keyof AuthFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Check password strength when password changes
-    if (field === 'password') {
-      checkPasswordStrength(value);
-    }
-    
-    // Clear errors on input
-    if (authState.error) {
-      setAuthState(prev => ({ ...prev, error: null }));
-    }
-  }, [authState.error]);
-
-  // Check password strength (client-side validation)
-  const checkPasswordStrength = (password: string) => {
+  // Check password strength (client-side validation) - defined before use
+  const checkPasswordStrength = useCallback((password: string) => {
     if (!password) {
       setPasswordStrength(null);
       return;
@@ -120,15 +83,13 @@ export default function AuthPage() {
     if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
     else score += 20;
 
-    if (!/\d/.test(password)) errors.push('One number');
+    if (!/[0-9]/.test(password)) errors.push('One number');
     else score += 20;
 
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('One special character');
+    if (!/[^A-Za-z0-9]/.test(password)) errors.push('One special character');
     else score += 20;
 
-    if (password.length > 14) score += 10;
-    if (!/(123|abc|qwerty|password)/i.test(password)) score += 10;
-
+    // Determine strength level
     let strength: PasswordStrength['strength'] = 'weak';
     if (score >= 80) strength = 'very-strong';
     else if (score >= 60) strength = 'strong';
@@ -139,7 +100,45 @@ export default function AuthPage() {
       errors,
       strength
     });
-  };
+  }, []);
+
+  // Check for existing session on mount - defined before use
+  const checkExistingSession = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('soc_access_token');
+      if (token) {
+        const response = await fetch('/api/auth?action=me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          router.push('/dashboard');
+        }
+      }
+    } catch (error) {
+      // No valid session, show login form
+    }
+  }, [router]);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    checkExistingSession();
+  }, [checkExistingSession]);
+
+  // Handle input changes
+  const handleInputChange = useCallback((field: keyof AuthFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Check password strength when password changes
+    if (field === 'password') {
+      checkPasswordStrength(value);
+    }
+    
+    // Clear errors on input
+    if (authState.error) {
+      setAuthState(prev => ({ ...prev, error: null }));
+    }
+  }, [authState.error]);
 
   // Handle login submission
   const handleLogin = async (e: React.FormEvent) => {

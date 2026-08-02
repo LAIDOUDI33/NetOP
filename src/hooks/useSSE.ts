@@ -217,7 +217,7 @@ export function useSSE(options: SSEOptions): SSEState {
       onDisconnect?.();
       onError?.(event);
 
-      // Auto-reconnect
+      // Auto-reconnect - schedule reconnection
       if (autoReconnect && mountedRef.current) {
         const delay = Math.min(
           reconnectDelay * Math.pow(2, state.reconnectAttempts),
@@ -232,9 +232,46 @@ export function useSSE(options: SSEOptions): SSEState {
           reconnectAttempts: prev.reconnectAttempts + 1
         }));
 
+        // Use flag to trigger reconnect via effect
         reconnectTimeoutRef.current = setTimeout(() => {
           if (mountedRef.current) {
-            connect();
+            // Create new connection directly
+            if (eventSourceRef.current?.readyState === EventSource.OPEN ||
+                eventSourceRef.current?.readyState === EventSource.CONNECTING) {
+              return;
+            }
+            
+            const newStreamUrl = buildUrl();
+            log('Reconnecting to:', newStreamUrl);
+            
+            const newEventSource = new EventSource(newStreamUrl);
+            eventSourceRef.current = newEventSource;
+            
+            newEventSource.onopen = () => {
+              if (!mountedRef.current) return;
+              setState(prev => ({
+                ...prev,
+                connected: true,
+                reconnecting: false,
+                reconnectAttempts: 0,
+                error: null
+              }));
+              onConnect?.();
+            };
+            
+            newEventSource.onmessage = handleEvent;
+            
+            newEventSource.onerror = (reconnectEvent) => {
+              if (!mountedRef.current) return;
+              newEventSource.close();
+              eventSourceRef.current = null;
+              setState(prev => ({ ...prev, connected: false }));
+              onDisconnect?.();
+            };
+            
+            customEvents.forEach(eventType => {
+              newEventSource.addEventListener(eventType, handleEvent as EventListener);
+            });
           }
         }, delay);
       }
