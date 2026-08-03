@@ -747,3 +747,161 @@ Stage Summary:
 - Zero lint errors in new files
 - 6-tab presentation-ready view for client demos
 - OOM in sandbox when running Chrome + Next.js simultaneously (57 lazy views) — not a code issue
+
+---
+Task ID: 4-a
+Agent: Lib Agent
+Task: Create PDF Generation and Chart Export Libraries (Phase E - Advanced Reporting)
+
+Work Log:
+- Read worklog.md for full project context (NetOptima Algérie NOC Platform, 65+ API routes, jspdf/html-to-image already in package.json)
+- Read existing src/lib/export.ts for export pattern conventions (CSV, Excel, multi-sheet)
+- Read API routes (kpi, sla, qoe, coverage, executive, policies, son) for data structure alignment in report templates
+- Created src/lib/pdf-generator.ts (434 lines):
+  - Exports: generatePdfReport(), addChartImage(), createReportHeader(), createReportFooter()
+  - Color scheme: emerald #059669 primary, alternating row colors, CONFIDENTIEL tag
+  - Branded header with logo placeholder, "NetOptima Algérie" text, NOC Platform subtitle
+  - Summary KPI box with left accent bar, responsive grid layout
+  - Data tables via jspdf-autotable with emerald headers, auto page breaks
+  - Chart image embedding (base64 PNG) with fallback placeholder
+  - Footer: page numbers, platform name, date
+  - French locale number formatting
+  - Auto page break detection before each section/table/chart
+- Created src/lib/chart-export.ts (80 lines):
+  - captureChartAsImage(): captures DOM element by ID via html-to-image toPng(), returns base64 data URL, returns empty string on failure
+  - downloadChartImage(): captures + triggers browser download as PNG or SVG, filename includes timestamp
+  - Default pixelRatio: 2 (retina), backgroundColor: #ffffff
+- Created src/lib/report-templates.ts (260 lines):
+  - ReportTemplateConfig interface with id, name, description, type, technology, sections
+  - 8 built-in templates:
+    1. daily-kpi — KPI Quotidien (download/latency/availability sections, /api/kpi)
+    2. weekly-performance — Résumé Hebdomadaire (throughput/PRB utilization, /api/trends + /api/kpi)
+    3. sla-compliance — Conformité SLA (/api/sla with compliance table)
+    4. son-activity — Activité SON (/api/son modules + /api/son/actions)
+    5. policy-execution — Exécution des Politiques (/api/policies + /api/policies/executions)
+    6. qoe-report — Qualité d'Expérience (/api/qoe with MOS scores)
+    7. coverage-analysis — Analyse de Couverture (/api/coverage with region stats)
+    8. executive-summary — Résumé Exécutif (/api/executive + /api/dashboard)
+  - getTemplateById(), getTemplatesByType(), getTemplateTypes() helpers
+
+Stage Summary:
+- 3 new library files created in src/lib/
+- pdf-generator.ts: full client-side PDF report generation with jsPDF + autotable
+- chart-export.ts: Recharts/DOM chart capture to PNG/SVG via html-to-image
+- report-templates.ts: 8 predefined report template configurations
+- No existing files modified, no API routes created
+- No lint or build run per instructions
+
+---
+Task ID: 4-b
+Agent: API Agent
+Task: Create Report Generation and Management APIs (Phase E - Advanced Reporting)
+
+Work Log:
+- Read worklog.md for project context (NetOptima Algérie NOC Platform, Phase E reporting)
+- Read existing api-auth.ts, rate-limit.ts, db.ts, report-templates.ts, Prisma schema
+- Studied existing API route patterns (policies, son, reports) for consistency
+- Verified ReportTemplate, ReportSchedule, GeneratedReport Prisma models
+- Verified Alert model (no 'status' field, uses acknowledged+resolvedAt), Incident model (status: open/investigating/resolved/closed)
+- Ran db:push to ensure Prisma client is up to date
+- Created 4 API route files:
+  1. src/app/api/reports/templates/route.ts (186 lines):
+     - GET: Lists all templates (built-in first with isBuiltIn=true, then custom DB templates ordered by type+name)
+     - POST: Creates custom report template with zod validation (name required, type must be enum)
+     - DELETE: Deletes custom template (403 if isBuiltIn), cascade deletes schedules/reports via Prisma
+  2. src/app/api/reports/schedules/route.ts (344 lines):
+     - GET: Lists schedules with template name/type, includes report count per schedule, ordered by createdAt desc
+     - POST: Creates schedule, resolves built-in template IDs by auto-creating DB records, computes nextRunAt from cron
+     - PATCH: Toggles schedule enabled/disabled, clears/recalculates nextRunAt accordingly
+     - DELETE: Deletes schedule (reports get scheduleId nulled via onDelete: SetNull)
+     - Includes computeNextRun() helper for simple cron parsing (daily, weekly, day-of-month, month)
+  3. src/app/api/reports/history/route.ts (128 lines):
+     - GET: Lists generated reports with template name/type and optional schedule name, supports templateId filter, limit, offset, returns total count
+     - POST: Records a generated report entry (templateId, scheduleId?, name, type, format, fileSizeBytes, status, error)
+  4. src/app/api/reports/generate/route.ts (456 lines):
+     - POST: Generates report data from template
+     - Resolves template (built-in or DB), auto-creates DB record for built-in templates
+     - Type-specific data fetchers: fetchKpiData (24h aggregation by technology), fetchSonData (modules+actions), fetchPolicyData (count+rate), fetchSlaData (compliance check vs actual KPIs), fetchQoeData (MOS scores by tech), fetchCoverageData (sites by region/tech), fetchExecutiveData (overview KPIs)
+     - Records generation in GeneratedReport table
+     - Returns raw data JSON for client-side PDF generation
+- All endpoints use checkApiAuth, rate-limiting, zod validation, and French error messages
+- Fixed type errors: Alert.acknowledged (not status), Incident status values (investigating not in_progress)
+- Verified with tsc --noEmit --skipLibCheck: no errors in the 4 new files
+
+Stage Summary:
+- 4 new API route files created under src/app/api/reports/
+- Full CRUD for templates, schedules, and report history
+- Server-side data generation for 7 report types (kpi, son, policy, sla, qoe, coverage, executive)
+- No existing files modified
+- No lint or build run per instructions
+
+---
+Task ID: 4-c
+Agent: Frontend Agent
+Task: Integrate PDF Generation, Templates, Schedules, and History into ReportsView (Phase E - Advanced Reporting)
+
+Work Log:
+- Read worklog.md for full Phase E context (4-a: libraries, 4-b: API routes)
+- Read existing ReportsView.tsx (755 lines, 3 tabs: KPI/SON/Policy with window.print())
+- Read all 4 API routes (templates, schedules, history, generate) for data shapes
+- Read Prisma schema for ReportTemplate/ReportSchedule/GeneratedReport models
+- Read pdf-generator.ts, chart-export.ts, report-templates.ts for integration points
+- Added ~48 new i18n keys in EN/FR/AR for: tab names, template/schedule/history UI labels, status labels, generate button states
+- Rewrote ReportsView.tsx (1360 lines, up from 755):
+  - New top-level tabs: Quick Reports | Templates | Schedules | History
+  - Quick Reports tab: retains existing 3 sub-tabs (KPI/SON/Policy) with chart export button using chart-export.ts
+  - Templates tab: grid of template cards from /api/reports/templates, each with Generate PDF button
+  - Schedules tab: table from /api/reports/schedules with toggle (enable/disable) and delete actions
+  - History tab: table from /api/reports/history with status badges, file size, schedule source
+  - PDF generation flow: click Generate → POST /api/reports/generate → transformToPdfSections() → generatePdfReport()
+  - transformToPdfSections(): maps server data for all 7 types (kpi, son, policy, sla, qoe, coverage, executive) into PdfSection format with summary KPIs and column definitions
+  - Replaced window.print() with proper jsPDF-based PDF generation
+  - Added chart export button on KPI trend chart using dynamic import of chart-export.ts
+  - Added toast notifications for generate success/failure
+  - Used useMutation for generate/toggle/delete with query invalidation
+  - Template type icons (TrendingUp, Cpu, Shield, etc.) per template type
+  - All new UI uses shadcn/ui components (Card, Badge, Table, Button, Skeleton, Tabs)
+  - Responsive grid layout for template cards
+- Verified: npx eslint on ReportsView.tsx, all 3 i18n files, and 3 lib files — zero errors
+
+Stage Summary:
+- ReportsView.tsx rewritten from 755 to 1360 lines with 4 top-level tabs
+- Full integration: template browsing → API data fetch → client-side PDF generation
+- Schedule management (toggle, delete) and generation history tracking
+- Chart export (PNG) from KPI trend chart via html-to-image
+- 48 new i18n keys across EN/FR/AR
+- No API routes modified, no other view files touched
+- Lint clean on all modified/new files
+---
+Task ID: 4
+Agent: Main Integration Agent
+Task: Phase E — Advanced Reporting
+
+Work Log:
+- Installed jspdf, jspdf-autotable, html-to-image packages
+- Added 3 Prisma models: ReportTemplate, ReportSchedule, GeneratedReport (with proper relations)
+- Created src/lib/pdf-generator.ts: generatePdfReport(), addChartImage(), createReportHeader(), createReportFooter() — branded emerald PDF with auto page breaks, KPI summary boxes, data tables, chart images
+- Created src/lib/chart-export.ts: captureChartAsImage() and downloadChartImage() using html-to-image
+- Created src/lib/report-templates.ts: 8 built-in report templates (daily-kpi, weekly-performance, sla-compliance, son-activity, policy-execution, qoe-report, coverage-analysis, executive-summary) with API endpoint configs
+- Created src/app/api/reports/templates/route.ts: GET (list built-in + custom), POST (create custom), DELETE (delete custom, 403 for built-in)
+- Created src/app/api/reports/schedules/route.ts: GET (list with report counts), POST (create with cron→nextRunAt), PATCH (toggle enable), DELETE
+- Created src/app/api/reports/history/route.ts: GET (paginated with templateId filter), POST (record generation)
+- Created src/app/api/reports/generate/route.ts: POST (fetches data from DB based on template type, records generation, returns JSON for client-side PDF creation)
+- Enhanced src/components/views/ReportsView.tsx (755→1360 lines): 4 tabs (Quick Reports, Templates, Schedules, History), real PDF generation via jspdf, chart image export, template card grid with generate buttons, schedule management table, report history table
+- Added ~48 new i18n keys in FR/EN/AR for templates, schedules, history, generation states
+- Fixed duplicate rpt.generated key → renamed to rpt.reportGenerated for toast message
+- All endpoints use checkApiAuth with reports:view/create/edit/delete permissions
+
+Stage Summary:
+- New files: src/lib/pdf-generator.ts, src/lib/chart-export.ts, src/lib/report-templates.ts, 4 API routes
+- Modified files: prisma/schema.prisma, src/components/views/ReportsView.tsx, 3 i18n locale files
+- Zero ESLint errors in src/
+- Phase E (Advanced Reporting) is complete with:
+  1. Client-side PDF generation (jspdf + autotable) with branded headers/footers
+  2. Chart-to-image export (html-to-image, PNG/SVG)
+  3. 8 built-in report templates covering KPI, SON, Policy, SLA, QoE, Coverage, Executive
+  4. Custom template creation and management
+  5. Report scheduling with cron expression support
+  6. Report history tracking with status and metadata
+  7. Server-side data aggregation for PDF content
+  8. Full i18n support (FR/EN/AR)

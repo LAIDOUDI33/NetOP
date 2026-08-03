@@ -1465,3 +1465,65 @@ model WilayaProfile {
   @@index([wilayaName])
   @@unique([wilayaCode, periodMonth])
 }
+
+// ========== PHASE E: ADVANCED REPORTING MODELS ==========
+
+model ReportTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  type          String   // kpi, son, policy, sla, qoe, coverage, executive, custom
+  technology    String?  // 2G, 3G, 4G, 5G, ALL
+  config        String   @default("{}")  // JSON: metric selections, filters, layout options
+  isBuiltIn     Boolean  @default(false)
+  createdBy      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  schedules     ReportSchedule[]
+  generatedReports GeneratedReport[]
+
+  @@index([type])
+  @@index([isBuiltIn])
+}
+
+model ReportSchedule {
+  id            String   @id @default(cuid())
+  name          String
+  templateId    String
+  template      ReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  cronExpr      String   // e.g. "0 9 * * 1" = every Monday at 9am
+  timezone      String   @default("Africa/Algiers")
+  format        String   @default("pdf")  // pdf, xlsx, both
+  recipients    String   @default("[]") // JSON array of email addresses
+  isEnabled     Boolean  @default(true)
+  lastRunAt     DateTime?
+  nextRunAt     DateTime?
+  runCount      Int      @default(0)
+  generatedBy   String?
+  createdAt     DateTime @default(now())
+  reports       GeneratedReport[]  @relation("ScheduleReports")
+
+  @@index([isEnabled])
+  @@index([nextRunAt])
+}
+
+model GeneratedReport {
+  id            String   @id @default(cuid())
+  templateId    String
+  template      ReportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  scheduleId    String?
+  schedule      ReportSchedule?  @relation("ScheduleReports", fields: [scheduleId], references: [id], onDelete: SetNull)
+  name          String
+  type          String
+  format        String   // pdf, xlsx, csv
+  fileSizeBytes Int      @default(0)
+  status        String   @default("completed")  // completed, failed, generating
+  error         String?
+  generatedBy   String?
+  createdAt     DateTime @default(now())
+
+  @@index([templateId])
+  @@index([scheduleId])
+  @@index([createdAt])
+  @@index([status])
+}
