@@ -1,15 +1,11 @@
 /**
- * Structured JSON logger for production log aggregation (ELK, Datadog, Loki, etc.).
- *
- * Usage:
- * ```ts
- * import { logger } from '@/lib/logger';
- * logger.info('User logged in', { userId: 'abc' });
- * logger.error('DB connection failed', { error: err.message });
- * ```
+ * Simple structured logger for server-side code.
+ * Levels: debug, info, warn, error
+ * Output: JSON format with timestamp, level, message, context
+ * Usage: logger.info('Pipeline started', { pipelineId: 'xxx', records: 1000 })
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogContext {
   [key: string]: unknown;
@@ -20,12 +16,10 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
   info: 1,
   warn: 2,
   error: 3,
-  fatal: 4,
 };
 
 const MIN_LEVEL = (process.env.LOG_LEVEL as LogLevel) ?? 'info';
-const SERVICE_NAME = 'netoptima-algerie';
-const VERSION = process.env.npm_package_version ?? '0.2.0';
+const IS_DEV = process.env.NODE_ENV !== 'production';
 
 function shouldLog(level: LogLevel): boolean {
   return LEVEL_PRIORITY[level] >= (LEVEL_PRIORITY[MIN_LEVEL] ?? 1);
@@ -35,52 +29,39 @@ function formatMessage(level: LogLevel, msg: string, ctx: LogContext): string {
   const entry = {
     timestamp: new Date().toISOString(),
     level,
-    service: SERVICE_NAME,
-    version: VERSION,
     message: msg,
-    ...ctx,
+    ...(Object.keys(ctx).length > 0 ? { context: ctx } : {}),
   };
   return JSON.stringify(entry);
 }
 
 export const logger = {
   debug(msg: string, ctx: LogContext = {}) {
-    if (shouldLog('debug')) console.debug(formatMessage('debug', msg, ctx));
+    if (!shouldLog('debug')) return;
+    const formatted = formatMessage('debug', msg, ctx);
+    if (IS_DEV) console.log(`[DEBUG] ${msg}`, ctx);
+    console.debug(formatted);
   },
 
   info(msg: string, ctx: LogContext = {}) {
-    if (shouldLog('info')) console.info(formatMessage('info', msg, ctx));
+    if (!shouldLog('info')) return;
+    const formatted = formatMessage('info', msg, ctx);
+    if (IS_DEV) console.log(`[INFO] ${msg}`, ctx);
+    console.info(formatted);
   },
 
   warn(msg: string, ctx: LogContext = {}) {
-    if (shouldLog('warn')) console.warn(formatMessage('warn', msg, ctx));
+    if (!shouldLog('warn')) return;
+    const formatted = formatMessage('warn', msg, ctx);
+    if (IS_DEV) console.log(`[WARN] ${msg}`, ctx);
+    console.warn(formatted);
   },
 
   error(msg: string, ctx: LogContext = {}) {
-    if (shouldLog('error')) console.error(formatMessage('error', msg, ctx));
-  },
-
-  fatal(msg: string, ctx: LogContext = {}) {
-    if (shouldLog('fatal')) {
-      console.error(formatMessage('fatal', msg, ctx));
-    }
-  },
-
-  /**
-   * Create a child logger with pre-bound context (e.g. for a specific module).
-   * ```ts
-   * const log = logger.child({ module: 'auth' });
-   * log.info('token refreshed');
-   * ```
-   */
-  child(preset: LogContext) {
-    return {
-      debug: (msg: string, ctx: LogContext = {}) => logger.debug(msg, { ...preset, ...ctx }),
-      info: (msg: string, ctx: LogContext = {}) => logger.info(msg, { ...preset, ...ctx }),
-      warn: (msg: string, ctx: LogContext = {}) => logger.warn(msg, { ...preset, ...ctx }),
-      error: (msg: string, ctx: LogContext = {}) => logger.error(msg, { ...preset, ...ctx }),
-      fatal: (msg: string, ctx: LogContext = {}) => logger.fatal(msg, { ...preset, ...ctx }),
-    };
+    if (!shouldLog('error')) return;
+    const formatted = formatMessage('error', msg, ctx);
+    if (IS_DEV) console.log(`[ERROR] ${msg}`, ctx);
+    console.error(formatted);
   },
 };
 

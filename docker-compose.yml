@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    env_file: .env
+    volumes:
+      - db-data:/app/db
+      - ./mini-services:/app/mini-services
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  etl-service:
+    build:
+      context: ./mini-services/etl-service
+      dockerfile: Dockerfile
+    ports: ["3010:3010"]
+    environment:
+      - DATABASE_PATH=/app/db/custom.db
+    volumes:
+      - db-data:/app/db
+    restart: unless-stopped
+
+volumes:
+  db-data:

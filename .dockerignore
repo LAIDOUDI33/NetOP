@@ -1,0 +1,10 @@
+node_modules
+.next
+git
+test-results
+*.log
+.env.local
+.env.production
+db/*.db
+.db
+mini-services/*/node_modules

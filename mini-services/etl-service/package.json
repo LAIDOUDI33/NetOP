@@ -1,0 +1,12 @@
+{
+  "name": "netoptima-algerie-etl",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.11.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.11.1"
+  }
+}

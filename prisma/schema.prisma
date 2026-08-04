@@ -1637,3 +1637,65 @@ model GeneratedReport {
   @@index([createdAt])
   @@index([status])
 }
+
+// ========== PHASE G: INTEGRATION & ECOSYSTEM MODELS ==========
+
+model Webhook {
+  id              String   @id @default(cuid())
+  name            String
+  url             String
+  events          String   @default("[]") // JSON: ["alert.created", "incident.resolved", ...]
+  secret          String   @default("")
+  isEnabled       Boolean  @default(true)
+  description     String   @default("")
+  lastDeliveryAt  DateTime?
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deliveries      WebhookDelivery[]
+
+  @@index([isEnabled])
+  @@index([url])
+}
+
+model WebhookDelivery {
+  id              String   @id @default(cuid())
+  webhookId       String
+  webhook         Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  event           String
+  payload         String   @default("{}") // JSON
+  statusCode      Int      @default(0)
+  responseBody    String   @default("")
+  durationMs      Int      @default(0)
+  success         Boolean  @default(false)
+  errorMessage    String?
+  attemptCount    Int      @default(1)
+  createdAt       DateTime @default(now())
+
+  @@index([webhookId])
+  @@index([event])
+  @@index([success])
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id              String   @id @default(cuid())
+  name            String
+  keyHash         String   @unique
+  keyPrefix       String   // first 8 chars for display
+  permissions     String   @default("[\"*\"]") // JSON: ["alerts:*", "kpi:view", ...]
+  isEnabled       Boolean  @default(true)
+  expiresAt       DateTime?
+  lastUsedAt      DateTime?
+  requestCount    Int      @default(0)
+  description     String   @default("")
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isEnabled])
+  @@index([keyPrefix])
+  @@index([createdBy])
+}

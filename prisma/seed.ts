@@ -145,6 +145,16 @@ async function main() {
   await db.ossFaultEvent.deleteMany();
   await db.ossNetworkElement.deleteMany();
   await db.dataPipeline.deleteMany();
+  await db.pipelineExecution.deleteMany();
+  await db.dataSource.deleteMany();
+  await db.dataQualityResult.deleteMany();
+  await db.dataQualityRule.deleteMany();
+  await db.generatedReport.deleteMany();
+  await db.reportSchedule.deleteMany();
+  await db.reportTemplate.deleteMany();
+  await db.webhookDelivery.deleteMany();
+  await db.webhook.deleteMany();
+  await db.apiKey.deleteMany();
   await db.externalIntegration.deleteMany();
   await db.aiAgent.deleteMany();
   // Clear Phase D tables first (FKs to NetworkSite or standalone)
@@ -3409,6 +3419,39 @@ async function main() {
   console.log('\n  Seeding RBAC (roles, permissions, users)...');
   await seedRbac();
   console.log('  ✅ RBAC seeded!');
+
+  // ========== PHASE G: INTEGRATION & ECOSYSTEM SEED ==========
+  console.log('\n  Seeding Webhooks...');
+  await db.webhook.createMany({ data: [
+    { id: 'wh-slack-alerts', name: 'Slack Alerts', url: 'https://hooks.slack.com/services/T0X/B0X/xxx', events: '["alert.created", "alert.escalated"]', secret: 'whsec_slack_2025', isEnabled: true, description: 'Critical alerts to NOC Slack channel', successCount: 342, failureCount: 12, lastDeliveryAt: subMinutes(now, 5) },
+    { id: 'wh-teams-incidents', name: 'MS Teams Incidents', url: 'https://djezzy.webhook.office.com/webhookb2/xxx', events: '["incident.created", "incident.resolved"]', secret: 'whsec_teams_2025', isEnabled: true, description: 'Incident lifecycle notifications', successCount: 128, failureCount: 3, lastDeliveryAt: subMinutes(now, 30) },
+    { id: 'wh-jira-changes', name: 'JIRA Change Tickets', url: 'https://djezzy.atlassian.net/rest/webhooks/1/xxx', events: '["change.approved", "change.implemented"]', secret: 'whsec_jira_2025', isEnabled: true, description: 'Auto-create JIRA tickets', successCount: 89, failureCount: 5, lastDeliveryAt: subHours(now, 2) },
+    { id: 'wh-grafana-metrics', name: 'Grafana Alerting', url: 'https://grafana.djezzy.dz/api/webhooks/netoptima', events: '["kpi.threshold_breach", "anomaly.detected"]', secret: '', isEnabled: true, description: 'Push KPI anomalies to Grafana', successCount: 567, failureCount: 0, lastDeliveryAt: subMinutes(now, 1) },
+    { id: 'wh-custom-report', name: 'Custom Report Webhook', url: 'https://reporting.djezzy.dz/api/ingest', events: '["report.generated"]', secret: 'whsec_report_2025', isEnabled: false, description: 'Send generated reports to external system', successCount: 0, failureCount: 2 },
+    { id: 'wh-pagerduty', name: 'PagerDuty Escalation', url: 'https://events.pagerduty.com/integration/xxx/enqueue', events: '["incident.critical", "outage.started"]', secret: 'whsec_pd_2025', isEnabled: true, description: 'Escalate critical incidents to PagerDuty', successCount: 45, failureCount: 1, lastDeliveryAt: subHours(now, 8) },
+  ] });
+  console.log('  Webhooks: 6');
+
+  console.log('  Seeding WebhookDeliveries...');
+  const whSeedIds = ['wh-slack-alerts', 'wh-teams-incidents', 'wh-jira-changes', 'wh-grafana-metrics', 'wh-pagerduty'];
+  const whSeedEvents = ['alert.created', 'incident.created', 'change.approved', 'kpi.threshold_breach', 'anomaly.detected', 'incident.critical'];
+  const whDeliveriesData: any[] = [];
+  for (let i = 0; i < 30; i++) {
+    const whSuccess = Math.random() > 0.08;
+    whDeliveriesData.push({ webhookId: whSeedIds[i % whSeedIds.length], event: whSeedEvents[i % whSeedEvents.length], payload: JSON.stringify({ eventId: `evt-${i}`, timestamp: new Date(now.getTime() - i * 600000).toISOString() }), statusCode: whSuccess ? 200 : 503, responseBody: whSuccess ? '{"ok":true}' : '', durationMs: Math.floor(Math.random() * 2000) + 50, success: whSuccess, errorMessage: whSuccess ? null : 'Connection refused', attemptCount: whSuccess ? 1 : Math.floor(Math.random() * 3) + 1 });
+  }
+  await db.webhookDelivery.createMany({ data: whDeliveriesData });
+  console.log('  WebhookDeliveries: 30');
+
+  console.log('  Seeding ApiKeys...');
+  await db.apiKey.createMany({ data: [
+    { id: 'ak-oss-connector', name: 'OSS Connector', keyHash: 'sha256$a1b2c3d4e5f6', keyPrefix: 'nopt_os1', permissions: '["alerts:*", "kpi:view"]', isEnabled: true, requestCount: 45230, description: 'OSS system read-only access', lastUsedAt: subMinutes(now, 3) },
+    { id: 'ak-crm-sync', name: 'CRM Sync Service', keyHash: 'sha256$f6e5d4c3b2a1', keyPrefix: 'nopt_cr2', permissions: '["subscribers:*", "qoe:view"]', isEnabled: true, requestCount: 18420, description: 'CRM bidirectional sync', lastUsedAt: subMinutes(now, 15) },
+    { id: 'ak-billing-push', name: 'Billing Push Agent', keyHash: 'sha256$1a2b3c4d5e6f', keyPrefix: 'nopt_bi3', permissions: '["reports:*"]', isEnabled: true, requestCount: 8920, description: 'Billing system push access', lastUsedAt: subHours(now, 2) },
+    { id: 'ak-external-partner', name: 'External Partner API', keyHash: 'sha256$6f5e4d3c2b1a', keyPrefix: 'nopt_ex4', permissions: '["dashboard:view", "kpi:view"]', isEnabled: false, requestCount: 0, description: 'Partner read-only dashboard access', expiresAt: new Date(now.getTime() + 90 * 86400000) },
+    { id: 'ak-internal-automation', name: 'Internal Automation', keyHash: 'sha256$aabbccddeeff', keyPrefix: 'nopt_ia5', permissions: '["*"]', isEnabled: true, requestCount: 128000, description: 'Internal automation full access', lastUsedAt: subMinutes(now, 1) },
+  ] });
+  console.log('  ApiKeys: 5');
 
   console.log('\n✅ Seed complete!');
   console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
