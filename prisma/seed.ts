@@ -2943,9 +2943,100 @@ async function main() {
     { id: 'pipe-son-actions', name: 'SON Action Logger', source: 'SON Engine', target: 'Audit Trail', schedule: 'realtime', status: 'running', lastRun: subMinutes(now, 1), nextRun: null, recordsProcessed: 8900, errorRate: 0.0, avgDurationMs: 80 },
     { id: 'pipe-forecast-train', name: 'Forecast Model Training', source: 'KPI History', target: 'ML Models', schedule: '0 3 * * 0', status: 'scheduled', lastRun: subHours(now, 48), nextRun: new Date(now.getTime() + 120 * 60000), recordsProcessed: 500000, errorRate: 0.5, avgDurationMs: 120000 },
     { id: 'pipe-qoe-compute', name: 'QoE Score Computation', source: 'KPI + CEM Data', target: 'QoE Dashboard', schedule: '*/10 * * * *', status: 'running', lastRun: subMinutes(now, 5), nextRun: subMinutes(now, -5), recordsProcessed: 92000, errorRate: 0.03, avgDurationMs: 4500 },
-    { id: 'pipe-anomaly-label', name: 'Anomaly Labeling', source: 'Alert Engine', target: 'ML Training Set', schedule: '0 4 * * *', status: 'failed', lastRun: subHours(now, 2), nextRun: subHours(now, -2), recordsProcessed: 1200, errorRate: 3.2, avgDurationMs: 30000 },
+    { id: 'pipe-anomaly-label', name: 'Anomaly Labeling', source: 'Alert Engine', target: 'ML Training Set', schedule: '0 4 * * *', status: 'failed', lastRun: subHours(now, 2), nextRun: subHours(now, -2), recordsProcessed: 1200, errorRate: 3.2, avgDurationMs: 30000, transformationSteps: '[{"name":"Filter Alerts","type":"filter","config":{"field":"severity","value":"critical"}},{"name":"Label Generation","type":"transform","config":{"model":"autoencoder"}}]', totalRuns: 48, successRuns: 46, failedRuns: 2, totalRecordsIn: 57600, totalRecordsOut: 55200, totalRecordsErr: 2400, enabled: true },
   ] });
-  console.log('  DataPipelines: 8');
+  console.log('  DataPipeline: 8');
+
+  // 20b. PipelineExecution (50 records)
+  console.log('Seeding PipelineExecutions...');
+  const pipelineIds = ['pipe-kpi-ingest', 'pipe-alarm-stream', 'pipe-crm-sync', 'pipe-billing-etl', 'pipe-son-actions', 'pipe-forecast-train', 'pipe-qoe-compute', 'pipe-anomaly-label'];
+  const etlTriggerTypes = ['scheduled', 'manual', 'retry', 'webhook'];
+  const etlStatuses = ['succeeded', 'succeeded', 'succeeded', 'succeeded', 'succeeded', 'succeeded', 'succeeded', 'failed', 'succeeded', 'cancelled'];
+  const pipeExecData: any[] = [];
+  for (let i = 0; i < 50; i++) {
+    const pIdx = i % pipelineIds.length;
+    const status = etlStatuses[Math.min(i % etlStatuses.length, etlStatuses.length - 1)];
+    const dur = status === 'cancelled' ? 0 : Math.floor(Math.random() * 15000) + 500;
+    const recsIn = Math.floor(Math.random() * 50000) + 1000;
+    const errRate = status === 'failed' ? Math.random() * 5 + 1 : Math.random() * 0.5;
+    const recsErr = Math.floor(recsIn * errRate / 100);
+    const startTime = new Date(now.getTime() - (i * 15 * 60000) - Math.floor(Math.random() * 600000));
+    const completedAt = status === 'cancelled' ? null : new Date(startTime.getTime() + dur);
+    pipeExecData.push({
+      pipelineId: pipelineIds[pIdx],
+      status,
+      triggerType: etlTriggerTypes[Math.min(i, 3)],
+      recordsIn: recsIn,
+      recordsOut: recsIn - recsErr,
+      recordsError: recsErr,
+      errorRate: Math.round(errRate * 100) / 100,
+      startedAt: startTime,
+      completedAt,
+      durationMs: dur,
+      errorMessage: status === 'failed' ? 'Connection timeout to source endpoint' : null,
+      retryCount: status === 'failed' ? 2 : 0,
+      maxRetries: 3,
+      stepResults: JSON.stringify([{ step: 'Extract', status: status === 'failed' ? 'failed' : 'completed', recordsIn: recsIn, recordsOut: recsIn, durationMs: Math.floor(dur * 0.3) }, { step: 'Transform', status: status === 'failed' ? 'failed' : 'completed', recordsIn: recsIn, recordsOut: recsIn - recsErr, durationMs: Math.floor(dur * 0.5) }, { step: 'Load', status: status === 'failed' ? 'skipped' : 'completed', recordsIn: recsIn - recsErr, recordsOut: recsIn - recsErr, durationMs: Math.floor(dur * 0.2) }]),
+    });
+  }
+  await db.pipelineExecution.createMany({ data: pipeExecData });
+  console.log('  PipelineExecutions: 50');
+
+  // 20c. DataSource (10 records)
+  console.log('Seeding DataSources...');
+  await db.dataSource.createMany({ data: [
+    { id: 'ds-oss-poller', name: 'OSS Performance Poller', type: 'oss', protocol: 'snmp', endpoint: 'snmp://oss-core.djezzy.dz:161', status: 'active', description: 'Network element performance counters', recordsAvailable: 245000, lastSyncAt: subMinutes(now, 3), lastSyncRecords: 18420, lastSyncStatus: 'success', freshnessSeconds: 180, avgLatencyMs: 45, region: 'Alger', vendor: 'Ericsson' },
+    { id: 'ds-alarm-feed', name: 'OSS Alarm Feed', type: 'oss', protocol: 'rest', endpoint: 'https://oss.djezzy.dz/api/v2/alarms', status: 'active', description: 'Real-time alarm streaming', recordsAvailable: 8900, lastSyncAt: subMinutes(now, 1), lastSyncRecords: 340, lastSyncStatus: 'success', freshnessSeconds: 60, avgLatencyMs: 120, region: '', vendor: '' },
+    { id: 'ds-crm-api', name: 'CRM Customer API', type: 'crm', protocol: 'rest', endpoint: 'https://crm.djezzy.dz/api/customers', status: 'active', description: 'Customer master data sync', recordsAvailable: 520000, lastSyncAt: subMinutes(now, 120), lastSyncRecords: 16200, lastSyncStatus: 'success', freshnessSeconds: 7200, avgLatencyMs: 890, region: '', vendor: 'Salesforce' },
+    { id: 'ds-billing-sys', name: 'Billing System', type: 'billing', protocol: 'jdbc', endpoint: 'jdbc:oracle:thin:@billing-db.djezzy.dz:1521:BILL', status: 'active', description: 'Billing and revenue data', recordsAvailable: 89000, lastSyncAt: subHours(now, 8), lastSyncRecords: 12800, lastSyncStatus: 'success', freshnessSeconds: 28800, avgLatencyMs: 4500, region: '', vendor: 'Amdocs' },
+    { id: 'ds-kpi-history', name: 'KPI Time-Series Store', type: 'kpi', protocol: 'http', endpoint: 'http://timeseries.djezzy.dz:8086', status: 'active', description: 'Historical KPI metrics storage', recordsAvailable: 5200000, lastSyncAt: subMinutes(now, 5), lastSyncRecords: 92100, lastSyncStatus: 'success', freshnessSeconds: 300, avgLatencyMs: 230, region: '', vendor: '' },
+    { id: 'ds-probe-5g', name: '5G Drive Test Probes', type: 'probe', protocol: 'ftp', endpoint: 'ftp://probes.djezzy.dz/dt-data/5g', status: 'active', description: 'Drive test measurement files', recordsAvailable: 34000, lastSyncAt: subHours(now, 6), lastSyncRecords: 5600, lastSyncStatus: 'partial', freshnessSeconds: 21600, avgLatencyMs: 3200, region: 'Alger', vendor: 'TEMs' },
+    { id: 'ds-weather-api', name: 'Weather Data API', type: 'external_api', protocol: 'rest', endpoint: 'https://api.meteo.dz/v1/forecast', status: 'active', description: 'Weather impact correlation data', recordsAvailable: 1200, lastSyncAt: subMinutes(now, 30), lastSyncRecords: 48, lastSyncStatus: 'success', freshnessSeconds: 1800, avgLatencyMs: 340, region: '', vendor: 'Météo Algérie' },
+    { id: 'ds-son-engine', name: 'SON Optimization Engine', type: 'kpi', protocol: 'rest', endpoint: 'https://son.djezzy.dz/api/actions', status: 'active', description: 'SON action and parameter change log', recordsAvailable: 8900, lastSyncAt: subMinutes(now, 1), lastSyncRecords: 120, lastSyncStatus: 'success', freshnessSeconds: 60, avgLatencyMs: 80, region: '', vendor: '' },
+    { id: 'ds-cem-platform', name: 'CEM Experience Platform', type: 'external_api', protocol: 'graphql', endpoint: 'https://cem.djezzy.dz/graphql', status: 'maintenance', description: 'Customer experience monitoring', recordsAvailable: 45000, lastSyncAt: subHours(now, 4), lastSyncRecords: 0, lastSyncStatus: 'error', freshnessSeconds: 14400, avgLatencyMs: 1200, region: '', vendor: 'Ericsson' },
+    { id: 'ds-geo-survey', name: 'Geospatial Survey Data', type: 'file', protocol: 'sftp', endpoint: 'sftp://survey.djezzy.dz/data/geo', status: 'active', description: 'Geospatial survey and planning data', recordsAvailable: 8500, lastSyncAt: subHours(now, 24), lastSyncRecords: 1200, lastSyncStatus: 'success', freshnessSeconds: 86400, avgLatencyMs: 5600, region: '', vendor: '' },
+  ] });
+  console.log('  DataSources: 10');
+
+  // 20d. DataQualityRule (12 records)
+  console.log('Seeding DataQualityRules...');
+  await db.dataQualityRule.createMany({ data: [
+    { id: 'dqr-kpi-notnull', name: 'KPI RSRP Non-Null Check', description: 'RSRP values must not be null for 4G/5G sites', targetModel: 'KpiMetric', ruleType: 'not_null', ruleConfig: JSON.stringify({ field: 'rsrp', technologies: ['4G', '5G'] }), severity: 'critical', isEnabled: true, lastPassRate: 99.2, totalEvaluations: 240, totalPasses: 238, totalFailures: 2 },
+    { id: 'dqr-kpi-range', name: 'KPI RSRP Range Check', description: 'RSRP should be between -140 and -44 dBm', targetModel: 'KpiMetric', ruleType: 'range', ruleConfig: JSON.stringify({ field: 'rsrp', min: -140, max: -44 }), severity: 'warning', isEnabled: true, lastPassRate: 97.8, totalEvaluations: 240, totalPasses: 235, totalFailures: 5 },
+    { id: 'dqr-kpi-freshness', name: 'KPI Data Freshness', description: 'KPI metrics should be no older than 15 minutes', targetModel: 'KpiMetric', ruleType: 'freshness', ruleConfig: JSON.stringify({ maxAgeMinutes: 15 }), severity: 'warning', isEnabled: true, lastPassRate: 96.5, totalEvaluations: 240, totalPasses: 232, totalFailures: 8 },
+    { id: 'dqr-qoe-range', name: 'QoE MOS Score Range', description: 'MOS score should be between 1.0 and 5.0', targetModel: 'QoEMetric', ruleType: 'range', ruleConfig: JSON.stringify({ field: 'mosScore', min: 1.0, max: 5.0 }), severity: 'critical', isEnabled: true, lastPassRate: 99.9, totalEvaluations: 120, totalPasses: 120, totalFailures: 0 },
+    { id: 'dqr-alert-uniqueness', name: 'Alert Deduplication Check', description: 'No duplicate alerts within 5-minute window', targetModel: 'Alert', ruleType: 'uniqueness', ruleConfig: JSON.stringify({ fields: ['siteId', 'type', 'severity'], windowMinutes: 5 }), severity: 'info', isEnabled: true, lastPassRate: 94.1, totalEvaluations: 180, totalPasses: 169, totalFailures: 11 },
+    { id: 'dqr-qoe-completeness', name: 'QoE Metric Completeness', description: 'All QoE fields should be populated', targetModel: 'QoEMetric', ruleType: 'completeness', ruleConfig: JSON.stringify({ requiredFields: ['mosScore', 'latencyMs', 'jitterMs', 'packetLoss', 'throughputMbps'] }), severity: 'warning', isEnabled: true, lastPassRate: 98.7, totalEvaluations: 120, totalPasses: 118, totalFailures: 2 },
+    { id: 'dqr-energy-range', name: 'Energy Power Range', description: 'Power consumption should be within expected range', targetModel: 'EnergyMetric', ruleType: 'range', ruleConfig: JSON.stringify({ field: 'powerConsumption', min: 500, max: 15000 }), severity: 'warning', isEnabled: true, lastPassRate: 99.5, totalEvaluations: 96, totalPasses: 95, totalFailures: 1 },
+    { id: 'dqr-handover-rate', name: 'Handover Success Rate Floor', description: 'Handover success rate should be above 95%', targetModel: 'HandoverKpi', ruleType: 'range', ruleConfig: JSON.stringify({ field: 'successRate', min: 95, max: 100 }), severity: 'critical', isEnabled: true, lastPassRate: 91.3, totalEvaluations: 96, totalPasses: 88, totalFailures: 8 },
+    { id: 'dqr-site-active', name: 'Active Site Check', description: 'All sites should have active status for KPI reporting', targetModel: 'NetworkSite', ruleType: 'not_null', ruleConfig: JSON.stringify({ field: 'status' }), severity: 'critical', isEnabled: true, lastPassRate: 100, totalEvaluations: 48, totalPasses: 48, totalFailures: 0 },
+    { id: 'dqr-load-range', name: 'Cell Load Range Check', description: 'PRB utilization should be 0-100%', targetModel: 'CellLoad', ruleType: 'range', ruleConfig: JSON.stringify({ field: 'prbUtilization', min: 0, max: 100 }), severity: 'info', isEnabled: true, lastPassRate: 99.8, totalEvaluations: 96, totalPasses: 96, totalFailures: 0 },
+    { id: 'dqr-incident-freshness', name: 'Incident Resolution SLA', description: 'Critical incidents should be resolved within 4 hours', targetModel: 'Incident', ruleType: 'freshness', ruleConfig: JSON.stringify({ field: 'resolvedAt', maxAgeHours: 4, filterField: 'severity', filterValue: 'critical' }), severity: 'critical', isEnabled: false, lastPassRate: 87.5, totalEvaluations: 48, totalPasses: 42, totalFailures: 6 },
+    { id: 'dqr-subscriber-uniqueness', name: 'Subscriber MSISDN Uniqueness', description: 'MSISDN should be unique across subscribers', targetModel: 'SubscriberSegment', ruleType: 'uniqueness', ruleConfig: JSON.stringify({ field: 'segment' }), severity: 'info', isEnabled: true, lastPassRate: 100, totalEvaluations: 24, totalPasses: 24, totalFailures: 0 },
+  ] });
+  console.log('  DataQualityRules: 12');
+
+  // 20e. DataQualityResult (40 records)
+  console.log('Seeding DataQualityResults...');
+  const qualityResults: any[] = [];
+  const ruleIds = ['dqr-kpi-notnull', 'dqr-kpi-range', 'dqr-kpi-freshness', 'dqr-qoe-range', 'dqr-alert-uniqueness', 'dqr-qoe-completeness', 'dqr-energy-range', 'dqr-handover-rate', 'dqr-site-active', 'dqr-load-range', 'dqr-incident-freshness', 'dqr-subscriber-uniqueness'];
+  const pipeIdsForQ = ['pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-qoe-compute', 'pipe-alarm-stream', 'pipe-qoe-compute', 'pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-kpi-ingest', 'pipe-crm-sync'];
+  for (let i = 0; i < 40; i++) {
+    const rIdx = i % ruleIds.length;
+    const rule = ruleIds[rIdx];
+    const passed = Math.random() > (rule === 'dqr-handover-rate' || rule === 'dqr-alert-uniqueness' ? 0.15 : 0.05);
+    qualityResults.push({
+      ruleId: rule,
+      pipelineId: pipeIdsForQ[rIdx],
+      passed,
+      actualValue: passed ? Math.random() * 10 + 90 : Math.random() * 30 + 60,
+      expectedValue: 95,
+      evaluatedAt: new Date(now.getTime() - (i * 30 * 60000)),
+      details: JSON.stringify({ totalRecords: Math.floor(Math.random() * 1000) + 100, failedRecords: passed ? 0 : Math.floor(Math.random() * 15) + 1, sampleErrors: passed ? [] : ['Null value at site ALG-4G-023', 'Out of range: RSRP=-150 at site ORN-5G-005'] }),
+    });
+  }
+  await db.dataQualityResult.createMany({ data: qualityResults });
+  console.log('  DataQualityResults: 40');
 
   // 21. OssNetworkElement (50 records)
   console.log('Seeding OssNetworkElements...');
@@ -3320,7 +3411,7 @@ async function main() {
   console.log('  ✅ RBAC seeded!');
 
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());

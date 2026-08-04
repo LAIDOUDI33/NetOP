@@ -1093,23 +1093,133 @@ model ExternalIntegration {
 }
 
 model DataPipeline {
-  id               String    @id @default(cuid())
+  id               String              @id @default(cuid())
   name             String
-  source           String
-  target           String
-  schedule         String
-  status           String    @default("active")
+  description      String              @default("")
+  source           String              // oss, crm, billing, kpi, probe, external_api, file
+  target           String              // kpi_metrics, qoe_metrics, alerts, subscribers, etc.
+  schedule         String              // cron expression e.g. "*/15 * * * *"
+  status           String              @default("active")  // active, paused, disabled
   lastRun          DateTime?
   nextRun          DateTime?
-  recordsProcessed Int       @default(0)
-  errorRate        Float     @default(0)
-  avgDurationMs    Int       @default(0)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  recordsProcessed Int                 @default(0)
+  errorRate        Float               @default(0)
+  avgDurationMs    Int                 @default(0)
+  transformationSteps String            @default("[]")  // JSON: [{name, type, config}]
+  retryMaxAttempts Int                 @default(3)
+  retryDelayMs     Int                 @default(5000)
+  totalRuns        Int                 @default(0)
+  successRuns      Int                 @default(0)
+  failedRuns       Int                 @default(0)
+  totalRecordsIn   Int                 @default(0)
+  totalRecordsOut  Int                 @default(0)
+  totalRecordsErr  Int                 @default(0)
+  enabled          Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  executions       PipelineExecution[]
+  qualityResults   DataQualityResult[]
 
   @@index([status])
   @@index([source])
   @@index([target])
+  @@index([enabled])
+}
+
+model PipelineExecution {
+  id               String      @id @default(cuid())
+  pipelineId       String
+  pipeline         DataPipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  status           String      @default("running")  // running, succeeded, failed, cancelled, retrying
+  triggerType      String      @default("scheduled")  // scheduled, manual, retry, webhook
+  recordsIn        Int         @default(0)
+  recordsOut       Int         @default(0)
+  recordsError     Int         @default(0)
+  errorRate        Float       @default(0)
+  startedAt        DateTime    @default(now())
+  completedAt      DateTime?
+  durationMs       Int         @default(0)
+  errorMessage     String?
+  errorStack       String?
+  retryCount       Int         @default(0)
+  maxRetries       Int         @default(3)
+  stepResults      String      @default("[]")  // JSON: [{step, status, recordsIn, recordsOut, durationMs}]
+  metadata         String      @default("{}")  // JSON: extra info
+  createdAt        DateTime    @default(now())
+
+  @@index([pipelineId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([triggerType])
+}
+
+model DataSource {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // oss, crm, billing, kpi, probe, external_api, file, database
+  protocol         String   // ftp, sftp, http, snmp, jdbc, graphql, rest
+  endpoint         String   @default("")
+  status           String   @default("active")  // active, inactive, error, maintenance
+  description      String   @default("")
+  config           String   @default("{}")  // JSON: auth, headers, query params
+  recordsAvailable Int      @default(0)
+  lastSyncAt       DateTime?
+  lastSyncRecords  Int      @default(0)
+  lastSyncStatus   String   @default("")
+  freshnessSeconds Int      @default(0)
+  avgLatencyMs     Int      @default(0)
+  region           String   @default("")
+  vendor           String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([region])
+}
+
+model DataQualityRule {
+  id              String   @id @default(cuid())
+  name            String
+  description     String   @default("")
+  targetModel     String   // KpiMetric, QoEMetric, Alert, etc.
+  ruleType        String   // not_null, range, uniqueness, freshness, completeness, custom
+  ruleConfig      String   @default("{}")  // JSON: {field, min, max, threshold, etc.}
+  severity        String   @default("warning")  // critical, warning, info
+  isEnabled       Boolean  @default(true)
+  lastEvaluatedAt DateTime?
+  lastPassRate    Float    @default(0)
+  totalEvaluations Int     @default(0)
+  totalPasses     Int      @default(0)
+  totalFailures   Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  results         DataQualityResult[]
+
+  @@index([targetModel])
+  @@index([ruleType])
+  @@index([severity])
+  @@index([isEnabled])
+}
+
+model DataQualityResult {
+  id              String           @id @default(cuid())
+  ruleId          String
+  rule            DataQualityRule  @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  pipelineId      String?
+  pipeline        DataPipeline?    @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
+  executionId     String?
+  passed          Boolean          @default(true)
+  actualValue     Float            @default(0)
+  expectedValue   Float            @default(0)
+  evaluatedAt     DateTime         @default(now())
+  details         String           @default("{}")  // JSON: {failedRecords, sampleErrors, etc.}
+  createdAt       DateTime         @default(now())
+
+  @@index([ruleId])
+  @@index([pipelineId])
+  @@index([evaluatedAt])
+  @@index([passed])
 }
 
 model OssNetworkElement {
