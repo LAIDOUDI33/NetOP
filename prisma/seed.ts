@@ -3574,6 +3574,90 @@ async function main() {
   await db.revenueProjection.createMany({ data: revData });
   console.log('  RevenueProjections: 11');
 
+  console.log(' Seeding DigitalTwinScenarios...');
+  const dtScenarios: any[] = [];
+  const dtTypes = ['what_if', 'disaster', 'capacity_expansion', 'parameter_change', 'new_site'];
+  const dtStatuses = ['draft', 'simulated', 'completed', 'archived'];
+  const dtRegions = ['Alger', 'Oran', 'Constantine', 'Annaba', 'S\u00e9tif'];
+  const dtParams: Record<string, any> = {
+    what_if: { change: 'add_carrier', technology: '4G', carrierCount: 3, bandwidth: 20 },
+    disaster: { disasterType: 'site_outage', affectedSites: 3, duration: 4, region: 'Alger' },
+    capacity_expansion: { expansionType: 'new_carrier', technology: '4G', additionalCapacity: 500, costEstimate: 45000000 },
+    parameter_change: { parameter: 'tilt', currentValue: 6, newValue: 4, siteCode: 'ALG_4G_001' },
+    new_site: { siteName: 'Bab Ezzouar_5G', technology: '5G', latitude: 36.7265, longitude: 3.1710, estimatedCapacity: 2000, capex: 120000000 },
+  };
+  const dtNames: Record<string, string[]> = {
+    what_if: ['Add 4G Carrier in Alger', 'Refarm 3G to 4G in Oran', 'Activate 5G SA in Constantine'],
+    disaster: ['Major outage in Algiers', 'Fiber cut in Oran region', 'Power failure in S\u00e9tif'],
+    capacity_expansion: ['Capacity expansion Annaba', 'New carrier S\u00e9tif urban'],
+    parameter_change: ['Tilt optimization Bab El Oued', 'Power adjustment Hydra'],
+    new_site: ['New 5G site Bab Ezzouar', 'New 4G site Rouiba'],
+  };
+  for (const type of dtTypes) {
+    for (const name of dtNames[type]) {
+      const impact = type === 'disaster' ? -30 - Math.random() * 50 : 10 + Math.random() * 60;
+      const results = {
+        before: { rsrp: -95 + Math.random() * 10, throughput: 25 + Math.random() * 30, availability: 97 + Math.random() * 2.5, users: 500 + Math.random() * 1500 },
+        after: {
+          rsrp: type === 'disaster' ? -105 - Math.random() * 10 : -90 - Math.random() * 8,
+          throughput: type === 'disaster' ? 10 + Math.random() * 15 : 35 + Math.random() * 35,
+          availability: type === 'disaster' ? 85 + Math.random() * 10 : 98.5 + Math.random() * 1.5,
+          users: type === 'disaster' ? 300 + Math.random() * 800 : 800 + Math.random() * 2000,
+        },
+      };
+      results.delta = {
+        rsrp: results.after.rsrp - results.before.rsrp,
+        throughput: results.after.throughput - results.before.throughput,
+        availability: results.after.availability - results.before.availability,
+        users: results.after.users - results.before.users,
+      };
+      dtScenarios.push({
+        name,
+        description: `${type.replace('_', ' ')} scenario: ${name}`,
+        scenarioType: type,
+        status: dtStatuses[Math.floor(Math.random() * dtStatuses.length)],
+        targetRegion: dtRegions[Math.floor(Math.random() * dtRegions.length)],
+        parameters: JSON.stringify(dtParams[type]),
+        results: JSON.stringify(results),
+        impactScore: parseFloat(impact.toFixed(1)),
+        confidence: parseFloat((0.75 + Math.random() * 0.2).toFixed(2)),
+      });
+    }
+  }
+  await db.digitalTwinScenario.createMany({ data: dtScenarios });
+  console.log('  DigitalTwinScenarios: 14');
+
+  // Seed SimulationResults for created scenarios
+  const createdDt = await db.digitalTwinScenario.findMany({ select: { id: true, results: true } });
+  let simResultCount = 0;
+  for (const sc of createdDt.slice(0, 10)) {
+    const res = JSON.parse(sc.results as string);
+    const metrics = ['rsrp', 'throughput', 'availability', 'users'];
+    const units = ['dBm', 'Mbps', '%', ''];
+    const resultBatch: any[] = [];
+    for (const metric of metrics) {
+      const before = (res as any).before?.[metric] ?? 0;
+      const after = (res as any).after?.[metric] ?? 0;
+      const delta = after - before;
+      const pct = before !== 0 ? (delta / Math.abs(before)) * 100 : 0;
+      resultBatch.push({
+        scenarioId: sc.id,
+        metricName: metric,
+        beforeValue: parseFloat((before as number).toFixed(2)),
+        afterValue: parseFloat((after as number).toFixed(2)),
+        deltaValue: parseFloat(delta.toFixed(2)),
+        deltaPct: parseFloat(pct.toFixed(1)),
+        unit: units[metrics.indexOf(metric)],
+        direction: delta > 0.5 ? 'improved' : delta < -0.5 ? 'degraded' : 'neutral',
+      });
+    }
+    if (resultBatch.length > 0) {
+      await db.simulationResult.createMany({ data: resultBatch });
+      simResultCount += resultBatch.length;
+    }
+  }
+  console.log(`  SimulationResults: ${simResultCount}`);
+
   console.log('\n✅ Seed complete!');
   console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
 }

@@ -165,7 +165,7 @@ export interface CoverageData {
   }[];
 }
 
-export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config' | 'health' | 'benchmark' | 'handover' | 'load' | 'interference' | 'coverage-holes' | 'changes' | 'outages' | 'playbooks' | 'assistant' | 'simulations' | 'trends' | 'roi' | 'spectrum' | 'evolution' | 'npi' | 'services' | 'audit' | 'executive' | 'vendor-compare' | 'live' | 'rca' | 'oss-integration' | 'crm-integration' | 'billing-integration' | 'multi-agent' | 'data-pipeline' | 'integration-hub' | 'geomarketing' | 'network-commercial' | 'wilaya-intelligence' | 'value-proposition' | 'predictive';
+export type ViewType = 'dashboard' | 'monitoring' | 'kpi' | 'alerts' | 'optimizer' | 'coverage' | 'reports' | 'settings' | 'sla' | 'anomaly' | 'correlation' | 'son' | 'policies' | 'onboarding' | 'vendors' | 'qoe' | 'capacity' | 'slicing' | 'energy' | 'faults' | 'subscribers' | 'incidents' | 'config' | 'health' | 'benchmark' | 'handover' | 'load' | 'interference' | 'coverage-holes' | 'changes' | 'outages' | 'playbooks' | 'assistant' | 'simulations' | 'trends' | 'roi' | 'spectrum' | 'evolution' | 'npi' | 'services' | 'audit' | 'executive' | 'vendor-compare' | 'live' | 'rca' | 'oss-integration' | 'crm-integration' | 'billing-integration' | 'multi-agent' | 'data-pipeline' | 'integration-hub' | 'geomarketing' | 'network-commercial' | 'wilaya-intelligence' | 'value-proposition' | 'predictive' | 'digital-twin';
 
 // ========== PHASE A: SON & Automation Types ==========
 

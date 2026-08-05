@@ -44,6 +44,7 @@ model NetworkSite {
   trendForecasts  TrendForecast[]
   npiRecords     NpiRecord[]
   ossNetworkElements OssNetworkElement[]
+  digitalTwinScenarios DigitalTwinScenario[]
 }
 
 model KpiMetric {
@@ -1678,6 +1679,48 @@ model WebhookDelivery {
   @@index([event])
   @@index([success])
   @@index([createdAt])
+}
+
+// ========== MODULE 4: DIGITAL TWIN MODELS ==========
+
+model DigitalTwinScenario {
+  id            String        @id @default(cuid())
+  name          String
+  description   String        @default("")
+  scenarioType  String        // what_if, disaster, capacity_expansion, parameter_change, new_site
+  status        String        @default("draft") // draft, simulated, completed, archived
+  targetRegion  String        @default("")
+  targetSiteId  String?
+  targetSite    NetworkSite?  @relation(fields: [targetSiteId], references: [id], onDelete: SetNull)
+  parameters    String        @default("{}") // JSON: scenario-specific parameters
+  results       String        @default("{}") // JSON: {before: {}, after: {}, delta: {}}
+  impactScore   Float         @default(0) // -100 to +100, positive = improvement
+  confidence    Float         @default(0.85)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  simulationResults SimulationResult[]
+
+  @@index([scenarioType])
+  @@index([status])
+  @@index([targetRegion])
+}
+
+model SimulationResult {
+  id          String              @id @default(cuid())
+  scenarioId  String
+  scenario    DigitalTwinScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  metricName  String
+  beforeValue Float
+  afterValue  Float
+  deltaValue  Float
+  deltaPct    Float
+  unit        String              @default("")
+  direction   String              @default("neutral") // improved, degraded, neutral
+  createdAt   DateTime            @default(now())
+
+  @@index([scenarioId])
+  @@index([metricName])
+  @@index([direction])
 }
 
 // ========== MODULE 1: PREDICTIVE ANALYTICS MODELS ==========

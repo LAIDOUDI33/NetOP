@@ -11,7 +11,9 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff, ChevronDown, ChevronRight, Zap, BarChart3, TrendingDown } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
@@ -45,12 +47,78 @@ interface AlertsResponse {
   };
 }
 
+interface CorrelationSummary {
+  totalAlerts: number;
+  correlatedAlerts: number;
+  uncorrelatedAlerts: number;
+  correlationGroups: number;
+  noiseReductionPct: number;
+  topGroups: unknown[];
+}
+
+interface IncidentAlert {
+  id: string;
+  metric: string;
+  value: number;
+  severity: string;
+  message: string;
+  createdAt: string;
+}
+
+interface CorrelatedIncident {
+  id: string;
+  title: string;
+  severity: string;
+  alertCount: number;
+  siteName: string;
+  region: string;
+  technology: string;
+  metrics: string[];
+  duration: string;
+  firstAlertAt: string;
+  lastAlertAt: string;
+  alerts: IncidentAlert[];
+}
+
 export default function AlertsView() {
   const t = useT();
   const queryClient = useQueryClient();
   const [severityFilter, setSeverityFilter] = useState('all');
   const [techFilter, setTechFilter] = useState('all');
   const [showResolved, setShowResolved] = useState(false);
+  const [expandedIncident, setExpandedIncident] = useState<string | null>(null);
+
+  // Correlation summary query
+  const { data: summary, isLoading: summaryLoading } = useQuery<CorrelationSummary>({
+    queryKey: ['correlation-summary'],
+    queryFn: () =>
+      fetch('/api/alerts/correlation-summary')
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
+  });
+
+  // Incidents query
+  const { data: incidents, isLoading: incidentsLoading } = useQuery<CorrelatedIncident[]>({
+    queryKey: ['incidents'],
+    queryFn: () =>
+      fetch('/api/alerts/incidents')
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
+  });
+
+  // Run correlation mutation
+  const correlateMutation = useMutation({
+    mutationFn: () =>
+      fetch('/api/alerts/correlate', { method: 'POST' })
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['correlation-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['incidents'] });
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      toast.success(t('toast.actionCompleted'));
+    },
+    onError: () => {
+      toast.error(t('toast.actionFailed'));
+    },
+  });
 
   const { data, isLoading } = useQuery<AlertsResponse>({
     queryKey: ['alerts', severityFilter, techFilter, showResolved],
@@ -104,6 +172,13 @@ export default function AlertsView() {
 
   return (
     <div className="space-y-6">
+      <Tabs defaultValue="alerts" className="w-full">
+        <TabsList>
+          <TabsTrigger value="alerts">{t('nav.alerts')}</TabsTrigger>
+          <TabsTrigger value="correlation">{t('alert.correlation')}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="alerts" className="space-y-6 mt-4">
       {/* Screen reader live region for filtered alert count */}
       <div className="sr-only" aria-live="polite">{t('alert.result', { n: data.alerts.length })}</div>
 
@@ -343,6 +418,173 @@ export default function AlertsView() {
           </ScrollArea>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        {/* Correlation Tab */}
+        <TabsContent value="correlation" className="space-y-6 mt-4">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t('alert.totalAlerts')}</p>
+                    {summaryLoading ? (
+                      <Skeleton className="h-8 w-16 mt-1" />
+                    ) : (
+                      <p className="text-2xl font-bold">{summary?.totalAlerts ?? 0}</p>
+                    )}
+                  </div>
+                  <BarChart3 className="h-8 w-8 text-slate-400" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t('alert.correlatedGroups')}</p>
+                    {summaryLoading ? (
+                      <Skeleton className="h-8 w-16 mt-1" />
+                    ) : (
+                      <p className="text-2xl font-bold">{summary?.correlationGroups ?? 0}</p>
+                    )}
+                  </div>
+                  <Zap className="h-8 w-8 text-amber-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className={summary && summary.noiseReductionPct > 50 ? 'border-emerald-300 dark:border-emerald-800' : ''}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{t('alert.noiseReduction')}</p>
+                    {summaryLoading ? (
+                      <Skeleton className="h-8 w-16 mt-1" />
+                    ) : (
+                      <p className={`text-2xl font-bold ${(summary?.noiseReductionPct ?? 0) > 50 ? 'text-emerald-600' : ''}`}>
+                        {summary?.noiseReductionPct ?? 0}%
+                      </p>
+                    )}
+                  </div>
+                  <TrendingDown className={`h-8 w-8 ${(summary?.noiseReductionPct ?? 0) > 50 ? 'text-emerald-500' : 'text-slate-400'}`} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Run Correlation Button */}
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => correlateMutation.mutate()}
+              disabled={correlateMutation.isPending}
+              className="gap-2"
+            >
+              <Zap className="h-4 w-4" />
+              {correlateMutation.isPending ? t('alert.correlating') : t('alert.runCorrelation')}
+            </Button>
+          </div>
+
+          {/* Correlated Incidents Table */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold">{t('alert.correlatedGroups')}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              {incidentsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : !incidents || incidents.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">{t('alert.noIncidents')}</p>
+              ) : (
+                <ScrollArea className="max-h-96">
+                  <div className="min-w-[800px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-8" />
+                          <TableHead className="text-xs">{t('alert.incidentTitle')}</TableHead>
+                          <TableHead className="text-xs">{t('th.severity')}</TableHead>
+                          <TableHead className="text-xs">{t('alert.alertCount')}</TableHead>
+                          <TableHead className="text-xs">{t('th.site')}</TableHead>
+                          <TableHead className="text-xs">{t('th.region')}</TableHead>
+                          <TableHead className="text-xs">{t('alert.duration')}</TableHead>
+                          <TableHead className="text-xs">{t('alert.firstAlert')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {incidents.map((incident) => (
+                          <Collapsible
+                            key={incident.id}
+                            open={expandedIncident === incident.id}
+                            onOpenChange={(open) => setExpandedIncident(open ? incident.id : null)}
+                            asChild
+                          >
+                            <>
+                              <TableRow className="cursor-pointer hover:bg-muted/50">
+                                <CollapsibleTrigger asChild>
+                                  <TableCell>
+                                    {expandedIncident === incident.id ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                  </TableCell>
+                                </CollapsibleTrigger>
+                                <TableCell className="text-xs font-medium">{incident.title}</TableCell>
+                                <TableCell>
+                                  <Badge variant={SEVERITY_CONFIG[incident.severity as AlertSeverity]?.variant ?? 'outline'} className="text-xs gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    {incident.severity}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs font-medium">{incident.alertCount}</TableCell>
+                                <TableCell className="text-xs">{incident.siteName}</TableCell>
+                                <TableCell className="text-xs">{incident.region}</TableCell>
+                                <TableCell className="text-xs">{incident.duration}</TableCell>
+                                <TableCell className="text-xs text-muted-foreground">
+                                  {new Date(incident.firstAlertAt).toLocaleString()}
+                                </TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell colSpan={8} className="p-0 border-0">
+                                  <CollapsibleContent>
+                                    <div className="bg-muted/30 rounded-b-lg p-3 ml-6">
+                                      <p className="text-xs font-semibold mb-2 text-muted-foreground">{t('alert.alertCount')} ({incident.alerts.length})</p>
+                                      <div className="space-y-1">
+                                        {incident.alerts.map((alert) => (
+                                          <div key={alert.id} className="flex items-center gap-3 text-xs py-1 border-b border-border/50 last:border-0">
+                                            <Badge variant={SEVERITY_CONFIG[alert.severity as AlertSeverity]?.variant ?? 'outline'} className="text-[10px]">
+                                              {alert.severity}
+                                            </Badge>
+                                            <span className="font-medium">{alert.metric}</span>
+                                            <span className="text-muted-foreground">{alert.value}</span>
+                                            <span className="text-muted-foreground truncate max-w-[200px]">{alert.message}</span>
+                                            <span className="ml-auto text-muted-foreground whitespace-nowrap">
+                                              {new Date(alert.createdAt).toLocaleString()}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </CollapsibleContent>
+                                </TableCell>
+                              </TableRow>
+                            </>
+                          </Collapsible>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

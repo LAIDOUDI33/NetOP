@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Send, Bot, User, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, Bot, User, Sparkles, Brain } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { useAppStore } from '@/store/app';
 import { ExportButton } from '@/components/ExportButton';
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -16,14 +17,38 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  type: 'text' | 'insight';
+  domain?: string;
 }
 
-const SUGGESTION_KEYS = [
-  'ai.suggestion1',
-  'ai.suggestion2',
-  'ai.suggestion3',
-  'ai.suggestion4',
-  'ai.suggestion5',
+type InsightDomain = 'network' | 'kpi' | 'capacity' | 'churn' | 'faults' | 'traffic' | 'revenue';
+
+const INSIGHT_DOMAINS: InsightDomain[] = ['network', 'kpi', 'capacity', 'churn', 'faults', 'traffic', 'revenue'];
+
+const INSIGHT_I18N_KEYS: Record<InsightDomain, string> = {
+  network: 'ai.networkInsight',
+  kpi: 'ai.kpiInsight',
+  capacity: 'ai.capacityInsight',
+  churn: 'ai.churnInsight',
+  faults: 'ai.faultsInsight',
+  traffic: 'ai.trafficInsight',
+  revenue: 'ai.revenueInsight',
+};
+
+const VIEW_SUGGESTIONS: Record<string, string[]> = {
+  dashboard: ['What is the overall network health?', 'Show me critical alerts'],
+  kpi: ['What are the top performing sites?', 'Which regions need attention?'],
+  predictive: ['What are the main churn drivers?', 'Show capacity risk summary'],
+  alerts: ['How many critical alerts are active?', 'Correlate recent alerts'],
+  capacity: ['Which sites will reach capacity first?', 'Forecast for next 30 days'],
+  faults: ['What components are most at risk?', 'Show critical fault predictions'],
+};
+
+const defaultSuggestions = [
+  'What is the overall network health?',
+  'Analyze KPI trends',
+  'Show capacity risks',
+  'Explain recent anomalies',
 ];
 
 // ─── Thinking Dots ─────────────────────────────────────────────────────
@@ -44,10 +69,13 @@ function ThinkingDots() {
 
 export default function AssistantView() {
   const t = useT();
-  const suggestions = SUGGESTION_KEYS.map((k) => t(k));
+  const currentView = useAppStore((s) => s.currentView);
+  const suggestions = VIEW_SUGGESTIONS[currentView] ?? defaultSuggestions;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [insightLoading, setInsightLoading] = useState<InsightDomain | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,6 +104,7 @@ export default function AssistantView() {
       role: 'user',
       content: question.trim(),
       timestamp: new Date(),
+      type: 'text',
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -86,7 +115,7 @@ export default function AssistantView() {
       const res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question.trim() }),
+        body: JSON.stringify({ question: question.trim(), currentView }),
       });
 
       if (!res.ok) throw new Error('Failed to get response');
@@ -97,6 +126,7 @@ export default function AssistantView() {
         role: 'assistant',
         content: data.answer,
         timestamp: new Date(),
+        type: 'text',
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -105,10 +135,50 @@ export default function AssistantView() {
         role: 'assistant',
         content: t('ai.errorMsg'),
         timestamp: new Date(),
+        type: 'text',
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleInsight = async (domain: InsightDomain) => {
+    if (insightLoading || isLoading) return;
+
+    setInsightLoading(domain);
+
+    try {
+      const res = await fetch('/api/assistant/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain }),
+      });
+
+      if (!res.ok) throw new Error('Failed to generate insight');
+
+      const data = await res.json();
+
+      const insightMessage: ChatMessage = {
+        role: 'assistant',
+        content: data.report ?? data.answer ?? t('ai.errorMsg'),
+        timestamp: new Date(),
+        type: 'insight',
+        domain,
+      };
+
+      setMessages((prev) => [...prev, insightMessage]);
+    } catch {
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: t('ai.errorMsg'),
+        timestamp: new Date(),
+        type: 'insight',
+        domain,
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setInsightLoading(null);
     }
   };
 
@@ -130,7 +200,7 @@ export default function AssistantView() {
   return (
     <div className="flex flex-col p-6 h-full">
       {/* Header */}
-      <div className="shrink-0 mb-6">
+      <div className="shrink-0 mb-4">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-emerald-500" />
           {t('ai.title')}
@@ -138,13 +208,67 @@ export default function AssistantView() {
         <p className="text-muted-foreground text-sm mt-1">
           {t('ai.subtitle')}
         </p>
-        <ExportButton data={messages.map(m => ({ role: m.role, content: m.content, timestamp: m.timestamp.toLocaleString() }))} filenamePrefix="assistant" columns={[{ key: 'role', header: 'Role' }, { key: 'content', header: 'Message' }, { key: 'timestamp', header: 'Timestamp' }]} />
+        <div className="flex items-center gap-2 mt-2">
+          <Badge variant="outline" className="text-xs font-normal">
+            <Brain className="h-3 w-3 mr-1" />
+            {t('ai.contextAware', { view: currentView })}
+          </Badge>
+          <ExportButton
+            data={messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+              timestamp: m.timestamp.toLocaleString(),
+              type: m.type,
+              domain: m.domain ?? '',
+            }))}
+            filenamePrefix="assistant"
+            columns={[
+              { key: 'role', header: 'Role' },
+              { key: 'content', header: 'Message' },
+              { key: 'timestamp', header: 'Timestamp' },
+              { key: 'type', header: 'Type' },
+              { key: 'domain', header: 'Domain' },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* Insight Report Generator */}
+      <div className="shrink-0 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-emerald-500" />
+          <span className="text-sm font-medium">{t('ai.generateInsight')}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {INSIGHT_DOMAINS.map((domain) => (
+            <Button
+              key={domain}
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              disabled={insightLoading !== null}
+              onClick={() => handleInsight(domain)}
+            >
+              {insightLoading === domain ? (
+                <Skeleton className="h-3 w-16" />
+              ) : (
+                t(INSIGHT_I18N_KEYS[domain])
+              )}
+            </Button>
+          ))}
+        </div>
+        {insightLoading && (
+          <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5">
+            <Skeleton className="h-3 w-3 rounded-full" />
+            {t('ai.generating')}
+          </p>
+        )}
       </div>
 
       {/* Chat Container */}
       <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(100vh-280px)]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[calc(100vh-360px)]">
           {/* Empty State */}
           {messages.length === 0 && !isLoading && (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -193,26 +317,45 @@ export default function AssistantView() {
               </div>
 
               {/* Message Bubble */}
-              <div
-                className={`max-w-[75%] rounded-xl px-4 py-3 ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-foreground'
-                }`}
-              >
-                <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {msg.content}
+              {msg.type === 'insight' && msg.role === 'assistant' ? (
+                <div className="max-w-[80%]">
+                  <CardContent className="rounded-xl border bg-card p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-emerald-500" />
+                      <Badge variant="secondary" className="text-xs">
+                        {t('ai.insightFor', { domain: msg.domain ?? '' })}
+                      </Badge>
+                    </div>
+                    <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                      {msg.content}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      {formatTime(msg.timestamp)}
+                    </div>
+                  </CardContent>
                 </div>
+              ) : (
                 <div
-                  className={`text-[10px] mt-1.5 ${
+                  className={`max-w-[75%] rounded-xl px-4 py-3 ${
                     msg.role === 'user'
-                      ? 'text-primary-foreground/60'
-                      : 'text-muted-foreground'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
                   }`}
                 >
-                  {formatTime(msg.timestamp)}
+                  <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {msg.content}
+                  </div>
+                  <div
+                    className={`text-[10px] mt-1.5 ${
+                      msg.role === 'user'
+                        ? 'text-primary-foreground/60'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {formatTime(msg.timestamp)}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
 
@@ -259,13 +402,13 @@ export default function AssistantView() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('ai.placeholder')}
-              disabled={isLoading}
+              disabled={isLoading || insightLoading !== null}
               rows={1}
               className="min-h-[40px] max-h-[120px] resize-none"
             />
             <Button
               size="icon"
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || insightLoading !== null}
               onClick={() => handleSubmit(input)}
               className="shrink-0 h-10 w-10"
             >

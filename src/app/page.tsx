@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart,
+  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart, Box,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -86,6 +86,7 @@ const NetworkCommercialView = lazy(() => import('@/components/views/NetworkComme
 const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntelligenceView'));
 const ValuePropositionView = lazy(() => import('@/components/views/ValuePropositionView'));
 const PredictiveAnalyticsView = lazy(() => import('@/components/views/PredictiveAnalyticsView'));
+const DigitalTwinView = lazy(() => import('@/components/views/DigitalTwinView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -144,6 +145,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'multi-agent', labelKey: 'nav.multiAgent', icon: Bot, group: 'AI Engine' },
   { view: 'data-pipeline', labelKey: 'nav.dataPipeline', icon: FolderTree, group: 'AI Engine' },
   { view: 'predictive', labelKey: 'nav.predictive', icon: LineChart, group: 'AI Engine' },
+  { view: 'digital-twin', labelKey: 'nav.digitalTwin', icon: Box, group: 'AI Engine' },
   { view: 'integration-hub', labelKey: 'nav.integrationHub', icon: GitBranch, group: 'AI Engine' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
@@ -209,6 +211,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'wilaya-intelligence': 'title.wilayaIntelligence',
   'value-proposition': 'title.valueProposition',
   predictive: 'title.predictive',
+  'digital-twin': 'title.digitalTwin',
 };
 
 function ViewFallback() {
@@ -393,6 +396,7 @@ function ViewRenderer() {
           {currentView === 'multi-agent' && <MultiAgentView />}
           {currentView === 'data-pipeline' && <DataPipelineView />}
           {currentView === 'predictive' && <PredictiveAnalyticsView />}
+          {currentView === 'digital-twin' && <DigitalTwinView />}
           {currentView === 'integration-hub' && <IntegrationHubView />}
           {currentView === 'geomarketing' && <GeomarketingView />}
           {currentView === 'network-commercial' && <NetworkCommercialView />}
