@@ -19,7 +19,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy,
+  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -85,6 +85,7 @@ const GeomarketingView = lazy(() => import('@/components/views/GeomarketingView'
 const NetworkCommercialView = lazy(() => import('@/components/views/NetworkCommercialView'));
 const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntelligenceView'));
 const ValuePropositionView = lazy(() => import('@/components/views/ValuePropositionView'));
+const PredictiveAnalyticsView = lazy(() => import('@/components/views/PredictiveAnalyticsView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -142,6 +143,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'billing-integration', labelKey: 'nav.billingIntegration', icon: CreditCardIcon, group: 'Automation' },
   { view: 'multi-agent', labelKey: 'nav.multiAgent', icon: Bot, group: 'AI Engine' },
   { view: 'data-pipeline', labelKey: 'nav.dataPipeline', icon: FolderTree, group: 'AI Engine' },
+  { view: 'predictive', labelKey: 'nav.predictive', icon: LineChart, group: 'AI Engine' },
   { view: 'integration-hub', labelKey: 'nav.integrationHub', icon: GitBranch, group: 'AI Engine' },
   // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
@@ -206,6 +208,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'network-commercial': 'title.networkCommercial',
   'wilaya-intelligence': 'title.wilayaIntelligence',
   'value-proposition': 'title.valueProposition',
+  predictive: 'title.predictive',
 };
 
 function ViewFallback() {
@@ -389,6 +392,7 @@ function ViewRenderer() {
           {currentView === 'billing-integration' && <BillingIntegrationView />}
           {currentView === 'multi-agent' && <MultiAgentView />}
           {currentView === 'data-pipeline' && <DataPipelineView />}
+          {currentView === 'predictive' && <PredictiveAnalyticsView />}
           {currentView === 'integration-hub' && <IntegrationHubView />}
           {currentView === 'geomarketing' && <GeomarketingView />}
           {currentView === 'network-commercial' && <NetworkCommercialView />}
