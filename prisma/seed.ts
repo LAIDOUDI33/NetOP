@@ -3658,8 +3658,65 @@ async function main() {
   }
   console.log(`  SimulationResults: ${simResultCount}`);
 
+  // ===== PHASE E: REPORTS SEED DATA =====
+  console.log('\n  Seeding ReportTemplates...');
+  const reportTemplates = [
+    { name: 'Rapport KPI Quotidien', description: 'Synthèse quotidienne des KPI réseau par région et technologie', type: 'kpi', technology: 'ALL', config: JSON.stringify({ metrics: ['rsrp', 'sinr', 'throughput', 'availability'], groupBy: 'region', period: 'daily' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Bilan SON Hebdomadaire', description: 'Rapport d\'activité SON: optimisations, actions automatiques, impact', type: 'son', technology: '4G', config: JSON.stringify({ modules: ['ANR', 'PCI', 'MRO', 'CCO'], period: 'weekly' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Conformité SLA Mensuelle', description: 'Rapport de conformité aux accords de niveau de service', type: 'sla', technology: 'ALL', config: JSON.stringify({ slaTargets: ['availability', 'latency', 'throughput', 'dropRate'], period: 'monthly' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Qualité d\'Expérience Client', description: 'Analyse QoE par segment et wilaya avec tendances', type: 'qoe', technology: '4G', config: JSON.stringify({ metrics: ['mosScore', 'jitter', 'packetLoss', 'latency'], groupBy: 'wilaya' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Rapport de Couverture', description: 'Cartographie de couverture et identification des zones blanches', type: 'coverage', technology: 'ALL', config: JSON.stringify({ layers: ['4G', '3G', '2G', '5G'], includeGaps: true }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Revue Exécutive Réseau', description: 'Tableau de bord exécutif avec KPI stratégiques et tendances', type: 'executive', technology: 'ALL', config: JSON.stringify({ sections: ['overview', 'financial', 'operational', 'strategic'], period: 'monthly' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Analyse Politiques Réseau', description: 'Audit des politiques réseau et taux d\'exécution', type: 'policy', technology: 'ALL', config: JSON.stringify({ includeExecutions: true, period: 'weekly' }), isBuiltIn: true, createdBy: 'admin' },
+    { name: 'Rapport Personnalisé Performance', description: 'Template personnalisable pour analyses ad-hoc', type: 'custom', technology: null, config: JSON.stringify({ widgets: ['chart', 'table', 'map', 'kpi'] }), isBuiltIn: false, createdBy: 'analyst_dz' },
+  ];
+  const createdTemplates = [];
+  for (const t of reportTemplates) {
+    createdTemplates.push(await db.reportTemplate.create({ data: t }));
+  }
+  console.log(`  ReportTemplates: ${createdTemplates.length}`);
+
+  console.log('  Seeding ReportSchedules...');
+  const reportSchedules = [
+    { name: 'KPI Quotidien 06h00', templateId: createdTemplates[0].id, cronExpr: '0 6 * * *', timezone: 'Africa/Algiers', format: 'pdf', recipients: JSON.stringify(['noc@opdz.dz', 'ops@opdz.dz']), isEnabled: true, nextRunAt: new Date(Date.now() + 86400000), runCount: 42, generatedBy: 'system' },
+    { name: 'SON Hebdomadaire Lundi', templateId: createdTemplates[1].id, cronExpr: '0 7 * * 1', timezone: 'Africa/Algiers', format: 'pdf', recipients: JSON.stringify(['son-team@opdz.dz', 'cto@opdz.dz']), isEnabled: true, nextRunAt: new Date(Date.now() + 3 * 86400000), runCount: 18, generatedBy: 'system' },
+    { name: 'SLA Mensuel 1er', templateId: createdTemplates[2].id, cronExpr: '0 8 1 * *', timezone: 'Africa/Algiers', format: 'both', recipients: JSON.stringify(['sla-mgmt@opdz.dz', 'vp-ops@opdz.dz', 'ceo@opdz.dz']), isEnabled: true, nextRunAt: new Date(Date.now() + 15 * 86400000), runCount: 8, generatedBy: 'system' },
+    { name: 'QoE Hebdomadaire Dimanche', templateId: createdTemplates[3].id, cronExpr: '0 9 * * 0', timezone: 'Africa/Algiers', format: 'pdf', recipients: JSON.stringify(['cs-team@opdz.dz']), isEnabled: true, nextRunAt: new Date(Date.now() + 5 * 86400000), runCount: 12, generatedBy: 'system' },
+    { name: 'Revue Exécutive Mensuelle', templateId: createdTemplates[5].id, cronExpr: '0 8 5 * *', timezone: 'Africa/Algiers', format: 'pdf', recipients: JSON.stringify(['ceo@opdz.dz', 'cfo@opdz.dz', 'cto@opdz.dz', 'board@opdz.dz']), isEnabled: true, nextRunAt: new Date(Date.now() + 20 * 86400000), runCount: 6, generatedBy: 'system' },
+    { name: 'Couverture Trimestrielle', templateId: createdTemplates[4].id, cronExpr: '0 7 1 1,4,7,10 *', timezone: 'Africa/Algiers', format: 'both', recipients: JSON.stringify(['planning@opdz.dz', 'deployment@opdz.dz']), isEnabled: false, runCount: 2, generatedBy: 'admin' },
+  ];
+  const createdSchedules = [];
+  for (const s of reportSchedules) {
+    createdSchedules.push(await db.reportSchedule.create({ data: s }));
+  }
+  console.log(`  ReportSchedules: ${createdSchedules.length}`);
+
+  console.log('  Seeding GeneratedReports...');
+  const reportStatuses = ['completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'completed', 'failed', 'completed', 'generating'];
+  const generatedReports = [
+    { templateId: createdTemplates[0].id, scheduleId: createdSchedules[0].id, name: 'KPI Quotidien - 2025-07-14', type: 'kpi', format: 'pdf', fileSizeBytes: 245760, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 86400000) },
+    { templateId: createdTemplates[0].id, scheduleId: createdSchedules[0].id, name: 'KPI Quotidien - 2025-07-13', type: 'kpi', format: 'pdf', fileSizeBytes: 238400, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 2 * 86400000) },
+    { templateId: createdTemplates[0].id, scheduleId: createdSchedules[0].id, name: 'KPI Quotidien - 2025-07-12', type: 'kpi', format: 'pdf', fileSizeBytes: 251200, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 3 * 86400000) },
+    { templateId: createdTemplates[1].id, scheduleId: createdSchedules[1].id, name: 'Bilan SON S28-2025', type: 'son', format: 'pdf', fileSizeBytes: 512000, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 5 * 86400000) },
+    { templateId: createdTemplates[1].id, scheduleId: createdSchedules[1].id, name: 'Bilan SON S27-2025', type: 'son', format: 'pdf', fileSizeBytes: 498600, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 12 * 86400000) },
+    { templateId: createdTemplates[2].id, scheduleId: createdSchedules[2].id, name: 'SLA Juin 2025', type: 'sla', format: 'both', fileSizeBytes: 1048576, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 14 * 86400000) },
+    { templateId: createdTemplates[2].id, scheduleId: createdSchedules[2].id, name: 'SLA Mai 2025', type: 'sla', format: 'both', fileSizeBytes: 987400, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 45 * 86400000) },
+    { templateId: createdTemplates[3].id, scheduleId: createdSchedules[3].id, name: 'QoE S28 - Juillet 2025', type: 'qoe', format: 'pdf', fileSizeBytes: 340000, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 2 * 86400000) },
+    { templateId: createdTemplates[5].id, scheduleId: createdSchedules[4].id, name: 'Revue Exécutive Juin 2025', type: 'executive', format: 'pdf', fileSizeBytes: 2097152, status: 'completed', generatedBy: 'system', createdAt: new Date(Date.now() - 20 * 86400000) },
+    { templateId: createdTemplates[5].id, scheduleId: createdSchedules[4].id, name: 'Revue Exécutive Mai 2025', type: 'executive', format: 'pdf', fileSizeBytes: 0, status: 'failed', error: 'Timeout generating chart data for WilayaProfile', generatedBy: 'system', createdAt: new Date(Date.now() - 50 * 86400000) },
+    { templateId: createdTemplates[4].id, scheduleId: null, name: 'Couverture Q2-2025', type: 'coverage', format: 'both', fileSizeBytes: 4194304, status: 'completed', generatedBy: 'admin', createdAt: new Date(Date.now() - 30 * 86400000) },
+    { templateId: createdTemplates[0].id, scheduleId: createdSchedules[0].id, name: 'KPI Quotidien - 2025-07-15', type: 'kpi', format: 'pdf', fileSizeBytes: 0, status: 'generating', generatedBy: 'system', createdAt: new Date() },
+  ];
+  const createdReports = [];
+  for (const r of generatedReports) {
+    const data: any = { ...r };
+    if (data.scheduleId === null) delete data.scheduleId;
+    createdReports.push(await db.generatedReport.create({ data }));
+  }
+  console.log(`  GeneratedReports: ${createdReports.length}`);
+
   console.log('\n✅ Seed complete!');
-  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
+  console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length}) + ReportTemplates(${createdTemplates.length}) + ReportSchedules(${createdSchedules.length}) + GeneratedReports(${createdReports.length})`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); }).finally(() => db.$disconnect());
