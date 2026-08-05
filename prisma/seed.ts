@@ -3453,6 +3453,127 @@ async function main() {
   ] });
   console.log('  ApiKeys: 5');
 
+  console.log('  Seeding ChurnPredictions...');
+  const predWilayas = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Sétif', 'Blida', 'Tizi Ouzou', 'Batna', 'Béjaïa', 'Tlemcen'];
+  const predSegments = ['consumer', 'enterprise', 'youth', 'prepaid', 'postpaid'];
+  const predTechs = ['4G', 'ALL'];
+  const churnTrends = ['increasing', 'stable', 'decreasing'];
+  const churnDriverSets: Record<string, string> = {
+    increasing: JSON.stringify([{ name: 'coverage_gap', impact: 0.35, weight: 0.3 }, { name: 'price_sensitivity', impact: 0.25, weight: 0.25 }, { name: 'poor_qoe', impact: 0.2, weight: 0.2 }, { name: 'competitor_offer', impact: 0.15, weight: 0.15 }, { name: 'network_congestion', impact: 0.05, weight: 0.1 }]),
+    stable: JSON.stringify([{ name: 'normal_attrition', impact: 0.5, weight: 0.4 }, { name: 'price_sensitivity', impact: 0.2, weight: 0.2 }, { name: 'coverage_gap', impact: 0.15, weight: 0.15 }, { name: 'device_obsolescence', impact: 0.1, weight: 0.15 }, { name: 'poor_qoe', impact: 0.05, weight: 0.1 }]),
+    decreasing: JSON.stringify([{ name: 'loyalty_program', impact: 0.4, weight: 0.3 }, { name: 'improved_coverage', impact: 0.3, weight: 0.25 }, { name: 'competitive_pricing', impact: 0.2, weight: 0.2 }, { name: 'bundle_value', impact: 0.1, weight: 0.15 }, { name: 'normal_attrition', impact: 0.0, weight: 0.1 }]),
+  };
+  const churnData: any[] = [];
+  for (const w of predWilayas) {
+    for (const seg of predSegments) {
+      const tech = predTechs[Math.floor(Math.random() * predTechs.length)];
+      const trend = churnTrends[Math.floor(Math.random() * churnTrends.length)];
+      const totalSubs = Math.floor(Math.random() * 80000) + 5000;
+      const baseRate = trend === 'increasing' ? 0.04 + Math.random() * 0.06 : trend === 'stable' ? 0.02 + Math.random() * 0.02 : 0.01 + Math.random() * 0.01;
+      const predictedRate = trend === 'increasing' ? baseRate + Math.random() * 0.03 : trend === 'stable' ? baseRate + Math.random() * 0.01 : baseRate - Math.random() * 0.005;
+      const atRisk = Math.floor(totalSubs * (baseRate * 2 + Math.random() * 0.05));
+      const highRisk = Math.floor(atRisk * 0.3);
+      const arpu = seg === 'enterprise' ? 8500 : seg === 'postpaid' ? 3200 : seg === 'youth' ? 1200 : 1800;
+      churnData.push({
+        wilaya: w, segmentName: seg, technology: tech, totalSubscribers: totalSubs,
+        atRiskCount: atRisk, highRiskCount: highRisk, churnRate: parseFloat(baseRate.toFixed(4)),
+        predictedChurnRate: parseFloat(Math.max(0.005, predictedRate).toFixed(4)), churnTrend: trend,
+        drivers: churnDriverSets[trend], confidence: parseFloat((0.75 + Math.random() * 0.2).toFixed(2)),
+        revenueAtRisk: Math.floor(atRisk * arpu), predictionDate: subHours(now, Math.floor(Math.random() * 12)),
+        horizon: '30d',
+      });
+    }
+  }
+  await db.churnPrediction.createMany({ data: churnData });
+  console.log('  ChurnPredictions: 50');
+
+  console.log('  Seeding TrafficForecasts...');
+  const tfRegions = predWilayas;
+  const tfTechs = ['4G', '3G', '5G'];
+  const tfMetrics = ['dataVolumeGB', 'voiceMinutes', 'sessions', 'activeUsers'];
+  const tfDirections = ['growing', 'stable', 'declining'];
+  const trafficData: any[] = [];
+  for (const region of tfRegions) {
+    for (const tech of tfTechs) {
+      for (const metric of tfMetrics) {
+        const direction = tfDirections[Math.floor(Math.random() * tfDirections.length)];
+        const baseVal = metric === 'dataVolumeGB' ? 150 + Math.random() * 800 : metric === 'voiceMinutes' ? 5000 + Math.random() * 20000 : metric === 'sessions' ? 10000 + Math.random() * 50000 : 3000 + Math.random() * 15000;
+        const growth = direction === 'growing' ? 2 + Math.random() * 8 : direction === 'stable' ? -1 + Math.random() * 2 : -5 - Math.random() * 5;
+        const forecasted = baseVal * (1 + growth / 100);
+        const points: any[] = [];
+        const now2 = new Date();
+        for (let d = 0; d < 30; d++) {
+          const date = new Date(now2.getTime() + d * 86400000);
+          const predicted = baseVal * (1 + (growth * d) / (30 * 100)) + (Math.random() - 0.5) * baseVal * 0.05;
+          points.push({ date: date.toISOString().split('T')[0], predicted: parseFloat(predicted.toFixed(2)), lower: parseFloat((predicted * 0.88).toFixed(2)), upper: parseFloat((predicted * 1.12).toFixed(2)) });
+        }
+        trafficData.push({
+          region, technology: tech, metric,
+          currentDailyAvg: parseFloat(baseVal.toFixed(2)),
+          forecastedDailyAvg: parseFloat(forecasted.toFixed(2)),
+          growthRate: parseFloat(growth.toFixed(2)),
+          peakHour: `${18 + Math.floor(Math.random() * 4)}:00`,
+          peakDay: ['Friday', 'Saturday', 'Thursday', 'Sunday'][Math.floor(Math.random() * 4)],
+          seasonality: ['low', 'moderate', 'high'][Math.floor(Math.random() * 3)],
+          forecastPoints: JSON.stringify(points),
+          horizon: '30d',
+          confidence: parseFloat((0.78 + Math.random() * 0.18).toFixed(2)),
+          trendDirection: direction,
+        });
+      }
+    }
+  }
+  await db.trafficForecast.createMany({ data: trafficData });
+  console.log('  TrafficForecasts: 120');
+
+  console.log('  Seeding RevenueProjections...');
+  const revSegments = ['consumer', 'enterprise', 'wholesale', 'mvno'];
+  const revMetrics = ['revenue', 'arpu', 'subscriberCount'];
+  const revData: any[] = [];
+  const revBaseValues: Record<string, Record<string, number>> = {
+    consumer: { revenue: 2800000000, arpu: 1800, subscriberCount: 12000000 },
+    enterprise: { revenue: 850000000, arpu: 8500, subscriberCount: 85000 },
+    wholesale: { revenue: 420000000, arpu: 0, subscriberCount: 0 },
+    mvno: { revenue: 180000000, arpu: 1200, subscriberCount: 450000 },
+  };
+  for (const seg of revSegments) {
+    for (const metric of revMetrics) {
+      const baseVal = revBaseValues[seg][metric];
+      if (baseVal === 0) continue;
+      const direction = seg === 'mvno' ? 'growing' : seg === 'consumer' ? 'stable' : 'growing';
+      const monthlyGrowth = direction === 'growing' ? 0.5 + Math.random() * 1.5 : 0.1 + Math.random() * 0.4;
+      const annualGrowth = monthlyGrowth * 12;
+      const points: any[] = [];
+      const baseDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      for (let m = 0; m < 6; m++) {
+        const date = new Date(baseDate.getTime() + m * 30 * 86400000);
+        const val = baseVal * (1 + (monthlyGrowth * m) / 100);
+        points.push({ month: date.toISOString().split('T')[0].substring(0, 7), value: Math.floor(val), lower: Math.floor(val * 0.92), upper: Math.floor(val * 1.08) });
+      }
+      const riskFactors = [
+        { name: 'market_saturation', probability: seg === 'consumer' ? 0.6 : 0.2, impact: 'medium' },
+        { name: 'regulatory_change', probability: 0.15, impact: 'high' },
+        { name: 'competition_pressure', probability: seg === 'mvno' ? 0.7 : 0.3, impact: 'medium' },
+        { name: 'economic_downturn', probability: 0.25, impact: 'high' },
+        { name: 'technology_migration', probability: 0.4, impact: 'low' },
+      ];
+      revData.push({
+        segment: seg, metric,
+        currentMonthly: baseVal,
+        forecastPoints: JSON.stringify(points),
+        growthRate: parseFloat(monthlyGrowth.toFixed(2)),
+        annualGrowthRate: parseFloat(annualGrowth.toFixed(2)),
+        confidence: parseFloat((0.82 + Math.random() * 0.15).toFixed(2)),
+        riskFactors: JSON.stringify(riskFactors),
+        trendDirection: direction,
+        seasonalityIndex: parseFloat((seg === 'consumer' ? 0.85 + Math.random() * 0.3 : 0.9 + Math.random() * 0.2).toFixed(2)),
+        horizon: '6m',
+      });
+    }
+  }
+  await db.revenueProjection.createMany({ data: revData });
+  console.log('  RevenueProjections: 11');
+
   console.log('\n✅ Seed complete!');
   console.log(`  Total records: Sites(${created.length}) + KPI(${kpiCount}) + Rules(${rules.length}) + Alerts(${alerts.length}) + OptLogs(${optLogs.length}) + Params(${params.length}) + SLA(${slaTargets.length}) + Anomalies(${anomalyData.length}) + Audit(8) + SonModules(${sonModules.length}) + SonActions(${sonActions.length}) + Neighbors(${neighborCount}) + Policies(${policies.length}) + Executions(${execData.length}) + Vendors(${vendorProfilesData.length}) + Onboardings(${onboardingsData.length}) + QoE(${qoeBatch.length}) + CapacityForecast(${capacityBatch.length}) + NetworkSlice(${networkSliceBatch.length}) + EnergyMetric(${energyBatch.length}) + FaultPrediction(${fpBatch.length}) + SubscriberSegment(${subscriberBatch.length}) + Incident(${incidentBatch.length}) + ConfigTemplate(${configTemplates.length}) + HealthScore(${healthScoresData.length}) + BenchmarkRecord(${benchmarkData.length}) + HandoverKpi(${handoverData.length}) + CellLoad(${cellLoadData.length}) + InterferenceEvent(${interferenceData.length}) + CoverageHole(${coverageHoleData.length}) + ChangeRequest(${changeRequestData.length}) + OutageEvent(${outageData.length}) + Playbook(${playbookCount}) + PlaybookStep(${stepCount}) + Simulation(${simulationData.length}) + TrendForecast(${trendData.length}) + RoiRecord(${roiData.length}) + SpectrumBlock(${spectrumData.length}) + EvolutionPlan(${evolutionData.length}) + NpiRecord(${npiData.length}) + ServiceOrchestration(${serviceData.length}) + AuditTrail(${auditData.length}) + AiAgent(${aiAgentData.length}) + ExternalIntegration(6) + DataPipeline(8) + PipelineExecution(50) + DataSource(10) + DataQualityRule(12) + DataQualityResult(40) + OssNetworkElement(${neData.length}) + OssFaultEvent(${faultData.length}) + CrmCustomer(${crmData.length}) + BillingInvoice(${invoiceData.length}) + GeoDemographic(${geoDemoData.length}) + GeoRevenueZone(${revenueZoneData.length}) + GeoCompetitorSite(${competitorSitesData.length}) + GeoChurnCluster(${churnClusterData.length}) + GeoSiteAcquisition(${siteAcqData.length}) + GeoCoverageGap(${coverageGapData.length}) + RevenueImpact(${revenueImpactData.length}) + WilayaProfile(${wilayaProfileData.length})`);
 }

@@ -1680,6 +1680,78 @@ model WebhookDelivery {
   @@index([createdAt])
 }
 
+// ========== MODULE 1: PREDICTIVE ANALYTICS MODELS ==========
+
+model ChurnPrediction {
+  id                  String   @id @default(cuid())
+  wilaya              String
+  segmentName         String   // consumer, enterprise, youth, corporate, prepaid, postpaid
+  technology          String   @default("ALL")
+  totalSubscribers    Int      @default(0)
+  atRiskCount         Int      @default(0)
+  highRiskCount       Int      @default(0)
+  churnRate           Float    @default(0)
+  predictedChurnRate  Float    @default(0)
+  churnTrend          String   @default("stable") // increasing, stable, decreasing
+  drivers             String   @default("[]") // JSON: [{name, impact, weight}]
+  confidence          Float    @default(0.8)
+  revenueAtRisk       Int      @default(0)
+  predictionDate      DateTime @default(now())
+  horizon             String   @default("30d")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([wilaya])
+  @@index([segmentName])
+  @@index([churnTrend])
+  @@index([horizon])
+}
+
+model TrafficForecast {
+  id                  String   @id @default(cuid())
+  region              String
+  technology          String
+  metric              String   // dataVolumeGB, voiceMinutes, sessions, activeUsers
+  currentDailyAvg     Float    @default(0)
+  forecastedDailyAvg  Float    @default(0)
+  growthRate          Float    @default(0)
+  peakHour            String   @default("20:00")
+  peakDay             String   @default("Friday")
+  seasonality         String   @default("moderate")
+  forecastPoints      String   @default("[]") // JSON: [{date, predicted, lower, upper}]
+  horizon             String   @default("30d")
+  confidence          Float    @default(0.85)
+  trendDirection      String   @default("growing")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([region])
+  @@index([technology])
+  @@index([metric])
+  @@index([horizon])
+}
+
+model RevenueProjection {
+  id                  String   @id @default(cuid())
+  segment             String   // consumer, enterprise, wholesale, mvno
+  metric              String   // revenue, arpu, subscriberCount
+  currentMonthly      Float    @default(0)
+  forecastPoints      String   @default("[]") // JSON: [{month, value, lower, upper}]
+  growthRate          Float    @default(0)
+  annualGrowthRate    Float    @default(0)
+  confidence          Float    @default(0.85)
+  riskFactors         String   @default("[]") // JSON: [{name, probability, impact}]
+  trendDirection      String   @default("growing")
+  seasonalityIndex    Float    @default(1.0)
+  horizon             String   @default("6m")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([segment])
+  @@index([metric])
+  @@index([horizon])
+}
+
 model ApiKey {
   id              String   @id @default(cuid())
   name            String
