@@ -1634,3 +1634,737 @@ Stage Summary:
 - Total source: 65,475 lines across 57 views + 102 APIs + 48 UI components
 - Seed data: 4,500+ records across all 78 models
 - See full readiness report in conversation
+---
+Task ID: r7
+Agent: seed-fix
+Task: Add seed data for ReportTemplate, ReportSchedule, GeneratedReport
+
+Work Log:
+- Read schema for 3 models (ReportTemplate, ReportSchedule, GeneratedReport)
+- Found seed data already exists in prisma/seed.ts lines 3662-3716
+- Verified 8 ReportTemplates (kpi, son, policy, sla, qoe, coverage, executive, custom)
+- Verified 6 ReportSchedules with realistic cron expressions and Algerian context
+- Verified 12 GeneratedReports with varied statuses (completed, failed, generating)
+- Ran db seed successfully — all records created
+- Lint clean (no errors)
+
+Stage Summary:
+- 3 previously empty models already had realistic demo data
+- Seed runs successfully: 8 templates, 6 schedules, 12 reports
+- No code changes needed — data was already present
+
+---
+Task ID: sec1
+Agent: security-secrets
+Task: Scan for hardcoded secrets, backdoors, and suspicious code
+
+Work Log:
+- Scanned 259 TypeScript/TSX source files in src/
+- Scanned 4 mini-service files (realtime-service, etl-service, download-server)
+- Scanned prisma/seed.ts (3723 lines), .env, .env.example, package.json, Caddyfile, Dockerfile, middleware.ts
+- Checked for: hardcoded passwords/tokens/secrets, eval/exec/child_process, prototype pollution, base64 strings, dynamic URL imports, setTimeout/setInterval injection, process.env leakage, console.log sensitive data, external fetch/WebSocket, CORS misconfiguration, suspicious dependencies, .gitignore coverage
+- Found 12 findings across CRITICAL/HIGH/MEDIUM/INFO severity
+- Checked 76 dependencies in package.json — no typosquatting or suspicious packages found
+- Verified .gitignore properly excludes .env* (with !.env.example exception)
+
+Stage Summary:
+- CRITICAL: 3 findings (auth bypass in middleware + api-auth, hardcoded admin/demo passwords)
+- HIGH: 4 findings (Caddyfile open proxy, missing NEXTAUTH_SECRET, weak API key generation, seed webhook secrets)
+- MEDIUM: 3 findings (CORS wildcard in realtime/ETL services, fake API key hashing, Math.random for secrets)
+- INFO: 2 findings (unauthenticated mini-service endpoints, 147 console.log in seed.ts)
+- No backdoors, no eval/exec/child_process in src/, no prototype pollution, no data exfiltration, no obfuscated code found
+- Details: See security findings below
+
+### Security Findings
+
+#### CRITICAL-1: Authentication completely disabled
+- File: /home/z/my-project/src/middleware.ts (lines 1-32)
+- File: /home/z/my-project/src/lib/api-auth.ts (line 8)
+- Code: `AUTH_ENFORCED = false` — every API route returns default admin with `*:*` permissions
+- Code: middleware pass-through — auth block entirely commented out
+- Category: Backdoor/InfoDisclosure
+- Recommendation: Set AUTH_ENFORCED=true and uncomment middleware auth block before any deployment
+
+#### CRITICAL-2: Hardcoded admin password
+- File: /home/z/my-project/src/lib/rbac.ts (line 116)
+- Code: `const passwordHash = await bcrypt.hash('admin123', 10);`
+- Category: Secret
+- Recommendation: Remove hardcoded password; use env var or force password change on first login
+
+#### CRITICAL-3: Hardcoded demo user passwords
+- File: /home/z/my-project/src/lib/rbac.ts (line 138)
+- Code: `const passwordHash = await bcrypt.hash('demo123', 10);`
+- Impacts: noc@, rf@, nop@, field@, viewer@ (5 accounts)
+- Category: Secret
+- Recommendation: Same as CRITICAL-2; remove or randomize for production
+
+#### HIGH-1: Caddyfile open proxy via XTransformPort
+- File: /home/z/my-project/Caddyfile (lines 2-13)
+- Code: `query XTransformPort=*` → `reverse_proxy 127.0.0.1:{query.XTransformPort}`
+- Category: Backdoor/Injection
+- Recommendation: Remove XTransformPort handler or restrict to known ports only
+
+#### HIGH-2: Missing NEXTAUTH_SECRET in .env
+- File: /home/z/my-project/.env (no NEXTAUTH_SECRET present)
+- File: /home/z/my-project/src/lib/auth.ts (line 141): `secret: process.env.NEXTAUTH_SECRET`
+- Category: Secret
+- Recommendation: Add `NEXTAUTH_SECRET=<64-char-hex>` to .env. Use `openssl rand -hex 32`
+
+#### HIGH-3: Seed data contains webhook secrets
+- File: /home/z/my-project/prisma/seed.ts (lines 3426-3431)
+- Code: `secret: 'whsec_slack_2025'`, `secret: 'whsec_teams_2025'`, `secret: 'whsec_jira_2025'`, `secret: 'whsec_report_2025'`, `secret: 'whsec_pd_2025'`
+- Category: Secret
+- Recommendation: Generate random secrets in seed or use empty strings for demo
+
+#### HIGH-4: Weak/fake API key hashing
+- File: /home/z/my-project/src/app/api/api-keys/route.ts (lines 16-23, 128-132)
+- Code: `randomHash()` generates fake hex, not actual SHA-256. Full API key returned in POST response (line 161)
+- Category: Secret
+- Recommendation: Use `crypto.createHash('sha256').update(fullKey).digest('hex')` for real hashing
+
+#### MEDIUM-1: CORS wildcard on realtime-service WebSocket
+- File: /home/z/my-project/mini-services/realtime-service/index.ts (line 14)
+- Code: `cors: { origin: "*", methods: ["GET", "POST"] }`
+- Category: InfoDisclosure
+- Recommendation: Restrict to application domain
+
+#### MEDIUM-2: CORS wildcard on ETL service
+- File: /home/z/my-project/mini-services/etl-service/index.ts (lines 27, 539)
+- Code: `Access-Control-Allow-Origin: *`
+- Category: InfoDisclosure
+- Recommendation: Restrict to localhost/internal network
+
+#### MEDIUM-3: Math.random() for security-sensitive values
+- File: /home/z/my-project/src/app/api/api-keys/route.ts (lines 7-14, 16-23)
+- File: /home/z/my-project/src/app/api/webhooks/route.ts (lines 7-13)
+- Code: Uses `Math.random()` for API key and webhook secret generation
+- Category: Secret
+- Recommendation: Use `crypto.randomBytes()` for cryptographic randomness
+
+#### INFO-1: Unauthenticated mini-service HTTP endpoints
+- File: /home/z/my-project/mini-services/etl-service/index.ts (lines 557, 590)
+- /trigger and /evaluate-quality endpoints have no authentication
+- Category: InfoDisclosure
+- Recommendation: Add API key or JWT validation
+
+#### INFO-2: 147 console.log statements in seed.ts
+- File: /home/z/my-project/prisma/seed.ts (throughout)
+- Category: InfoDisclosure
+- Recommendation: Acceptable for seed script (not production code)
+
+### Negative Findings (Clean)
+- No eval(), new Function(), exec(), execSync(), spawn(), child_process in src/
+- No __proto__ or prototype pollution patterns
+- No dynamic imports from external URLs (all lazy imports are local components)
+- No setTimeout/setInterval with string arguments
+- No base64 encoded obfuscated strings
+- No fetch/XMLHttpRequest to external domains (only localhost:3010 for ETL trigger)
+- No WebSocket connections to unknown endpoints (only local port 3003)
+- No console.log leaking passwords, tokens, or request bodies
+- No suspicious/typosquatting packages in 76 dependencies
+- .gitignore properly excludes .env* files
+- Dockerfile follows best practices (multi-stage, non-root user)
+
+---
+Task ID: sec2
+Agent: security-auth
+Task: Audit authentication, authorization, IDOR vulnerabilities
+
+Work Log:
+- Read core auth files: src/lib/api-auth.ts, src/middleware.ts, src/lib/rbac.ts, src/lib/auth.ts, src/lib/rate-limit.ts
+- Identified 101 API route files total across src/app/api/
+- Searched for auth imports: only 21 of 101 routes import checkApiAuth/checkPermission
+- Cross-referenced 30 write-capable routes (POST/PATCH/DELETE) with auth coverage
+- Inspected IDOR patterns in dynamic-ID routes ([id] segments)
+- Checked RBAC implementation for bypass vectors
+- Checked data exposure on sensitive admin endpoints
+
+Stage Summary:
+- CRITICAL: 3, HIGH: 8, MEDIUM: 7, LOW: 3 (was pre-filled incorrectly)
+- Total auth issues found: 20
+
+---
+### FINDING SEC2-01: AUTH_ENFORCED=false disables ALL authentication
+- File: /home/z/my-project/src/lib/api-auth.ts, line 8
+- Code: `const AUTH_ENFORCED = false;`
+- Severity: CRITICAL
+- Category: AuthBypass
+- Impact: Every API route returns a hardcoded admin user with `*:*` (superadmin) permissions regardless of request origin. The 21 routes that do call `checkApiAuth()` all get short-circuited to `{ id: 'default-admin', permissions: ['*:*'], ... }`. This means every authenticated route is actually open to the public.
+- Recommendation: Set `AUTH_ENFORCED = true` before any production deployment. Consider using an environment variable (`process.env.AUTH_ENFORCED === 'true'`) to prevent accidental disable.
+
+---
+### FINDING SEC2-02: Middleware auth is completely disabled
+- File: /home/z/my-project/src/middleware.ts, lines 30-32
+- Code:
+  ```ts
+  export function middleware(_request: NextRequest) {
+    return NextResponse.next();
+  }
+  ```
+- Severity: CRITICAL
+- Category: AuthBypass
+- Impact: The Next.js middleware matcher (line 34-36) covers all paths except static assets, but the handler is a pure pass-through. The entire commented-out auth block (lines 10-27) that would check `next-auth.session-token` is dead code. No page-level auth gate exists.
+- Recommendation: Uncomment and activate the auth middleware block, or use the `authorized` callback in NextAuth middleware.
+
+---
+### FINDING SEC2-03: 80 of 101 API routes have zero auth checks
+- Files: 80 route files in src/app/api/ (all files NOT in the 21-file auth list)
+- Severity: CRITICAL
+- Category: AuthBypass
+- Impact: ~80 routes serve data with only rate limiting as protection. Combined with SEC2-01 and SEC2-02, the entire API surface is publicly accessible.
+- Unprotected write routes (most dangerous):
+  - `/api/policies` — POST creates network automation policies, PATCH toggles/triggers them (SEC2-03a)
+  - `/api/son/actions` — PATCH applies/rolls back SON parameter changes on live network (SEC2-03b)
+  - `/api/onboarding` — POST creates site onboarding records, PATCH advances/forces-fail onboarding (SEC2-03c)
+  - `/api/digital-twin/scenarios` — POST creates simulation scenarios (SEC2-03d)
+  - `/api/digital-twin/simulate` — POST runs simulations (SEC2-03e)
+  - `/api/incidents` — POST/PATCH manages incidents (SEC2-03f)
+  - `/api/assistant` — POST calls external AI at project cost (SEC2-03g)
+  - `/api/assistant/insight` — POST calls external AI (SEC2-03h)
+  - `/api/assistant/explain` — POST calls external AI (SEC2-03i)
+  - `/api/auth/seed` — POST reseeds RBAC and creates admin/demo users (SEC2-03j)
+  - `/api/alerts` — POST/PATCH manages alerts (SEC2-03k)
+  - `/api/alerts/correlate` — POST correlates alerts (SEC2-03l)
+  - `/api/anomalies` — POST creates anomaly records (SEC2-03m)
+  - `/api/anomalies/detect` — POST runs detection (SEC2-03n)
+  - `/api/parameters` — POST/PATCH modifies network parameters (SEC2-03o)
+  - `/api/optimizer` — POST runs optimization (SEC2-03p)
+  - `/api/capacity` — POST manages capacity (SEC2-03q)
+  - `/api/son` — POST/PATCH manages SON modules (SEC2-03r)
+  - `/api/vendors` — POST/PATCH manages vendors (SEC2-03s)
+- Recommendation: Apply `checkApiAuth()` + permission checks to every route. Prioritize write-capable routes. Consider a route wrapper/middleware pattern to avoid repetition.
+
+---
+### FINDING SEC2-04: /api/settings/users — user listing without auth
+- File: /home/z/my-project/src/app/api/settings/users/route.ts, lines 1-39
+- Code: `export async function GET(request: Request) { ... db.user.findMany(...) }`
+- Severity: HIGH
+- Category: OverExposure
+- Impact: Exposes user IDs, emails, names, active status, creation dates, and role assignments. Any anonymous user can enumerate all system accounts.
+- Recommendation: Add `checkApiAuth()` with `users:view` permission check.
+
+---
+### FINDING SEC2-05: /api/settings/roles — role listing without auth
+- File: /home/z/my-project/src/app/api/settings/roles/route.ts, lines 1-32
+- Code: `export async function GET(request: Request) { ... db.role.findMany(...) }`
+- Severity: HIGH
+- Category: OverExposure
+- Impact: Exposes all system roles, their descriptions, user counts, and permission counts. Information useful for privilege escalation planning.
+- Recommendation: Add `checkApiAuth()` with `users:view` or `settings:view` permission.
+
+---
+### FINDING SEC2-06: /api/settings/audit — audit log without auth
+- File: /home/z/my-project/src/app/api/settings/audit/route.ts, lines 1-40
+- Code: `export async function GET(request: Request) { ... db.sonAction.findMany(...) }`
+- Severity: HIGH
+- Category: OverExposure
+- Impact: Exposes SON action audit trail including previous/new parameter values, site codes, and action reasons. Useful for understanding network configuration history.
+- Recommendation: Add `checkApiAuth()` with `settings:view` or `audit:view` permission.
+
+---
+### FINDING SEC2-07: /api/auth/seed — RBAC reseed without auth
+- File: /home/z/my-project/src/app/api/auth/seed/route.ts, lines 1-14
+- Code:
+  ```ts
+  export async function POST(request: Request) {
+    await seedRbac();
+    return NextResponse.json({ success: true });
+  }
+  ```
+- Severity: HIGH
+- Category: AuthBypass
+- Impact: Anyone can POST to reseed RBAC, which creates admin users with hardcoded passwords (`admin123`, `demo123`). Rate limited to 30/min but still callable. Could be used to reset passwords after a credential change.
+- Recommendation: Remove this endpoint from production, or gate behind a one-time setup token. At minimum, add superadmin-only auth check.
+
+---
+### FINDING SEC2-08: IDOR in /api/digital-twin/scenarios/[id] — no auth, no ownership check
+- File: /home/z/my-project/src/app/api/digital-twin/scenarios/[id]/route.ts, lines 1-27
+- Code:
+  ```ts
+  const scenario = await db.digitalTwinScenario.findUnique({
+    where: { id },
+    include: { targetSite: {...}, simulationResults: {...} },
+  });
+  ```
+- Severity: HIGH
+- Category: IDOR
+- Impact: Any user can access any digital twin scenario by ID, including all simulation results and target site details. No auth check, no ownership validation.
+- Recommendation: Add `checkApiAuth()` and verify the user has `digital-twin:view` permission.
+
+---
+### FINDING SEC2-09: IDOR in report template DELETE — no ownership check
+- File: /home/z/my-project/src/app/api/reports/templates/route.ts, lines 166-179
+- Code:
+  ```ts
+  const template = await db.reportTemplate.findUnique({ where: { id: templateId } });
+  if (!template) { return 404; }
+  if (template.isBuiltIn) { return 403; }
+  await db.reportTemplate.delete({ where: { id: templateId } });
+  ```
+- Severity: HIGH
+- Category: IDOR
+- Impact: Any user with `reports:delete` permission can delete any other user's custom report template. No `createdBy` check. User A can delete User B's templates.
+- Recommendation: Add ownership check: verify `template.createdBy === user.id` before deletion, or restrict to superadmin.
+
+---
+### FINDING SEC2-10: IDOR in report schedule DELETE — no ownership check
+- File: /home/z/my-project/src/app/api/reports/schedules/route.ts, lines 332-338
+- Code:
+  ```ts
+  const existing = await db.reportSchedule.findUnique({ where: { id: scheduleId } });
+  await db.reportSchedule.delete({ where: { id: scheduleId } });
+  ```
+- Severity: HIGH
+- Category: IDOR
+- Impact: Any user with `reports:delete` can delete any other user's scheduled reports.
+- Recommendation: Add ownership check against `generatedBy` field.
+
+---
+### FINDING SEC2-11: IDOR in API key PATCH/DELETE — no ownership check
+- File: /home/z/my-project/src/app/api/api-keys/route.ts, lines 198-211 (PATCH), 266-271 (DELETE)
+- Code:
+  ```ts
+  const existing = await db.apiKey.findUnique({ where: { id } });
+  await db.apiKey.update({ where: { id }, data });
+  // or
+  await db.apiKey.delete({ where: { id } });
+  ```
+- Severity: HIGH
+- Category: IDOR
+- Impact: Any user with `apikeys:edit`/`apikeys:delete` can modify or delete any other user's API keys. Could disrupt integrations.
+- Recommendation: Add ownership check against `createdBy` field.
+
+---
+### FINDING SEC2-12: IDOR in webhook PATCH/DELETE — no ownership check
+- File: /home/z/my-project/src/app/api/webhooks/route.ts, lines 207-210 (PATCH), 277-283 (DELETE)
+- Severity: MEDIUM
+- Category: IDOR
+- Impact: Any user with `webhooks:edit`/`webhooks:delete` can modify or delete any webhook. Webhook URL could be redirected to an attacker-controlled endpoint.
+- Recommendation: Add ownership check against `createdBy` field.
+
+---
+### FINDING SEC2-13: IDOR in ETL pipeline PATCH/DELETE — no ownership check
+- File: /home/z/my-project/src/app/api/etl/pipelines/route.ts, lines 218-249 (PATCH), 275-292 (DELETE)
+- Severity: MEDIUM
+- Category: IDOR
+- Impact: Any user with `etl:edit`/`etl:delete` can modify or delete any data pipeline, potentially disrupting data ingestion.
+- Recommendation: Add ownership check or restrict pipeline mutations to admin roles only.
+
+---
+### FINDING SEC2-14: Hardcoded weak passwords in RBAC seed
+- File: /home/z/my-project/src/lib/rbac.ts, lines 116, 138
+- Code:
+  ```ts
+  const passwordHash = await bcrypt.hash('admin123', 10);  // line 116
+  const passwordHash = await bcrypt.hash('demo123', 10);   // line 138
+  ```
+- Severity: MEDIUM
+- Category: PrivEsc
+- Impact: Default admin password `admin123` and demo passwords `demo123` for 5 accounts (noc, rf, nop, field, viewer). Combined with SEC2-03j (unprotected seed endpoint), these can be re-created after password rotation.
+- Recommendation: Generate random passwords on seed, print them once to stdout. Force password change on first login. Remove seed endpoint from production.
+
+---
+### FINDING SEC2-15: Report template DELETE accepts templateId from body — potential CSRF
+- File: /home/z/my-project/src/app/api/reports/templates/route.ts, line 139
+- Code: `export async function DELETE(request: Request) { ... const body = await request.json(); ... }`
+- Severity: MEDIUM
+- Category: AuthBypass
+- Impact: DELETE with body payload bypasses browser same-origin policy for DELETE requests. While rate-limited, this is a CSRF vector if cookies are used for auth.
+- Recommendation: Use query parameter for DELETE or implement CSRF token validation.
+
+---
+### FINDING SEC2-16: In-memory rate limiter is per-process, not distributed
+- File: /home/z/my-project/src/lib/rate-limit.ts, line 32
+- Code: `const store = new Map<string, RateLimitEntry>();`
+- Severity: MEDIUM
+- Category: AuthBypass
+- Impact: In a multi-instance deployment, each Node.js process has its own rate limit counter. An attacker can send 100 requests to each instance. Also, IP extraction from `x-forwarded-for` header (line 122-124) can be spoofed if not set by a trusted proxy.
+- Recommendation: Use Redis-backed rate limiting for distributed deployments. Validate that `x-forwarded-for` is set by a trusted reverse proxy only.
+
+---
+### FINDING SEC2-17: API key hash is fake (deterministic, not real SHA-256)
+- File: /home/z/my-project/src/app/api/api-keys/route.ts, lines 16-23, 132
+- Code:
+  ```ts
+  function randomHash(): string {
+    const chars = 'abcdef0123456789';
+    let result = '';
+    for (let i = 0; i < 64; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+  // ...
+  const keyHash = `sha256$${randomHash()}`;
+  ```
+- Severity: MEDIUM
+- Category: AuthBypass
+- Impact: API keys are stored with a fake hash that doesn't actually correspond to the key value. The `keyHash` is random, not derived from `fullKey`. This means: (1) API key validation (if implemented) would always fail since there's no way to verify a key against its hash, and (2) the hash provides false sense of security.
+- Recommendation: Use `crypto.createHash('sha256').update(fullKey).digest('hex')` for real hashing. Store only the hash; return `fullKey` to the creator only once.
+
+---
+### FINDING SEC2-18: Webhook secret returned in GET response would be dangerous (currently masked)
+- File: /home/z/my-project/src/app/api/webhooks/route.ts, lines 75-103
+- Severity: LOW
+- Category: OverExposure
+- Impact: The GET response does NOT expose `secret` (good), but the POST response also does not return the secret to the creator. This means the user has no way to configure the webhook receiver with the signing secret unless they provided their own.
+- Recommendation: Return `secret` in the POST 201 response only (when a new secret was auto-generated), never in GET.
+
+---
+### FINDING SEC2-19: RBAC permissions resolved from role names, not from DB assignments
+- File: /home/z/my-project/src/lib/auth.ts, lines 31-46
+- Code:
+  ```ts
+  function resolvePermissions(roleNames: string[]): string[] {
+    const perms = new Set<string>();
+    for (const roleName of roleNames) {
+      const defaults = ROLE_DEFAULTS[roleName] ?? [];
+  ```
+- Severity: LOW
+- Category: PrivEsc
+- Impact: Permissions are resolved from hardcoded `ROLE_DEFAULTS` constants, not from the actual DB role-permission assignments (which are stored in `rolePermission` table and queried during login at line 95-97 but then ignored in favor of `resolvePermissions`). If an admin modifies a role's permissions in the DB, those changes are NOT reflected — users still get the hardcoded defaults.
+- Recommendation: Use the DB-resolved permissions from the login query (already fetched at line 95-97) instead of `resolvePermissions()`. Remove the hardcoded resolution function.
+
+---
+### FINDING SEC2-20: Rate limit IP extraction trusts client-provided headers
+- File: /home/z/my-project/src/lib/rate-limit.ts, lines 120-132
+- Code:
+  ```ts
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) { return forwarded.split(',')[0].trim(); }
+  ```
+- Severity: LOW
+- Category: AuthBypass
+- Impact: If the app is accessible without a trusted proxy, an attacker can set `X-Forwarded-For` to rotate IPs and bypass rate limits entirely.
+- Recommendation: Ensure the app is only accessible behind a trusted reverse proxy that overwrites (not appends to) `X-Forwarded-For`. Consider using a `TRUSTED_PROXY_IP` env var to validate the source.
+
+---
+### Summary Table
+
+| ID | Severity | Category | File | Short Description |
+|---|---|---|---|---|
+| SEC2-01 | CRITICAL | AuthBypass | api-auth.ts:8 | AUTH_ENFORCED=false disables all auth |
+| SEC2-02 | CRITICAL | AuthBypass | middleware.ts:30-32 | Middleware is pass-through, auth block commented out |
+| SEC2-03 | CRITICAL | AuthBypass | 80 route files | 80% of routes have zero auth checks |
+| SEC2-04 | HIGH | OverExposure | settings/users/route.ts | User list with emails/roles exposed without auth |
+| SEC2-05 | HIGH | OverExposure | settings/roles/route.ts | Role list exposed without auth |
+| SEC2-06 | HIGH | OverExposure | settings/audit/route.ts | Audit trail exposed without auth |
+| SEC2-07 | HIGH | AuthBypass | auth/seed/route.ts | RBAC reseed + user creation without auth |
+| SEC2-08 | HIGH | IDOR | digital-twin/scenarios/[id]/route.ts | Any ID accesses any scenario |
+| SEC2-09 | HIGH | IDOR | reports/templates/route.ts:166 | Delete any user's template |
+| SEC2-10 | HIGH | IDOR | reports/schedules/route.ts:332 | Delete any user's schedule |
+| SEC2-11 | HIGH | IDOR | api-keys/route.ts:198 | Modify/delete any user's API key |
+| SEC2-12 | MEDIUM | IDOR | webhooks/route.ts:207 | Modify/delete any webhook |
+| SEC2-13 | MEDIUM | IDOR | etl/pipelines/route.ts:218 | Modify/delete any pipeline |
+| SEC2-14 | MEDIUM | PrivEsc | rbac.ts:116,138 | Hardcoded weak passwords (admin123, demo123) |
+| SEC2-15 | MEDIUM | AuthBypass | reports/templates/route.ts:139 | DELETE with body payload (CSRF vector) |
+| SEC2-16 | MEDIUM | AuthBypass | rate-limit.ts:32 | In-memory rate limiter not distributed + spoofable IP |
+| SEC2-17 | MEDIUM | AuthBypass | api-keys/route.ts:16 | Fake SHA-256 hash, key verification impossible |
+| SEC2-18 | LOW | OverExposure | webhooks/route.ts:75 | Auto-generated secret not returned to creator |
+| SEC2-19 | LOW | PrivEsc | auth.ts:31 | Permissions from hardcoded defaults, not DB |
+| SEC2-20 | LOW | AuthBypass | rate-limit.ts:122 | X-Forwarded-For trusted without proxy validation |
+
+**Totals: CRITICAL: 3, HIGH: 8, MEDIUM: 7, LOW: 3 = 20 findings**
+
+### Priority Remediation Order
+1. **Immediate (before any deployment):** SEC2-01 (flip AUTH_ENFORCED), SEC2-02 (activate middleware)
+2. **Urgent (same sprint):** SEC2-03 (add auth to all 80 unprotected routes, prioritize write routes)
+3. **High:** SEC2-04 through SEC2-11 (admin endpoint exposure + IDOR fixes)
+4. **Medium:** SEC2-12 through SEC2-17 (remaining IDOR, seed endpoint, fake hashes, rate limiter)
+5. **Low:** SEC2-18 through SEC2-20 (RBAC from DB, secret return, IP validation)
+
+---
+Task ID: sec3
+Agent: security-injection
+Task: Scan for injection, XSS, path traversal, SSRF vulnerabilities
+
+Work Log:
+- Scanned ALL API route files (~80+ route.ts files under src/app/api/) for injection patterns
+- Checked for $queryRaw/$executeRaw with string interpolation → Found 3 uses of $queryRawUnsafe
+- Checked for Prisma where clause injection with dynamic keys/operators → Found whitelist-validated dynamic select in kpi/route.ts (SAFE)
+- Checked all orderBy clauses → ALL hardcoded, none user-controlled (SAFE)
+- Scanned for XSS: dangerouslySetInnerHTML → Found 3 instances (2 safe static CSS, 1 i18n footer)
+- Scanned for innerHTML → None found
+- Scanned for path traversal: fs operations → None with user-controlled paths (XLSX.writeFile uses caller-controlled filenames)
+- Scanned for command injection: child_process/exec/spawn → None found (CLEAN)
+- Scanned for unsafe deserialization: JSON.parse → ~80+ uses, most on DB fields, some without try/catch
+- Scanned for eval/Function/yaml.parse → None found (CLEAN)
+- Scanned for SSRF: server-side fetch → 1 hardcoded fetch to localhost:3010 (SAFE), webhook URLs stored but never fetched server-side
+- Checked realtime-service/index.ts → $queryRawUnsafe uses parameterized placeholders (SAFE), CORS wildcard (MEDIUM)
+- Checked download-server/index.ts → Hardcoded path, no user input (SAFE)
+- Verified i18n footer value: '© 2025 NetOptima Algérie · 2G · 3G · 4G · 5G Network Optimization' (no HTML)
+- Confirmed middleware is pass-through with no security headers
+
+Stage Summary:
+- CRITICAL: 0, HIGH: 1, MEDIUM: 4, LOW: 4, INFO: 3 = 12 findings
+- Compared to SEC2 audit: injection surface is MUCH smaller than auth surface; no critical injection found
+
+### Findings Table
+
+| ID | Severity | Category | File:Line | Description |
+|----|----------|----------|-----------|-------------|
+| SEC3-01 | HIGH | SQLi (pattern) | vendor-compare/route.ts:24,26 | `$queryRawUnsafe` with string interpolation `AND s.technology = '${technology}'`. Mitigated by whitelist at line 18, but anti-pattern that would be exploitable if whitelist removed. |
+| SEC3-02 | MEDIUM | SSRF (stored) | webhooks/route.ts:18,142 | User-supplied webhook URLs stored in DB via `z.string().url()` — no restriction on internal IPs (127.0.0.1, 10.x, 169.254.x, etc.) or scheme. No delivery endpoint exists yet (frontend calls /api/webhooks/test which doesn't exist), so currently not exploitable. |
+| SEC3-03 | MEDIUM | SecurityHeaders | middleware.ts:30-32 | Middleware is pass-through `return NextResponse.next()` with zero security headers. Missing CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. |
+| SEC3-04 | MEDIUM | Misconfig | realtime-service/index.ts:14 | Socket.IO CORS: `origin: "*"` allows any origin to connect and receive real-time KPI/alert data. |
+| SEC3-05 | MEDIUM | ErrorHandling | ~40+ route files | Raw error messages returned in 500 responses: `error instanceof Error ? error.message : 'Unknown error'` — can leak Prisma internals, table names, file paths. |
+| SEC3-06 | LOW | XSS (pattern) | page.tsx:512 | `dangerouslySetInnerHTML={{ __html: t('app.footer') }}` — i18n value is currently safe static text, but pattern is dangerous if i18n source ever allows HTML. |
+| SEC3-07 | LOW | DoS | trends/route.ts:34, predictive/traffic/route.ts:32, predictive/revenue/route.ts:24,28, simulations/route.ts:36-38, evolution/route.ts:38-39 | `JSON.parse()` on Prisma JSON fields without try/catch — corrupted DB rows would crash the route handler (500). |
+| SEC3-08 | LOW | AuthBypass | api-auth.ts:8 | `AUTH_ENFORCED = false` — duplicate of SEC2-01 but relevant here because all injection-protected routes (webhooks, etl, vendors, api-keys) are also unauthenticated. |
+| SEC3-09 | INFO | SQLi (safe) | executive/route.ts:37-39 | `$queryRawUnsafe` with completely static query string — no user input. Safe but should use `$queryRaw` tagged template for consistency. |
+| SEC3-10 | INFO | SQLi (safe) | realtime-service/index.ts:50-58 | `$queryRawUnsafe` with `?` parameterized placeholders — properly parameterized. Safe. |
+| SEC3-11 | INFO | SSRF (safe) | etl/pipelines/run/route.ts:75 | `fetch('http://localhost:3010/trigger')` — hardcoded URL, not user-controlled. Safe. |
+
+### Detailed Analysis
+
+#### SEC3-01: SQL Injection Pattern in vendor-compare (HIGH)
+```typescript
+// Line 18: Whitelist validation (MITIGATES but doesn't eliminate the pattern)
+if (technology && !VALID_TECHNOLOGIES.includes(technology)) { return 400; }
+// Line 24: String interpolation into SQL
+const techFilter = technology ? `AND s.technology = '${technology}'` : '';
+// Line 26: Raw SQL execution
+await db.$queryRawUnsafe<...>(`... WHERE 1=1 ${techFilter} ...`);
+```
+**Exploit scenario:** If the whitelist is ever removed/modified, an attacker could inject: `technology=2G' OR '1'='1` or worse. The whitelist uses exact match (`includes`), so currently safe.
+**Recommendation:** Replace with tagged template literal `Prisma.$queryRaw` with `${Prisma.sql` parameter binding, or use `Prisma.sql` tagged template.
+
+#### SEC3-02: Stored SSRF via Webhook URLs (MEDIUM)
+```typescript
+url: z.string().url('URL invalide'),  // Validates URL format only
+// ... stored to DB
+url,
+```
+**Exploit scenario:** When webhook delivery is implemented, attacker creates webhook with `http://169.254.169.254/latest/meta-data/` (AWS metadata), `http://127.0.0.1:3003` (internal services), or `file:///etc/passwd`.
+**Recommendation:** When implementing delivery:
+  1. Restrict to HTTPS only
+  2. Resolve hostname and reject private IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16)
+  3. Add request timeout (5s)
+  4. Optionally use domain allowlist
+
+#### SEC3-06: XSS via dangerouslySetInnerHTML on i18n Footer (LOW)
+```tsx
+<footer dangerouslySetInnerHTML={{ __html: t('app.footer') }} />
+```
+**Current value:** `'© 2025 NetOptima Algérie · 2G · 3G · 4G · 5G Network Optimization'`
+**Exploit scenario:** If i18n values are ever loaded from a CMS, admin panel, or translated by users, injecting `<script>` in a translation would execute XSS.
+**Recommendation:** Replace with `{t('app.footer')}` (React auto-escapes). If HTML formatting is needed (e.g., `·` separator), use CSS or explicit spans.
+
+### What's CLEAN (No Issues Found)
+- ✅ **Command injection:** Zero uses of child_process, exec, execSync, spawn
+- ✅ **Path traversal:** No fs operations with user-controlled paths
+- ✅ **eval/Function:** No dynamic code execution
+- ✅ **YAML deserialization:** No yaml.parse calls
+- ✅ **NoSQL injection:** No user-controlled dynamic keys in where clauses; all dynamic selects are whitelist-validated
+- ✅ **Prisma ORM injection:** All Prisma queries use safe parameter passing; no user-controlled operators ($gt, $lt, etc.)
+- ✅ **XSS via React:** Normal JSX rendering auto-escapes; no innerHTML usage
+- ✅ **SSRF via fetch:** Only 1 server-side fetch, hardcoded to localhost
+
+### Priority Remediation Order
+1. **SEC3-01:** Refactor vendor-compare raw SQL to use parameterized query (even though currently mitigated by whitelist)
+2. **SEC3-03:** Add security headers in middleware (CSP, X-Frame-Options, etc.)
+3. **SEC3-02:** Prepare SSRF protections for when webhook delivery is implemented
+4. **SEC3-04:** Restrict Socket.IO CORS to application origin
+5. **SEC3-05:** Replace raw error messages with generic ones in production
+6. **SEC3-06:** Replace dangerouslySetInnerHTML with normal JSX
+7. **SEC3-07:** Add try/catch around JSON.parse on DB fields
+---
+Task ID: sec5
+Agent: security-config
+Task: Audit dependencies, CORS, headers, rate limiting, env security
+
+Work Log:
+- Audited 76 dependencies + 14 devDependencies from package.json
+- Checked 100 API route files for auth, rate-limiting, error leaks
+- Read next.config.ts (13 lines) — no security headers configured
+- Read Caddyfile (23 lines) — found critical XTransformPort open proxy
+- Read middleware.ts (37 lines) — auth completely disabled, pass-through
+- Read src/lib/api-auth.ts — AUTH_ENFORCED = false, all routes get admin access
+- Read src/lib/rate-limit.ts — in-memory, X-Forwarded-For spoofable
+- Read src/lib/auth.ts — NEXTAUTH_SECRET from env (unset in .env)
+- Read .env, .env.example — .env committed to git historically (now .gitignore fixed)
+- Read Dockerfile, docker-compose.yml — no TLS, port 3000 exposed
+- Checked .gitignore — .env* properly excluded (but was committed in earlier commits)
+- Checked 11 API routes with NO rate limiting at all
+- Verified 88/100 routes leak raw error.message in 500 responses
+- Verified 73+ routes have zero authentication checks
+- Verified 6+ write-capable routes (POST/PATCH) are completely unauthenticated
+- Checked react-markdown usage — safe (no rehype-raw)
+- Checked database file permissions — 755 (world-readable)
+- Checked for helmet/CSP/X-Frame-Options — none configured anywhere
+- Checked for CORS headers — none configured (Caddy or Next.js level)
+
+Stage Summary:
+- CRITICAL: 4, HIGH: 5, MEDIUM: 5, LOW: 3, INFO: 1
+- Total findings: 18
+
+=== DETAILED FINDINGS ===
+
+[F1] CRITICAL / ConfigError — Caddyfile XTransformPort Open Proxy
+  File: /home/z/my-project/Caddyfile, lines 2-13
+  The XTransformPort query parameter allows proxying to ANY local port with
+  zero validation. An attacker can send ?XTransformPort=22 to reach SSH,
+  ?XTransformPort=3306 for MySQL, etc. This is a textbook SSRF / open proxy.
+  Recommendation: Restrict XTransformPort to an allowlist (e.g. 3000, 3010)
+  using Caddy match blocks. Better yet, remove this mechanism entirely and
+  use explicit reverse_proxy blocks for each service.
+
+[F2] CRITICAL / ConfigError — Authentication Completely Disabled
+  File: /home/z/my-project/src/lib/api-auth.ts, line 8
+  AUTH_ENFORCED = false causes ALL API routes using checkApiAuth to return
+  a hardcoded admin user with wildcard permissions (*:*). The middleware.ts
+  also has auth commented out (pass-through). This means all 100 API routes
+  are publicly accessible with full admin privileges.
+  Recommendation: Set AUTH_ENFORCED = true before any production deployment.
+  Uncomment the auth block in middleware.ts. Ensure NEXTAUTH_SECRET is set.
+
+[F3] CRITICAL / ConfigError — NEXTAUTH_SECRET Not Set in .env
+  File: /home/z/my-project/.env (line 1 only contains DATABASE_URL)
+  File: /home/z/my-project/src/lib/auth.ts, line 141
+  NEXTAUTH_SECRET is not set in .env. When undefined, NextAuth falls back to
+  a warning and generates a non-persistent secret, meaning all sessions are
+  invalidated on restart and JWTs are predictable.
+  Recommendation: Generate with `openssl rand -hex 32` and add to .env.
+
+[F4] CRITICAL / ConfigError — Unauthenticated Auth Seed Endpoint
+  File: /home/z/my-project/src/app/api/auth/seed/route.ts, lines 1-14
+  POST /api/auth/seed has NO authentication check. Anyone can call it to
+  reseed the entire RBAC database (roles, permissions, user assignments).
+  Rate limit is 30/min which is generous for a destructive operation.
+  Recommendation: Remove this route from production. If needed, make it a
+  CLI script or protect with a separate admin secret.
+
+[F5] HIGH / RateLimit — X-Forwarded-For IP Spoofing
+  File: /home/z/my-project/src/lib/rate-limit.ts, lines 122-124
+  The rate limiter trusts the X-Forwarded-For header without validation.
+  An attacker can send different X-Forwarded-For values to get a fresh
+  rate limit bucket per request, completely bypassing rate limiting.
+  Recommendation: Only trust X-Forwarded-For from the Caddy reverse proxy
+  by checking X-Real-IP first (which Caddy sets), and strip/reject
+  X-Forwarded-For at the Caddy level.
+
+[F6] HIGH / RateLimit — 11 Routes Have No Rate Limiting
+  Files: All routes under src/app/api/digital-twin/ and src/app/api/predictive/
+  These 11 routes have zero rate limiting:
+  - digital-twin/dashboard, digital-twin/simulate, digital-twin/scenarios,
+    digital-twin/scenarios/[id]
+  - predictive/capacity, predictive/churn, predictive/dashboard,
+    predictive/faults, predictive/revenue, predictive/traffic
+  - value-proposition
+  Recommendation: Add rate limiting to all routes using the existing
+  rateLimit() utility.
+
+[F7] HIGH / DepVuln — xlsx@0.18.5 Prototype Pollution (CVE-2023-30533)
+  File: /home/z/my-project/package.json, line 91
+  The SheetJS (xlsx) package at 0.18.5 has a known prototype pollution
+  vulnerability (CVE-2023-30533). This affects server-side XLSX parsing.
+  Recommendation: Upgrade to xlsx@0.18.6+ (patched) or migrate to
+  xlsx-populate or exceljs which are actively maintained.
+
+[F8] HIGH / ConfigError — Unauthenticated Write Routes
+  Files: src/app/api/onboarding/route.ts (POST/PATCH),
+         src/app/api/son/actions/route.ts (PATCH),
+         src/app/api/digital-twin/simulate/route.ts (POST),
+         src/app/api/digital-twin/scenarios/route.ts (POST/DELETE)
+  These routes perform database writes (create/update/delete) without any
+  authentication check. Combined with AUTH_ENFORCED=false, any anonymous
+  user can create sites, advance onboarding, apply SON actions, run
+  simulations, and delete scenarios.
+  Recommendation: Add checkApiAuth() to all write-capable routes.
+
+[F9] HIGH / RateLimit — In-Memory Rate Limiting (Single-Process Only)
+  File: /home/z/my-project/src/lib/rate-limit.ts, line 32
+  The rate limiter uses a JS Map, which is per-process. If the app runs
+  multiple instances (Docker Compose scaling, load balancer), each instance
+  has its own rate limit counter. An attacker distributing requests across
+  instances bypasses limits entirely.
+  Recommendation: Use Redis-based rate limiting (e.g. @upstash/ratelimit)
+  for distributed deployments.
+
+[F10] MEDIUM / MissingHeader — No Security Headers Configured
+  File: /home/z/my-project/next.config.ts (entire file)
+  No security headers are set anywhere in the application:
+  - No Content-Security-Policy (CSP)
+  - No Strict-Transport-Security (HSTS)
+  - No X-Frame-Options (clickjacking risk)
+  - No X-Content-Type-Options (MIME sniffing risk)
+  - No Referrer-Policy
+  - No Permissions-Policy
+  - X-Powered-By is not explicitly disabled (Next.js default)
+  No helmet or csp package is used. The middleware.ts sets no headers.
+  Recommendation: Add security headers in middleware.ts or use next.config.ts
+  headers() config. Example:
+    headers: [{ source: '/(.*)', headers: [
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=()' },
+    ]}]
+
+[F11] MEDIUM / ConfigError — No CORS Configuration
+  Files: /home/z/my-project/Caddyfile (entire file),
+         /home/z/my-project/next.config.ts (entire file)
+  No CORS headers are configured at either the Caddy or Next.js level.
+  The Caddyfile does not set any Access-Control-* headers. This means
+  cross-origin requests to the API will be blocked by browsers (good for
+  security) but also means no controlled API access from other origins.
+  Recommendation: If external API consumers are needed, configure explicit
+  CORS allowlists in Caddy. Otherwise, this is informational.
+
+[F12] MEDIUM / ConfigError — No TLS/SSL Configuration in Caddy
+  File: /home/z/my-project/Caddyfile, line 1
+  The Caddy server listens on plain HTTP (:81) with no TLS configuration.
+  All traffic including credentials, session tokens, and API data is
+  transmitted unencrypted.
+  Recommendation: Add TLS configuration. Caddy auto-provisions certs:
+    netop.yourdomain.com {
+      tls internal  # for dev, or use real domain for auto-Let's Encrypt
+      ...existing config...
+    }
+
+[F13] MEDIUM / InfoLeak — Raw Error Messages in 500 Responses
+  Files: 88 of 100 API route files
+  Nearly all API routes return `error.message` directly in 500 responses.
+  This can leak internal details: database schema names, file paths,
+  Prisma query details, stack traces.
+  Example: src/app/api/health/route.ts line 71,
+           src/app/api/onboarding/route.ts lines 84, 160, 308
+  Recommendation: Replace error.message with generic messages in production.
+  Log the full error server-side, return only a correlation ID or generic
+  'Internal server error' to the client.
+
+[F14] MEDIUM / ConfigError — Database File World-Readable
+  File: /home/z/my-project/db/custom.db
+  The SQLite database file has 755 permissions (world-readable/executable).
+  Any user on the system can read the entire database including user
+  credentials (password hashes), RBAC configuration, and business data.
+  Recommendation: chmod 600 db/custom.db. Also set umask 077 in the
+  application startup script.
+
+[F15] LOW / DepVuln — next-auth v4 in Maintenance Mode
+  File: /home/z/my-project/package.json, line 71
+  next-auth@4.24.13 is in maintenance mode. Auth.js v5 has breaking
+  changes and improved security defaults.
+  Recommendation: Plan migration to Auth.js v5 when convenient.
+
+[F16] LOW / ConfigError — reactStrictMode Disabled
+  File: /home/z/my-project/next.config.ts, line 8
+  reactStrictMode: false disables React's double-rendering which helps
+  catch side-effect bugs during development.
+  Recommendation: Set to true for development builds.
+
+[F17] LOW / DepVuln — prisma in Both dependencies and devDependencies
+  File: /home/z/my-project/package.json, lines 74, 98
+  prisma@^6.11.1 appears in both dependencies and devDependencies.
+  The prisma CLI is only needed at build/development time. Having it in
+  production dependencies increases the attack surface and bundle size.
+  Recommendation: Move prisma to devDependencies only. The @prisma/client
+  (already in dependencies) is what the app needs at runtime.
+
+[F18] INFO / ConfigError — .env File Was Historically Committed to Git
+  File: .gitignore (now fixed), git history
+  The .env file was committed in early git history (commit de2731f) and
+  later removed in commit 66e3d3b. The .gitignore now correctly excludes
+  .env* files. However, the DATABASE_URL with file path is in git history.
+  Recommendation: For a production deployment, consider using git-filter-repo
+  to purge the .env from history if the repo was ever public.

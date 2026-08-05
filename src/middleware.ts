@@ -1,7 +1,9 @@
 /**
- * NextAuth middleware — AUTH DISABLED (pass-through).
+ * NextAuth middleware + Security Headers
  * 
- * TO RE-ACTIVATE AUTH: uncomment the commented block below and delete the 3 lines above.
+ * AUTH: Currently disabled (AUTH_ENFORCED=false in api-auth.ts).
+ * To re-activate: uncomment the auth block below.
+ * SECURITY HEADERS: Always active.
  */
 
 import { NextResponse } from 'next/server';
@@ -27,8 +29,31 @@ function authMiddleware(request: NextRequest) {
 }
 ——— RE-ACTIVATABLE AUTH BLOCK END ——— */
 
-export function middleware(_request: NextRequest) {
-  return NextResponse.next();
+function securityHeaders(response: NextResponse) {
+  // Prevent clickjacking
+  response.headers.set('X-Frame-Options', 'DENY');
+  // Prevent MIME type sniffing
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  // XSS protection (legacy browsers)
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  // Referrer policy
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // HSTS (HTTPS enforcement) — set to 1 year, include subdomains
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  // Permissions policy — restrict browser features
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  // Content Security Policy
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none';"
+  );
+  return response;
+}
+
+export function middleware(request: NextRequest) {
+  // Uncomment the next line to enable auth:
+  // return securityHeaders(authMiddleware(request));
+  return securityHeaders(NextResponse.next());
 }
 
 export const config = {

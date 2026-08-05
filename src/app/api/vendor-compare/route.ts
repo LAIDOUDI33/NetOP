@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkApiAuth, authError } from '@/lib/api-auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
@@ -20,35 +21,60 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Safe: technology is validated against whitelist above
-    const techFilter = technology ? `AND s.technology = '${technology}'` : '';
-
-    const rows = await db.$queryRawUnsafe<{
-      technology: string;
-      vendor: string;
-      avgRsrp: number | null;
-      avgDownloadThroughput: number | null;
-      avgUploadThroughput: number | null;
-      avgLatency: number | null;
-      avgAvailability: number | null;
-      avgHandoverSuccessRate: number | null;
-      avgDropRate: number | null;
-      siteCount: number;
-    }[]>(
-      `SELECT s.technology, s.vendor,
-        AVG(k.rsrp) as avgRsrp,
-        AVG(k.downloadThroughput) as avgDownloadThroughput,
-        AVG(k.uploadThroughput) as avgUploadThroughput,
-        AVG(k.latency) as avgLatency,
-        AVG(k.availability) as avgAvailability,
-        AVG(k.handoverSuccessRate) as avgHandoverSuccessRate,
-        AVG(k.dropRate) as avgDropRate,
-        COUNT(*) as siteCount
-      FROM NetworkSite s
-      INNER JOIN KpiMetric k ON k.siteId = s.id
-      WHERE 1=1 ${techFilter}
-      GROUP BY s.technology, s.vendor`
-    );
+    // Parameterized: technology is validated + uses tagged template (safe even if whitelist somehow bypassed)
+    const rows = technology
+      ? await db.$queryRaw<{
+          technology: string;
+          vendor: string;
+          avgRsrp: number | null;
+          avgDownloadThroughput: number | null;
+          avgUploadThroughput: number | null;
+          avgLatency: number | null;
+          avgAvailability: number | null;
+          avgHandoverSuccessRate: number | null;
+          avgDropRate: number | null;
+          siteCount: number;
+        }[]>(
+          Prisma.sql`SELECT s.technology, s.vendor,
+            AVG(k.rsrp) as avgRsrp,
+            AVG(k.downloadThroughput) as avgDownloadThroughput,
+            AVG(k.uploadThroughput) as avgUploadThroughput,
+            AVG(k.latency) as avgLatency,
+            AVG(k.availability) as avgAvailability,
+            AVG(k.handoverSuccessRate) as avgHandoverSuccessRate,
+            AVG(k.dropRate) as avgDropRate,
+            COUNT(*) as siteCount
+          FROM NetworkSite s
+          INNER JOIN KpiMetric k ON k.siteId = s.id
+          WHERE s.technology = ${technology}
+          GROUP BY s.technology, s.vendor`
+        )
+      : await db.$queryRaw<{
+          technology: string;
+          vendor: string;
+          avgRsrp: number | null;
+          avgDownloadThroughput: number | null;
+          avgUploadThroughput: number | null;
+          avgLatency: number | null;
+          avgAvailability: number | null;
+          avgHandoverSuccessRate: number | null;
+          avgDropRate: number | null;
+          siteCount: number;
+        }[]>(
+          Prisma.sql`SELECT s.technology, s.vendor,
+            AVG(k.rsrp) as avgRsrp,
+            AVG(k.downloadThroughput) as avgDownloadThroughput,
+            AVG(k.uploadThroughput) as avgUploadThroughput,
+            AVG(k.latency) as avgLatency,
+            AVG(k.availability) as avgAvailability,
+            AVG(k.handoverSuccessRate) as avgHandoverSuccessRate,
+            AVG(k.dropRate) as avgDropRate,
+            COUNT(*) as siteCount
+          FROM NetworkSite s
+          INNER JOIN KpiMetric k ON k.siteId = s.id
+          WHERE 1=1
+          GROUP BY s.technology, s.vendor`
+        );
 
     const mapped = rows.map((r) => ({
       technology: r.technology,
@@ -82,8 +108,7 @@ export async function GET(request: NextRequest) {
         totalSites,
       },
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

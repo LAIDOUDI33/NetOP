@@ -1,15 +1,36 @@
 :81 {
-	@transform_port_query {
-		query XTransformPort=*
+	# Only allow port forwarding to whitelisted internal services
+	@etl_port {
+		query XTransformPort=3010
+	}
+	@realtime_port {
+		query XTransformPort=3003
 	}
 
-	handle @transform_port_query {
-		reverse_proxy 127.0.0.1:{query.XTransformPort} {
+	handle @etl_port {
+		reverse_proxy 127.0.0.1:3010 {
 			header_up Host {host}
 			header_up X-Forwarded-For {remote_host}
 			header_up X-Forwarded-Proto {scheme}
 			header_up X-Real-IP {remote_host}
 		}
+	}
+
+	handle @realtime_port {
+		reverse_proxy 127.0.0.1:3003 {
+			header_up Host {host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# Block all other XTransformPort values (port scan / SSRF prevention)
+	@blocked_transform_port {
+		query XTransformPort=*
+	}
+	handle @blocked_transform_port {
+		respond 403 "Forbidden: Invalid service port"
 	}
 
 	handle {

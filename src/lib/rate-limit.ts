@@ -116,17 +116,22 @@ export function rateLimitResponse(resetMs: number) {
   );
 }
 
-/** Extract client IP from request headers (works behind Caddy/proxy) */
+/** Extract client IP — prefer X-Real-IP (set by trusted proxy), fall back to socket */
 function extractIp(request: Request): string {
-  // Try common proxy headers
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
+  // X-Real-IP is set by Caddy from the actual TCP connection — not spoofable
   const realIp = request.headers.get('x-real-ip');
   if (realIp) return realIp.trim();
 
-  // Fallback for Node.js requests
+  // X-Forwarded-For is client-supplied and spoofable — only use as fallback
+  // and only take the LAST entry (closest proxy), not the first (client)
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded.split(',').map((s) => s.trim());
+    const closestProxy = parts[parts.length - 1];
+    if (closestProxy) return closestProxy;
+  }
+
+  // Direct connection fallback
   const req = request as unknown as { socket?: { remoteAddress?: string } };
   return req.socket?.remoteAddress ?? 'unknown';
 }
