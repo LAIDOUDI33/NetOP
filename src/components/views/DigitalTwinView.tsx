@@ -180,7 +180,7 @@ function TableSkeleton() {
 
 function OverviewTab() {
   const t = useT();
-  const { data, isLoading } = useQuery<DashboardData>({ queryKey: ['dt-dashboard'], queryFn: () => fetch('/api/digital-twin/dashboard').then(r => r.json()) });
+  const { data, isLoading } = useQuery<DashboardData>({ queryKey: ['dt-dashboard'], queryFn: async () => { const r = await fetch('/api/digital-twin/dashboard'); if (!r.ok) throw new Error('Failed to fetch digital twin dashboard'); return r.json(); } });
 
   if (isLoading || !data) return <OverviewSkeleton />;
 
@@ -268,12 +268,14 @@ function ScenariosTab() {
 
   const { data, isLoading } = useQuery<{ scenarios: ScenarioRaw[]; total: number }>({
     queryKey: ['dt-scenarios', typeFilter, statusFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (typeFilter !== 'all') params.set('type', typeFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       const qs = params.toString();
-      return fetch(`/api/digital-twin/scenarios${qs ? '?' + qs : ''}`).then(r => r.json());
+      const r = await fetch(`/api/digital-twin/scenarios${qs ? '?' + qs : ''}`);
+      if (!r.ok) throw new Error('Failed to fetch digital twin scenarios');
+      return r.json();
     },
     select: (d) => ({ ...d, scenarios: d.scenarios.map(mapScenario) }),
   });
@@ -418,7 +420,7 @@ function NewScenarioTab() {
   const [params, setParams] = useState('{\n  "key": "value"\n}');
 
   const mutation = useMutation({
-    mutationFn: (body: Record<string, unknown>) => fetch('/api/digital-twin/scenarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    mutationFn: async (body: Record<string, unknown>) => { const r = await fetch('/api/digital-twin/scenarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!r.ok) throw new Error('Failed to create scenario'); return r.json(); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dt-scenarios'] }); queryClient.invalidateQueries({ queryKey: ['dt-dashboard'] }); setName(''); setDescription(''); setType(''); setRegion(''); setParams('{\n  "key": "value"\n}'); toast.success(t('dt.createSuccess')); },
   });
 

@@ -38,14 +38,13 @@ function securityHeaders(response: NextResponse) {
   response.headers.set('X-XSS-Protection', '1; mode=block');
   // Referrer policy
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // HSTS (HTTPS enforcement) — set to 1 year, include subdomains
-  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
   // Permissions policy — restrict browser features
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
   // Content Security Policy
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none';"
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none';"
   );
   return response;
 }

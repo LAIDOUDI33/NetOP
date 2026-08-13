@@ -331,42 +331,42 @@ export default function GeomarketingView() {
   // ---- Data queries ----
   const { data: mainData, isLoading: mainLoading } = useQuery({
     queryKey: ['geomarketing'],
-    queryFn: () => fetch('/api/geomarketing').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing'); if (!r.ok) throw new Error('Failed to fetch geomarketing'); return r.json(); },
   });
 
   const { data: churnData, isLoading: churnLoading } = useQuery({
     queryKey: ['geomarketing-churn'],
-    queryFn: () => fetch('/api/geomarketing/churn-map').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/churn-map'); if (!r.ok) throw new Error('Failed to fetch churn map'); return r.json(); },
     enabled: activeTab === 'churn',
   });
 
   const { data: competitorData, isLoading: compLoading } = useQuery({
     queryKey: ['geomarketing-competitor'],
-    queryFn: () => fetch('/api/geomarketing/competitor-map').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/competitor-map'); if (!r.ok) throw new Error('Failed to fetch competitor map'); return r.json(); },
     enabled: activeTab === 'competitor',
   });
 
   const { data: scorerData, isLoading: scorerLoading } = useQuery({
     queryKey: ['geomarketing-scorer'],
-    queryFn: () => fetch('/api/geomarketing/site-scorer').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/site-scorer'); if (!r.ok) throw new Error('Failed to fetch site scorer'); return r.json(); },
     enabled: activeTab === 'scorer',
   });
 
   const { data: demoData, isLoading: demoLoading } = useQuery({
     queryKey: ['geomarketing-demographics'],
-    queryFn: () => fetch('/api/geomarketing/demographics').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/demographics'); if (!r.ok) throw new Error('Failed to fetch demographics'); return r.json(); },
     enabled: activeTab === 'demographics',
   });
 
   const { data: gapsData, isLoading: gapsLoading } = useQuery({
     queryKey: ['geomarketing-gaps'],
-    queryFn: () => fetch('/api/geomarketing/coverage-gaps').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/coverage-gaps'); if (!r.ok) throw new Error('Failed to fetch coverage gaps'); return r.json(); },
     enabled: activeTab === 'gaps',
   });
 
   const { data: riData, isLoading: riLoading } = useQuery({
     queryKey: ['geomarketing-revenue-impact'],
-    queryFn: () => fetch('/api/geomarketing/revenue-impact').then((r) => r.json()),
+    queryFn: async () => { const r = await fetch('/api/geomarketing/revenue-impact'); if (!r.ok) throw new Error('Failed to fetch revenue impact'); return r.json(); },
     enabled: activeTab === 'revimpact',
   });
 

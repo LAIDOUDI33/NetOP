@@ -104,18 +104,23 @@ export async function POST(request: NextRequest) {
 
     // Persist: only update groups with >1 alert (singletons get null = uncorrelated)
     const summaryGroups = groups.filter((g) => g.alerts.length > 1);
-    for (const group of summaryGroups) {
-      const ids = group.alerts.map((a) => a.id);
+
+    // Batch all correlated group updates
+    await Promise.all(
+      summaryGroups.map((group) => {
+        const ids = group.alerts.map((a) => a.id);
+        return db.alert.updateMany({
+          where: { id: { in: ids } },
+          data: { correlatedGroupId: group.groupId },
+        });
+      })
+    );
+
+    // Batch singleton correlation clear in a single query
+    const singletonIds = groups.filter((g) => g.alerts.length === 1).map((g) => g.alerts[0].id);
+    if (singletonIds.length > 0) {
       await db.alert.updateMany({
-        where: { id: { in: ids } },
-        data: { correlatedGroupId: group.groupId },
-      });
-    }
-    // Clear correlation on singletons
-    const singletons = groups.filter((g) => g.alerts.length === 1);
-    for (const g of singletons) {
-      await db.alert.update({
-        where: { id: g.alerts[0].id },
+        where: { id: { in: singletonIds } },
         data: { correlatedGroupId: null },
       });
     }

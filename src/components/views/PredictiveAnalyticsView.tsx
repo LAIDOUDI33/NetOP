@@ -138,7 +138,7 @@ function CapacityTab() {
   const t = useT();
   const { data, isLoading } = useQuery<CapacityItem[]>({
     queryKey: ['pred-capacity'],
-    queryFn: () => fetch('/api/predictive/capacity').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/capacity'); if (!r.ok) throw new Error('Failed to fetch capacity predictions'); return r.json(); },
   });
   const items = data ?? [];
   const highRisk = items.filter(i => i.riskLevel === 'critical' || i.riskLevel === 'high').length;
@@ -196,7 +196,7 @@ function ChurnTab() {
   const [segFilter, setSegFilter] = useState('all');
   const { data, isLoading } = useQuery<ChurnItem[]>({
     queryKey: ['pred-churn'],
-    queryFn: () => fetch('/api/predictive/churn').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/churn'); if (!r.ok) throw new Error('Failed to fetch churn predictions'); return r.json(); },
   });
   const items = data ?? [];
   const segments = ['all', ...Array.from(new Set(items.map(i => i.segmentName)))];
@@ -262,7 +262,7 @@ function FaultsTab() {
   const t = useT();
   const { data, isLoading } = useQuery<FaultItem[]>({
     queryKey: ['pred-faults'],
-    queryFn: () => fetch('/api/predictive/faults').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/faults'); if (!r.ok) throw new Error('Failed to fetch fault predictions'); return r.json(); },
   });
   const items = data ?? [];
   const critical = items.filter(i => i.severity === 'critical').length;
@@ -321,7 +321,7 @@ function TrafficTab() {
   const [metricFilter, setMetricFilter] = useState('all');
   const { data, isLoading } = useQuery<TrafficItem[]>({
     queryKey: ['pred-traffic'],
-    queryFn: () => fetch('/api/predictive/traffic').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/traffic'); if (!r.ok) throw new Error('Failed to fetch traffic predictions'); return r.json(); },
   });
   const items = data ?? [];
   const techs = ['all', ...Array.from(new Set(items.map(i => i.technology)))];
@@ -404,7 +404,7 @@ function RevenueTab() {
   const t = useT();
   const { data, isLoading } = useQuery<RevenueItem[]>({
     queryKey: ['pred-revenue'],
-    queryFn: () => fetch('/api/predictive/revenue').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/revenue'); if (!r.ok) throw new Error('Failed to fetch revenue predictions'); return r.json(); },
   });
   const items = data ?? [];
   const totalMonthly = items.reduce((s,i)=>s+i.currentMonthly,0);
@@ -465,7 +465,7 @@ export default function PredictiveAnalyticsView() {
 
   const { data: dashboard, isLoading: dashLoading } = useQuery<DashboardData>({
     queryKey: ['pred-dashboard'],
-    queryFn: () => fetch('/api/predictive/dashboard').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/predictive/dashboard'); if (!r.ok) throw new Error('Failed to fetch predictive dashboard'); return r.json(); },
   });
 
   return (

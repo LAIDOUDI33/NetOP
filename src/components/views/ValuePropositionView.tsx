@@ -119,8 +119,9 @@ export default function ValuePropositionView() {
 
   useEffect(() => {
     fetch('/api/value-proposition')
-      .then(r => r.json())
-      .then(setData);
+      .then(r => { if (!r.ok) throw new Error('Failed to fetch value proposition'); return r.json(); })
+      .then(setData)
+      .catch(err => console.error(err));
   }, []);
 
   if (!data) {

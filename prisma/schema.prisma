@@ -74,9 +74,8 @@ model KpiMetric {
   prbUtilization     Float?
   createdAt   DateTime    @default(now())
 
-  @@index([siteId])
+  @@unique([siteId, timestamp])
   @@index([technology])
-  @@index([timestamp])
 }
 
 model AlertRule {
@@ -421,7 +420,7 @@ model NetworkSlice {
   avgThroughput Float?
   avgLatency   Float?
   qci           Int?     // QoS Class Identifier
-  FiveQi        Int?     // 5G QoS Identifier
+  fiveQi        Int?     // 5G QoS Identifier
   parameters    String   @default("{}") // JSON: slice-specific params
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -450,9 +449,7 @@ model EnergyMetric {
   batteryLevel    Float?     // % if battery backup
   createdAt       DateTime    @default(now())
 
-  @@index([siteId])
-  @@index([technology])
-  @@index([timestamp])
+  @@unique([siteId, technology, timestamp])
   @@index([mode])
 }
 
@@ -569,7 +566,7 @@ model HealthScore {
   createdAt       DateTime    @default(now())
 
   @@index([siteId])
-  @@index([technology])
+  @@unique([siteId, technology, timestamp])
   @@index([region])
   @@index([grade])
 }
@@ -642,8 +639,7 @@ model CellLoad {
   timestamp       DateTime    @default(now())
   createdAt       DateTime    @default(now())
 
-  @@index([siteId])
-  @@index([technology])
+  @@unique([siteId, technology, timestamp])
   @@index([region])
   @@index([congestionLevel])
 }
@@ -929,10 +925,8 @@ model NpiRecord {
   timestamp       DateTime    @default(now())
   createdAt       DateTime    @default(now())
 
-  @@index([siteId])
-  @@index([technology])
+  @@unique([siteId, technology, timestamp])
   @@index([region])
-  @@index([timestamp])
 }
 
 model ServiceOrchestration {

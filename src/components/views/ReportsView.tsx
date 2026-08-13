@@ -731,7 +731,7 @@ function TemplatesTab() {
 
   const { data: templatesData, isLoading } = useQuery<{ templates: TemplateItem[] }>({
     queryKey: ['report-templates'],
-    queryFn: () => fetch('/api/reports/templates').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/reports/templates'); if (!r.ok) throw new Error('Failed to fetch report templates'); return r.json(); },
     refetchInterval: 60000,
   });
 
@@ -835,7 +835,7 @@ function SchedulesTab() {
 
   const { data: schedulesData, isLoading } = useQuery<{ schedules: ScheduleItem[] }>({
     queryKey: ['report-schedules'],
-    queryFn: () => fetch('/api/reports/schedules').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/reports/schedules'); if (!r.ok) throw new Error('Failed to fetch report schedules'); return r.json(); },
     refetchInterval: 30000,
   });
 
@@ -944,7 +944,7 @@ function HistoryTab() {
 
   const { data: historyData, isLoading } = useQuery<{ reports: HistoryItem[]; total: number }>({
     queryKey: ['report-history'],
-    queryFn: () => fetch('/api/reports/history?limit=50').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/reports/history?limit=50'); if (!r.ok) throw new Error('Failed to fetch report history'); return r.json(); },
     refetchInterval: 30000,
   });
 

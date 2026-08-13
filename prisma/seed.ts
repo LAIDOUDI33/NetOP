@@ -166,6 +166,16 @@ async function main() {
   await db.roiRecord.deleteMany();
   await db.trendForecast.deleteMany();
   await db.simulationScenario.deleteMany();
+  // Clear AI Module tables (children before parents)
+  await db.simulationResult.deleteMany();
+  await db.digitalTwinScenario.deleteMany();
+  await db.churnPrediction.deleteMany();
+  await db.trafficForecast.deleteMany();
+  await db.revenueProjection.deleteMany();
+  // Clear other standalone tables
+  await db.auditLog.deleteMany();
+  await db.sLATarget.deleteMany();
+  await db.anomalyEvent.deleteMany();
   // Clear Phase C tables
   await db.playbookStep.deleteMany();
   await db.playbook.deleteMany();
@@ -1606,7 +1616,7 @@ async function main() {
       activeUsers: sd.users,
       avgThroughput: sd.throughput,
       avgLatency: sd.latency,
-      FiveQi: sd.fiveQi,
+      fiveQi: sd.fiveQi,
       parameters: JSON.stringify({
         sliceType: sd.sliceType,
         description: sd.sliceType === 'eMBB' ? 'Enhanced Mobile Broadband' : sd.sliceType === 'URLLC' ? 'Ultra-Reliable Low Latency' : 'Massive Machine-Type Communications',

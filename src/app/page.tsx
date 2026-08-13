@@ -509,7 +509,7 @@ export default function Home() {
             <ViewRenderer />
           </div>
 
-          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background" dangerouslySetInnerHTML={{ __html: t('app.footer') }} />
+          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background"><span>{t('app.footer')}</span></footer>
         </main>
       </div>
     </div>

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function GET(request: Request) {
+  const { limited, remaining } = rateLimit(request, { windowMs: 60_000, max: 60 });
+  if (limited) return rateLimitResponse(remaining);
   try {
     const { searchParams } = new URL(request.url);
     const region = searchParams.get('region');

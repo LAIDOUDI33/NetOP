@@ -3,14 +3,54 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { checkApiAuth, authError, forbiddenError } from '@/lib/api-auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { randomBytes } from 'crypto';
 
 function randomSecret(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  return randomBytes(24).toString('hex');
+}
+
+/**
+ * Check if a URL points to an internal/private IP or hostname.
+ * Blocks: localhost, 127.x, 10.x, 172.16-31.x, 192.168.x, 169.254.x, ::1, 0.0.0.0
+ */
+function isInternalUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Block exact hostnames
+    if (hostname === 'localhost' || hostname === '::1' || hostname === '0.0.0.0') {
+      return true;
+    }
+
+    // IPv4 pattern checks
+    const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipv4Match) {
+      const octets = ipv4Match.slice(1).map(Number);
+      // 127.0.0.0/8 (loopback)
+      if (octets[0] === 127) return true;
+      // 10.0.0.0/8
+      if (octets[0] === 10) return true;
+      // 172.16.0.0/12
+      if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return true;
+      // 192.168.0.0/16
+      if (octets[0] === 192 && octets[1] === 168) return true;
+      // 169.254.0.0/16 (link-local)
+      if (octets[0] === 169 && octets[1] === 254) return true;
+      // 0.0.0.0
+      if (octets[0] === 0 && octets[1] === 0 && octets[2] === 0 && octets[3] === 0) return true;
+    }
+
+    // IPv6 compressed/expanded pattern checks
+    if (hostname.startsWith('fc') || hostname.startsWith('fd')) return true; // fc00::/7 (ULA)
+    if (hostname.startsWith('fe80')) return true; // fe80::/10 (link-local)
+    if (hostname === '::1') return true; // loopback
+    if (hostname === '::') return true; // unspecified
+
+    return false;
+  } catch {
+    return true; // Invalid URL is also blocked
   }
-  return result;
 }
 
 const createWebhookSchema = z.object({
@@ -136,6 +176,12 @@ export async function POST(request: Request) {
     }
 
     const { name, url, events, description, secret } = parsed.data;
+
+    // SSRF protection: block internal/private URLs
+    if (isInternalUrl(url)) {
+      return NextResponse.json({ error: 'URL interne non autorisee' }, { status: 400 });
+    }
+
     const eventsJson = JSON.stringify(events ?? []);
     const webhookSecret = secret || randomSecret();
 

@@ -71,7 +71,7 @@ export default function NetworkCommercialView() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['network-commercial'],
-    queryFn: () => fetch('/api/network-commercial').then(r => r.json()),
+    queryFn: async () => { const r = await fetch('/api/network-commercial'); if (!r.ok) throw new Error('Failed to fetch network commercial data'); return r.json(); },
   });
 
   const zones = (data?.zones ?? []) as NCZone[];

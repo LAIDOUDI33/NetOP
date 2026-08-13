@@ -124,9 +124,9 @@ export default function WilayaIntelligenceView() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['wilaya-intelligence', selectedCluster],
-    queryFn: () => {
+    queryFn: async () => {
       const params = selectedCluster !== 'all' ? `?cluster=${encodeURIComponent(selectedCluster)}` : '';
-      return fetch(`/api/wilaya-intelligence${params}`).then(r => r.json());
+      const r = await fetch(`/api/wilaya-intelligence${params}`); if (!r.ok) throw new Error('Failed to fetch wilaya intelligence'); return r.json();
     },
   });
 
