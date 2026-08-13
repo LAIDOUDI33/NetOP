@@ -2368,3 +2368,80 @@ Stage Summary:
   .env* files. However, the DATABASE_URL with file path is in git history.
   Recommendation: For a production deployment, consider using git-filter-repo
   to purge the .env from history if the repo was ever public.
+
+---
+Task ID: m2-2
+Agent: assistant-backend
+Task: Build NL query API and network summary API
+
+Work Log:
+- Created /api/assistant/query/route.ts — POST endpoint accepting { question } via zod, fetches lightweight aggregates from 8 DB tables in parallel (networkSite groupBy, alert groupBy/count, kpiMetric aggregate avg, churnPrediction findMany top-at-risk wilayas, capacityForecast groupBy, anomalyEvent count, subscriberSegment findMany), sends data summary + question to LLM with detailed system prompt, returns { answer, dataSource[], confidence }
+- Created /api/assistant/summary/route.ts — GET endpoint returning compact JSON snapshot: sites (total, byTech, byStatus), alerts (active, critical, bySeverity), kpis (avgRsrp, avgThroughput, avgAvailability), predictions (highRiskCapacity, increasingChurn, criticalFaults), anomalies (active, today), capacity (byRiskLevel), subscriberSegments
+- Both routes use only Prisma aggregates (count, groupBy, avg) — no raw SQL
+- Query route has rate limiting (20 req/min) and generic error messages (no error.message leakage)
+- Summary route has no rate limit (lightweight read-only)
+- Both pass ESLint with zero errors
+- No existing files modified
+
+Stage Summary:
+- 2 new API routes for AI assistant upgrade
+- NL query uses real-time DB data + LLM analysis
+- Summary provides compact network state
+---
+Task ID: m2-3
+Agent: assistant-frontend
+Task: Build upgraded AssistantView with 3 tabs
+
+Work Log:
+- Read existing AssistantView.tsx (423 lines, chat-only layout)
+- Checked available shadcn/ui components (Tabs exists)
+- Verified existing i18n keys for ai.* namespace
+- Rewrote AssistantView.tsx with Tabs layout (315 lines, under 500 limit)
+- Tab 1 (Chat): Preserved all existing chat functionality, added Clear Chat button, network summary fetch on mount via /api/assistant/summary, ExportButton retained
+- Tab 2 (NL Query): Textarea with Query button, 6 quick example chips, confidence badge with color coding, data source tags, loading skeleton, query history (last 5)
+- Tab 3 (Insight Reports): 7 domain buttons with loading spinners, report cards with domain badge + timestamp + whitespace-pre-wrap content, report history, loading skeleton
+- All text uses t() i18n function with specified keys
+- Responsive design with mobile-friendly grid tabs
+- Zero lint errors in the file
+
+Stage Summary:
+- 3-tab assistant view ready (Chat, NL Query, Insight Reports)
+- All existing chat functionality preserved and enhanced
+- File at 315 lines (well under 500 limit)
+
+---
+Task ID: m2-4
+Agent: i18n-assistant
+Task: Add i18n keys for AI assistant upgrade
+
+Work Log:
+- Added 15 new ai.* keys to EN, FR, AR locale files
+- EN: inserted after line 734 (ai.revenueInsight), before SON section
+- FR: inserted after line 731 (ai.revenueInsight), before SON section
+- AR: inserted after line 1201 (ai.revenueInsight), before SIMULATIONS section
+- Verified no duplicates — all 3 files now have 38 ai.* keys each
+- Key counts verified: EN=2555, FR=2554, AR=2554 (all above 2540+)
+- Zero lint errors in locale files
+
+Stage Summary:
+- All 3 locales now have AI assistant upgrade keys (chat, query, insights, history, etc.)
+
+
+---
+Task ID: m2-5
+Agent: Main
+Task: Verify Module 2 AI Assistant upgrade
+
+Work Log:
+- Verified 2 new API routes exist and compile
+- /api/assistant/summary returns 200 with 12 parallel Prisma queries
+- /api/assistant/query (NL) created with z-ai-web-dev-sdk integration
+- AssistantView.tsx rewritten with 3 tabs (Chat, NL Query, Insight Reports)
+- 15 new i18n keys added to EN/FR/AR (2555 keys total)
+- Lint: zero real errors in src/
+- Dev server: page loads, summary API returns 200
+
+Stage Summary:
+- Module 2 (AI Assistant Upgrade) COMPLETE
+- New: NL Query API, Network Summary API, 3-tab Assistant UI
+- Total assistant APIs: 5 (chat, insight, explain, query, summary)
