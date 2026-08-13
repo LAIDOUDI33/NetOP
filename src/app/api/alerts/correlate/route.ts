@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 type GroupedAlert = {
   id: string;
@@ -56,6 +57,7 @@ function tryCorrelate(
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 30_000, max: 1 });
   if (limited) return rateLimitResponse(resetMs);
 

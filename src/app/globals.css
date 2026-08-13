@@ -138,6 +138,30 @@
   margin-right: auto;
 }
 
+/* Table alignment for RTL */
+[dir="rtl"] table th,
+[dir="rtl"] table td {
+  text-align: right;
+}
+
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
 /* Enhanced keyboard focus indicators */
 :focus-visible {
   outline: 2px solid hsl(var(--primary));

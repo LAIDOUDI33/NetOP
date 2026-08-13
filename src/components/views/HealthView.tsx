@@ -558,7 +558,7 @@ export default function HealthView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={healthScores} filenamePrefix="health" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'overallScore', header: 'Overall' }, { key: 'grade', header: 'Grade' }, { key: 'trend', header: 'Trend' }]} />
+            <ExportButton data={healthScores} filenamePrefix="health" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'region', header: t('th.region') }, { key: 'overallScore', header: t('health.overall') }, { key: 'grade', header: t('th.grade') }, { key: 'trend', header: t('th.trend') }]} />
           </div>
         </CardHeader>
         <CardContent>

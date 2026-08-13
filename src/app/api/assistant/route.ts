@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const assistantSchema = z.object({
   question: z.string().min(1),
@@ -20,6 +21,7 @@ async function getZai() {
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 

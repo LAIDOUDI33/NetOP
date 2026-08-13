@@ -3,6 +3,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const explainSchema = z.object({
   type: z.enum(['anomaly', 'prediction']),
@@ -29,6 +30,7 @@ async function fetchRecord(type: string, id: string) {
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 

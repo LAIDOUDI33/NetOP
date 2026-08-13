@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
     const region = searchParams.get('region');
@@ -36,9 +38,10 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   try {
-    const body = await req.json();
+    const body = await request.json();
     const { name, description, scenarioType, targetRegion, parameters, targetSiteId } = body;
 
     if (!name || !scenarioType) {

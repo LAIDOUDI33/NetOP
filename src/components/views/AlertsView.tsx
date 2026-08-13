@@ -267,7 +267,7 @@ export default function AlertsView() {
         <CardHeader className="pb-2">
           <div className="flex flex-row items-center justify-between">
             <CardTitle className="text-base font-semibold">{t('alert.result', { n: data.alerts.length })}</CardTitle>
-            <ExportButton data={data.alerts} filenamePrefix="alerts" columns={[{ key: 'severity', header: 'Severity' }, { key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'value', header: 'Value' }, { key: 'threshold', header: 'Threshold' }, { key: 'message', header: 'Message' }, { key: 'status', header: 'Status' }]} />
+            <ExportButton data={data.alerts} filenamePrefix="alerts" columns={[{ key: 'severity', header: t('th.severity') }, { key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'metric', header: t('th.metric') }, { key: 'value', header: t('th.value') }, { key: 'threshold', header: t('th.threshold') }, { key: 'message', header: t('th.message') }, { key: 'status', header: t('th.status') }]} />
           </div>
         </CardHeader>
         <CardContent className="p-4">

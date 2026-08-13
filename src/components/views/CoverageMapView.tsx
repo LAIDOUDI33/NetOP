@@ -299,7 +299,7 @@ export default function CoverageMapView() {
           <CardTitle className="text-base font-semibold">
             {t('cov.regionStats')}
           </CardTitle>
-          <ExportButton data={regionStats} filenamePrefix="coverage-map" columns={[{ key: 'region', header: 'Region' }, { key: 'totalSites', header: 'Total Sites' }, { key: 'avgAvailability', header: 'Avg Availability (%)' }, { key: 'avgSignal', header: 'Avg Signal (dBm)' }]} />
+          <ExportButton data={regionStats} filenamePrefix="coverage-map" columns={[{ key: 'region', header: t('th.region') }, { key: 'totalSites', header: t('th.totalSites') }, { key: 'avgAvailability', header: t('th.avgAvailabilityPct') }, { key: 'avgSignal', header: t('th.avgSignalDbm') }]} />
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (

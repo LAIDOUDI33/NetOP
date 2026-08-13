@@ -195,7 +195,7 @@ export async function POST(request: Request) {
         isEnabled: true,
         successCount: 0,
         failureCount: 0,
-        createdBy: 'system',
+        createdBy: (await checkApiAuth(request)).id as string,
       },
     });
 
@@ -230,9 +230,10 @@ export async function PATCH(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('webhooks:*') || perms.includes('webhooks:edit');
     if (!canEdit) return forbiddenError();
   } catch (e: any) {
@@ -253,6 +254,11 @@ export async function PATCH(request: Request) {
     const existing = await db.webhook.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Webhook introuvable' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     const data: Record<string, unknown> = {};
@@ -302,9 +308,10 @@ export async function DELETE(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('webhooks:*') || perms.includes('webhooks:delete');
     if (!canDelete) return forbiddenError();
   } catch (e: any) {
@@ -323,6 +330,11 @@ export async function DELETE(request: Request) {
     const existing = await db.webhook.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Webhook introuvable' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     await db.webhookDelivery.deleteMany({ where: { webhookId: id } });

@@ -519,7 +519,7 @@ export default function SonView() {
                 <Activity className="h-4 w-4 text-muted-foreground" />
                 {t('son.recentActions')}
               </CardTitle>
-              <ExportButton data={actions} filenamePrefix="son" columns={[{ key: 'createdAt', header: 'Time' }, { key: 'moduleName', header: 'Module' }, { key: 'siteName', header: 'Site' }, { key: 'actionType', header: 'Action Type' }, { key: 'parameter', header: 'Parameter' }, { key: 'oldValue', header: 'Old Value' }, { key: 'newValue', header: 'New Value' }, { key: 'status', header: 'Status' }]} />
+              <ExportButton data={actions} filenamePrefix="son" columns={[{ key: 'createdAt', header: t('th.time') }, { key: 'moduleName', header: t('th.module') }, { key: 'siteName', header: t('th.site') }, { key: 'actionType', header: t('th.actionType') }, { key: 'parameter', header: t('th.parameter') }, { key: 'oldValue', header: t('th.oldValue') }, { key: 'newValue', header: t('th.newValue') }, { key: 'status', header: t('th.status') }]} />
             </CardHeader>
             <CardContent className="p-0">
               {actionsLoading ? (

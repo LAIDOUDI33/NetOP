@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { demoHoursAgo, demoDaysAgo, getDemoNow } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const createReportSchema = z.object({
   type: z.enum(['daily', 'weekly', 'sla', 'son', 'qoe']),
@@ -38,6 +39,7 @@ function extractField(items: any[], field: string): number[] {
 }
 
 export async function GET(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
@@ -485,6 +487,7 @@ async function handleQoeReport(
 // POST: Create a report metadata record
 // ────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
   try {

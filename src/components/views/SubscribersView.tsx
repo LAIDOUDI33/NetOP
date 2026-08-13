@@ -567,7 +567,7 @@ export default function SubscribersView() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t('sub.segments')}</CardTitle>
-          <ExportButton data={segments} filenamePrefix="subscribers" columns={[{ key: 'segmentName', header: 'Segment' }, { key: 'technology', header: 'Technology' }, { key: 'subscriberCount', header: 'Subscribers' }, { key: 'avgDataUsage', header: 'Avg Data (GB)' }, { key: 'arpu', header: 'ARPU' }, { key: 'churnRisk', header: 'Churn Risk' }, { key: 'satisfactionScore', header: 'Satisfaction' }, { key: 'peakHour', header: 'Peak Hour' }]} />
+          <ExportButton data={segments} filenamePrefix="subscribers" columns={[{ key: 'segmentName', header: t('th.segment') }, { key: 'technology', header: t('th.technology') }, { key: 'subscriberCount', header: t('th.subscribers') }, { key: 'avgDataUsage', header: t('th.avgDataGb') }, { key: 'arpu', header: t('th.arpu') }, { key: 'churnRisk', header: t('th.churnRisk') }, { key: 'satisfactionScore', header: t('th.satisfaction') }, { key: 'peakHour', header: t('th.peakHour') }]} />
         </CardHeader>
         <CardContent>
           <div className="max-h-96 overflow-y-auto">

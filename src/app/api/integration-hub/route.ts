@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
 import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 function generateHealthTimeline() {
   return Array.from({ length: 48 }, (_, i) => {
@@ -21,6 +22,7 @@ function generateHealthTimeline() {
 }
 
 export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
 

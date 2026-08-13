@@ -157,6 +157,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const currentUser = await checkApiAuth(request);
     const pipeline = await db.dataPipeline.create({
       data: {
         name: parsed.data.name,
@@ -166,6 +167,7 @@ export async function POST(request: Request) {
         schedule: parsed.data.schedule ?? '*/15 * * * *',
         transformationSteps: JSON.stringify(parsed.data.transformationSteps ?? []),
         retryMaxAttempts: parsed.data.retryMaxAttempts ?? 3,
+        createdBy: currentUser.id as string,
       },
     });
 
@@ -193,9 +195,10 @@ export async function PATCH(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:edit');
     if (!canEdit) return forbiddenError();
   } catch (e: any) {
@@ -218,6 +221,11 @@ export async function PATCH(request: Request) {
     const existing = await db.dataPipeline.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Pipeline non trouvé' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     // If toggling enabled, adjust status accordingly
@@ -254,9 +262,10 @@ export async function DELETE(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:delete');
     if (!canDelete) return forbiddenError();
   } catch (e: any) {
@@ -275,6 +284,11 @@ export async function DELETE(request: Request) {
     const existing = await db.dataPipeline.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Pipeline non trouvé' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     // Check for currently running executions

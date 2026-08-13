@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const createVendorSchema = z.object({
   vendor: z.string().min(1),
@@ -20,6 +21,7 @@ const patchVendorSchema = z.object({
 });
 
 export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
   try {
@@ -49,6 +51,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
   try {
@@ -101,6 +104,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
   try {

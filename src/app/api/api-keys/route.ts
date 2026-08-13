@@ -3,23 +3,10 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { checkApiAuth, authError, forbiddenError } from '@/lib/api-auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { createHash, randomBytes } from 'crypto';
 
-function randomChars(length: number): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-function randomHash(): string {
-  const chars = 'abcdef0123456789';
-  let result = '';
-  for (let i = 0; i < 64; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+function hashApiKey(key: string): string {
+  return `sha256$${createHash('sha256').update(key).digest('hex')}`;
 }
 
 const createApiKeySchema = z.object({
@@ -126,10 +113,9 @@ export async function POST(request: Request) {
     }
 
     const { name, permissions, description, expiresAt } = parsed.data;
-    const keySuffix = randomChars(32);
-    const keyPrefix = `nopt_${randomChars(4)}`;
-    const fullKey = `${keyPrefix}_${keySuffix}`;
-    const keyHash = `sha256$${randomHash()}`;
+    const rawKey = `nok_${randomBytes(24).toString('hex')}`;
+    const keyPrefix = rawKey.substring(0, 8);
+    const keyHash = hashApiKey(rawKey);
     const permissionsJson = JSON.stringify(permissions ?? []);
 
     const apiKey = await db.apiKey.create({
@@ -143,7 +129,7 @@ export async function POST(request: Request) {
         lastUsedAt: null,
         requestCount: 0,
         description: description ?? undefined,
-        createdBy: 'system',
+        createdBy: (await checkApiAuth(request)).id as string,
       },
     });
 
@@ -158,7 +144,7 @@ export async function POST(request: Request) {
       id: apiKey.id,
       name: apiKey.name,
       keyPrefix: apiKey.keyPrefix,
-      key: fullKey,
+      key: rawKey,
       permissions: parsedPermissions,
       expiresAt: apiKey.expiresAt?.toISOString() ?? null,
     }, { status: 201 });
@@ -175,9 +161,10 @@ export async function PATCH(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:edit');
     if (!canEdit) return forbiddenError();
   } catch (e: any) {
@@ -198,6 +185,11 @@ export async function PATCH(request: Request) {
     const existing = await db.apiKey.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Clé API introuvable' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     const data: Record<string, unknown> = {};
@@ -245,9 +237,10 @@ export async function DELETE(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:delete');
     if (!canDelete) return forbiddenError();
   } catch (e: any) {
@@ -266,6 +259,11 @@ export async function DELETE(request: Request) {
     const existing = await db.apiKey.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Clé API introuvable' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     await db.apiKey.delete({ where: { id } });

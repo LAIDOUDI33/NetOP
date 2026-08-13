@@ -375,7 +375,7 @@ function KpiReportTab() {
           <CardTitle className="text-base font-semibold">
             {t('rpt.siteRanking', { metric: METRICS.find(m => m.value === metric)?.label || metric })}
           </CardTitle>
-          <ExportButton data={rankedSites} filenamePrefix="reports" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'displayValue', header: 'Value' }]} />
+          <ExportButton data={rankedSites} filenamePrefix="reports" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'status', header: t('th.status') }, { key: 'displayValue', header: t('th.value') }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

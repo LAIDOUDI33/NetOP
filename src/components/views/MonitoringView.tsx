@@ -188,7 +188,7 @@ export default function MonitoringView() {
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-base font-semibold">{t('mon.siteDetails', { tech: selectedTechnology })}</CardTitle>
-          <ExportButton data={data.sites} filenamePrefix="monitoring" columns={[{ key: 'siteName', header: 'Site' }, { key: 'status', header: 'Status' }, { key: 'avgDownloadThroughput', header: 'DL (Mbps)' }, { key: 'avgUploadThroughput', header: 'UL (Mbps)' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'avgAvailability', header: 'Availability (%)' }, { key: 'avgActiveUsers', header: 'Users' }, { key: 'avgDropRate', header: 'Drop Rate (%)' }, { key: 'avgSinr', header: 'SINR (dB)' }]} />
+          <ExportButton data={data.sites} filenamePrefix="monitoring" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'status', header: t('th.status') }, { key: 'avgDownloadThroughput', header: t('th.dl') }, { key: 'avgUploadThroughput', header: t('th.ul') }, { key: 'avgLatency', header: t('th.latency') }, { key: 'avgAvailability', header: t('th.availabilityPct') }, { key: 'avgActiveUsers', header: t('th.users') }, { key: 'avgDropRate', header: t('th.dropRatePct') }, { key: 'avgSinr', header: t('th.sinr') }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

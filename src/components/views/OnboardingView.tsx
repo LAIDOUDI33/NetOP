@@ -567,7 +567,7 @@ export default function OnboardingView() {
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <Input
-                      placeholder="Lat"
+                      placeholder={t('onb.placeholderLat')}
                       className="h-8 text-sm"
                       type="number"
                       step="any"
@@ -576,7 +576,7 @@ export default function OnboardingView() {
                   </div>
                   <div>
                     <Input
-                      placeholder="Lng"
+                      placeholder={t('onb.placeholderLng')}
                       className="h-8 text-sm"
                       type="number"
                       step="any"
@@ -585,7 +585,7 @@ export default function OnboardingView() {
                   </div>
                   <div>
                     <Input
-                      placeholder="Alt (m)"
+                      placeholder={t('onb.placeholderAlt')}
                       className="h-8 text-sm"
                       type="number"
                       step="any"
@@ -665,7 +665,7 @@ export default function OnboardingView() {
               <Badge variant="secondary" className="ml-auto text-[10px]">
                 Auto-refresh: 15s
               </Badge>
-              <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: 'Site Name' }, { key: 'siteCode', header: 'Site Code' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'vendor', header: 'Vendor' }, { key: 'region', header: 'Region' }, { key: 'progress', header: 'Progress (%)' }, { key: 'createdAt', header: 'Created At' }]} />
+              <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: t('th.siteName') }, { key: 'siteCode', header: t('th.siteCode') }, { key: 'technology', header: t('th.technology') }, { key: 'status', header: t('th.status') }, { key: 'vendor', header: t('th.vendor') }, { key: 'region', header: t('th.region') }, { key: 'progress', header: t('th.progress') }, { key: 'createdAt', header: t('th.createdAt') }]} />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

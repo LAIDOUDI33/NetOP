@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { demoHoursAgo, getDemoNow } from '@/lib/demo-time';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 // ── Pearson correlation coefficient ──
 function pearson(xs: number[], ys: number[]): number {
@@ -25,6 +26,7 @@ function pearson(xs: number[], ys: number[]): number {
 }
 
 export async function GET(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);

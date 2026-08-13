@@ -440,7 +440,7 @@ function NewScenarioTab() {
           <div><label className="text-xs font-medium text-muted-foreground">{t('dt.region')}</label><Input value={region} onChange={e => setRegion(e.target.value)} required className="mt-1 h-9 text-sm" placeholder="e.g. Algiers" /></div>
           <div><label className="text-xs font-medium text-muted-foreground">{t('dt.type')}</label>
             <Select value={type} onValueChange={setType} required>
-              <SelectTrigger className="mt-1 h-9 text-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
+              <SelectTrigger className="mt-1 h-9 text-sm"><SelectValue placeholder={t('dt.placeholderSelectType')} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="what_if">{t('dt.whatIf')}</SelectItem>
                 <SelectItem value="disaster">{t('dt.disaster')}</SelectItem>

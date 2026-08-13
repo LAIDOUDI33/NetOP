@@ -111,6 +111,10 @@ const formatDZD = (n: number) => {
   return String(n);
 };
 
+// Default savings values (millions DZD) — used when API data lacks structured numeric fields
+const DEFAULT_REVENUE_AT_RISK_M = 469.3;
+const DEFAULT_REVENUE_LEAKAGE_M = 296.8;
+
 export default function ValuePropositionView() {
   const t = useT();
   const [data, setData] = useState<ValuePropData | null>(null);
@@ -141,7 +145,7 @@ export default function ValuePropositionView() {
   }
 
   const uniqueCount = data.summary.uniqueFeatures;
-  const totalSavings = 469.3 + 296.8; // Revenue at risk + leakage in millions
+  const totalSavings = DEFAULT_REVENUE_AT_RISK_M + DEFAULT_REVENUE_LEAKAGE_M;
 
   // TCO chart data
   const tcoChartData = data.tcoComparison.map(row => ({

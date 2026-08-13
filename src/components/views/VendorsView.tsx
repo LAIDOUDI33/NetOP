@@ -248,7 +248,7 @@ export default function VendorsView() {
             {t('vnd.subtitle')}
           </p>
         </div>
-        <ExportButton data={vendors as unknown as Record<string, any>[]} filenamePrefix="vendors" columns={[{ key: 'displayName', header: 'Vendor' }, { key: 'vendor', header: 'Code' }, { key: 'status', header: 'Status' }, { key: 'apiType', header: 'API Type' }, { key: 'technologies', header: 'Technologies' }, { key: 'stats.sitesManaged', header: 'Sites Managed' }, { key: 'stats.syncStatus', header: 'Sync Status' }]} />
+        <ExportButton data={vendors as unknown as Record<string, any>[]} filenamePrefix="vendors" columns={[{ key: 'displayName', header: t('th.vendor') }, { key: 'vendor', header: t('th.code') }, { key: 'status', header: t('th.status') }, { key: 'apiType', header: t('th.apiType') }, { key: 'technologies', header: t('th.technologies') }, { key: 'stats.sitesManaged', header: t('th.sitesManaged') }, { key: 'stats.syncStatus', header: t('th.syncStatus') }]} />
       </div>
 
       {/* ─── Stats Row ──────────────────────────────────────────────────── */}

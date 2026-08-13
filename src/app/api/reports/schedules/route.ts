@@ -306,9 +306,10 @@ export async function DELETE(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('reports:*') || perms.includes('reports:delete');
     if (!canDelete) return forbiddenError();
   } catch (e: any) {
@@ -332,6 +333,11 @@ export async function DELETE(request: Request) {
     const existing = await db.reportSchedule.findUnique({ where: { id: scheduleId } });
     if (!existing) {
       return NextResponse.json({ error: 'Programme non trouvé' }, { status: 404 });
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && existing.generatedBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     // Generated reports linked to this schedule will have scheduleId set to null (onDelete: SetNull)

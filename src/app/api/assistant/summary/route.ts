@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 /**
  * GET /api/assistant/summary
  * Returns a compact JSON snapshot of current network state.
  * Uses only Prisma aggregates (count, groupBy, avg) — no raw SQL.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   try {
     const [
       sitesByTech,

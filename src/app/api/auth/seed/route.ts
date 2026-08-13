@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { seedRbac } from '@/lib/rbac';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { checkPermission, authError, forbiddenError } from '@/lib/api-auth';
+import { checkApiAuth, checkPermission, authError, forbiddenError } from '@/lib/api-auth';
 
 export async function POST(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 

@@ -402,7 +402,7 @@ export default function IntegrationHubView() {
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{t('ig.createWebhook')}</DialogTitle><DialogDescription>Configure a new webhook endpoint.</DialogDescription></DialogHeader>
               <div className="space-y-4 py-2">
-                <div className="space-y-2"><Label htmlFor="wh-name">{t('ig.webhookName')}</Label><Input id="wh-name" value={whName} onChange={e => setWhName(e.target.value)} placeholder="My Webhook" /></div>
+                <div className="space-y-2"><Label htmlFor="wh-name">{t('ig.webhookName')}</Label><Input id="wh-name" value={whName} onChange={e => setWhName(e.target.value)} placeholder={t('ig.placeholderWebhook')} /></div>
                 <div className="space-y-2"><Label htmlFor="wh-url">{t('ig.url')}</Label><Input id="wh-url" value={whUrl} onChange={e => setWhUrl(e.target.value)} placeholder="https://example.com/webhook" /></div>
                 <div className="space-y-2">
                   <Label>{t('ig.events')}</Label>
@@ -486,7 +486,7 @@ export default function IntegrationHubView() {
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{t('ig.createKey')}</DialogTitle><DialogDescription>Generate a new API key with specific permissions.</DialogDescription></DialogHeader>
               <div className="space-y-4 py-2">
-                <div className="space-y-2"><Label htmlFor="ak-name">{t('ig.keyName')}</Label><Input id="ak-name" value={akName} onChange={e => setAkName(e.target.value)} placeholder="Production Key" /></div>
+                <div className="space-y-2"><Label htmlFor="ak-name">{t('ig.keyName')}</Label><Input id="ak-name" value={akName} onChange={e => setAkName(e.target.value)} placeholder={t('ig.placeholderApiKey')} /></div>
                 <div className="space-y-2">
                   <Label>{t('ig.permissions')}</Label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto rounded-md border p-3">

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(
-  _req: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   try {
     const { id } = await params;
     const scenario = await db.digitalTwinScenario.findUnique({

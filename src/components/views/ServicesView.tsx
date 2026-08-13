@@ -530,17 +530,17 @@ export default function ServicesView() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('filter.allRegions')}</SelectItem>
-                <SelectItem value="Alger Centre">Alger Centre</SelectItem>
-                <SelectItem value="Oran Métropole">Oran</SelectItem>
-                <SelectItem value="Constantine">Constantine</SelectItem>
-                <SelectItem value="Annaba">Annaba</SelectItem>
-                <SelectItem value="Sétif">Sétif</SelectItem>
-                <SelectItem value="Blida">Blida</SelectItem>
-                <SelectItem value="Tlemcen">Tlemcen</SelectItem>
-                <SelectItem value="Tizi Ouzou">Tizi Ouzou</SelectItem>
+                <SelectItem value="Alger Centre">{t('svc.regions.algerCentre')}</SelectItem>
+                <SelectItem value="Oran Métropole">{t('svc.regions.oranMetropole')}</SelectItem>
+                <SelectItem value="Constantine">{t('svc.regions.constantine')}</SelectItem>
+                <SelectItem value="Annaba">{t('svc.regions.annaba')}</SelectItem>
+                <SelectItem value="Sétif">{t('svc.regions.setif')}</SelectItem>
+                <SelectItem value="Blida">{t('svc.regions.blida')}</SelectItem>
+                <SelectItem value="Tlemcen">{t('svc.regions.tlemcen')}</SelectItem>
+                <SelectItem value="Tizi Ouzou">{t('svc.regions.tiziOuzou')}</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={services as unknown as Record<string, any>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: 'Service Name' }, { key: 'serviceType', header: 'Type' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'qoeScore', header: 'QoE Score' }, { key: 'activeSessions', header: 'Sessions' }, { key: 'avgLatency', header: 'Avg Latency (ms)' }]} />
+            <ExportButton data={services as unknown as Record<string, any>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: t('th.serviceName') }, { key: 'serviceType', header: t('th.type') }, { key: 'technology', header: t('th.technology') }, { key: 'region', header: t('th.region') }, { key: 'status', header: t('th.status') }, { key: 'qoeScore', header: t('th.qoeScore') }, { key: 'activeSessions', header: t('th.sessions') }, { key: 'avgLatency', header: t('th.avgLatencyMs') }]} />
           </div>
         </CardHeader>
         <CardContent>

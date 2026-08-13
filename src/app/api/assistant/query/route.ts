@@ -3,6 +3,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const querySchema = z.object({
   question: z.string().min(1).max(2000),
@@ -165,6 +166,7 @@ function inferDataSources(
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 20 });
   if (limited) return rateLimitResponse(resetMs);
 

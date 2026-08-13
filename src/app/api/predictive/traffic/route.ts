@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, remaining } = rateLimit(request, { windowMs: 60_000, max: 60 });
   if (limited) return rateLimitResponse(remaining);
   try {

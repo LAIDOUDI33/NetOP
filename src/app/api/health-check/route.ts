@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const startTime = Date.now();
 
@@ -10,6 +11,7 @@ const startTime = Date.now();
  * NO JWT required — this must be reachable by infrastructure probes.
  */
 export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
   const now = new Date();

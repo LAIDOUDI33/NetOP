@@ -140,9 +140,10 @@ export async function DELETE(request: Request) {
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 30 });
   if (limited) return rateLimitResponse(resetMs);
 
+  let currentUser!: Record<string, unknown>;
   try {
-    const user = await checkApiAuth(request);
-    const perms = (user.permissions as string[]) ?? [];
+    currentUser = await checkApiAuth(request);
+    const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('reports:*') || perms.includes('reports:delete');
     if (!canDelete) return forbiddenError();
   } catch (e: any) {
@@ -173,6 +174,11 @@ export async function DELETE(request: Request) {
         { error: 'Impossible de supprimer un modèle intégré', code: 'BUILT_IN' },
         { status: 403 },
       );
+    }
+
+    // IDOR ownership check
+    if (currentUser.id !== 'default-admin' && template.createdBy !== currentUser.id) {
+      return forbiddenError();
     }
 
     // Cascade deletes schedules and generated reports (handled by Prisma schema onDelete: Cascade)

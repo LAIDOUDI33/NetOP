@@ -411,8 +411,7 @@ function ViewRenderer() {
 
 
 export default function Home() {
-  const { sidebarOpen, toggleSidebar, user } = useAppStore();
-  const { currentView } = useAppStore();
+  const { sidebarOpen, toggleSidebar, user, currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
 

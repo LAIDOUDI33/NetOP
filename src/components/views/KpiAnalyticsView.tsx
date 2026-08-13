@@ -190,7 +190,7 @@ export default function KpiAnalyticsView() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">{t('kpi.siteComparison', { metric: t(METRIC_KEYS[metric]) + (METRIC_UNITS[metric] ? ` (${t(METRIC_UNITS[metric])})` : '') })}</CardTitle>
-          <ExportButton data={formattedSites} filenamePrefix="kpi" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'value', header: 'Value' }]} />
+          <ExportButton data={formattedSites} filenamePrefix="kpi" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'status', header: t('th.status') }, { key: 'value', header: t('th.value') }]} />
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="max-h-96">

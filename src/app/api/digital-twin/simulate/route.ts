@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
-export async function POST(req: NextRequest) {
-  const { limited, remaining } = rateLimit(req, { windowMs: 60_000, max: 10 });
+export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
+  const { limited, remaining } = rateLimit(request, { windowMs: 60_000, max: 10 });
   if (limited) return rateLimitResponse(remaining);
   try {
-    const { scenarioId } = await req.json();
+    const { scenarioId } = await request.json();
     if (!scenarioId) {
       return NextResponse.json({ error: 'scenarioId is required' }, { status: 400 });
     }

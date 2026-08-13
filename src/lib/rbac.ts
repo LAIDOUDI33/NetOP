@@ -113,7 +113,8 @@ export async function seedRbac() {
   const adminEmail = 'admin@netoptima-dz.local';
   const existingAdmin = await db.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash('admin123', 10);
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
     const adminRole = await db.role.findUnique({ where: { name: 'superadmin' } });
     const user = await db.user.create({
       data: { email: adminEmail, name: 'System Administrator', passwordHash, department: 'System' },
@@ -135,7 +136,8 @@ export async function seedRbac() {
   for (const du of demoUsers) {
     const existing = await db.user.findUnique({ where: { email: du.email } });
     if (!existing) {
-      const passwordHash = await bcrypt.hash('demo123', 10);
+      const demoPassword = process.env.DEMO_PASSWORD || 'demo123';
+      const passwordHash = await bcrypt.hash(demoPassword, 10);
       const role = await db.role.findUnique({ where: { name: du.role } });
       const user = await db.user.create({
         data: { email: du.email, name: du.name, passwordHash, department: du.dept },

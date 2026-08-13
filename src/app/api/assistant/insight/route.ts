@@ -3,6 +3,7 @@ import ZAI from 'z-ai-web-dev-sdk';
 import { z } from 'zod';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const VALID_DOMAINS = ['network', 'kpi', 'capacity', 'churn', 'faults', 'traffic', 'revenue'] as const;
 const insightSchema = z.object({
@@ -58,6 +59,7 @@ async function fetchDomainData(domain: string): Promise<string> {
 }
 
 export async function POST(request: NextRequest) {
+  try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 20 });
   if (limited) return rateLimitResponse(resetMs);
 

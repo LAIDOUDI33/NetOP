@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { checkApiAuth, authError } from '@/lib/api-auth';
 
 // ===== Competitive intelligence data based on real research =====
 
@@ -33,7 +34,8 @@ interface PillarData {
   maturityLevel: 'operational' | 'advanced' | 'unique';
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  try { await checkApiAuth(request); } catch { return authError(); }
 
   // ========== COMPETITIVE FEATURES MATRIX ==========
   const features: VendorFeature[] = [
