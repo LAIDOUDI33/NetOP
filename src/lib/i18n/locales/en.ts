@@ -2827,6 +2827,23 @@ const en: Record<string, string> = {
   'pred.trend': 'Trend',
   'pred.recommendation': 'Recommendation',
   'pred.noData': 'No prediction data available',
+
+  // ========== MODULE 3: NOC War Room — Real-Time ==========
+  'ws.connected': 'Real-time feed connected',
+  'ws.disconnected': 'Real-time feed disconnected',
+  'ws.live': 'LIVE',
+  'ws.liveUsers': 'Live Users',
+  'ws.criticalAlerts': 'Critical',
+  'ws.realtime': 'Real-time',
+  'ws.snapshot': 'Snapshot',
+  'live.users': 'Active Users',
+  'live.download': 'Download',
+  'live.upload': 'Upload',
+  'live.activeAlerts': 'Active Alerts',
+  'live.energyTitle': 'Energy Summary',
+  'live.incidentTitle': 'Incident Summary',
+  'live.realtimeGauges': 'Real-Time Gauges',
+  'live.avgTechHealth': 'Avg Tech Health',
 };
 
 export default en;

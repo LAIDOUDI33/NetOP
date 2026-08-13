@@ -12,6 +12,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { CommandPalette } from '@/components/CommandPalette';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { RealtimeAlertToasts } from '@/components/RealtimeAlertToasts';
+import { WsStatusIndicator } from '@/components/WsStatusIndicator';
+import { RealtimeSidebarStats } from '@/components/RealtimeSidebarStats';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
@@ -447,6 +450,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <WsStatusIndicator className="mr-1" />
             <NotificationCenter />
             <LocaleToggle />
             <ThemeToggle />
@@ -455,6 +459,8 @@ export default function Home() {
       </header>
 
       <div className="flex flex-1 min-h-0">
+        <RealtimeAlertToasts />
+
         {/* Desktop Sidebar */}
         <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-e transition-all duration-200 sidebar-rtl ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
           <div className={`flex items-center gap-2 px-4 h-14 border-b shrink-0 ${sidebarOpen ? '' : 'justify-center px-2'}`}>
@@ -464,6 +470,7 @@ export default function Home() {
           <ScrollArea className="flex-1">
             <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate}  />
           </ScrollArea>
+          {sidebarOpen && <RealtimeSidebarStats />}
           <div className="border-t p-2 shrink-0 flex items-center gap-1">
             <Button variant="ghost" size="icon" className={`h-8 ${sidebarOpen ? 'w-8 ms-auto' : 'w-full'}`} onClick={toggleSidebar} aria-label={sidebarOpen ? t('app.collapseSidebar') : t('app.expandSidebar')}>
               <ChevronLeft className={`h-4 w-4 transition-transform chevron-rtl ${sidebarOpen ? '' : 'rotate-180'}`} />
@@ -479,6 +486,7 @@ export default function Home() {
               <p className="text-xs text-muted-foreground">{t('app.tagline')}</p>
             </div>
             <div className="flex items-center gap-2">
+              <WsStatusIndicator className="mr-1" />
               <NotificationCenter />
               <LocaleToggle />
               <ThemeToggle />

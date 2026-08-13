@@ -2775,6 +2775,23 @@ const ar: Record<string, string> = {
   'pred.trend': 'الاتجاه',
   'pred.recommendation': 'التوصية',
   'pred.noData': 'لا توجد بيانات تنبؤية',
+
+  // ========== MODULE 3: غرفة عمليات NOC — الوقت الحقيقي ==========
+  'ws.connected': 'البث المباشر متصل',
+  'ws.disconnected': 'البث المباشر غير متصل',
+  'ws.live': 'مباشر',
+  'ws.liveUsers': 'المستخدمون النشطون',
+  'ws.criticalAlerts': 'حرجة',
+  'ws.realtime': 'الوقت الحقيقي',
+  'ws.snapshot': 'لقطة',
+  'live.users': 'المستخدمون النشطون',
+  'live.download': 'التنزيل',
+  'live.upload': 'الرفع',
+  'live.activeAlerts': 'التنبيهات النشطة',
+  'live.energyTitle': 'ملخص الطاقة',
+  'live.incidentTitle': 'ملخص الحوادث',
+  'live.realtimeGauges': 'مقاييس الوقت الحقيقي',
+  'live.avgTechHealth': 'متوسط صحة التقنية',
 };
 
 export default ar;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState, useMemo } from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ExportButton } from '@/components/ExportButton';
+import { useSocket, type KpiUpdateItem } from '@/hooks/useSocket';
 import type { DashboardData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -43,6 +45,35 @@ function formatTimestamp(ts: string) {
 
 export default function DashboardView() {
   const t = useT();
+  const { isConnected, onKpiUpdate, onAlertPulse } = useSocket();
+  const [wsKpiData, setWsKpiData] = useState<KpiUpdateItem[]>([]);
+  const [wsAlertCount, setWsAlertCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const unsub = onKpiUpdate(setWsKpiData);
+    return unsub;
+  }, [onKpiUpdate]);
+
+  useEffect(() => {
+    const unsub = onAlertPulse((pulse) => {
+      setWsAlertCount(pulse.unresolvedCritical + pulse.unresolvedWarning);
+    });
+    return unsub;
+  }, [onAlertPulse]);
+
+  // Compute real-time merged values
+  const rtUsers = useMemo(() => {
+    if (wsKpiData.length === 0) return null;
+    return wsKpiData.reduce((s, item) => s + item.activeUsers, 0);
+  }, [wsKpiData]);
+
+  const rtThroughput = useMemo(() => {
+    if (wsKpiData.length === 0) return null;
+    const totalDl = wsKpiData.reduce((s, item) => s + item.downloadThroughput, 0);
+    const totalUl = wsKpiData.reduce((s, item) => s + item.uploadThroughput, 0);
+    return { download: totalDl / wsKpiData.length, upload: totalUl / wsKpiData.length };
+  }, [wsKpiData]);
+
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ['dashboard'],
     queryFn: () => fetch('/api/dashboard').then(r => { if (!r.ok) throw new Error('Dashboard API error: ' + r.status); return r.json(); }),
@@ -121,9 +152,14 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('dash.activeUsers')}</p>
-                <p className="text-2xl font-bold">{data.totalActiveUsers.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">{t('dash.acrossAllTech')}</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {t('dash.activeUsers')}
+                  {isConnected && rtUsers != null && (
+                    <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
+                  )}
+                </p>
+                <p className="text-2xl font-bold tabular-nums">{(rtUsers ?? data.totalActiveUsers).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">{isConnected && rtUsers != null ? t('ws.realtime') : t('dash.acrossAllTech')}</p>
               </div>
               <Users className="h-8 w-8 text-emerald-500" />
             </div>
@@ -134,14 +170,19 @@ export default function DashboardView() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">{t('dash.avgThroughput')}</p>
-                <p className="text-2xl font-bold">
-                  <span className="text-emerald-600">{(data.avgThroughput.download ?? 0).toFixed(1)}</span>
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {t('dash.avgThroughput')}
+                  {isConnected && rtThroughput != null && (
+                    <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
+                  )}
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  <span className="text-emerald-600">{(rtThroughput?.download ?? data.avgThroughput.download ?? 0).toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> / </span>
-                  <span className="text-cyan-600">{(data.avgThroughput.upload ?? 0).toFixed(1)}</span>
+                  <span className="text-cyan-600">{(rtThroughput?.upload ?? data.avgThroughput.upload ?? 0).toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground"> Mbps</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{t('dash.dlUlAvg')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{isConnected && rtThroughput != null ? t('ws.realtime') : t('dash.dlUlAvg')}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-cyan-500" />
             </div>
@@ -156,7 +197,12 @@ export default function DashboardView() {
                 <p className={`text-2xl font-bold ${healthPercent >= 95 ? 'text-emerald-600' : healthPercent >= 85 ? 'text-amber-600' : 'text-red-600'}`}>
                   {healthPercent}%
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{t('dash.activeAlerts', { n: data.activeAlerts })}</p>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  {isConnected && wsAlertCount != null
+                    ? <>{t('dash.activeAlerts', { n: wsAlertCount })}<span className="relative flex h-1.5 w-1.5 ms-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span></>
+                    : t('dash.activeAlerts', { n: data.activeAlerts })
+                  }
+                </p>
               </div>
               <Activity className="h-8 w-8 text-amber-500" />
             </div>

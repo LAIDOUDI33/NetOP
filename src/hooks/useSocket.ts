@@ -13,6 +13,7 @@ export interface KpiUpdateItem {
   availability: number;
   activeUsers: number;
   sinr: number;
+  prbUtilization: number;
   sites: number;
 }
 
@@ -22,8 +23,22 @@ export interface AlertPulseData {
   timestamp: string;
 }
 
+export interface LiveAlertItem {
+  id: string;
+  siteName: string;
+  siteCode: string;
+  technology: string;
+  metric: string;
+  value: number;
+  threshold: number;
+  severity: 'critical' | 'warning' | 'info';
+  message: string;
+  createdAt: string;
+}
+
 type KpiUpdateCallback = (data: KpiUpdateItem[]) => void;
 type AlertPulseCallback = (data: AlertPulseData) => void;
+type LiveAlertCallback = (alerts: LiveAlertItem[]) => void;
 
 // ── Singleton socket instance (shared across all hook consumers) ───────────────
 
@@ -59,6 +74,7 @@ export function useSocket() {
   // Subscriber refs — stable references for socket event handlers
   const kpiSubsRef = useRef<Set<KpiUpdateCallback>>(new Set());
   const alertSubsRef = useRef<Set<AlertPulseCallback>>(new Set());
+  const liveAlertSubsRef = useRef<Set<LiveAlertCallback>>(new Set());
   const criticalCountRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -88,10 +104,15 @@ export function useSocket() {
       }
     };
 
+    const onLiveAlerts = (alerts: LiveAlertItem[]) => {
+      liveAlertSubsRef.current.forEach((cb) => cb(alerts));
+    };
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('kpi-update', onKpiUpdate);
     socket.on('alert-pulse', onAlertPulse);
+    socket.on('live-alerts', onLiveAlerts);
 
     // Sync initial connection state
     if (socket.connected) {
@@ -103,6 +124,7 @@ export function useSocket() {
       socket.off('disconnect', onDisconnect);
       socket.off('kpi-update', onKpiUpdate);
       socket.off('alert-pulse', onAlertPulse);
+      socket.off('live-alerts', onLiveAlerts);
 
       connectionCount--;
       if (connectionCount <= 0 && socketInstance) {
@@ -139,6 +161,13 @@ export function useSocket() {
     };
   }, []);
 
+  const onLiveAlerts = useCallback((callback: LiveAlertCallback) => {
+    liveAlertSubsRef.current.add(callback);
+    return () => {
+      liveAlertSubsRef.current.delete(callback);
+    };
+  }, []);
+
   return {
     socket: socketInstance,
     isConnected,
@@ -146,5 +175,6 @@ export function useSocket() {
     lastAlertPulse,
     onKpiUpdate,
     onAlertPulse,
+    onLiveAlerts,
   };
 }

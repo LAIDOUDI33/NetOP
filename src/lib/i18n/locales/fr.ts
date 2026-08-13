@@ -2828,6 +2828,23 @@ const fr: Record<string, string> = {
   'pred.trend': 'Tendance',
   'pred.recommendation': 'Recommandation',
   'pred.noData': 'Aucune donnée de prédiction',
+
+  // ========== MODULE 3: NOC War Room — Temps Réel ==========
+  'ws.connected': 'Flux temps réel connecté',
+  'ws.disconnected': 'Flux temps réel déconnecté',
+  'ws.live': 'EN DIRECT',
+  'ws.liveUsers': 'Utilisateurs Live',
+  'ws.criticalAlerts': 'Critiques',
+  'ws.realtime': 'Temps réel',
+  'ws.snapshot': 'Instantané',
+  'live.users': 'Utilisateurs Actifs',
+  'live.download': 'Téléchargement',
+  'live.upload': 'Envoi',
+  'live.activeAlerts': 'Alertes Actives',
+  'live.energyTitle': 'Résumé Énergie',
+  'live.incidentTitle': 'Résumé Incidents',
+  'live.realtimeGauges': 'Jauges Temps Réel',
+  'live.avgTechHealth': 'Santé Moy. Tech',
 };
 
 export default fr;

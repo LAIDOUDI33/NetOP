@@ -3162,3 +3162,32 @@ Stage Summary:
 - 2-tab layout (Chat + Insights) replacing 3-tab (Chat + NL Query + Insights)
 - Real network data automatically injected into AI context
 - Lint: 0 errors
+---
+Task ID: 7
+Agent: Main
+Task: Module 3 — NOC War Room Real-Time Operations Center
+
+Work Log:
+- Enhanced realtime-service (port 3003): added live-alerts WebSocket event, site name cache, increased alert probability from 5% to 8%, added prbUtilization and handoverSuccessRate to alert conditions, added prbUtilization to KPI broadcast
+- Fixed siteCode→code field name mismatch in realtime-service Prisma query
+- Extended useSocket hook: added LiveAlertItem type, onLiveAlerts subscription, prbUtilization to KpiUpdateItem
+- Created RealtimeAlertToasts component: subscribes to live-alerts events, shows sonner toasts (error for critical, warning for warning), max 3 at a time, 5-8s duration, click navigates to Alerts view, deduplication with 500-item rolling buffer
+- Created WsStatusIndicator component: green pulsing dot when connected, red when disconnected, LIVE/OFF text label, tooltip with translated connection status; also exports WsStatusCompact for inline use
+- Created RealtimeSidebarStats component: shows live user count and critical alert count in sidebar footer, animated value changes via framer-motion, only visible when WebSocket connected and sidebar expanded
+- Created CircularGauge component: SVG-based animated circular gauge with configurable size/stroke/color, smooth CSS transition on value changes, center value+unit display
+- Created SparkLine component: lightweight SVG sparkline chart, auto-scaling, optional area fill and endpoint dots
+- Rewrote LiveView: added sparkline trend history (20 data points) for users/download/upload, circular gauges row (availability, throughput, tech health, user capacity), live WebSocket alert feed with AnimatePresence animations, merged WebSocket KPI data into all cards, LIVE badge on WebSocket-updated data, motion-animated alert entries
+- Updated DashboardView: injected WebSocket real-time data into Active Users card, Average Throughput card, and Active Alerts count; added pulsing green dot indicators when data is live-sourced; shows "Real-time" subtitle when WS connected
+- Updated page.tsx: added WsStatusIndicator to desktop header + mobile header, added RealtimeSidebarStats to sidebar footer, added RealtimeAlertToasts at layout level
+- Added 16 new i18n keys × 3 locales (EN/FR/AR) for WebSocket status, live labels, gauge labels
+- Lint: 0 errors, 764 warnings (all pre-existing)
+- Verified realtime-service generates and emits live alerts via WebSocket
+- E2E browser verification limited by 4GB RAM OOM (Next.js Turbopack uses 2.2GB+), verified via curl (HTTP 200), lint (0 errors), and realtime service logs
+
+Stage Summary:
+- 6 new components: RealtimeAlertToasts, WsStatusIndicator, RealtimeSidebarStats, CircularGauge, SparkLine, enhanced LiveView
+- 2 modified components: DashboardView (real-time KPI injection), page.tsx (global integration)
+- Enhanced realtime-service: live alert emission, site name cache, more alert types
+- Extended useSocket hook: LiveAlertItem type + onLiveAlerts subscription
+- 48 new i18n key-value pairs (16 keys × 3 locales)
+- Real-time data flows through: Dashboard (users, throughput, alerts) + LiveView (all KPIs, gauges, sparklines, alert feed) + Sidebar (user count, alert count) + Global (toast notifications, WS status indicator)

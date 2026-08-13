@@ -28,8 +28,27 @@ function jitterInt(value: number, pct: number): number {
   return Math.round(value + delta);
 }
 
+// Site name cache for real-time alerts
+let siteNameCache = new Map<string, { name: string; code: string }>();
+
+async function loadSiteNames() {
+  try {
+    const sites = await prisma.networkSite.findMany({
+      select: { id: true, name: true, code: true },
+      take: 500,
+    });
+    siteNameCache = new Map(sites.map(s => [s.id, { name: s.name, code: s.code }]));
+    console.log(`[Cache] Loaded ${siteNameCache.size} site names`);
+  } catch (e) {
+    console.error("[Cache] Failed to load site names:", e);
+  }
+}
+
+function getSiteInfo(siteId: string): { name: string; code: string } {
+  return siteNameCache.get(siteId) ?? { name: 'Unknown', code: '' };
+}
+
 // ── 1. Continuous Data Generation (every 30 seconds) ─────────────────────────
-// Optimized: Batch queries instead of N+1 per site
 
 async function generateFreshKpiData() {
   try {
@@ -45,7 +64,6 @@ async function generateFreshKpiData() {
 
     const siteIds = sites.map(s => s.id);
 
-    // Batch: get latest KPI per site in a single query
     const placeholders = siteIds.map(() => '?').join(',');
     const latestKpis = await prisma.$queryRawUnsafe(
       `SELECT k.* FROM KpiMetric k
@@ -56,21 +74,34 @@ async function generateFreshKpiData() {
          GROUP BY siteId
        ) latest ON k.siteId = latest.siteId AND k.timestamp = latest.maxTs`,
       ...siteIds
-    ) as Array<{ siteId: string; rssi: number | null; rsrp: number | null; rsrq: number | null; sinr: number | null; rscp: number | null; ecno: number | null; rxlev: number | null; cqichannel: number | null; downloadThroughput: number | null; uploadThroughput: number | null; latency: number | null; jitter: number | null; packetLoss: number | null; availability: number | null; activeUsers: number | null; handoverSuccessRate: number | null; dropRate: number | null; blockedCallRate: number | null; prbUtilization: number | null }>;
+    ) as Array<Record<string, unknown>>;
 
-    // Build lookup map
-    const kpiMap = new Map(latestKpis.map(k => [k.siteId, k]));
+    const kpiMap = new Map(latestKpis.map(k => [k.siteId as string, k]));
 
     const now = new Date();
     const kpiRecords: Array<Record<string, unknown>> = [];
     const alertRecords: Array<Record<string, unknown>> = [];
+    const liveAlerts: Array<{
+      id: string;
+      siteName: string;
+      siteCode: string;
+      technology: string;
+      metric: string;
+      value: number;
+      threshold: number;
+      severity: string;
+      message: string;
+      createdAt: string;
+    }> = [];
 
     const alertMetricOptions = [
-      { field: "rsrp" as const, threshold: -110, condition: "<" as const, severity: "warning" as const },
-      { field: "sinr" as const, threshold: -3, condition: "<" as const, severity: "critical" as const },
-      { field: "availability" as const, threshold: 95, condition: "<" as const, severity: "critical" as const },
-      { field: "dropRate" as const, threshold: 2, condition: ">" as const, severity: "warning" as const },
-      { field: "latency" as const, threshold: 50, condition: ">" as const, severity: "warning" as const },
+      { field: "rsrp", threshold: -110, condition: "<", severity: "warning" },
+      { field: "sinr", threshold: -3, condition: "<", severity: "critical" },
+      { field: "availability", threshold: 95, condition: "<", severity: "critical" },
+      { field: "dropRate", threshold: 2, condition: ">", severity: "warning" },
+      { field: "latency", threshold: 50, condition: ">", severity: "warning" },
+      { field: "prbUtilization", threshold: 85, condition: ">", severity: "warning" },
+      { field: "handoverSuccessRate", threshold: 95, condition: "<", severity: "critical" },
     ];
 
     for (const site of sites) {
@@ -81,37 +112,41 @@ async function generateFreshKpiData() {
         siteId: site.id,
         technology: site.technology,
         timestamp: now,
-        rssi: base.rssi != null ? jitter(base.rssi, 0.03) : null,
-        rsrp: base.rsrp != null ? jitter(base.rsrp, 0.03) : null,
-        rsrq: base.rsrq != null ? jitter(base.rsrq, 0.04) : null,
-        sinr: base.sinr != null ? jitter(base.sinr, 0.05) : null,
-        rscp: base.rscp != null ? jitter(base.rscp, 0.03) : null,
-        ecno: base.ecno != null ? jitter(base.ecno, 0.04) : null,
-        rxlev: base.rxlev != null ? jitter(base.rxlev, 0.03) : null,
-        cqichannel: base.cqichannel != null ? jitter(base.cqichannel, 0.04) : null,
-        downloadThroughput: base.downloadThroughput != null ? jitter(base.downloadThroughput, 0.08) : null,
-        uploadThroughput: base.uploadThroughput != null ? jitter(base.uploadThroughput, 0.08) : null,
-        latency: base.latency != null ? jitter(base.latency, 0.05) : null,
-        jitter: base.jitter != null ? jitter(base.jitter, 0.06) : null,
-        packetLoss: base.packetLoss != null ? jitter(base.packetLoss, 0.10) : null,
-        availability: base.availability != null ? jitter(base.availability, 0.005) : null,
-        activeUsers: base.activeUsers != null ? jitterInt(base.activeUsers, 0.15) : null,
-        handoverSuccessRate: base.handoverSuccessRate != null ? jitter(base.handoverSuccessRate, 0.01) : null,
-        dropRate: base.dropRate != null ? Math.max(0, jitter(base.dropRate, 0.15)) : null,
-        blockedCallRate: base.blockedCallRate != null ? Math.max(0, jitter(base.blockedCallRate, 0.15)) : null,
-        prbUtilization: base.prbUtilization != null ? jitter(base.prbUtilization, 0.06) : null,
+        rssi: base.rssi != null ? jitter(base.rssi as number, 0.03) : null,
+        rsrp: base.rsrp != null ? jitter(base.rsrp as number, 0.03) : null,
+        rsrq: base.rsrq != null ? jitter(base.rsrq as number, 0.04) : null,
+        sinr: base.sinr != null ? jitter(base.sinr as number, 0.05) : null,
+        rscp: base.rscp != null ? jitter(base.rscp as number, 0.03) : null,
+        ecno: base.ecno != null ? jitter(base.ecno as number, 0.04) : null,
+        rxlev: base.rxlev != null ? jitter(base.rxlev as number, 0.03) : null,
+        cqichannel: base.cqichannel != null ? jitter(base.cqichannel as number, 0.04) : null,
+        downloadThroughput: base.downloadThroughput != null ? jitter(base.downloadThroughput as number, 0.08) : null,
+        uploadThroughput: base.uploadThroughput != null ? jitter(base.uploadThroughput as number, 0.08) : null,
+        latency: base.latency != null ? jitter(base.latency as number, 0.05) : null,
+        jitter: base.jitter != null ? jitter(base.jitter as number, 0.06) : null,
+        packetLoss: base.packetLoss != null ? jitter(base.packetLoss as number, 0.10) : null,
+        availability: base.availability != null ? jitter(base.availability as number, 0.005) : null,
+        activeUsers: base.activeUsers != null ? jitterInt(base.activeUsers as number, 0.15) : null,
+        handoverSuccessRate: base.handoverSuccessRate != null ? jitter(base.handoverSuccessRate as number, 0.01) : null,
+        dropRate: base.dropRate != null ? Math.max(0, jitter(base.dropRate as number, 0.15)) : null,
+        blockedCallRate: base.blockedCallRate != null ? Math.max(0, jitter(base.blockedCallRate as number, 0.15)) : null,
+        prbUtilization: base.prbUtilization != null ? jitter(base.prbUtilization as number, 0.06) : null,
       };
 
       kpiRecords.push(data);
 
-      // 5% chance to generate alert
-      if (Math.random() < 0.05) {
+      // 8% chance to generate alert (increased for more live activity)
+      if (Math.random() < 0.08) {
         const m = alertMetricOptions[Math.floor(Math.random() * alertMetricOptions.length)];
         const val = data[m.field];
         if (val != null) {
           const breached = m.condition === "<" ? (val as number) < m.threshold : (val as number) > m.threshold;
           if (breached) {
+            const siteInfo = getSiteInfo(site.id);
+            const alertMsg = `${site.technology} ${m.field} ${m.condition} ${m.threshold}: current ${(val as number).toFixed(1)}`;
+            const alertId = `rt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
             alertRecords.push({
+              id: alertId,
               siteId: site.id,
               technology: site.technology,
               metric: m.field,
@@ -119,7 +154,21 @@ async function generateFreshKpiData() {
               threshold: m.threshold,
               condition: m.condition,
               severity: m.severity,
-              message: `${site.technology} ${m.field} ${m.condition} ${m.threshold}: current ${(val as number).toFixed(1)}`,
+              message: alertMsg,
+              createdAt: now,
+            });
+            // Also push to live alerts array for WebSocket emission
+            liveAlerts.push({
+              id: alertId,
+              siteName: siteInfo.name,
+              siteCode: siteInfo.code,
+              technology: site.technology,
+              metric: m.field,
+              value: val as number,
+              threshold: m.threshold,
+              severity: m.severity,
+              message: alertMsg,
+              createdAt: now.toISOString(),
             });
           }
         }
@@ -137,6 +186,12 @@ async function generateFreshKpiData() {
       await prisma.alert.createMany({ data: alertRecords });
     }
 
+    // ── NEW: Emit live alerts to all connected clients ──
+    if (liveAlerts.length > 0) {
+      io.emit("live-alerts", liveAlerts);
+      console.log(`[DataGen] Emitted ${liveAlerts.length} live alerts via WebSocket`);
+    }
+
     console.log(`[DataGen] Generated ${kpiRecords.length} KPI records, ${alertRecords.length} alerts at ${now.toISOString()}`);
   } catch (error) {
     console.error("[DataGen] Error:", error);
@@ -149,16 +204,7 @@ async function broadcastKpiUpdate() {
   try {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
-    const results: Array<{
-      technology: string;
-      avg_downloadThroughput: number | null;
-      avg_uploadThroughput: number | null;
-      avg_latency: number | null;
-      avg_availability: number | null;
-      avg_activeUsers: number | null;
-      avg_sinr: number | null;
-      sites: bigint;
-    }> = await prisma.$queryRawUnsafe(
+    const results = await prisma.$queryRawUnsafe(
       `SELECT
         technology,
         AVG(downloadThroughput) AS avg_downloadThroughput,
@@ -167,30 +213,23 @@ async function broadcastKpiUpdate() {
         AVG(availability)       AS avg_availability,
         AVG(activeUsers)        AS avg_activeUsers,
         AVG(sinr)               AS avg_sinr,
+        AVG(prbUtilization)     AS avg_prbUtilization,
         COUNT(*)                AS sites
       FROM KpiMetric
       WHERE timestamp >= ?
       GROUP BY technology`,
       oneHourAgo
-    ) as Array<{
-      technology: string;
-      avg_downloadThroughput: number | null;
-      avg_uploadThroughput: number | null;
-      avg_latency: number | null;
-      avg_availability: number | null;
-      avg_activeUsers: number | null;
-      avg_sinr: number | null;
-      sites: bigint;
-    }>;
+    ) as Array<Record<string, unknown>>;
 
     const payload = results.map((row) => ({
-      technology: row.technology,
-      downloadThroughput: row.avg_downloadThroughput ?? 0,
-      uploadThroughput: row.avg_uploadThroughput ?? 0,
-      latency: row.avg_latency ?? 0,
-      availability: row.avg_availability ?? 0,
+      technology: row.technology as string,
+      downloadThroughput: Number(row.avg_downloadThroughput ?? 0),
+      uploadThroughput: Number(row.avg_uploadThroughput ?? 0),
+      latency: Number(row.avg_latency ?? 0),
+      availability: Number(row.avg_availability ?? 0),
       activeUsers: Number(row.avg_activeUsers ?? 0),
-      sinr: row.avg_sinr ?? 0,
+      sinr: Number(row.avg_sinr ?? 0),
+      prbUtilization: Number(row.avg_prbUtilization ?? 0),
       sites: Number(row.sites),
     }));
 
@@ -281,17 +320,20 @@ io.on("connection", (socket) => {
 
 // ── 6. Start All Intervals ─────────────────────────────────────────────────────
 
-// Data generation: every 30 seconds
-setInterval(generateFreshKpiData, 30_000);
-// KPI broadcast: every 10 seconds
-setInterval(broadcastKpiUpdate, 10_000);
-// Alert pulse: every 15 seconds
-setInterval(broadcastAlertPulse, 15_000);
+// Load site names first, then start everything
+loadSiteNames().then(() => {
+  // Data generation: every 30 seconds
+  setInterval(generateFreshKpiData, 30_000);
+  // KPI broadcast: every 10 seconds
+  setInterval(broadcastKpiUpdate, 10_000);
+  // Alert pulse: every 15 seconds
+  setInterval(broadcastAlertPulse, 15_000);
 
-// Initial runs after short delay
-setTimeout(generateFreshKpiData, 2_000);
-setTimeout(broadcastKpiUpdate, 3_000);
-setTimeout(broadcastAlertPulse, 4_000);
+  // Initial runs after short delay
+  setTimeout(generateFreshKpiData, 2_000);
+  setTimeout(broadcastKpiUpdate, 3_000);
+  setTimeout(broadcastAlertPulse, 4_000);
+});
 
 // ── 7. Graceful Shutdown ───────────────────────────────────────────────────────
 
