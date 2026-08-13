@@ -774,6 +774,10 @@ const en: Record<string, string> = {
   'ai.reportHistory': 'Report History',
   'ai.exampleQueries': 'Try these examples',
   'ai.networkSummary': 'Network summary loaded',
+  'ai.upgraded': 'Live Data + Streaming',
+  'ai.liveData': 'Auto-enriched with real data',
+  'ai.retry': 'Retry',
+  'ai.disclaimer': 'AI responses are generated from real-time network data. Verify critical decisions with your team.',
 
   // ========== VIEW-SPECIFIC: SON ==========
   'son.noModules': 'No SON modules found for the selected filters.',

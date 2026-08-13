@@ -771,6 +771,10 @@ const fr: Record<string, string> = {
   'ai.reportHistory': 'Historique des rapports',
   'ai.exampleQueries': 'Exemples à essayer',
   'ai.networkSummary': 'Résumé réseau chargé',
+  'ai.upgraded': 'Données en direct + Streaming',
+  'ai.liveData': 'Enrichi automatiquement avec les données réelles',
+  'ai.retry': 'Réessayer',
+  'ai.disclaimer': 'Les réponses IA sont générées à partir de données réseau en temps réel. Vérifiez les décisions critiques avec votre équipe.',
 
   // ========== VIEW-SPECIFIC: SON ==========
   'son.noModules': 'Aucun module SON trouvé pour les filtres sélectionnés.',

@@ -3132,3 +3132,33 @@ Work Log:
 Stage Summary:
 - Application fully functional across 3 locales
 - All core interactions verified (navigation, language switch, command palette)
+
+---
+Task ID: 6
+Agent: Main
+Task: Module 2 - AI Assistant Upgrade
+
+Work Log:
+- Created streaming chat endpoint POST /api/assistant/chat with SSE support
+- Endpoint uses z-ai-web-dev-sdk with stream:true, transforms SSE to plain text
+- Implemented keyword-based data context fetcher (9 data domains: sites, alerts, KPIs, capacity, churn, faults, anomalies, health, energy, traffic)
+- Multi-turn conversation: sends last 20 messages as context
+- Auto-enriches responses with real DB data based on question keywords
+- Better system prompt with rules for language detection, citation, navigation suggestions
+- Upgraded AssistantView.tsx: removed NL Query tab, kept Chat + Insights
+- Added ReactMarkdown rendering with styled components (tables, code, lists, navigation buttons)
+- Added streaming UI with real-time token display and blinking cursor
+- Added stop generation button (abort controller)
+- Added [Navigate: view-name] parsing that creates clickable navigation buttons
+- Added suggestion chips that adapt based on currentView
+- Added @tailwindcss/typography plugin for prose styling
+- Added i18n keys (ai.upgraded, ai.liveData, ai.retry, ai.disclaimer) to EN/FR/AR
+- Fixed [DONE] marker leaking into streaming output
+- Verified streaming works via curl: AI correctly references 77 sites, tech breakdown, status data
+
+Stage Summary:
+- New streaming endpoint: POST /api/assistant/chat (SSE-based, multi-turn, auto-data-context)
+- Upgraded UI: markdown rendering, streaming tokens, navigation suggestions, stop button
+- 2-tab layout (Chat + Insights) replacing 3-tab (Chat + NL Query + Insights)
+- Real network data automatically injected into AI context
+- Lint: 0 errors
