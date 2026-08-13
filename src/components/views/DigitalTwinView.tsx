@@ -19,13 +19,38 @@ import { toast } from 'sonner';
 
 // ==================== TYPES ====================
 
-interface DashboardSummary {
+interface DashboardData {
   totalScenarios: number;
+  byType: Record<string, number>;
+  byStatus: Record<string, number>;
   avgImpactScore: number;
-  completedCount: number;
-  simulatedCount: number;
-  typeDistribution: Record<string, number>;
-  recentScenarios: ScenarioItem[];
+  recentScenarios: RecentScenario[];
+}
+
+interface RecentScenario {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  impactScore: number;
+  createdAt: string;
+}
+
+interface ScenarioRaw {
+  id: string;
+  name: string;
+  description: string;
+  scenarioType: string;
+  status: string;
+  targetRegion: string;
+  parameters: string;
+  results: string | null;
+  impactScore: number;
+  confidence: number;
+  createdAt: string;
+  updatedAt: string;
+  targetSite: { id: string; name: string; code: string; region: string } | null;
+  _count: { simulationResults: number };
 }
 
 interface ScenarioItem {
@@ -33,7 +58,7 @@ interface ScenarioItem {
   name: string;
   type: string;
   region: string;
-  status: 'draft' | 'simulated' | 'completed' | 'archived';
+  status: string;
   impact: number;
   confidence: number;
   description: string;
@@ -90,6 +115,43 @@ const typeKeys: Record<string, string> = {
   parameter_change: 'dt.parameterChange', new_site: 'dt.newSite',
 };
 
+function parseScenarioResults(resultsStr: string | null): MetricComparison[] {
+  if (!resultsStr) return [];
+  try {
+    const data = JSON.parse(resultsStr);
+    // Handle both {before, after, delta} and [{metricName, before, after, delta}] formats
+    if (Array.isArray(data)) return data;
+    if (data?.before && data?.after) {
+      const metrics: MetricComparison[] = [];
+      const keys = Object.keys(data.before) as (keyof typeof data.before)[];
+      for (const k of keys) {
+        const b = Number(data.before[k]) || 0;
+        const a = Number(data.after[k]) || 0;
+        const d = a - b;
+        metrics.push({ metricName: String(k), before: b, after: a, delta: d, deltaPercent: b !== 0 ? (d / b) * 100 : 0 });
+      }
+      return metrics;
+    }
+  } catch { /* ignore parse errors */ }
+  return [];
+}
+
+function mapScenario(raw: ScenarioRaw): ScenarioItem {
+  return {
+    id: raw.id,
+    name: raw.name,
+    type: raw.scenarioType,
+    region: raw.targetRegion || raw.targetSite?.region || '—',
+    status: raw.status,
+    impact: raw.impactScore,
+    confidence: raw.confidence,
+    description: raw.description,
+    parameters: (() => { try { return JSON.parse(raw.parameters || '{}'); } catch { return {}; } })(),
+    results: parseScenarioResults(raw.results),
+    createdAt: raw.createdAt,
+  };
+}
+
 // ==================== SKELETON ====================
 
 function OverviewSkeleton() {
@@ -118,15 +180,19 @@ function TableSkeleton() {
 
 function OverviewTab() {
   const t = useT();
-  const { data, isLoading } = useQuery<DashboardSummary>({ queryKey: ['dt-dashboard'], queryFn: () => fetch('/api/digital-twin/dashboard').then(r => r.json()) });
+  const { data, isLoading } = useQuery<DashboardData>({ queryKey: ['dt-dashboard'], queryFn: () => fetch('/api/digital-twin/dashboard').then(r => r.json()) });
 
   if (isLoading || !data) return <OverviewSkeleton />;
+
+  const completedCount = data.byStatus.completed ?? 0;
+  const simulatedCount = data.byStatus.simulated ?? 0;
+  const typeDistribution = data.byType;
 
   const summaryCards = [
     { label: t('dt.totalScenarios'), value: data.totalScenarios, icon: Box, color: 'text-blue-600' },
     { label: t('dt.avgImpact'), value: fmt(data.avgImpactScore), icon: BarChart3, color: impactColor(data.avgImpactScore) },
-    { label: t('status.completed'), value: data.completedCount, icon: TrendingUp, color: 'text-emerald-600' },
-    { label: t('dt.simulating'), value: data.simulatedCount, icon: Zap, color: 'text-blue-600' },
+    { label: t('status.completed'), value: completedCount, icon: TrendingUp, color: 'text-emerald-600' },
+    { label: t('dt.simulating'), value: simulatedCount, icon: Zap, color: 'text-blue-600' },
   ];
 
   return (
@@ -153,7 +219,7 @@ function OverviewTab() {
         <CardHeader className="p-0 pb-3"><CardTitle className="text-sm font-semibold">{t('dt.type')}</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {Object.entries(data.typeDistribution).map(([type, count]) => (
+            {Object.entries(typeDistribution).map(([type, count]) => (
               <div key={type} className="rounded-lg border p-3 text-center bg-muted/30">
                 <p className="text-lg font-bold">{count}</p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{t(typeKeys[type] ?? type)}</p>
@@ -180,7 +246,7 @@ function OverviewTab() {
                   <TableCell className="text-sm font-medium">{s.name}</TableCell>
                   <TableCell>{typeBadge(s.type)}</TableCell>
                   <TableCell>{statusBadge(s.status, t)}</TableCell>
-                  <TableCell className={impactColor(s.impact)}>{fmt(s.impact)}</TableCell>
+                  <TableCell className={impactColor(s.impactScore)}>{fmt(s.impactScore)}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
@@ -200,14 +266,19 @@ function ScenariosTab() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [detailId, setDetailId] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery<ScenarioItem[]>({ queryKey: ['dt-scenarios', typeFilter, statusFilter], queryFn: () => {
-    const params = new URLSearchParams();
-    if (typeFilter !== 'all') params.set('type', typeFilter);
-    if (statusFilter !== 'all') params.set('status', statusFilter);
-    return fetch(`/api/digital-twin/scenarios?${params}`).then(r => r.json());
-  } });
+  const { data, isLoading } = useQuery<{ scenarios: ScenarioRaw[]; total: number }>({
+    queryKey: ['dt-scenarios', typeFilter, statusFilter],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (typeFilter !== 'all') params.set('type', typeFilter);
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      const qs = params.toString();
+      return fetch(`/api/digital-twin/scenarios${qs ? '?' + qs : ''}`).then(r => r.json());
+    },
+    select: (d) => ({ ...d, scenarios: d.scenarios.map(mapScenario) }),
+  });
 
-  const selectedScenario = detailId ? data?.find(s => s.id === detailId) : null;
+  const selectedScenario = detailId ? data?.scenarios.find(s => s.id === detailId) : null;
 
   return (
     <div className="space-y-4">
@@ -236,7 +307,7 @@ function ScenariosTab() {
         </Select>
       </div>
 
-      {isLoading ? <TableSkeleton /> : !data?.length ? (
+      {isLoading ? <TableSkeleton /> : !data?.scenarios?.length ? (
         <Card className="rounded-lg border bg-card p-4"><CardContent className="p-6 text-center text-muted-foreground text-sm">{t('dt.noScenarios')}</CardContent></Card>
       ) : (
         <Card className="rounded-lg border bg-card p-4">
@@ -251,14 +322,14 @@ function ScenariosTab() {
                 <TableHead className="text-xs">{t('dt.confidence')}</TableHead>
                 <TableHead className="text-xs">Created</TableHead>
               </TableRow></TableHeader><TableBody>
-                {data.map((s) => (
+                {data.scenarios.map((s) => (
                   <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(s.id)}>
                     <TableCell className="text-sm font-medium">{s.name}</TableCell>
                     <TableCell>{typeBadge(s.type)}</TableCell>
                     <TableCell className="text-xs">{s.region}</TableCell>
                     <TableCell>{statusBadge(s.status, t)}</TableCell>
                     <TableCell className={`text-sm font-medium ${impactColor(s.impact)}`}>{fmt(s.impact)}</TableCell>
-                    <TableCell className="text-xs">{fmt(s.confidence)}%</TableCell>
+                    <TableCell className="text-xs">{fmt(s.confidence * 100)}%</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
@@ -291,7 +362,7 @@ function ScenarioDetail({ scenario }: { scenario: ScenarioItem }) {
         <div className="rounded-lg border p-3 bg-muted/30"><p className="text-[10px] text-muted-foreground uppercase">{t('dt.type')}</p><p className="text-sm font-medium mt-1">{typeBadge(scenario.type)}</p></div>
         <div className="rounded-lg border p-3 bg-muted/30"><p className="text-[10px] text-muted-foreground uppercase">{t('dt.region')}</p><p className="text-sm font-medium mt-1">{scenario.region}</p></div>
         <div className="rounded-lg border p-3 bg-muted/30"><p className="text-[10px] text-muted-foreground uppercase">{t('status.status')}</p><p className="text-sm font-medium mt-1">{statusBadge(scenario.status, t)}</p></div>
-        <div className="rounded-lg border p-3 bg-muted/30"><p className="text-[10px] text-muted-foreground uppercase">{t('dt.confidence')}</p><p className="text-sm font-medium mt-1">{fmt(scenario.confidence)}%</p></div>
+        <div className="rounded-lg border p-3 bg-muted/30"><p className="text-[10px] text-muted-foreground uppercase">{t('dt.confidence')}</p><p className="text-sm font-medium mt-1">{fmt(scenario.confidence * 100)}%</p></div>
       </div>
 
       {scenario.description && <p className="text-sm text-muted-foreground">{scenario.description}</p>}
@@ -329,7 +400,7 @@ function ScenarioDetail({ scenario }: { scenario: ScenarioItem }) {
       )}
 
       {(!scenario.results || scenario.results.length === 0) && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground py-4"><AlertTriangle className="h-4 w-4" />{t('dt.noScenarios')}</div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-4"><AlertTriangle className="h-4 w-4" />{t('dt.noResults')}</div>
       )}
     </div>
   );
@@ -355,7 +426,7 @@ function NewScenarioTab() {
     e.preventDefault();
     let parsedParams: Record<string, unknown> = {};
     try { parsedParams = JSON.parse(params); } catch { toast.error('Invalid JSON parameters'); return; }
-    mutation.mutate({ name, description, type, region, parameters: parsedParams });
+    mutation.mutate({ name, description, scenarioType: type, targetRegion: region, parameters: parsedParams });
   };
 
   return (
