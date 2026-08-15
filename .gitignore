@@ -18,6 +18,13 @@ node_modules
 # Production
 /build
 
+# Database files
+/db/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
 # Misc
 .DS_Store
 *.pem
