@@ -59,7 +59,7 @@ async function fetchRelevantContext(question: string): Promise<string> {
       db.capacityForecast.groupBy({ by: ['riskLevel'], _count: true }),
       db.capacityForecast.findMany({ where: { riskLevel: { in: ['high', 'critical'] } }, take: 5, include: { site: { select: { name: true, region: true } } } }),
     ]);
-    parts.push(`Capacity risks: ${JSON.stringify(Object.fromEntries(byRisk.map(r => [r.riskLevel, r._count])))}. High/Critical: ${JSON.stringify(highRisk.map(h => ({ site: h.site?.name, region: h.site?.region, risk: h.riskLevel, load: h.currentLoad })))}`);
+    parts.push(`Capacity risks: ${JSON.stringify(Object.fromEntries(byRisk.map(r => [r.riskLevel, r._count])))}. High/Critical: ${JSON.stringify(highRisk.map(h => ({ site: h.site?.name, region: h.site?.region, risk: h.riskLevel, current: h.currentValue, forecast: h.forecastValue })))}`);
   }
 
   // Churn
@@ -71,7 +71,7 @@ async function fetchRelevantContext(question: string): Promise<string> {
   // Faults
   if (/fault|failure|outage|hardware|component/.test(q)) {
     const critical = await db.faultPrediction.findMany({ where: { severity: { in: ['critical', 'high'] } }, take: 5, include: { site: { select: { name: true, region: true } } } });
-    parts.push(`Critical/High fault predictions: ${JSON.stringify(critical.map(f => ({ site: f.site?.name, severity: f.severity, component: f.componentType, confidence: f.confidenceScore })))}`);
+    parts.push(`Critical/High fault predictions: ${JSON.stringify(critical.map(f => ({ site: f.site?.name, severity: f.severity, component: f.component, confidence: f.confidence })))}`);
   }
 
   // Anomalies
@@ -80,31 +80,31 @@ async function fetchRelevantContext(question: string): Promise<string> {
       db.anomalyEvent.count({ where: { status: 'detected' } }),
       db.anomalyEvent.count({ where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
     ]);
-    const recent = await db.anomalyEvent.findMany({ where: { status: 'detected' }, orderBy: { createdAt: 'desc' }, take: 3, select: { metric: true, value: true, expectedRange: true, site: { select: { name: true } } } });
-    parts.push(`Anomalies: ${active} active, ${today} today. Latest: ${JSON.stringify(recent.map(a => ({ metric: a.metric, value: a.value, expected: a.expectedRange, site: a.site?.name })))}`);
+    const recent = await db.anomalyEvent.findMany({ where: { status: 'detected' }, orderBy: { createdAt: 'desc' }, take: 3, select: { metric: true, actualValue: true, expectedValue: true, site: { select: { name: true } } } });
+    parts.push(`Anomalies: ${active} active, ${today} today. Latest: ${JSON.stringify(recent.map(a => ({ metric: a.metric, actual: a.actualValue, expected: a.expectedValue, site: a.site?.name })))}`);
   }
 
   // Health
   if (/health|score|degrad|overall/.test(q)) {
     const [byTech, avg] = await Promise.all([
-      db.healthScore.groupBy({ by: ['technology'], _avg: { score: true }, _count: true }),
-      db.healthScore.aggregate({ _avg: { score: true } }),
+      db.healthScore.groupBy({ by: ['technology'], _avg: { overallScore: true }, _count: true }),
+      db.healthScore.aggregate({ _avg: { overallScore: true } }),
     ]);
-    parts.push(`Health scores: avg=${Math.round((avg._avg.score ?? 0) * 100) / 100}, by tech: ${JSON.stringify(Object.fromEntries(byTech.map(r => [r.technology, { avg: Math.round((r._avg.score ?? 0) * 100) / 100, count: r._count }])))}`);
+    parts.push(`Health scores: avg=${Math.round((avg._avg.overallScore ?? 0) * 100) / 100}, by tech: ${JSON.stringify(Object.fromEntries(byTech.map(r => [r.technology, { avg: Math.round((r._avg.overallScore ?? 0) * 100) / 100, count: r._count }])))}`);
   }
 
   // Energy
   if (/energy|power|consumption|pue|cost/.test(q)) {
-    const avg = await db.energyMetric.aggregate({ _avg: { energyConsumption: true, pue: true, costSavings: true } });
+    const avg = await db.energyMetric.aggregate({ _avg: { powerConsumption: true, energyConsumed: true, co2Emission: true } });
     const r = (v: number | null) => v == null ? 'N/A' : (Math.round(v * 100) / 100);
-    parts.push(`Energy averages: consumption=${r(avg._avg.energyConsumption)} kW, PUE=${r(avg._avg.pue)}, savings=${r(avg._avg.costSavings)} DZD`);
+    parts.push(`Energy averages: power=${r(avg._avg.powerConsumption)} W, consumed=${r(avg._avg.energyConsumed)} Wh, CO2=${r(avg._avg.co2Emission)} kg`);
   }
 
   // Traffic
   if (/traffic|volume|usage|data|mbps|gb/.test(q)) {
     const forecasts = await db.trafficForecast.findMany({ take: 5, orderBy: { createdAt: 'desc' } });
     const avgGrowth = forecasts.reduce((s, f) => s + f.growthRate, 0) / (forecasts.length || 1);
-    parts.push(`Traffic forecasts: avg growth=${Math.round(avgGrowth * 100) / 100}%. Latest: ${JSON.stringify(forecasts.slice(0, 3).map(f => ({ current: f.currentTraffic, forecast: f.forecastedTraffic, growth: f.growthRate })))}`);
+    parts.push(`Traffic forecasts: avg growth=${Math.round(avgGrowth * 100) / 100}%. Latest: ${JSON.stringify(forecasts.slice(0, 3).map(f => ({ current: f.currentDailyAvg, forecast: f.forecastedDailyAvg, growth: f.growthRate })))}`);
   }
 
   // Default minimal overview

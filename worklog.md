@@ -3191,3 +3191,35 @@ Stage Summary:
 - Extended useSocket hook: LiveAlertItem type + onLiveAlerts subscription
 - 48 new i18n key-value pairs (16 keys × 3 locales)
 - Real-time data flows through: Dashboard (users, throughput, alerts) + LiveView (all KPIs, gauges, sparklines, alert feed) + Sidebar (user count, alert count) + Global (toast notifications, WS status indicator)
+
+---
+Task ID: 1
+Agent: Main
+Task: Fix missing demo data, OOM fix, and code bugs
+
+Work Log:
+- Audited all 105 API routes across 2 batches (core ops + analytics/AI/integrations)
+- Identified 23 data gaps and 7 critical code bugs
+- Fixed 7 wrong field names in assistant/chat/route.ts (capacity.currentLoad→currentValue, fault.componentType→component, fault.confidenceScore→confidence, anomaly.value→actualValue, anomaly.expectedRange→expectedValue, health.score→overallScore, energy.pue/costSavings→powerConsumption/energyConsumed/co2Emission, traffic.currentTraffic/forecastedTraffic→currentDailyAvg/forecastedDailyAvg)
+- Fixed stale EnergyMetric timestamps (275 records shifted to within 24h)
+- Fixed stale QoEMetric timestamps (80 records shifted to within 6h)
+- Added 5G HandoverKpi records (10) + NeighborRelation (10)
+- Added 5G FaultPrediction records (5)
+- Fixed HealthScore trend: degrading→declining (14 records)
+- Added D/F grade HealthScores (4 records)
+- Added 8 missing SLATargets (latency/prbUtil for 2G/3G, downloadThroughput for all techs)
+- Added critical CellLoad records (3)
+- Added critical CapacityForecast records (3)
+- Added deactivated NetworkSlice (1)
+- Added third_party Incident (1)
+- Added maintenance status site (1)
+- Updated 5 TrafficForecast to declining trend
+- Updated 3 RevenueProjection to declining trend
+- Extracted view-registry.tsx (57 lazy views) and nav-config.ts from page.tsx to reduce compilation memory
+- 0 lint errors after all changes
+
+Stage Summary:
+- 23 data gaps identified, all fixed
+- 7 critical runtime bugs in AI assistant chat fixed
+- Page.tsx refactored: 523 lines → page.tsx (240 lines) + view-registry.tsx (130 lines) + nav-config.ts (95 lines)
+- Total records modified/added: ~420+
