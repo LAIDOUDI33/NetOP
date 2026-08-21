@@ -12,8 +12,10 @@ import {
   MessageSquare, Sparkles, Send, Bot, User, Brain, Trash2,
   Loader2, Zap, ArrowRight, RotateCcw, FileText,
   ImageIcon, Volume2, Mic, Globe, Upload, X, ExternalLink,
-  Play, Square, Camera,
+  Play, Square, Camera, Wrench, BarChart3, Link2, Headphones,
+  ChevronDown, AlertTriangle, CheckCircle2, Shield, TrendingDown,
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ReactMarkdown from 'react-markdown';
 import { useT } from '@/lib/i18n';
 import { useAppStore } from '@/store/app';
@@ -449,6 +451,308 @@ function WebSearchTool() {
   );
 }
 
+// ─── Auto-Remediation Component ─────────────────────────────────────
+
+function AutoRemediateTool({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const t = useT();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [tech, setTech] = useState('ALL');
+  const [severity, setSeverity] = useState('');
+
+  const handleRun = async () => {
+    setLoading(true); setError(''); setResult(null);
+    try {
+      const body: Record<string, string> = { technology: tech };
+      if (severity) body.severity = severity;
+      const res = await fetch('/api/assistant/auto-remediate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const changes = data.changeRequests || [];
+      if (changes.length === 0) {
+        setResult('No actionable issues found. The network is in good condition.');
+      } else {
+        const lines = changes.map((c: { title: string; technology: string; riskLevel: string; siteName: string; parameter: string; proposedValue: string }, i: number) =>
+          `**${i + 1}. ${c.title}** (${c.technology})\n- Site: ${c.siteName || 'N/A'} | Param: ${c.parameter} → ${c.proposedValue}\n- Risk: ${c.riskLevel}`
+        ).join('\n\n');
+        setResult(t('ai.autoRemediateResult', { count: changes.length }) + '\n\n' + lines);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('ai.errorMsg'));
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Wrench className="h-4 w-4 text-orange-500" />{t('ai.autoRemediate')}</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">{t('ai.autoRemediateDesc')}</p>
+        <div className="flex flex-wrap gap-2">
+          <Select value={tech} onValueChange={setTech}>
+            <SelectTrigger className="w-28 h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {['ALL', '2G', '3G', '4G', '5G'].map(v => <SelectItem key={v} value={v} className="text-xs">{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={severity} onValueChange={setSeverity}>
+            <SelectTrigger className="w-28 h-8 text-xs"><SelectValue placeholder="All Severity" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="" className="text-xs">All</SelectItem>
+              <SelectItem value="critical" className="text-xs">Critical</SelectItem>
+              <SelectItem value="high" className="text-xs">High</SelectItem>
+              <SelectItem value="medium" className="text-xs">Medium</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button onClick={handleRun} disabled={loading} className="bg-orange-600 hover:bg-orange-700 text-xs">
+          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Wrench className="h-3.5 w-3.5 mr-1" />}
+          {t('ai.runAutoRemediate')}
+        </Button>
+        {loading && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />{t('ai.autoRemediateRunning')}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {result && <Card><CardContent className="p-3"><MarkdownContent content={result} onNavigate={onNavigate} /></CardContent></Card>}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Executive Report Component ──────────────────────────────────────
+
+function ExecutiveReportTool() {
+  const t = useT();
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+  const [reportType, setReportType] = useState('network_health');
+
+  const REPORT_TYPES = [
+    { value: 'network_health', labelKey: 'ai.reportNetworkHealth' },
+    { value: 'performance', labelKey: 'ai.reportPerformance' },
+    { value: 'capacity', labelKey: 'ai.reportCapacity' },
+    { value: 'financial', labelKey: 'ai.reportFinancial' },
+    { value: 'comprehensive', labelKey: 'ai.reportComprehensive' },
+  ];
+
+  const handleGenerate = async () => {
+    setLoading(true); setError(''); setReport(null);
+    try {
+      const res = await fetch('/api/assistant/executive-report', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reportType }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setReport(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('ai.errorMsg'));
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-violet-500" />{t('ai.executiveReport')}</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">{t('ai.executiveReportDesc')}</p>
+        <div className="flex flex-wrap gap-2">
+          <Select value={reportType} onValueChange={setReportType}>
+            <SelectTrigger className="w-40 h-8 text-xs"><SelectValue placeholder={t('ai.reportType')} /></SelectTrigger>
+            <SelectContent>
+              {REPORT_TYPES.map(rt => <SelectItem key={rt.value} value={rt.value} className="text-xs">{t(rt.labelKey)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleGenerate} disabled={loading} className="bg-violet-600 hover:bg-violet-700 text-xs">
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <FileText className="h-3.5 w-3.5 mr-1" />}
+            {t('ai.generateReport')}
+          </Button>
+        </div>
+        {loading && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />{t('ai.reportGenerating')}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {report && (
+          <Card><CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-xs gap-1"><BarChart3 className="h-3 w-3" />{report.title as string}</Badge>
+              {report.overallScore !== undefined && (
+                <Badge variant={Number(report.overallScore) >= 70 ? 'default' : 'destructive'} className="text-xs">
+                  Score: {report.overallScore as number}/100
+                </Badge>
+              )}
+              {report.riskLevel && (
+                <Badge variant={report.riskLevel === 'low' ? 'secondary' : report.riskLevel === 'medium' ? 'outline' : 'destructive'} className="text-xs">
+                  {report.riskLevel as string}
+                </Badge>
+              )}
+            </div>
+            {Array.isArray(report.sections) && (report.sections as Array<{ heading: string; content: string; priority: string }>).map((section, i) => (
+              <div key={i} className="space-y-1">
+                <h4 className="text-xs font-semibold flex items-center gap-1.5">
+                  {section.priority === 'high' && <AlertTriangle className="h-3 w-3 text-red-500" />}
+                  {section.heading}
+                </h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{section.content}</p>
+              </div>
+            ))}
+            {Array.isArray(report.recommendations) && (report.recommendations as Array<{ action: string; priority: string; impact: string }>).length > 0 && (
+              <div className="border-t pt-2">
+                <p className="text-xs font-semibold mb-1.5">Recommendations</p>
+                {(report.recommendations as Array<{ action: string; priority: string; impact: string }>).map((rec, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs mb-1">
+                    <Badge variant={rec.priority === 'high' ? 'destructive' : 'outline'} className="text-[9px] mt-0.5 shrink-0">{rec.priority}</Badge>
+                    <span>{rec.action}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent></Card>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Alert Correlation Component ─────────────────────────────────────
+
+function AlertCorrelationTool({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const t = useT();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  const handleCorrelate = async () => {
+    setLoading(true); setError(''); setResult(null);
+    try {
+      const res = await fetch('/api/assistant/alert-correlation', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ timeWindowMinutes: 120, maxAlerts: 40 }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const incidents = data.incidents || [];
+      if (incidents.length === 0) {
+        setResult('No correlated alert patterns found. Alerts appear to be independent.');
+      } else {
+        const lines = incidents.map((inc: { title: string; severity: string; rootCause: string; affectedSites: string; recommendedActions: string }, i: number) =>
+          `**${i + 1}. ${inc.title}** (${inc.severity})\n- Root Cause: ${inc.rootCause}\n- Affected Sites: ${inc.affectedSites || 'Multiple'}\n- Actions: ${inc.recommendedActions}`
+        ).join('\n\n');
+        setResult(t('ai.correlationResult', { count: incidents.length }) + '\n\n' + lines);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('ai.errorMsg'));
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Link2 className="h-4 w-4 text-cyan-500" />{t('ai.alertCorrelation')}</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">{t('ai.alertCorrelationDesc')}</p>
+        <Button onClick={handleCorrelate} disabled={loading} className="bg-cyan-600 hover:bg-cyan-700 text-xs">
+          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Link2 className="h-3.5 w-3.5 mr-1" />}
+          {t('ai.runCorrelation')}
+        </Button>
+        {loading && <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 className="h-3 w-3 animate-spin" />{t('ai.correlating')}</p>}
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {result && <Card><CardContent className="p-3"><MarkdownContent content={result} onNavigate={onNavigate} /></CardContent></Card>}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Voice NOC Component ─────────────────────────────────────────────
+
+function VoiceNocTool({ onNavigate }: { onNavigate: (view: string) => void }) {
+  const t = useT();
+  const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [transcription, setTranscription] = useState('');
+  const [response, setResponse] = useState('');
+  const [error, setError] = useState('');
+  const [suggestedView, setSuggestedView] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      setError(''); setTranscription(''); setResponse(''); setSuggestedView(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(tr => tr.stop());
+        setRecording(false);
+        if (chunksRef.current.length === 0) return;
+        setProcessing(true);
+        try {
+          const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64 = (reader.result as string).split(',')[1];
+            try {
+              const res = await fetch('/api/assistant/voice-noc', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: base64 }),
+              });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const data = await res.json();
+              setTranscription(data.transcription || '');
+              setResponse(data.response || '');
+              if (data.suggestedView) setSuggestedView(data.suggestedView);
+            } catch (err) { setError(err instanceof Error ? err.message : t('ai.errorMsg')); }
+            finally { setProcessing(false); }
+          };
+          reader.readAsDataURL(blob);
+        } catch { setProcessing(false); setError(t('ai.transcribeError')); }
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+    } catch { setError(t('ai.micAccessError')); }
+  };
+
+  const stopRecording = () => { mediaRecorderRef.current?.stop(); };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Headphones className="h-4 w-4 text-pink-500" />{t('ai.voiceNoc')}</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">{t('ai.voiceNocDesc')}</p>
+        <p className="text-[10px] text-muted-foreground italic">{t('ai.voiceNocHint')}</p>
+        <div className="flex items-center gap-3">
+          {!recording ? (
+            <Button onClick={startRecording} disabled={processing} variant="outline" className="text-xs border-pink-300 hover:bg-pink-50 dark:hover:bg-pink-950">
+              <Mic className="h-3.5 w-3.5 mr-1 text-pink-500" />{t('ai.startRecording')}
+            </Button>
+          ) : (
+            <Button onClick={stopRecording} variant="destructive" size="sm" className="text-xs animate-pulse">
+              <Square className="h-3.5 w-3.5 mr-1" />{t('ai.stopRecording')}
+            </Button>
+          )}
+          {processing && <span className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" />{t('ai.voiceNocProcessing')}</span>}
+        </div>
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {transcription && (
+          <div className="p-2 rounded-md bg-muted text-xs space-y-1">
+            <p className="font-medium text-muted-foreground">{t('ai.voiceNocTranscription')}:</p>
+            <p>{transcription}</p>
+          </div>
+        )}
+        {response && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium flex items-center gap-1.5"><Bot className="h-3.5 w-3.5 text-pink-500" />{t('ai.voiceNocResponse')}</p>
+            <Card><CardContent className="p-3"><MarkdownContent content={response} onNavigate={onNavigate} /></CardContent></Card>
+            {suggestedView && (
+              <button onClick={() => onNavigate(suggestedView)} className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-pink-500/10 text-pink-700 dark:text-pink-400 hover:bg-pink-500/20 transition-colors">
+                <ArrowRight className="h-3 w-3" />Go to {suggestedView}
+              </button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function AssistantView() {
@@ -763,6 +1067,30 @@ export default function AssistantView() {
                 <p className="text-[10px] text-muted-foreground mt-0.5">{t('ai.toolWebSearchDesc')}</p>
                 <Badge variant="secondary" className="mt-1.5 text-[9px]">Search</Badge>
               </div>
+              <div className="p-3 rounded-lg border bg-card text-center">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center mx-auto mb-2"><Wrench className="h-5 w-5 text-orange-500" /></div>
+                <p className="text-xs font-semibold">{t('ai.autoRemediate')}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t('ai.autoRemediateDesc')}</p>
+                <Badge variant="secondary" className="mt-1.5 text-[9px]">LLM</Badge>
+              </div>
+              <div className="p-3 rounded-lg border bg-card text-center">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center mx-auto mb-2"><BarChart3 className="h-5 w-5 text-violet-500" /></div>
+                <p className="text-xs font-semibold">{t('ai.executiveReport')}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t('ai.executiveReportDesc')}</p>
+                <Badge variant="secondary" className="mt-1.5 text-[9px]">LLM</Badge>
+              </div>
+              <div className="p-3 rounded-lg border bg-card text-center">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-2"><Link2 className="h-5 w-5 text-cyan-500" /></div>
+                <p className="text-xs font-semibold">{t('ai.alertCorrelation')}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t('ai.alertCorrelationDesc')}</p>
+                <Badge variant="secondary" className="mt-1.5 text-[9px]">LLM</Badge>
+              </div>
+              <div className="p-3 rounded-lg border bg-card text-center">
+                <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center mx-auto mb-2"><Headphones className="h-5 w-5 text-pink-500" /></div>
+                <p className="text-xs font-semibold">{t('ai.voiceNoc')}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t('ai.voiceNocDesc')}</p>
+                <Badge variant="secondary" className="mt-1.5 text-[9px]">ASR+LLM</Badge>
+              </div>
             </div>
 
             {/* Voice Input (always visible in tools tab) */}
@@ -776,6 +1104,18 @@ export default function AssistantView() {
 
             {/* Web Search */}
             <WebSearchTool />
+
+            {/* Auto-Remediation */}
+            <AutoRemediateTool onNavigate={handleNavigate} />
+
+            {/* Executive Report */}
+            <ExecutiveReportTool />
+
+            {/* Alert Correlation */}
+            <AlertCorrelationTool onNavigate={handleNavigate} />
+
+            {/* Voice NOC */}
+            <VoiceNocTool onNavigate={handleNavigate} />
           </div>
         </TabsContent>
       </Tabs>
