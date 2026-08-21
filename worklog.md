@@ -3374,3 +3374,77 @@ Stage Summary:
 - Total new frontend components: 4 (AutoRemediateTool, ExecutiveReportTool, AlertCorrelationTool, VoiceNocTool)
 - PWA: manifest.json, sw.js, icons, PwaRegister component, layout meta tags
 - All 5 phases complete, ready for GitHub push
+
+---
+Task ID: map-frontend
+Agent: Subagent
+Task: Enhance CoverageMapView with wilaya GeoJSON overlay and heatmap toggle
+
+Work Log:
+- Added GeoJSON dynamic import for Leaflet (SSR-safe pattern)
+- Added Tooltip dynamic import for Leaflet (SSR-safe pattern)
+- Added Button import from shadcn/ui
+- Added state: showWilayas, showHeatmap, heatmapMetric
+- Added useQuery for /api/map/wilayas (enabled when showWilayas is true)
+- Added useQuery for /api/map/heatmap (enabled when showHeatmap is true)
+- Added wilayaStyle function coloring by networkScore (>80 green, >60 yellow, >40 orange, else red) with 0.3 opacity
+- Added wilayaOnEachFeature callback showing tooltip with wilaya name, network score, total sites, coverage %
+- Added heatmapColor function with metric-specific thresholds (RSRP, throughput, availability, dropRate, latency)
+- Added map control panel overlay (absolute positioned top-right, backdrop-blur, transparent background)
+- Control panel: Wilaya toggle button, Heatmap toggle button, metric Select (5 options)
+- Added heatmap CircleMarker layer with larger radius (18) and semi-transparent fill
+- Enhanced site popups: outage status indicator (red badge with AlertTriangle icon when status=down)
+- Added wilaya legend to the existing map legend section (shown when showWilayas is true)
+- Added i18n keys in en.ts, fr.ts, ar.ts: map.totalSites, map.rsrp, map.throughputDl, map.availability, map.dropRate, map.latencyMs, cov.healthScore, cov.alertCount, cov.outageStatus, cov.noOutage, cov.activeOutage
+- Lint: 0 errors (778 warnings, all pre-existing)
+
+Stage Summary:
+- CoverageMapView now has 3 layers: sites, wilaya boundaries (toggleable), heatmap (toggleable)
+- Wilaya boundaries colored by networkScore with hover tooltips showing name/score/sites/coverage
+- Heatmap supports 5 metrics (rsrp, throughputDl, availability, dropRate, latencyMs) with color-coded circles
+- Map control panel is a floating overlay with toggle buttons and metric selector
+- All existing functionality preserved (filters, tech distribution, region stats table, export)
+---
+Task ID: notif-frontend
+Agent: Subagent
+Task: Wire NotificationCenter to real /api/notifications API
+
+Work Log:
+- Added useQuery for notifications (30s refresh) and unread count (15s refresh)
+- Added NotificationItem inline type with all fields (id, title, message, type, category, severity, isRead, link, linkLabel, createdAt)
+- Merged notifications and alerts into unified feed: notifications first (sorted by createdAt desc), then divider with “Recent Alerts” and alert items
+- Updated unread count badge to use max(notifUnreadCount, criticalAlertCount)
+- Updated mark all read to use PATCH /api/notifications with action: mark_all_read
+- Added click-to-navigate for notifications with links using setCurrentView(notif.link as ViewType)
+- Added getNotifDotColor helper: alert/incident=red, change/system=blue, ai=emerald, collaboration=amber, else=gray
+- Unread notifications have subtle bg-accent/20 highlight
+- Kept all existing behavior: WebSocket indicator, alert pulse animation, relative time via timeAgo
+- Lint: 0 errors
+
+Stage Summary:
+- NotificationCenter now shows real notifications from /api/notifications + alert summary
+- Auto-refresh: notifications every 30s, count every 15s
+- Click-to-navigate for notifications with links
+- Color-coded notification dots by category
+
+---
+Task ID: collab-frontend
+Agent: Subagent
+Task: Create CommentThread component + integrate into AlertsView
+
+Work Log:
+- Created src/components/CommentThread.tsx reusable component
+- Integrated into AlertsView with alert row selection
+- Added selectedAlertId state and click handler on alert table rows
+- Added stopPropagation on Ack/Resolve buttons to prevent row selection toggle
+- Collaboration card appears below alert table when an alert is selected, with close button
+- Lint: 0 errors, 777 warnings (pre-existing)
+
+Stage Summary:
+- Reusable CommentThread component for any entity type (alert, incident, change, site)
+- Shows threaded comments with author avatars, timestamps, and nested replies
+- Supports compact mode (no card wrapper) for embedding in other cards
+- Cmd/Ctrl+Enter shortcut for posting comments
+- Integrated into AlertsView — click any alert row to open collaboration comments panel
+- Uses existing i18n keys (collab.comments, collab.addComment, collab.postComment, collab.noComments)
+

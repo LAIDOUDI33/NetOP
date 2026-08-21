@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
@@ -13,7 +14,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Signal, TrendingUp, Users, Wifi } from 'lucide-react';
+import { MapPin, Signal, TrendingUp, Users, Wifi, Layers, Flame, AlertTriangle } from 'lucide-react';
 import { TECH_COLORS, TECH_BG_CLASSES, getSignalQuality } from '@/lib/constants';
 import type { Technology, SiteStatus, CoverageData } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -38,6 +39,14 @@ const Popup = dynamic(
   () => import('react-leaflet').then((mod) => mod.Popup),
   { ssr: false },
 );
+const GeoJSON = dynamic(
+  () => import('react-leaflet').then((mod) => mod.GeoJSON),
+  { ssr: false },
+);
+const Tooltip = dynamic(
+  () => import('react-leaflet').then((mod) => mod.Tooltip),
+  { ssr: false },
+);
 
 // Status-based stroke colors for CircleMarker
 const STATUS_STROKE: Record<SiteStatus, string> = {
@@ -55,16 +64,71 @@ const STATUS_RADIUS: Record<SiteStatus, number> = {
   maintenance: 7,
 };
 
+// Heatmap metric options
+const HEATMAP_METRICS = [
+  { value: 'rsrp', labelKey: 'map.rsrp' },
+  { value: 'throughputDl', labelKey: 'map.throughputDl' },
+  { value: 'availability', labelKey: 'map.availability' },
+  { value: 'dropRate', labelKey: 'map.dropRate' },
+  { value: 'latencyMs', labelKey: 'map.latencyMs' },
+] as const;
+
+// Color by networkScore for wilaya polygons
+function wilayaColor(score: number): string {
+  if (score > 80) return '#10B981';
+  if (score > 60) return '#F59E0B';
+  if (score > 40) return '#F97316';
+  return '#EF4444';
+}
+
+// Heatmap value → color
+function heatmapColor(metric: string, value: number): string {
+  switch (metric) {
+    case 'rsrp':
+      return value > -80 ? '#10B981' : value > -100 ? '#F59E0B' : '#EF4444';
+    case 'throughputDl':
+      return value > 50 ? '#10B981' : value > 20 ? '#F59E0B' : '#EF4444';
+    case 'availability':
+      return value > 95 ? '#10B981' : value > 85 ? '#F59E0B' : '#EF4444';
+    case 'dropRate':
+      // Lower is better for drop rate
+      return value < 1 ? '#10B981' : value < 3 ? '#F59E0B' : '#EF4444';
+    case 'latencyMs':
+      return value < 30 ? '#10B981' : value < 60 ? '#F59E0B' : '#EF4444';
+    default:
+      return '#10B981';
+  }
+}
+
 export default function CoverageMapView() {
   const t = useT();
   const [technology, setTechnology] = useState<string>('all');
   const [region, setRegion] = useState<string>('all');
+  const [showWilayas, setShowWilayas] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [heatmapMetric, setHeatmapMetric] = useState('rsrp');
+
+  // Primary coverage data
   const { data, isLoading } = useQuery<CoverageData>({
     queryKey: ['coverage', technology, region],
     queryFn: () =>
       fetch(`/api/coverage?technology=${technology}&region=${region}`).then((r) =>
         r.json(),
       ),
+  });
+
+  // Wilaya GeoJSON data
+  const { data: wilayaData } = useQuery({
+    queryKey: ['map-wilayas'],
+    queryFn: () => fetch('/api/map/wilayas').then((r) => r.json()),
+    enabled: showWilayas,
+  });
+
+  // Heatmap data
+  const { data: heatmapData } = useQuery({
+    queryKey: ['map-heatmap', heatmapMetric],
+    queryFn: () => fetch(`/api/map/heatmap?metric=${heatmapMetric}`).then((r) => r.json()),
+    enabled: showHeatmap,
   });
 
   const sites = data?.sites ?? [];
@@ -76,6 +140,46 @@ export default function CoverageMapView() {
   sites.forEach((s) => {
     techCounts[s.technology] = (techCounts[s.technology] ?? 0) + 1;
   });
+
+  // GeoJSON style function
+  const wilayaStyle = useCallback(
+    (feature?: { properties?: Record<string, unknown> }) => {
+      const score = (feature?.properties?.networkScore as number) ?? 0;
+      return {
+        fillColor: wilayaColor(score),
+        fillOpacity: 0.3,
+        color: wilayaColor(score),
+        weight: 1.5,
+        opacity: 0.6,
+      };
+    },
+    [],
+  );
+
+  // Wilaya onEachFeature for tooltip
+  const wilayaOnEachFeature = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (feature: { properties?: Record<string, unknown> }, layer: any) => {
+      const p = feature.properties ?? {};
+      const name = (p.name as string) ?? '';
+      const score = (p.networkScore as number) ?? 0;
+      const total = (p.totalSites as number) ?? 0;
+      const coverage = (p.coveragePercent as number) ?? 0;
+      layer.bindTooltip(
+        `<div style="font-size:12px;font-family:system-ui,sans-serif;">
+          <strong>${name}</strong><br/>
+          ${t('map.networkScore')}: <span style="color:${wilayaColor(score)};font-weight:600;">${score}</span><br/>
+          ${t('map.totalSites')}: ${total}<br/>
+          ${t('map.coverage')}: ${coverage}%
+        </div>`,
+        { sticky: true },
+      );
+    },
+    [t],
+  );
+
+  // Memoize the GeoJSON data object
+  const geojsonKey = useMemo(() => JSON.stringify(wilayaData), [wilayaData]);
 
   return (
     <div className="space-y-6">
@@ -136,7 +240,47 @@ export default function CoverageMapView() {
               </div>
             </div>
           ) : (
-            <div className="h-[400px] lg:h-[500px]" role="application" aria-label="Interactive network coverage map">
+            <div className="h-[400px] lg:h-[500px] relative" role="application" aria-label="Interactive network coverage map">
+              {/* Map Control Panel */}
+              <div className="absolute top-3 right-3 z-[1000] flex flex-col gap-2">
+                <div className="rounded-lg border bg-background/80 backdrop-blur-sm p-2 shadow-lg">
+                  <div className="flex flex-col gap-1.5">
+                    <Button
+                      size="sm"
+                      variant={showWilayas ? 'default' : 'outline'}
+                      onClick={() => setShowWilayas((v) => !v)}
+                      className="w-full justify-start text-xs gap-1.5"
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      {t('map.wilayas')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={showHeatmap ? 'default' : 'outline'}
+                      onClick={() => setShowHeatmap((v) => !v)}
+                      className="w-full justify-start text-xs gap-1.5"
+                    >
+                      <Flame className="h-3.5 w-3.5" />
+                      {t('map.heatmap')}
+                    </Button>
+                    {showHeatmap && (
+                      <Select value={heatmapMetric} onValueChange={setHeatmapMetric}>
+                        <SelectTrigger className="h-8 text-xs w-full">
+                          <SelectValue placeholder={t('map.metric')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {HEATMAP_METRICS.map((m) => (
+                            <SelectItem key={m.value} value={m.value} className="text-xs">
+                              {t(m.labelKey)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {sites.length === 0 ? (
                 <div className="h-full flex items-center justify-center bg-muted/30">
                   <div className="text-center space-y-2">
@@ -156,6 +300,42 @@ export default function CoverageMapView() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
+
+                  {/* Wilaya Boundaries Layer */}
+                  {showWilayas && wilayaData && (
+                    <GeoJSON
+                      key={geojsonKey}
+                      data={wilayaData}
+                      style={wilayaStyle as any}
+                      onEachFeature={wilayaOnEachFeature as any}
+                    />
+                  )}
+
+                  {/* Heatmap Layer */}
+                  {showHeatmap &&
+                    Array.isArray(heatmapData) &&
+                    heatmapData.map((point: { lat: number; lng: number; value: number; siteId?: string }, i: number) => (
+                      <CircleMarker
+                        key={`hm-${point.siteId ?? i}`}
+                        center={[point.lat, point.lng]}
+                        radius={18}
+                        pathOptions={{
+                          fillColor: heatmapColor(heatmapMetric, point.value),
+                          fillOpacity: 0.35,
+                          color: heatmapColor(heatmapMetric, point.value),
+                          weight: 1,
+                          opacity: 0.5,
+                        }}
+                      >
+                        <Tooltip>
+                          <div className="text-xs font-sans">
+                            {t(HEATMAP_METRICS.find((m) => m.value === heatmapMetric)?.labelKey ?? 'map.metric')}: {point.value}
+                          </div>
+                        </Tooltip>
+                      </CircleMarker>
+                    ))}
+
+                  {/* Site Markers */}
                   {sites.map((site) => (
                     <CircleMarker
                       key={site.id}
@@ -193,6 +373,12 @@ export default function CoverageMapView() {
                             >
                               {site.status}
                             </span>
+                            {site.status === 'down' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-600 border border-red-500/40">
+                                <AlertTriangle className="h-3 w-3" />
+                                {t('cov.activeOutage')}
+                              </span>
+                            )}
                           </div>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                             <div className="flex items-center gap-1">
@@ -252,6 +438,27 @@ export default function CoverageMapView() {
             <span className="w-3 h-3 rounded-full border-2 border-red-500" />
             {t('status.down')}
           </span>
+          {showWilayas && (
+            <>
+              <span className="ml-4 font-medium text-foreground">{t('map.wilayas')}</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-emerald-500/30 border border-emerald-500" />
+                &gt;80
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-amber-500/30 border border-amber-500" />
+                &gt;60
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-orange-500/30 border border-orange-500" />
+                &gt;40
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-red-500/30 border border-red-500" />
+                &le;40
+              </span>
+            </>
+          )}
         </div>
       )}
 

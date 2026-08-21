@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff, ChevronDown, ChevronRight, Zap, BarChart3, TrendingDown } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Eye, EyeOff, ChevronDown, ChevronRight, Zap, BarChart3, TrendingDown, MessageSquare, X } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import type { AlertItem, AlertRuleItem, Technology, AlertSeverity } from '@/types';
@@ -21,6 +21,7 @@ import { usePagination } from '@/hooks/usePagination';
 import PaginationControls from '@/components/PaginationControls';
 import DataExportButton from '@/components/DataExportButton';
 import { ExportButton } from '@/components/ExportButton';
+import { CommentThread } from '@/components/CommentThread';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -87,6 +88,7 @@ export default function AlertsView() {
   const [techFilter, setTechFilter] = useState('all');
   const [showResolved, setShowResolved] = useState(false);
   const [expandedIncident, setExpandedIncident] = useState<string | null>(null);
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   // Correlation summary query
   const { data: summary, isLoading: summaryLoading } = useQuery<CorrelationSummary>({
@@ -298,7 +300,7 @@ export default function AlertsView() {
                       const sev = SEVERITY_CONFIG[alert.severity];
                       const SevIcon = sev.icon;
                       return (
-                        <TableRow key={alert.id}>
+                        <TableRow key={alert.id} className={selectedAlertId === alert.id ? 'bg-primary/5 border-l-2 border-l-primary' : 'cursor-pointer hover:bg-muted/50'} onClick={() => setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)}>
                           <TableCell>
                             <Badge variant={sev.variant} className="text-xs gap-1" role="status">
                               <SevIcon className="h-3 w-3" />
@@ -341,12 +343,12 @@ export default function AlertsView() {
                           <TableCell className="text-right">
                             <div className="flex gap-1 justify-end">
                               {!alert.acknowledged && !alert.resolvedAt && (
-                                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleAcknowledge(alert.id)}>
+                                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={e => { e.stopPropagation(); handleAcknowledge(alert.id); }}>
                                   Ack
                                 </Button>
                               )}
                               {!alert.resolvedAt && (
-                                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleResolve(alert.id)}>
+                                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={e => { e.stopPropagation(); handleResolve(alert.id); }}>
                                   Resolve
                                 </Button>
                               )}
@@ -363,6 +365,28 @@ export default function AlertsView() {
           <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </CardContent>
       </Card>
+
+      {/* Collaboration Comments */}
+      {selectedAlertId && (
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-semibold flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                {t('collab.comments')}
+                <Badge variant="outline" className="text-[10px] font-normal">ID: {selectedAlertId.slice(0, 8)}</Badge>
+              </CardTitle>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedAlertId(null)}>
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <CommentThread entityType="alert" entityId={selectedAlertId} compact />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Alert Rules */}
       <Card>
