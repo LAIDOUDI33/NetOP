@@ -254,7 +254,7 @@ export class MetricsConnector extends BaseConnector {
       body: JSON.stringify({ query, time }),
     });
     const items =
-      ((result as Record<string, unknown>).data?.result as Record<string, unknown>[]) ||
+      ((result as any).data?.result as Record<string, unknown>[]) ||
       [];
     return items.map((item) => ({
       connectorId: this.id,
@@ -349,7 +349,7 @@ export class ConnectorRegistry {
     return Array.from(this.connectors.values()).map((c) => ({
       id: c.id,
       name: c.name,
-      type: c.config.type,
+      type: c.getConfig().type,
       enabled: c.enabled,
       health: c.getHealth(),
     }));

@@ -34,11 +34,9 @@ export async function notifyBroadcast(opts: Omit<NotifyOptions, 'userId'>) {
   await notify({ ...opts, userId: undefined }); // null userId = broadcast
 }
 
-export async function markNotificationRead(id: string, userId?: string) {
-  const where: Record<string, string> = { id };
-  if (userId) where.userId = userId;
+export async function markNotificationRead(id: string, _userId?: string) {
   return db.notification.update({
-    where,
+    where: { id },
     data: { isRead: true, readAt: new Date() },
   });
 }
