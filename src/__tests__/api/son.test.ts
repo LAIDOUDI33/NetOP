@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
-vi.mock('z-ai-web-dev-sdk');
 
 import { GET, POST, PATCH } from '@/app/api/son/route';
 import { db } from '@/lib/db';
@@ -136,7 +132,7 @@ describe('POST /api/son', () => {
 
   it('creates a new SON module', async () => {
     mockDb.sonModule.create.mockResolvedValue(
-      makeSonModule({ id: 'new-mod' }),
+      makeSonModule({ id: 'new-mod', name: 'CCO' }),
     );
     mockDb.auditLog.create.mockResolvedValue({});
 

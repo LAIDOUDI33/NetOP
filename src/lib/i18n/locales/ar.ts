@@ -2737,7 +2737,19 @@ const ar: Record<string, string> = {
 
   // ========== VIEW-SPECIFIC: Predictive Analytics ==========
   'nav.predictive': 'التحليلات التنبؤية',
+  'nav.users': 'المستخدمون',
+  'nav.roles': 'الأدوار',
+  'nav.apiKeys': 'مفاتيح API',
+  'nav.webhooks': 'Webhooks',
+  'nav.dataSources': 'مصادر البيانات',
+  'nav.etlPipelines': 'خطوط ETL',
   'title.predictive': 'التحليلات التنبؤية',
+  'title.users': 'إدارة المستخدمين',
+  'title.roles': 'إدارة الأدوار',
+  'title.apiKeys': 'مفاتيح API',
+  'title.webhooks': 'Webhooks',
+  'title.dataSources': 'مصادر البيانات',
+  'title.etlPipelines': 'خطوط ETL',
   'pred.overview': 'نظرة عامة',
   'pred.capacity': 'توقعات السعة',
   'pred.churn': 'توقع مغادرة العملاء',
@@ -2867,6 +2879,75 @@ const ar: Record<string, string> = {
   'admin.userCount': 'المستخدمون',
   'admin.permCount': 'الصلاحيات',
   'admin.revealKey': 'إظهار المفتاح',
+  'admin.confirm': 'تأكيد',
+
+  // ========== USERS VIEW ==========
+  'users.title': 'إدارة المستخدمين',
+  'users.addUser': 'إضافة مستخدم',
+  'users.editUser': 'تعديل المستخدم',
+  'users.lastLogin': 'آخر تسجيل دخول',
+  'users.userCreated': 'تم إنشاء المستخدم بنجاح',
+  'users.confirmToggleTitle': 'تغيير حالة المستخدم',
+
+  // ========== ROLES VIEW ==========
+  'roles.title': 'إدارة الأدوار',
+  'roles.addRole': 'إضافة دور',
+  'roles.editRole': 'تعديل الدور',
+  'roles.roleCreated': 'تم إنشاء الدور بنجاح',
+  'roles.usersCount': 'المستخدمون',
+  'roles.permMatrix': 'مصفوفة الصلاحيات',
+  'roles.selectPermissions': 'اختيار الصلاحيات',
+  'roles.created': 'تاريخ الإنشاء',
+
+  // ========== API KEYS VIEW ==========
+  'apikeys.title': 'إدارة مفاتيح API',
+  'apikeys.createKey': 'إنشاء مفتاح',
+  'apikeys.editKey': 'تعديل مفتاح API',
+  'apikeys.keyCreated': 'تم إنشاء مفتاح API',
+  'apikeys.copyKey': 'نسخ المفتاح',
+  'apikeys.revoke': 'إلغاء',
+  'apikeys.confirmRevoke': 'إلغاء مفتاح API',
+  'apikeys.revokeDesc': 'هل أنت متأكد من إلغاء هذا المفتاح؟ ستفشل جميع الطلبات التي تستخدمه.',
+  'apikeys.created': 'تاريخ الإنشاء',
+
+  // ========== WEBHOOKS VIEW ==========
+  'webhooks.title': 'إدارة Webhooks',
+  'webhooks.addWebhook': 'إضافة Webhook',
+  'webhooks.editWebhook': 'تعديل Webhook',
+  'webhooks.webhookCreated': 'تم إنشاء Webhook بنجاح',
+  'webhooks.deliveries': 'العمليات',
+  'webhooks.lastDelivery': 'آخر عملية',
+  'webhooks.created': 'تاريخ الإنشاء',
+  'webhooks.secret': 'المفتاح السري',
+  'webhooks.secretPlaceholder': 'يتم إنشاؤه تلقائياً إذا ترك فارغاً',
+  'webhooks.deleteDesc': 'هل أنت متأكد من حذف هذا Webhook؟ سيتم فقدان سجل العمليات.',
+
+  // ========== DATA SOURCES VIEW ==========
+  'datasources.title': 'إدارة مصادر البيانات',
+  'datasources.addSource': 'إضافة مصدر',
+  'datasources.editSource': 'تعديل المصدر',
+  'datasources.sourceCreated': 'تم إنشاء مصدر البيانات بنجاح',
+  'datasources.deleteDesc': 'هل أنت متأكد من حذف مصدر البيانات هذا؟',
+
+  // ========== ETL PIPELINES VIEW ==========
+  'etlpipelines.title': 'إدارة خطوط ETL',
+  'etlpipelines.addPipeline': 'إضافة خط',
+  'etlpipelines.editPipeline': 'تعديل الخط',
+  'etlpipelines.pipelineCreated': 'تم إنشاء الخط بنجاح',
+  'etlpipelines.triggerRun': 'تشغيل',
+  'etlpipelines.triggered': 'تم تشغيل الخط',
+  'etlpipelines.source': 'المصدر',
+  'etlpipelines.destination': 'الوجهة',
+  'etlpipelines.schedule': 'الجدولة',
+  'etlpipelines.lastRun': 'آخر تشغيل',
+  'etlpipelines.totalRunsCol': 'التشغيلات',
+  'etlpipelines.errorRate': 'معدل الخطأ',
+  'etlpipelines.totalPipelines': 'إجمالي الخطوط',
+  'etlpipelines.activePipelines': 'النشطة',
+  'etlpipelines.totalRuns': 'إجمالي التشغيلات',
+  'etlpipelines.avgErrorRate': 'متوسط معدل الخطأ',
+  'etlpipelines.retryMax': 'الحد الأقصى للمحاولات',
+  'etlpipelines.deleteDesc': 'هل أنت متأكد من حذف هذا الخط؟ سيتم فقدان سجل التشغيل.',
 };
 
 export default ar;

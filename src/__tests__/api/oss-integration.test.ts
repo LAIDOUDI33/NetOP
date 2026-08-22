@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
-vi.mock('@/lib/demo-time');
 
 import { GET } from '@/app/api/integrations/oss/route';
 import { db } from '@/lib/db';

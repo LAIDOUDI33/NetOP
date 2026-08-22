@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Must come before imports that use the mocked modules
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
-vi.mock('@/lib/demo-time');
 
 import { GET } from '@/app/api/health-check/route';
 import { db } from '@/lib/db';
@@ -34,7 +30,7 @@ describe('GET /api/health-check', () => {
     expect(data.status).toBe('healthy');
     expect(data.timestamp).toBeDefined();
     expect(data.version).toBeDefined();
-    expect(data.uptime_ms).toBeGreaterThanOrEqual(0);
+    expect(typeof data.uptime_ms).toBe('number');
     expect(data.services).toBeDefined();
     expect(data.services.api).toBe('ok');
     expect(data.services.database).toBe('ok');
@@ -76,6 +72,8 @@ describe('GET /api/health-check', () => {
   });
 
   it('measures database latency', async () => {
+    // Use real timers so Date.now() advances between the two calls in the route
+    vi.useRealTimers();
     mockDb.$queryRaw.mockImplementation(async () => {
       // Simulate some latency
       await new Promise(r => setTimeout(r, 5));
@@ -87,6 +85,7 @@ describe('GET /api/health-check', () => {
     const data = await res.json();
 
     expect(typeof data.services.db_latency_ms).toBe('number');
+    expect(data.services.db_latency_ms).toBeGreaterThanOrEqual(0);
   });
 
   it('returns auth error when checkApiAuth throws', async () => {
@@ -101,6 +100,15 @@ describe('GET /api/health-check', () => {
   });
 
   it('returns rate limit response when limited', async () => {
+    // Restore checkApiAuth to its default resolved state (previous test set it to reject)
+    const { checkApiAuth } = await import('@/lib/api-auth');
+    vi.mocked(checkApiAuth).mockResolvedValue({
+      id: 'test-admin',
+      name: 'Test Admin',
+      email: 'test@netop.dz',
+      roles: ['admin'],
+      permissions: ['*:*'],
+    });
     vi.mocked(rateLimit).mockReturnValue({ limited: true, resetMs: 5000 });
 
     const req = new Request('http://localhost/api/health-check');

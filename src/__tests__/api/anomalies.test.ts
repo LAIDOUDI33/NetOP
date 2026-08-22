@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET, PATCH } from '@/app/api/anomalies/route';
 import { db } from '@/lib/db';

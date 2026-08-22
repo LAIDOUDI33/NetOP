@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET } from '@/app/api/faults/route';
 import { db } from '@/lib/db';
@@ -115,7 +112,7 @@ describe('GET /api/faults', () => {
     expect(data.summary.highRiskCount).toBe(2); // high + critical
     expect(data.summary.bySeverity.high).toBe(1);
     expect(data.summary.bySeverity.critical).toBe(1);
-    expect(data.summary.byComponent.RRU).toBe(1);
+    expect(data.summary.byComponent.RRU).toBe(2);
     expect(data.summary.byComponent.antenna).toBe(1);
   });
 

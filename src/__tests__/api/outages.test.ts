@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET } from '@/app/api/outages/route';
 import { db } from '@/lib/db';
@@ -10,6 +7,12 @@ import { db } from '@/lib/db';
 const mockDb = db as any;
 
 const now = new Date('2025-01-15T12:00:00.000Z');
+
+/** Build a Request with a fake nextUrl (the route uses request.nextUrl.searchParams) */
+function makeReq(url: string, opts?: RequestInit) {
+  const u = new URL(url);
+  return Object.assign(new Request(url, opts), { nextUrl: u }) as any;
+}
 
 function makeOutage(overrides: Record<string, any> = {}) {
   return {
@@ -44,7 +47,7 @@ describe('GET /api/outages', () => {
   it('returns outages with summary', async () => {
     mockDb.outageEvent.findMany.mockResolvedValue([makeOutage()]);
 
-    const req = new Request('http://localhost/api/outages');
+    const req = makeReq('http://localhost/api/outages');
     const res = await GET(req);
     const data = await res.json();
 
@@ -62,7 +65,7 @@ describe('GET /api/outages', () => {
   it('filters by technology', async () => {
     mockDb.outageEvent.findMany.mockResolvedValue([]);
 
-    const req = new Request('http://localhost/api/outages?technology=5G');
+    const req = makeReq('http://localhost/api/outages?technology=5G');
     const res = await GET(req);
 
     expect(res.status).toBe(200);
@@ -74,7 +77,7 @@ describe('GET /api/outages', () => {
   it('filters by severity', async () => {
     mockDb.outageEvent.findMany.mockResolvedValue([]);
 
-    const req = new Request('http://localhost/api/outages?severity=critical');
+    const req = makeReq('http://localhost/api/outages?severity=critical');
     const res = await GET(req);
 
     expect(res.status).toBe(200);
@@ -85,7 +88,7 @@ describe('GET /api/outages', () => {
   it('filters by status', async () => {
     mockDb.outageEvent.findMany.mockResolvedValue([]);
 
-    const req = new Request('http://localhost/api/outages?status=resolved');
+    const req = makeReq('http://localhost/api/outages?status=resolved');
     const res = await GET(req);
 
     expect(res.status).toBe(200);
@@ -99,7 +102,7 @@ describe('GET /api/outages', () => {
       makeOutage({ id: 'out-2', status: 'resolved', actualDuration: 120 }),
     ]);
 
-    const req = new Request('http://localhost/api/outages');
+    const req = makeReq('http://localhost/api/outages');
     const res = await GET(req);
     const data = await res.json();
 
@@ -111,7 +114,7 @@ describe('GET /api/outages', () => {
       makeOutage({ compensationSites: 'not-json' }),
     ]);
 
-    const req = new Request('http://localhost/api/outages');
+    const req = makeReq('http://localhost/api/outages');
     const res = await GET(req);
     const data = await res.json();
 
@@ -126,7 +129,7 @@ describe('GET /api/outages', () => {
     });
     mockDb.outageEvent.findMany.mockResolvedValue([resolved]);
 
-    const req = new Request('http://localhost/api/outages');
+    const req = makeReq('http://localhost/api/outages');
     const res = await GET(req);
     const data = await res.json();
 
@@ -140,7 +143,7 @@ describe('GET /api/outages', () => {
   it('returns 500 on error', async () => {
     mockDb.outageEvent.findMany.mockRejectedValue(new Error('DB error'));
 
-    const req = new Request('http://localhost/api/outages');
+    const req = makeReq('http://localhost/api/outages');
     const res = await GET(req);
 
     expect(res.status).toBe(500);

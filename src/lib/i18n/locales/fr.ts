@@ -452,6 +452,12 @@ const fr: Record<string, string> = {
   'nav.config': 'Modèles de Config.',
   'nav.settings': 'Paramètres',
   'nav.admin': 'Admin',
+  'nav.users': 'Utilisateurs',
+  'nav.roles': 'Rôles',
+  'nav.apiKeys': 'Clés API',
+  'nav.webhooks': 'Webhooks',
+  'nav.dataSources': 'Sources de Données',
+  'nav.etlPipelines': 'Pipelines ETL',
 
   // ========== VIEW TITLES (page header) ==========
   'title.dashboard': 'Tableau de Bord',
@@ -1734,6 +1740,12 @@ const fr: Record<string, string> = {
   'nav.digitalTwin': 'Jumeau Numérique',
   'title.digitalTwin': 'Jumeau Numérique',
   'title.admin': 'Panneau Admin',
+  'title.users': 'Gestion des Utilisateurs',
+  'title.roles': 'Gestion des Rôles',
+  'title.apiKeys': 'Clés API',
+  'title.webhooks': 'Webhooks',
+  'title.dataSources': 'Sources de Données',
+  'title.etlPipelines': 'Pipelines ETL',
   'th.issue': 'Problème',
   'th.impact': 'Impact',
   'th.recommendation': 'Recommandation',
@@ -2920,6 +2932,75 @@ const fr: Record<string, string> = {
   'admin.userCount': 'Utilisateurs',
   'admin.permCount': 'Permissions',
   'admin.revealKey': 'Révéler la Clé',
+  'admin.confirm': 'Confirmer',
+
+  // ========== USERS VIEW ==========
+  'users.title': 'Gestion des Utilisateurs',
+  'users.addUser': 'Ajouter un Utilisateur',
+  'users.editUser': "Modifier l'Utilisateur",
+  'users.lastLogin': 'Dernière Connexion',
+  'users.userCreated': 'Utilisateur créé avec succès',
+  'users.confirmToggleTitle': "Changer le Statut de l'Utilisateur",
+
+  // ========== ROLES VIEW ==========
+  'roles.title': 'Gestion des Rôles',
+  'roles.addRole': 'Ajouter un Rôle',
+  'roles.editRole': 'Modifier le Rôle',
+  'roles.roleCreated': 'Rôle créé avec succès',
+  'roles.usersCount': 'Utilisateurs',
+  'roles.permMatrix': 'Matrice des Permissions',
+  'roles.selectPermissions': 'Sélectionner les Permissions',
+  'roles.created': 'Créé',
+
+  // ========== API KEYS VIEW ==========
+  'apikeys.title': 'Gestion des Clés API',
+  'apikeys.createKey': 'Créer une Clé',
+  'apikeys.editKey': 'Modifier la Clé API',
+  'apikeys.keyCreated': 'Clé API Créée',
+  'apikeys.copyKey': 'Copier la Clé',
+  'apikeys.revoke': 'Révoquer',
+  'apikeys.confirmRevoke': 'Révoquer la Clé API',
+  'apikeys.revokeDesc': 'Êtes-vous sûr de vouloir révoquer cette clé API ? Toutes les requêtes utilisant cette clé échoueront.',
+  'apikeys.created': 'Créé',
+
+  // ========== WEBHOOKS VIEW ==========
+  'webhooks.title': 'Gestion des Webhooks',
+  'webhooks.addWebhook': 'Ajouter un Webhook',
+  'webhooks.editWebhook': 'Modifier le Webhook',
+  'webhooks.webhookCreated': 'Webhook créé avec succès',
+  'webhooks.deliveries': 'Livraisons',
+  'webhooks.lastDelivery': 'Dernière Livraison',
+  'webhooks.created': 'Créé',
+  'webhooks.secret': 'Secret',
+  'webhooks.secretPlaceholder': 'Généré automatiquement si vide',
+  'webhooks.deleteDesc': 'Êtes-vous sûr de vouloir supprimer ce webhook ? Tout l\'historique de livraison sera perdu.',
+
+  // ========== DATA SOURCES VIEW ==========
+  'datasources.title': 'Gestion des Sources de Données',
+  'datasources.addSource': 'Ajouter une Source',
+  'datasources.editSource': 'Modifier la Source',
+  'datasources.sourceCreated': 'Source de données créée avec succès',
+  'datasources.deleteDesc': 'Êtes-vous sûr de vouloir supprimer cette source de données ?',
+
+  // ========== ETL PIPELINES VIEW ==========
+  'etlpipelines.title': 'Gestion des Pipelines ETL',
+  'etlpipelines.addPipeline': 'Ajouter un Pipeline',
+  'etlpipelines.editPipeline': 'Modifier le Pipeline',
+  'etlpipelines.pipelineCreated': 'Pipeline créé avec succès',
+  'etlpipelines.triggerRun': 'Déclencher',
+  'etlpipelines.triggered': 'Exécution du pipeline déclenchée',
+  'etlpipelines.source': 'Source',
+  'etlpipelines.destination': 'Destination',
+  'etlpipelines.schedule': 'Planification',
+  'etlpipelines.lastRun': 'Dernière Exécution',
+  'etlpipelines.totalRunsCol': 'Exécutions',
+  'etlpipelines.errorRate': "Taux d'Erreur",
+  'etlpipelines.totalPipelines': 'Total des Pipelines',
+  'etlpipelines.activePipelines': 'Actifs',
+  'etlpipelines.totalRuns': 'Total des Exécutions',
+  'etlpipelines.avgErrorRate': "Taux d'Erreur Moyen",
+  'etlpipelines.retryMax': 'Tentatives Max',
+  'etlpipelines.deleteDesc': 'Êtes-vous sûr de vouloir supprimer ce pipeline ? Tout l\'historique d\'exécution sera perdu.',
 };
 
 export default fr;

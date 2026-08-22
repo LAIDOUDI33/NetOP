@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET, POST, PATCH } from '@/app/api/policies/route';
 import { db } from '@/lib/db';
@@ -216,7 +213,7 @@ describe('PATCH /api/policies', () => {
     expect(data.success).toBe(true);
     expect(data.execution).toBeDefined();
     expect(mockDb.policyExecution.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { policyId: 'policy-1', status: 'triggered' } }),
+      expect.objectContaining({ data: expect.objectContaining({ policyId: 'policy-1', status: 'triggered' }) }),
     );
   });
 

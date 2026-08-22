@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Use REAL api-auth implementation, not the global mock from vitest.setup.ts
+vi.mock('@/lib/api-auth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api-auth')>();
+  return actual;
+});
+
 // Mock next-auth before importing the module under test
 vi.mock('next-auth', () => ({
   getServerSession: vi.fn(),

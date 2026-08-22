@@ -23,6 +23,7 @@ import {
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
   CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart, Box, ShieldCheck,
+  UserPlus, ShieldCheck as ShieldCheckIcon, KeyRound, Webhook as WebhookIcon, Database as DatabaseIcon, Play,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -91,6 +92,12 @@ const ValuePropositionView = lazy(() => import('@/components/views/ValueProposit
 const PredictiveAnalyticsView = lazy(() => import('@/components/views/PredictiveAnalyticsView'));
 const DigitalTwinView = lazy(() => import('@/components/views/DigitalTwinView'));
 const AdminView = lazy(() => import('@/components/views/AdminView'));
+const UsersView = lazy(() => import('@/components/views/UsersView'));
+const RolesView = lazy(() => import('@/components/views/RolesView'));
+const ApiKeysView = lazy(() => import('@/components/views/ApiKeysView'));
+const WebhooksView = lazy(() => import('@/components/views/WebhooksView'));
+const DataSourcesView = lazy(() => import('@/components/views/DataSourcesView'));
+const EtlPipelinesView = lazy(() => import('@/components/views/EtlPipelinesView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -157,6 +164,12 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'config', labelKey: 'nav.config', icon: Settings2, group: 'System' },
   { view: 'settings', labelKey: 'nav.settings', icon: Settings, group: 'System' },
   { view: 'admin', labelKey: 'nav.admin', icon: ShieldCheck, group: 'System' },
+  { view: 'users', labelKey: 'nav.users', icon: UserPlus, group: 'System' },
+  { view: 'roles', labelKey: 'nav.roles', icon: ShieldCheckIcon, group: 'System' },
+  { view: 'api-keys', labelKey: 'nav.apiKeys', icon: KeyRound, group: 'System' },
+  { view: 'webhooks', labelKey: 'nav.webhooks', icon: WebhookIcon, group: 'System' },
+  { view: 'data-sources', labelKey: 'nav.dataSources', icon: DatabaseIcon, group: 'System' },
+  { view: 'etl-pipelines', labelKey: 'nav.etlPipelines', icon: Play, group: 'System' },
 ];
 
 const VIEW_TITLE_KEYS: Record<ViewType, string> = {
@@ -218,6 +231,12 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   predictive: 'title.predictive',
   'digital-twin': 'title.digitalTwin',
   admin: 'title.admin',
+  users: 'title.users',
+  roles: 'title.roles',
+  'api-keys': 'title.apiKeys',
+  webhooks: 'title.webhooks',
+  'data-sources': 'title.dataSources',
+  'etl-pipelines': 'title.etlPipelines',
 };
 
 function ViewFallback() {
@@ -409,6 +428,12 @@ function ViewRenderer() {
           {currentView === 'wilaya-intelligence' && <WilayaIntelligenceView />}
           {currentView === 'value-proposition' && <ValuePropositionView />}
           {currentView === 'admin' && <AdminView />}
+          {currentView === 'users' && <UsersView />}
+          {currentView === 'roles' && <RolesView />}
+          {currentView === 'api-keys' && <ApiKeysView />}
+          {currentView === 'webhooks' && <WebhooksView />}
+          {currentView === 'data-sources' && <DataSourcesView />}
+          {currentView === 'etl-pipelines' && <EtlPipelinesView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>

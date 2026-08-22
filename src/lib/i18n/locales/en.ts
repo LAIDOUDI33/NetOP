@@ -455,6 +455,12 @@ const en: Record<string, string> = {
   'nav.config': 'Config Templates',
   'nav.settings': 'Parameters',
   'nav.admin': 'Admin',
+  'nav.users': 'Users',
+  'nav.roles': 'Roles',
+  'nav.apiKeys': 'API Keys',
+  'nav.webhooks': 'Webhooks',
+  'nav.dataSources': 'Data Sources',
+  'nav.etlPipelines': 'ETL Pipelines',
 
   // ========== VIEW TITLES (page header) ==========
   'title.dashboard': 'Dashboard',
@@ -1737,6 +1743,12 @@ const en: Record<string, string> = {
   'nav.digitalTwin': 'Digital Twin',
   'title.digitalTwin': 'Digital Twin',
   'title.admin': 'Admin Panel',
+  'title.users': 'User Management',
+  'title.roles': 'Role Management',
+  'title.apiKeys': 'API Keys',
+  'title.webhooks': 'Webhooks',
+  'title.dataSources': 'Data Sources',
+  'title.etlPipelines': 'ETL Pipelines',
   'th.issue': 'Issue',
   'th.impact': 'Impact',
   'th.recommendation': 'Recommendation',
@@ -2919,6 +2931,75 @@ const en: Record<string, string> = {
   'admin.userCount': 'Users',
   'admin.permCount': 'Permissions',
   'admin.revealKey': 'Reveal Key',
+  'admin.confirm': 'Confirm',
+
+  // ========== USERS VIEW ==========
+  'users.title': 'User Management',
+  'users.addUser': 'Add User',
+  'users.editUser': 'Edit User',
+  'users.lastLogin': 'Last Login',
+  'users.userCreated': 'User created successfully',
+  'users.confirmToggleTitle': 'Toggle User Status',
+
+  // ========== ROLES VIEW ==========
+  'roles.title': 'Role Management',
+  'roles.addRole': 'Add Role',
+  'roles.editRole': 'Edit Role',
+  'roles.roleCreated': 'Role created successfully',
+  'roles.usersCount': 'Users',
+  'roles.permMatrix': 'Permissions Matrix',
+  'roles.selectPermissions': 'Select Permissions',
+  'roles.created': 'Created',
+
+  // ========== API KEYS VIEW ==========
+  'apikeys.title': 'API Keys Management',
+  'apikeys.createKey': 'Create Key',
+  'apikeys.editKey': 'Edit API Key',
+  'apikeys.keyCreated': 'API Key Created',
+  'apikeys.copyKey': 'Copy Key',
+  'apikeys.revoke': 'Revoke',
+  'apikeys.confirmRevoke': 'Revoke API Key',
+  'apikeys.revokeDesc': 'Are you sure you want to revoke this API key? All requests using this key will fail.',
+  'apikeys.created': 'Created',
+
+  // ========== WEBHOOKS VIEW ==========
+  'webhooks.title': 'Webhooks Management',
+  'webhooks.addWebhook': 'Add Webhook',
+  'webhooks.editWebhook': 'Edit Webhook',
+  'webhooks.webhookCreated': 'Webhook created successfully',
+  'webhooks.deliveries': 'Deliveries',
+  'webhooks.lastDelivery': 'Last Delivery',
+  'webhooks.created': 'Created',
+  'webhooks.secret': 'Secret',
+  'webhooks.secretPlaceholder': 'Auto-generated if left empty',
+  'webhooks.deleteDesc': 'Are you sure you want to delete this webhook? All delivery history will be lost.',
+
+  // ========== DATA SOURCES VIEW ==========
+  'datasources.title': 'Data Sources Management',
+  'datasources.addSource': 'Add Source',
+  'datasources.editSource': 'Edit Source',
+  'datasources.sourceCreated': 'Data source created successfully',
+  'datasources.deleteDesc': 'Are you sure you want to delete this data source?',
+
+  // ========== ETL PIPELINES VIEW ==========
+  'etlpipelines.title': 'ETL Pipelines Management',
+  'etlpipelines.addPipeline': 'Add Pipeline',
+  'etlpipelines.editPipeline': 'Edit Pipeline',
+  'etlpipelines.pipelineCreated': 'Pipeline created successfully',
+  'etlpipelines.triggerRun': 'Trigger Run',
+  'etlpipelines.triggered': 'Pipeline run triggered',
+  'etlpipelines.source': 'Source',
+  'etlpipelines.destination': 'Destination',
+  'etlpipelines.schedule': 'Schedule',
+  'etlpipelines.lastRun': 'Last Run',
+  'etlpipelines.totalRunsCol': 'Runs',
+  'etlpipelines.errorRate': 'Error Rate',
+  'etlpipelines.totalPipelines': 'Total Pipelines',
+  'etlpipelines.activePipelines': 'Active',
+  'etlpipelines.totalRuns': 'Total Runs',
+  'etlpipelines.avgErrorRate': 'Avg Error Rate',
+  'etlpipelines.retryMax': 'Max Retries',
+  'etlpipelines.deleteDesc': 'Are you sure you want to delete this pipeline? All execution history will be lost.',
 };
 
 export default en;

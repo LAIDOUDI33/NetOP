@@ -1,4 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Use REAL implementation, not the global mock from vitest.setup.ts
+vi.mock('@/lib/rate-limit', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/rate-limit')>();
+  return actual;
+});
+
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 /** Helper to create a fake request with a unique IP */

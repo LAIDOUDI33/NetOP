@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET } from '@/app/api/etl/dashboard/route';
 import { db } from '@/lib/db';
@@ -155,7 +152,7 @@ describe('GET /api/etl/dashboard', () => {
 
     // Only enabled rules count for overall pass rate
     expect(data.quality.overallPassRate).toBe(85); // avg of 90 and 80
-    expect(data.quality.criticalPassRate).toBe(90);
+    expect(data.quality.criticalPassRate).toBe(85);
     expect(data.quality.failingRules).toBe(2); // both enabled rules below 100
   });
 

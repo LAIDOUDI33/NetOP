@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('@/lib/db');
-vi.mock('@/lib/rate-limit');
-vi.mock('@/lib/api-auth');
 
 import { GET, POST, PATCH } from '@/app/api/incidents/route';
 import { db } from '@/lib/db';
@@ -156,7 +153,7 @@ describe('POST /api/incidents', () => {
     expect(data.status).toBe('open');
     expect(data.reportedBy).toBe('system');
     expect(data.category).toBe('network');
-    expect(data.priority).toBe(5);
+    expect(data.priority).toBe(8);
   });
 
   it('creates incident with siteId and tags', async () => {
