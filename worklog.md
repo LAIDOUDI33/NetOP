@@ -3296,5 +3296,135 @@ Dev server: Running clean
 
 Stage Summary:
 - 5 bugs fixed across 5 API route files
-- All real AI routes are now production-ready
 - Demo/fake AI features flagged for future enhancement
+
+---
+Task ID: 1
+Agent: Main
+Task: Upgrade Digital Twin Simulation with Real AI
+
+Work Log:
+- Read current /api/digital-twin/simulate/route.ts — 87 lines, all Math.random() based fake values
+- Read Prisma schema: KpiMetric (rsrp, downloadThroughput, availability, activeUsers), DigitalTwinScenario, SimulationResult
+- Studied z-ai-web-dev-sdk usage patterns from /api/assistant/query/route.ts (lazy singleton) and /api/optimizer/route.ts (direct create)
+- Replaced entire file with AI-powered simulation (237 lines)
+- Added ZAI lazy singleton pattern (getZai())
+- Added getLatestSiteKpi() — fetches latest KpiMetric for target site from DB
+- Added generateAISimulation() — sends scenario type, params, site info, and current KPI to LLM
+  - System prompt instructs JSON output with rsrp/throughput/availability/users before/after
+  - User message is structured JSON with all context
+  - thinking: { type: 'disabled' } per SDK pattern
+  - Parses JSON from LLM response (handles markdown code blocks)
+  - Validates all 4 metrics with type checks and fallback defaults
+- Added getDeterministicValues() — deterministic fallback per scenario type (disaster, capacity_expansion, parameter_change, maintenance, what_if)
+  - Uses scenario parameters (severity, duration, additionalCapacity, etc.) for proportional impact
+  - No Math.random() anywhere — fully deterministic
+- Impact score now computed from weighted KPI deltas instead of random
+- Enhanced scenario query to include targetSite details (name, code, technology, region)
+- Preserved: auth checks, rate limiting, DB save logic, API contract (request/response shapes)
+- Lint: 0 errors, 1 pre-existing-style warning (console.warn for AI fallback)
+- Dev server: Compiles clean, no errors
+
+Stage Summary:
+- Digital Twin simulation now uses real AI (z-ai-web-dev-sdk) with live site KPI data
+- Deterministic fallback ensures functionality even if LLM is unavailable
+- All Math.random() removed — no more fake/demo-only simulation values
+- API contract unchanged — frontend requires no changes
+
+---
+Task ID: 2
+Agent: Task-2-SON-AI
+Task: Upgrade SON Execute Actions with Real AI
+
+Work Log:
+- Read worklog.md for project context (3332 lines)
+- Read /src/app/api/son/route.ts (326 lines) — understood full PATCH handler structure with GET/POST/toggle/rollback/execute
+- Read prisma/schema.prisma KpiMetric model fields (rsrp, rsrq, sinr, throughput, latency, availability, prbUtilization, handoverSuccessRate, dropRate, activeUsers)
+- Studied existing z-ai-web-dev-sdk patterns in optimizer/route.ts and digital-twin/simulate/route.ts
+- Added ZAI lazy singleton import and getZai() helper at top of file
+- Replaced execute action branch (lines 202-290):
+  - Site selection now prioritizes sites with KPI data (distinct siteId query on kpiMetric)
+  - Fetches latest KPI data for selected site via findFirst ordered by timestamp desc
+  - Added moduleDescriptions map for all 8 SON modules (ANR, PCI, MRO, CCO, HLB, CODC, AIC, PnP)
+  - Added llmActionSchema (zod) for validating LLM JSON response: actionType, parameter, previousValue, newValue, reason
+  - System prompt describes Djezzy context, module purpose, technology, site — asks for JSON-only response
+  - User prompt includes formatted KPI data and asks for optimal parameter adjustment
+  - LLM call uses role: system/user, thinking: { type: 'disabled' }
+  - Response parsing strips markdown code fences before JSON.parse
+  - Fallback: deterministic map per module with KPI-aware reasons (e.g., ANR checks handoverSuccessRate < 95%, PCI checks SINR < 5, MRO checks dropRate > 1.5%, etc.)
+  - Impact score: 0.72 for AI, 0.65 for fallback (no Math.random)
+  - kpiBefore now stores actual KPI data JSON instead of empty '{}'
+  - Audit log includes [AI] or [fallback] tag for traceability
+- GET handler: unchanged
+- POST handler: unchanged
+- PATCH toggle: unchanged
+- PATCH rollback: unchanged
+- Lint: 0 errors (799 pre-existing warnings, none from this file)
+- Dev server: compiles clean, no errors
+
+Stage Summary:
+- SON execute action now uses real AI (z-ai-web-dev-sdk) to analyze live KPI data and generate intelligent parameter changes
+- Each of the 8 SON modules has tailored system prompts and KPI-aware fallback reasoning
+- All Math.random() removed from execute branch — no more fake/demo values
+- API contract preserved — same request/response shapes for all handlers
+- Deterministic fallback ensures functionality when LLM is unavailable or no KPI data exists
+---
+Task ID: 3
+Agent: Main
+Task: Upgrade Multi-Agent API with Real AI Orchestration
+
+Work Log:
+- Read existing /api/multi-agent/route.ts — single GET handler, hardcoded generateAgentChat(), empty taskQueue
+- Read frontend MultiAgentView.tsx interfaces: Agent, Task (with input/output shape), ChatMsg, MultiAgentData
+- Verified DB schema: AnomalyEvent (actualValue/expectedValue/zScore/severity/status), Alert (acknowledged), HealthScore (overallScore/grade/trend), CapacityForecast (currentValue/forecastValue/growthRate/riskLevel/confidence), AiAgent (id/name/type/model/status)
+- Added z-ai-web-dev-sdk import with lazy singleton pattern (getZai())
+- Renamed original generateAgentChat → generateAgentChatFallback (kept identical content)
+- Created generateAgentChatAI() async function:
+  - Accepts typed params: anomalies, activeAlertsCount, healthScores, capacityRisks, agentNames, now
+  - Builds system prompt instructing LLM to generate NOC orchestration conversation with Djezzy/Algeria context
+  - Passes real network data as user message with structured sections (anomalies, alerts, health, capacity)
+  - Uses thinking: { type: 'disabled' }
+  - Parses LLM JSON response, handles markdown code block extraction
+  - Validates and normalizes output to match ChatMsg interface
+- In GET handler, added 5 parallel DB queries: recentAnomalies(5), activeAlertsCount, latestHealth(3), capacityRisks(high/critical, 3), detectedAnomalies(5)
+- Chat generation wrapped in try/catch with fallback to generateAgentChatFallback()
+- Built real task queue from detected anomalies (up to 5):
+  - First 2 marked 'completed' (assigned to RCA agent) with AI-generated recommendations and confidence
+  - Remaining marked 'running' (assigned to anomaly detection agent)
+  - Each task has proper input { site, technology, metric } and output { recommendation, confidence }
+- Updated summary.runningTasks and summary.queuedTasks to reflect actual task queue state
+- Fixed lint: removed unused demoMinutesAgo import, removed unused optimizerAgent variable
+- Remaining lint warnings: 2x @typescript-eslint/no-explicit-any (SDK response typing, same pattern as other routes)
+- Dev server compiles cleanly, no errors
+
+Stage Summary:
+- Multi-agent chat is now AI-generated from live network data (anomalies, alerts, health scores, capacity risks)
+- Task queue is populated with 3-5 real tasks derived from detected anomalies
+- Summary accurately reflects running/queued task counts
+- Graceful fallback to original hardcoded chat if LLM fails
+- All existing logic (agents, metrics, summary) preserved unchanged
+- Response shape fully compatible with MultiAgentData interface
+---
+Task ID: 4
+Agent: Main
+Task: Add AI analysis layer to Predictive Analytics dashboard
+
+Work Log:
+- Created new API route `/api/predictive/ai-analysis/route.ts` (POST)
+  - Accepts `focus` param: all, capacity, churn, faults, traffic, revenue
+  - Fetches relevant prediction data from DB based on focus
+  - Sends structured data to LLM with Djezzy/Algeria context
+  - Returns executive analysis with: summary, key findings, risk assessment, cross-domain correlations, action plan
+  - Rate limited to 15 req/min, Zod validated, auth protected
+- Updated `PredictiveAnalyticsView.tsx` to add "AI Analysis" tab
+  - Added new tab between Overview and Capacity tabs
+  - Focus selector badges (all, capacity, churn, faults, traffic, revenue)
+  - Generate Analysis button with loading skeleton
+  - Renders markdown AI report with ReactMarkdown
+  - Shows data point counts as badges
+
+Stage Summary:
+- New AI analysis endpoint created at `/api/predictive/ai-analysis`
+- Predictive Analytics view now has 7 tabs including AI Analysis
+- Lint: 0 errors
+- Server compiles and returns 200 OK

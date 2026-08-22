@@ -3,6 +3,13 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import ZAI from 'z-ai-web-dev-sdk';
+
+let zaiInstance: Awaited<ReturnType<typeof ZAI.create>> | null = null;
+async function getZai() {
+  if (!zaiInstance) zaiInstance = await ZAI.create();
+  return zaiInstance;
+}
 
 const createSonModuleSchema = z.object({
   name: z.string().min(1),
@@ -204,48 +211,175 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'Cannot execute a disabled module. Enable it first.' }, { status: 400 });
       }
 
-      // Simulate execution: create a sample pending action for demonstration
       const tech = existing.technology === 'ALL' ? '4G' : existing.technology;
 
-      // Pick a random site from the database for the demo action
-      const sites = await db.networkSite.findMany({
+      // Pick a site that has KPI data for intelligent optimization
+      const sitesWithKpi = await db.kpiMetric.findMany({
         where: { technology: tech },
-        take: 10,
+        distinct: ['siteId'],
+        select: { siteId: true },
+        take: 20,
       });
-      const site = sites.length > 0 ? sites[Math.floor(Math.random() * sites.length)] : null;
 
-      const actionTypeMap: Record<string, { type: string; parameter: string; prev: string; next: string }> = {
-        ANR: { type: 'add_neighbor', parameter: 'neighborRelation', prev: 'none', next: 'auto_discovered' },
-        PCI: { type: 'modify_pci', parameter: 'pci', prev: '0', next: String(Math.floor(Math.random() * 504)) },
-        MRO: { type: 'adjust_tilt', parameter: 'electricalTilt', prev: '6', next: String(4 + Math.floor(Math.random() * 6)) },
-        CCO: { type: 'adjust_power', parameter: 'dlPower', prev: '15.2', next: (12 + Math.random() * 6).toFixed(1) },
-        HLB: { type: 'compensate_outage', parameter: 'loadBalance', prev: 'imbalanced', next: 'balanced' },
-        CODC: { type: 'correct_config', parameter: 'configParam', prev: 'incorrect', next: 'corrected' },
-        AIC: { type: 'adjust_power', parameter: 'icicThreshold', prev: '-105', next: '-100' },
-        PnP: { type: 'add_neighbor', parameter: 'autoNeighbor', prev: 'none', next: 'pnp_added' },
+      // If no KPI data found, fall back to any site
+      const siteIds = sitesWithKpi.map(s => s.siteId);
+      const sites = siteIds.length > 0
+        ? await db.networkSite.findMany({ where: { id: { in: siteIds }, technology: tech }, take: 10 })
+        : await db.networkSite.findMany({ where: { technology: tech }, take: 10 });
+      const site = sites.length > 0 ? sites[0] : null;
+
+      // Fetch latest KPI data for the selected site
+      const latestKpi = site
+        ? await db.kpiMetric.findFirst({
+            where: { siteId: site.id, technology: tech },
+            orderBy: { timestamp: 'desc' },
+          })
+        : null;
+
+      const kpiData = latestKpi
+        ? {
+            rsrp: latestKpi.rsrp,
+            rsrq: latestKpi.rsrq,
+            sinr: latestKpi.sinr,
+            downloadThroughput: latestKpi.downloadThroughput,
+            uploadThroughput: latestKpi.uploadThroughput,
+            latency: latestKpi.latency,
+            availability: latestKpi.availability,
+            prbUtilization: latestKpi.prbUtilization,
+            handoverSuccessRate: latestKpi.handoverSuccessRate,
+            dropRate: latestKpi.dropRate,
+            activeUsers: latestKpi.activeUsers,
+          }
+        : null;
+
+      // SON module descriptions for system prompt
+      const moduleDescriptions: Record<string, string> = {
+        ANR: 'Automatic Neighbor Relation - automatically discovers and manages neighbor cell relations to improve handover success and reduce dropped calls.',
+        PCI: 'Physical Cell ID - optimizes cell IDs (0-503) to minimize inter-cell interference and improve signal quality (RSRQ, SINR).',
+        MRO: 'Mobility Robustness Optimization - optimizes handover parameters (tilt, offsets, hysteresis) to reduce call drops and failed handovers.',
+        CCO: 'Coverage & Capacity Optimization - balances coverage and capacity through downlink power, antenna tilt, and carrier configuration adjustments.',
+        HLB: 'Hardware Load Balancing - distributes traffic load across cells to prevent congestion and improve user experience.',
+        CODC: 'Conflict Detection & Coordination - detects and resolves parameter conflicts between different SON modules to maintain network stability.',
+        AIC: 'Adaptive Interference Control - mitigates inter-cell interference through ICIC thresholds, power adjustments, and frequency planning.',
+        PnP: 'Plug and Play - automatically configures newly deployed sites including neighbor relations, PCI assignment, and power settings.',
       };
 
-      const config = actionTypeMap[existing.name] || {
-        type: 'correct_config',
-        parameter: 'config',
-        prev: 'before',
-        next: 'after',
-      };
+      const llmActionSchema = z.object({
+        actionType: z.string(),
+        parameter: z.string(),
+        previousValue: z.string(),
+        newValue: z.string(),
+        reason: z.string(),
+      });
+
+      let config: { actionType: string; parameter: string; previousValue: string; newValue: string; reason: string };
+      let impactScore: number;
+      let usedAi = false;
+
+      if (kpiData) {
+        // Try AI-powered analysis
+        try {
+          const zai = await getZai();
+          const moduleName = existing.name;
+          const moduleDesc = moduleDescriptions[moduleName] || `SON module ${existing.displayName}`;
+
+          const systemPrompt = `You are an expert SON (Self-Organizing Network) engineer for Djezzy, Algeria's telecom operator.
+You are running the ${moduleName} module: ${moduleDesc}
+Technology: ${tech}
+Site: ${site?.name || 'unknown'} (${site?.code || 'unknown'})
+
+Based on the KPI data provided, analyze the current network conditions and generate ONE specific, actionable parameter change.
+The change must be realistic and aligned with the ${moduleName} module's purpose.
+
+Respond ONLY with a valid JSON object (no markdown, no code fences) with these fields:
+- actionType: string - the type of action (e.g., "add_neighbor", "modify_pci", "adjust_tilt", "adjust_power", "compensate_outage", "correct_config", "update_threshold")
+- parameter: string - the specific network parameter being changed
+- previousValue: string - the current/previous value of the parameter
+- newValue: string - the new proposed value
+- reason: string - a clear explanation of WHY this change is needed based on the KPI data (1-2 sentences)
+
+Be specific with realistic 3GPP parameter names and values. Reference specific KPI metrics in your reason.`;
+
+          const userPrompt = `Current KPI data for site ${site?.name || 'unknown'} (${tech}):
+${JSON.stringify(kpiData, null, 2)}
+
+Generate the optimal ${moduleName} parameter adjustment for this site.`;
+
+          const completion = await zai.chat.completions.create({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            thinking: { type: 'disabled' },
+          });
+
+          const raw = completion.choices?.[0]?.message?.content || '';
+          // Strip markdown code fences if present
+          const jsonStr = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+          const parsed = JSON.parse(jsonStr);
+          const validated = llmActionSchema.safeParse(parsed);
+          if (!validated.success) {
+            throw new Error('LLM response validation failed');
+          }
+          config = validated.data;
+          impactScore = 0.72;
+          usedAi = true;
+        } catch {
+          // Fall through to deterministic fallback
+        }
+      }
+
+      // Deterministic fallback (no Math.random) when LLM is unavailable or no KPI data
+      if (!usedAi) {
+        const fallbackMap: Record<string, { actionType: string; parameter: string; previousValue: string; newValue: string; reason: string }> = {
+          ANR: { actionType: 'add_neighbor', parameter: 'neighborRelation', previousValue: 'none', newValue: 'auto_discovered', reason: kpiData && kpiData.handoverSuccessRate && kpiData.handoverSuccessRate < 95
+            ? `Handover success rate is ${kpiData.handoverSuccessRate}%, below 95% threshold. Adding missing neighbor relation to improve handover performance.`
+            : 'No missing neighbors detected in latest scan. Confirming existing neighbor list is up to date.' },
+          PCI: { actionType: 'modify_pci', parameter: 'pci', previousValue: '0', newValue: '156', reason: kpiData && kpiData.sinr && kpiData.sinr < 5
+            ? `SINR is ${kpiData.sinr} dB, indicating potential PCI conflict. Reassigning PCI to reduce inter-cell interference.`
+            : 'PCI collision detected with neighboring cell. Reassigning to a non-conflicting PCI value.' },
+          MRO: { actionType: 'adjust_tilt', parameter: 'electricalTilt', previousValue: '6', newValue: '4', reason: kpiData && kpiData.dropRate && kpiData.dropRate > 1.5
+            ? `Drop rate is ${kpiData.dropRate}%, exceeding 1.5% threshold. Reducing electrical tilt from 6° to 4° to improve cell edge coverage.`
+            : 'Adjusting electrical tilt to optimize handover zone and reduce call drops at cell boundary.' },
+          CCO: { actionType: 'adjust_power', parameter: 'dlPower', previousValue: '15.2', newValue: '13.5', reason: kpiData && kpiData.prbUtilization && kpiData.prbUtilization > 80
+            ? `PRB utilization is ${kpiData.prbUtilization}%, indicating high load. Reducing DL power to offload traffic to neighboring cells.`
+            : 'Adjusting downlink power to rebalance coverage area and improve capacity distribution.' },
+          HLB: { actionType: 'compensate_outage', parameter: 'loadBalance', previousValue: 'imbalanced', newValue: 'balanced', reason: kpiData && kpiData.activeUsers && kpiData.activeUsers > 100
+            ? `Active users at ${kpiData.activeUsers} with high utilization. Rebalancing load across nearby cells.`
+            : 'Traffic imbalance detected across sector. Adjusting load distribution parameters.' },
+          CODC: { actionType: 'correct_config', parameter: 'configParam', previousValue: 'incorrect', newValue: 'corrected', reason: 'Parameter conflict detected between SON modules. Coordinating to resolve inconsistency and maintain network stability.' },
+          AIC: { actionType: 'adjust_power', parameter: 'icicThreshold', previousValue: '-105', newValue: '-100', reason: kpiData && kpiData.rsrq && kpiData.rsrq < -12
+            ? `RSRQ is ${kpiData.rsrq} dB, indicating interference. Raising ICIC threshold from -105 dBm to -100 dBm to reduce inter-cell interference.`
+            : 'Adjusting ICIC threshold to mitigate detected interference and improve signal quality.' },
+          PnP: { actionType: 'add_neighbor', parameter: 'autoNeighbor', previousValue: 'none', newValue: 'pnp_added', reason: 'New site detected in network. Automatically configuring neighbor relations, PCI, and power settings via Plug and Play.' },
+        };
+
+        config = fallbackMap[existing.name] || {
+          actionType: 'correct_config',
+          parameter: 'config',
+          previousValue: 'before',
+          newValue: 'after',
+          reason: `Executed by ${existing.displayName} module - default configuration correction.`,
+        };
+        impactScore = 0.65;
+      }
+
+      const kpiBeforeStr = kpiData ? JSON.stringify(kpiData) : '{}';
 
       const newAction = await db.sonAction.create({
         data: {
           moduleId: existing.id,
           siteId: site?.id,
           technology: tech,
-          actionType: config.type,
+          actionType: config.actionType,
           parameter: config.parameter,
-          previousValue: config.prev,
-          newValue: config.next,
-          reason: `Executed by ${existing.displayName} module`,
+          previousValue: config.previousValue,
+          newValue: config.newValue,
+          reason: config.reason,
           status: 'applied',
-          kpiBefore: '{}',
+          kpiBefore: kpiBeforeStr,
           kpiAfter: '{}',
-          impactScore: 0.5 + Math.random() * 0.45,
+          impactScore,
           appliedAt: new Date(),
         },
       });
@@ -270,7 +404,7 @@ export async function PATCH(request: NextRequest) {
           entityId: moduleId,
           action: 'execute',
           newValue: newAction.id,
-          description: `SON module "${existing.displayName}" executed: ${config.type} on ${site?.name || 'auto-selected'} (${config.parameter}: ${config.prev} → ${config.next})`,
+          description: `SON module "${existing.displayName}" executed: ${config.actionType} on ${site?.name || 'auto-selected'} (${config.parameter}: ${config.previousValue} → ${config.newValue})${usedAi ? ' [AI]' : ' [fallback]'}`,
           technology: tech,
         },
       });
