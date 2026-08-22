@@ -2,57 +2,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// -------------------------------------------------------------------
-// Security headers
-// -------------------------------------------------------------------
-
-/**
- * Common security headers to spread into API responses.
- * Usage: `new Response(body, { headers: { 'Content-Type': 'application/json', ...securityHeaders } })`
- */
-export const securityHeaders: Record<string, string> = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-  'Cache-Control': 'no-store',
-};
-
-/**
- * Return security headers merged with any caller-provided overrides.
- */
-export function getSecurityHeaders(overrides?: Record<string, string>): Record<string, string> {
-  return { ...securityHeaders, ...overrides };
-}
-
-// -------------------------------------------------------------------
-// Body size limit
-// -------------------------------------------------------------------
-
-const MAX_BODY_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-
-/**
- * Check if a request's Content-Length header exceeds the allowed body size.
- * Returns an error Response if too large, or null if acceptable.
- *
- * Note: For streaming bodies without Content-Length, this is a no-op.
- * Next.js / Bun handle actual body parsing limits separately.
- */
-export function checkBodySize(request: Request): Response | null {
-  const contentLength = request.headers.get('content-length');
-  if (contentLength) {
-    const bytes = parseInt(contentLength, 10);
-    if (!isNaN(bytes) && bytes > MAX_BODY_SIZE_BYTES) {
-      return NextResponse.json(
-        { error: 'Corps de la requete trop volumineux', code: 'PAYLOAD_TOO_LARGE', maxBytes: MAX_BODY_SIZE_BYTES },
-        { status: 413 },
-      );
-    }
-  }
-  return null;
-}
-
 /**
  * Whether authentication is enforced. Flip to `true` to require sessions.
  */

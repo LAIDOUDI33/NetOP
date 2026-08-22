@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/Providers";
 import { ThemeProvider } from "next-themes";
 import { HtmlAttributes } from "@/components/HtmlAttributes";
-import { PwaRegister } from "@/components/PwaRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,14 +32,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#0f172a" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="NetOptima" />
-        <link rel="apple-touch-icon" href="/icons/icon.svg" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
@@ -54,7 +45,6 @@ export default function RootLayout({
             <HtmlAttributes />
             {children}
             <Toaster />
-            <PwaRegister />
           </Providers>
         </ThemeProvider>
       </body>

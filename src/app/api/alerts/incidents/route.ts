@@ -88,8 +88,8 @@ export async function GET(request: NextRequest) {
 
     // Sort: critical first, then by alert count desc
     incidents.sort((a, b) => {
-      const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
-      if (order[a.severity] !== order[b.severity]) return order[a.severity]! - order[b.severity]!;
+      const order = { critical: 0, warning: 1, info: 2 };
+      if (order[a.severity] !== order[b.severity]) return order[a.severity] - order[b.severity];
       return b.alertCount - a.alertCount;
     });
 

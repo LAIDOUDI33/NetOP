@@ -155,7 +155,7 @@ function CorrelationMatrixTab({ zones, summary, loading, t }: { zones: NCZone[];
     ];
     // Compute average R across all zones for each pair
     return pairs.map(p => {
-      const avgR = zones.reduce((s, z) => s + (z as unknown as Record<string, number>)[p.key] as number, 0) / zones.length;
+      const avgR = zones.reduce((s, z) => s + (z as Record<string, number>)[p.key] as number, 0) / zones.length;
       return { ...p, r: Number(avgR.toFixed(3)) };
     });
   }, [zones, t]);

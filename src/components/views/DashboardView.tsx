@@ -15,8 +15,7 @@ import {
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ExportButton } from '@/components/ExportButton';
-import { useSocket, type KpiUpdateItem, type DashboardSummary } from '@/hooks/useSocket';
-import { LiveAlertFeed } from '@/components/LiveAlertFeed';
+import { useSocket, type KpiUpdateItem } from '@/hooks/useSocket';
 import type { DashboardData, Technology } from '@/types';
 
 const TECH_COLORS: Record<Technology, string> = {
@@ -268,21 +267,33 @@ export default function DashboardView() {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Live Alert Feed — replaces static alerts */}
-        <Card role="region" aria-label={t('dash.liveAlertFeed')}>
+        {/* Recent Alerts Summary */}
+        <Card role="region" aria-label={t('dash.recentAlerts')}>
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-semibold">{t('dash.liveAlertFeed')}</CardTitle>
-              {isConnected && (
-                <Badge variant="outline" className="gap-1 text-[10px] text-emerald-600 border-emerald-400">
-                  <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
-                  LIVE
-                </Badge>
-              )}
-            </div>
+            <CardTitle className="text-base font-semibold">{t('dash.recentAlerts')}</CardTitle>
           </CardHeader>
           <CardContent className="p-4">
-            <LiveAlertFeed />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t('dash.totalAlerts')}</span>
+                <Badge variant="outline" className="font-semibold">{data.recentAlerts}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t('dash.activeAlertsLabel')}</span>
+                <Badge variant="destructive" className="font-semibold">{data.activeAlerts}</Badge>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <div className="flex-1 bg-red-500/10 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-red-600">{t('status.critical')}</p>
+                </div>
+                <div className="flex-1 bg-amber-500/10 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-amber-600">{t('status.warning')}</p>
+                </div>
+                <div className="flex-1 bg-cyan-500/10 rounded-lg p-3 text-center">
+                  <p className="text-lg font-bold text-cyan-600">{t('status.info')}</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 

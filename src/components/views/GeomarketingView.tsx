@@ -372,12 +372,12 @@ export default function GeomarketingView() {
 
   const summary = mainData?.summary;
   const allDemographics = (demoData?.demographics ?? mainData?.demographics ?? []) as GeoDemographicRow[];
-  const allRevenueZones = (mainData?.revenueZones ?? []) as GeoRevenueZoneRow[];
+  const allRevenueZones = mainData?.revenueZones ?? [] as GeoRevenueZoneRow[];
   const allCompetitorSites = (competitorData?.sites ?? mainData?.competitorSites ?? []) as GeoCompetitorSiteRow[];
-  const allChurnClusters = (churnData?.clusters ?? []) as GeoChurnClusterRow[];
-  const allCandidateSites = (scorerData?.sites ?? []) as GeoSiteAcquisitionRow[];
-  const allCoverageGaps = (gapsData?.gaps ?? []) as GeoCoverageGapRow[];
-  const allRevenueImpacts = (riData?.zones ?? []) as RevenueImpactRow[];
+  const allChurnClusters = churnData?.clusters ?? [] as GeoChurnClusterRow[];
+  const allCandidateSites = scorerData?.sites ?? [] as GeoSiteAcquisitionRow[];
+  const allCoverageGaps = gapsData?.gaps ?? [] as GeoCoverageGapRow[];
+  const allRevenueImpacts = riData?.zones ?? [] as RevenueImpactRow[];
 
   const churnSummary = churnData?.summary;
   const compSummary = competitorData?.summary;
@@ -388,11 +388,11 @@ export default function GeomarketingView() {
 
   // Region filter
   const demographics = useRegionFilter(allDemographics, regionFilter);
-  const revenueZones = useRegionFilter(allRevenueZones, regionFilter) as GeoRevenueZoneRow[];
-  const competitorSites = useRegionFilter(allCompetitorSites, regionFilter) as GeoCompetitorSiteRow[];
-  const churnClusters = useRegionFilter(allChurnClusters, regionFilter) as GeoChurnClusterRow[];
-  const candidateSites = useRegionFilter(allCandidateSites, regionFilter) as GeoSiteAcquisitionRow[];
-  const coverageGaps = useRegionFilter(allCoverageGaps, regionFilter) as GeoCoverageGapRow[];
+  const revenueZones = useRegionFilter(allRevenueZones, regionFilter);
+  const competitorSites = useRegionFilter(allCompetitorSites, regionFilter);
+  const churnClusters = useRegionFilter(allChurnClusters, regionFilter);
+  const candidateSites = useRegionFilter(allCandidateSites, regionFilter);
+  const coverageGaps = useRegionFilter(allCoverageGaps, regionFilter);
   const revenueImpacts = useRegionFilter(allRevenueImpacts, regionFilter) as RevenueImpactRow[];
 
   // All unique regions for filter dropdown
@@ -1759,7 +1759,7 @@ function RevenueImpactByRegionChart({ zones, loading, t }: { zones: RevenueImpac
       name: region,
       [t('geo.annualRisk')]: data.annualRisk / 1_000_000,
       [t('geo.monthlyRisk')]: data.monthlyRisk / 1_000_000,
-    })).sort((a, b) => (b as any)[t('geo.annualRisk')] - (a as any)[t('geo.annualRisk')]).slice(0, 10);
+    })).sort((a, b) => b[t('geo.annualRisk')] - a[t('geo.annualRisk')]).slice(0, 10);
   }, [zones, t]);
   return (
     <Card>

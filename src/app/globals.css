@@ -184,10 +184,3 @@
 .skip-link:focus {
   top: 0;
 }
-
-/* Mobile bottom nav safe area */
-@media (max-width: 767px) {
-  .footer-safe-area {
-    padding-bottom: calc(0.75rem + 4rem + env(safe-area-inset-bottom, 0px));
-  }
-}

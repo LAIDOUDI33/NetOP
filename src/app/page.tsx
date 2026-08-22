@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useTheme } from 'next-themes';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAppStore } from '@/store/app';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Skeleton } from '@/components/ui/skeleton';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { CommandPalette } from '@/components/CommandPalette';
-import { ViewRenderer } from '@/lib/view-registry';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RealtimeAlertToasts } from '@/components/RealtimeAlertToasts';
 import { WsStatusIndicator } from '@/components/WsStatusIndicator';
 import { RealtimeSidebarStats } from '@/components/RealtimeSidebarStats';
-import { MobileBottomNav } from '@/components/MobileBottomNav';
-import { OnboardingTour } from '@/components/OnboardingTour';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
@@ -26,8 +26,73 @@ import {
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
+// AUTH DISABLED — imports kept for re-activation:
+// import { useAuth } from '@/hooks/useAuth';
+// import { UserCircle } from 'lucide-react';
+// import { signOut } from 'next-auth/react';
+
+import DashboardView from '@/components/views/DashboardView';
+import MonitoringView from '@/components/views/MonitoringView';
+import KpiAnalyticsView from '@/components/views/KpiAnalyticsView';
+import AlertsView from '@/components/views/AlertsView';
+import OptimizerView from '@/components/views/OptimizerView';
+import CoverageMapView from '@/components/views/CoverageMapView';
+import ReportsView from '@/components/views/ReportsView';
+import SettingsView from '@/components/views/SettingsView';
+
+// Enterprise views - dynamic import to reduce initial bundle
+const SLADashboardView = lazy(() => import('@/components/views/SLADashboardView'));
+const AnomalyDetectionView = lazy(() => import('@/components/views/AnomalyDetectionView'));
+const CorrelationView = lazy(() => import('@/components/views/CorrelationView'));
+const RootCauseAnalysisView = lazy(() => import('@/components/views/RootCauseAnalysisView'));
+const SonView = lazy(() => import('@/components/views/SonView'));
+const PoliciesView = lazy(() => import('@/components/views/PoliciesView'));
+const OnboardingView = lazy(() => import('@/components/views/OnboardingView'));
+const VendorsView = lazy(() => import('@/components/views/VendorsView'));
+const QoEView = lazy(() => import('@/components/views/QoEView'));
+const CapacityView = lazy(() => import('@/components/views/CapacityView'));
+const SlicingView = lazy(() => import('@/components/views/SlicingView'));
+const EnergyView = lazy(() => import('@/components/views/EnergyView'));
+const FaultsView = lazy(() => import('@/components/views/FaultsView'));
+const SubscribersView = lazy(() => import('@/components/views/SubscribersView'));
+const IncidentsView = lazy(() => import('@/components/views/IncidentsView'));
+const ConfigView = lazy(() => import('@/components/views/ConfigView'));
+const LiveView = lazy(() => import('@/components/views/LiveView'));
+const HealthView = lazy(() => import('@/components/views/HealthView'));
+const BenchmarkView = lazy(() => import('@/components/views/BenchmarkView'));
+const HandoverView = lazy(() => import('@/components/views/HandoverView'));
+const LoadBalancingView = lazy(() => import('@/components/views/LoadBalancingView'));
+const InterferenceView = lazy(() => import('@/components/views/InterferenceView'));
+const CoverageHolesView = lazy(() => import('@/components/views/CoverageHolesView'));
+const ChangesView = lazy(() => import('@/components/views/ChangesView'));
+const OutagesView = lazy(() => import('@/components/views/OutagesView'));
+const PlaybooksView = lazy(() => import('@/components/views/PlaybooksView'));
+const AssistantView = lazy(() => import('@/components/views/AssistantView'));
+const SimulationsView = lazy(() => import('@/components/views/SimulationsView'));
+const TrendsView = lazy(() => import('@/components/views/TrendsView'));
+const RoiView = lazy(() => import('@/components/views/RoiView'));
+const SpectrumView = lazy(() => import('@/components/views/SpectrumView'));
+const EvolutionView = lazy(() => import('@/components/views/EvolutionView'));
+const NpiView = lazy(() => import('@/components/views/NpiView'));
+const ServicesView = lazy(() => import('@/components/views/ServicesView'));
+const AuditView = lazy(() => import('@/components/views/AuditView'));
+const ExecutiveView = lazy(() => import('@/components/views/ExecutiveView'));
+const VendorCompareView = lazy(() => import('@/components/views/VendorCompareView'));
+const OSSIntegrationView = lazy(() => import('@/components/views/OSSIntegrationView'));
+const CRMIntegrationView = lazy(() => import('@/components/views/CRMIntegrationView'));
+const BillingIntegrationView = lazy(() => import('@/components/views/BillingIntegrationView'));
+const MultiAgentView = lazy(() => import('@/components/views/MultiAgentView'));
+const DataPipelineView = lazy(() => import('@/components/views/DataPipelineView'));
+const IntegrationHubView = lazy(() => import('@/components/views/IntegrationHubView'));
+const GeomarketingView = lazy(() => import('@/components/views/GeomarketingView'));
+const NetworkCommercialView = lazy(() => import('@/components/views/NetworkCommercialView'));
+const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntelligenceView'));
+const ValuePropositionView = lazy(() => import('@/components/views/ValuePropositionView'));
+const PredictiveAnalyticsView = lazy(() => import('@/components/views/PredictiveAnalyticsView'));
+const DigitalTwinView = lazy(() => import('@/components/views/DigitalTwinView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
+  // Operations
   { view: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard, group: 'Operations' },
   { view: 'monitoring', labelKey: 'nav.monitoring', icon: Activity, group: 'Operations' },
   { view: 'son', labelKey: 'nav.son', icon: Cpu, group: 'Operations' },
@@ -36,6 +101,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'incidents', labelKey: 'nav.incidents', icon: AlertTriangle, group: 'Operations' },
   { view: 'outages', labelKey: 'nav.outages', icon: PowerOff, group: 'Operations' },
   { view: 'spectrum', labelKey: 'nav.spectrum', icon: RadioTower, group: 'Operations' },
+  // Analytics
   { view: 'kpi', labelKey: 'nav.kpi', icon: BarChart3, group: 'Analytics' },
   { view: 'alerts', labelKey: 'nav.alerts', icon: Bell, group: 'Analytics' },
   { view: 'coverage', labelKey: 'nav.coverage', icon: MapPin, group: 'Analytics' },
@@ -52,6 +118,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'network-commercial', labelKey: 'nav.networkCommercial', icon: ArrowLeftRight, group: 'Intelligence' },
   { view: 'wilaya-intelligence', labelKey: 'nav.wilayaIntelligence', icon: Building2, group: 'Intelligence' },
   { view: 'value-proposition', labelKey: 'nav.valueProposition', icon: Trophy, group: 'Intelligence' },
+  // Intelligence
   { view: 'slicing', labelKey: 'nav.slicing', icon: Layers, group: 'Intelligence' },
   { view: 'energy', labelKey: 'nav.energy', icon: Zap, group: 'Intelligence' },
   { view: 'faults', labelKey: 'nav.faults', icon: Brain, group: 'Intelligence' },
@@ -67,9 +134,11 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'evolution', labelKey: 'nav.evolution', icon: ArrowSwap, group: 'Intelligence' },
   { view: 'audit', labelKey: 'nav.audit', icon: FileSearch, group: 'Intelligence' },
   { view: 'executive', labelKey: 'nav.executive', icon: Crown, group: 'Intelligence' },
+  // AI Engine
   { view: 'optimizer', labelKey: 'nav.optimizer', icon: Sparkles, group: 'AI Engine' },
   { view: 'rca', labelKey: 'nav.rca', icon: Search, group: 'AI Engine' },
   { view: 'anomaly', labelKey: 'nav.anomaly', icon: Brain, group: 'AI Engine' },
+  // Automation
   { view: 'policies', labelKey: 'nav.policies', icon: Shield, group: 'Automation' },
   { view: 'changes', labelKey: 'nav.changes', icon: GitBranch, group: 'Automation' },
   { view: 'vendors', labelKey: 'nav.vendors', icon: Plug, group: 'Automation' },
@@ -81,6 +150,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'predictive', labelKey: 'nav.predictive', icon: LineChart, group: 'AI Engine' },
   { view: 'digital-twin', labelKey: 'nav.digitalTwin', icon: Box, group: 'AI Engine' },
   { view: 'integration-hub', labelKey: 'nav.integrationHub', icon: GitBranch, group: 'AI Engine' },
+  // System
   { view: 'reports', labelKey: 'nav.reports', icon: FileText, group: 'System' },
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
   { view: 'config', labelKey: 'nav.config', icon: Settings2, group: 'System' },
@@ -88,31 +158,84 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
 ];
 
 const VIEW_TITLE_KEYS: Record<ViewType, string> = {
-  dashboard: 'title.dashboard', monitoring: 'title.monitoring', son: 'title.son', onboarding: 'title.onboarding',
-  kpi: 'title.kpi', alerts: 'title.alerts', optimizer: 'title.optimizer', rca: 'title.rca',
-  coverage: 'title.coverage', reports: 'title.reports', settings: 'title.settings', sla: 'title.sla',
-  anomaly: 'title.anomaly', correlation: 'title.correlation', policies: 'title.policies', vendors: 'title.vendors',
-  qoe: 'title.qoe', capacity: 'title.capacity', slicing: 'title.slicing', energy: 'title.energy',
-  faults: 'title.faults', subscribers: 'title.subscribers', incidents: 'title.incidents', config: 'title.config',
-  live: 'title.live', health: 'title.health', benchmark: 'title.benchmark', handover: 'title.handover',
-  load: 'title.load', interference: 'title.interference', 'coverage-holes': 'title.coverageHoles',
-  changes: 'title.changes', outages: 'title.outages', playbooks: 'title.playbooks', assistant: 'title.assistant',
-  simulations: 'title.simulations', trends: 'title.trends', roi: 'title.roi', spectrum: 'title.spectrum',
-  evolution: 'title.evolution', npi: 'title.npi', services: 'title.services', audit: 'title.audit',
-  executive: 'title.executive', 'vendor-compare': 'title.vendorCompare',
-  'oss-integration': 'title.ossIntegration', 'crm-integration': 'title.crmIntegration',
-  'billing-integration': 'title.billingIntegration', 'multi-agent': 'title.multiAgent',
-  'data-pipeline': 'title.dataPipeline', 'integration-hub': 'title.integrationHub',
-  geomarketing: 'geo.title', 'network-commercial': 'title.networkCommercial',
-  'wilaya-intelligence': 'title.wilayaIntelligence', 'value-proposition': 'title.valueProposition',
-  predictive: 'title.predictive', 'digital-twin': 'title.digitalTwin',
+  dashboard: 'title.dashboard',
+  monitoring: 'title.monitoring',
+  son: 'title.son',
+  onboarding: 'title.onboarding',
+  kpi: 'title.kpi',
+  alerts: 'title.alerts',
+  optimizer: 'title.optimizer',
+  rca: 'title.rca',
+  coverage: 'title.coverage',
+  reports: 'title.reports',
+  settings: 'title.settings',
+  sla: 'title.sla',
+  anomaly: 'title.anomaly',
+  correlation: 'title.correlation',
+  policies: 'title.policies',
+  vendors: 'title.vendors',
+  qoe: 'title.qoe',
+  capacity: 'title.capacity',
+  slicing: 'title.slicing',
+  energy: 'title.energy',
+  faults: 'title.faults',
+  subscribers: 'title.subscribers',
+  incidents: 'title.incidents',
+  config: 'title.config',
+  live: 'title.live',
+  health: 'title.health',
+  benchmark: 'title.benchmark',
+  handover: 'title.handover',
+  load: 'title.load',
+  interference: 'title.interference',
+  'coverage-holes': 'title.coverageHoles',
+  changes: 'title.changes',
+  outages: 'title.outages',
+  playbooks: 'title.playbooks',
+  assistant: 'title.assistant',
+  simulations: 'title.simulations',
+  trends: 'title.trends',
+  roi: 'title.roi',
+  spectrum: 'title.spectrum',
+  evolution: 'title.evolution',
+  npi: 'title.npi',
+  services: 'title.services',
+  audit: 'title.audit',
+  executive: 'title.executive',
+  'vendor-compare': 'title.vendorCompare',
+  'oss-integration': 'title.ossIntegration',
+  'crm-integration': 'title.crmIntegration',
+  'billing-integration': 'title.billingIntegration',
+  'multi-agent': 'title.multiAgent',
+  'data-pipeline': 'title.dataPipeline',
+  'integration-hub': 'title.integrationHub',
+  geomarketing: 'geo.title',
+  'network-commercial': 'title.networkCommercial',
+  'wilaya-intelligence': 'title.wilayaIntelligence',
+  'value-proposition': 'title.valueProposition',
+  predictive: 'title.predictive',
+  'digital-twin': 'title.digitalTwin',
 };
 
-const NAV_GROUP_KEYS: Record<string, string> = {
-  'Operations': 'nav.group.operations', 'Analytics': 'nav.group.analytics',
-  'Intelligence': 'nav.group.intelligence', 'AI Engine': 'nav.group.aiEngine',
-  'Automation': 'nav.group.automation', 'System': 'nav.group.system',
-};
+function ViewFallback() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-lg border bg-card p-6">
+            <Skeleton className="h-4 w-24 mb-3" />
+            <Skeleton className="h-8 w-16 mb-2" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-lg border bg-card p-6"><Skeleton className="h-72 w-full" /></div>
+        <div className="rounded-lg border bg-card p-6"><Skeleton className="h-72 w-full" /></div>
+      </div>
+    </div>
+  );
+}
 
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -137,13 +260,13 @@ function LocaleToggle() {
   const { locale, setLocale } = useAppStore();
   const t = useT();
   const locales: Array<'en' | 'fr' | 'ar'> = ['en', 'fr', 'ar'];
-  const idx = locales.indexOf(locale as 'en' | 'fr' | 'ar');
+  const idx = locales.indexOf(locale as any);
   const next = locales[(idx + 1) % locales.length];
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as 'en' | 'fr' | 'ar')}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as any)}>
             <Languages className="h-4 w-4" />
             <span className="sr-only">{t(`lang.${locale}`)}</span>
           </Button>
@@ -154,11 +277,21 @@ function LocaleToggle() {
   );
 }
 
+const NAV_GROUP_KEYS: Record<string, string> = {
+  'Operations': 'nav.group.operations',
+  'Analytics': 'nav.group.analytics',
+  'Intelligence': 'nav.group.intelligence',
+  'AI Engine': 'nav.group.aiEngine',
+  'Automation': 'nav.group.automation',
+  'System': 'nav.group.system',
+};
+
 function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
   const { currentView, setCurrentView, allowedViews } = useAppStore();
   const t = useT();
   const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
 
+  // Filter nav items based on user permissions
   const visibleNavItems = allowedViews.size > 0
     ? NAV_ITEMS.filter((item) => allowedViews.has(item.view))
     : NAV_ITEMS;
@@ -178,7 +311,6 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
-                    data-tour={item.view === 'dashboard' ? 'tour-dashboard' : item.view === 'assistant' ? 'tour-assistant' : item.view === 'coverage' ? 'tour-coverage' : undefined}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-start
                       ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
                       ${collapsed ? 'justify-center px-2' : ''}`}
@@ -207,10 +339,86 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
   );
 }
 
+function ViewRenderer() {
+  const { currentView } = useAppStore();
+  const variants = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -8 } };
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div key={currentView} variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.2 }}>
+        <Suspense fallback={<ViewFallback />}>
+          <ErrorBoundary>
+          {currentView === 'dashboard' && <DashboardView />}
+          {currentView === 'monitoring' && <MonitoringView />}
+          {currentView === 'kpi' && <KpiAnalyticsView />}
+          {currentView === 'alerts' && <AlertsView />}
+          {currentView === 'optimizer' && <OptimizerView />}
+          {currentView === 'rca' && <RootCauseAnalysisView />}
+          {currentView === 'coverage' && <CoverageMapView />}
+          {currentView === 'reports' && <ReportsView />}
+          {currentView === 'settings' && <SettingsView />}
+          {currentView === 'sla' && <SLADashboardView />}
+          {currentView === 'anomaly' && <AnomalyDetectionView />}
+          {currentView === 'correlation' && <CorrelationView />}
+          {currentView === 'son' && <SonView />}
+          {currentView === 'policies' && <PoliciesView />}
+          {currentView === 'onboarding' && <OnboardingView />}
+          {currentView === 'vendors' && <VendorsView />}
+          {currentView === 'qoe' && <QoEView />}
+          {currentView === 'capacity' && <CapacityView />}
+          {currentView === 'slicing' && <SlicingView />}
+          {currentView === 'energy' && <EnergyView />}
+          {currentView === 'faults' && <FaultsView />}
+          {currentView === 'subscribers' && <SubscribersView />}
+          {currentView === 'incidents' && <IncidentsView />}
+          {currentView === 'config' && <ConfigView />}
+          {currentView === 'live' && <LiveView />}
+          {currentView === 'health' && <HealthView />}
+          {currentView === 'benchmark' && <BenchmarkView />}
+          {currentView === 'handover' && <HandoverView />}
+          {currentView === 'load' && <LoadBalancingView />}
+          {currentView === 'interference' && <InterferenceView />}
+          {currentView === 'coverage-holes' && <CoverageHolesView />}
+          {currentView === 'changes' && <ChangesView />}
+          {currentView === 'outages' && <OutagesView />}
+          {currentView === 'playbooks' && <PlaybooksView />}
+          {currentView === 'assistant' && <AssistantView />}
+          {currentView === 'simulations' && <SimulationsView />}
+          {currentView === 'trends' && <TrendsView />}
+          {currentView === 'roi' && <RoiView />}
+          {currentView === 'spectrum' && <SpectrumView />}
+          {currentView === 'evolution' && <EvolutionView />}
+          {currentView === 'npi' && <NpiView />}
+          {currentView === 'services' && <ServicesView />}
+          {currentView === 'audit' && <AuditView />}
+          {currentView === 'executive' && <ExecutiveView />}
+          {currentView === 'vendor-compare' && <VendorCompareView />}
+          {currentView === 'oss-integration' && <OSSIntegrationView />}
+          {currentView === 'crm-integration' && <CRMIntegrationView />}
+          {currentView === 'billing-integration' && <BillingIntegrationView />}
+          {currentView === 'multi-agent' && <MultiAgentView />}
+          {currentView === 'data-pipeline' && <DataPipelineView />}
+          {currentView === 'predictive' && <PredictiveAnalyticsView />}
+          {currentView === 'digital-twin' && <DigitalTwinView />}
+          {currentView === 'integration-hub' && <IntegrationHubView />}
+          {currentView === 'geomarketing' && <GeomarketingView />}
+          {currentView === 'network-commercial' && <NetworkCommercialView />}
+          {currentView === 'wilaya-intelligence' && <WilayaIntelligenceView />}
+          {currentView === 'value-proposition' && <ValuePropositionView />}
+          </ErrorBoundary>
+        </Suspense>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+
 export default function Home() {
-  const { sidebarOpen, toggleSidebar, currentView } = useAppStore();
+  const { sidebarOpen, toggleSidebar, user, currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
+
+  // useAuth(); // AUTH DISABLED
 
   const handleNavigate = (_view: ViewType) => setMobileSheetOpen(false);
 
@@ -219,6 +427,7 @@ export default function Home() {
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <CommandPalette />
 
+      {/* Mobile Header */}
       <header className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-3">
@@ -228,21 +437,21 @@ export default function Home() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 bg-slate-50 dark:bg-slate-900">
                 <SheetTitle className="sr-only">{t('app.navigation')}</SheetTitle>
-                <div className="flex items-center gap-2 px-4 py-3 border-b" data-tour="tour-logo">
+                <div className="flex items-center gap-2 px-4 py-3 border-b">
                   <Radio className="h-5 w-5 text-primary" />
                   <span className="font-bold text-sm">{t('app.brand')}</span>
                 </div>
-                <SidebarNav collapsed={false} onNavigate={handleNavigate} />
+                <SidebarNav collapsed={false} onNavigate={handleNavigate}  />
               </SheetContent>
             </Sheet>
-            <div className="flex items-center gap-2" data-tour="tour-logo">
+            <div className="flex items-center gap-2">
               <Radio className="h-5 w-5 text-primary" />
               <span className="font-bold">{t('app.brand')}</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <WsStatusIndicator className="mr-1" />
-            <span data-tour="tour-bell"><NotificationCenter /></span>
+            <NotificationCenter />
             <LocaleToggle />
             <ThemeToggle />
           </div>
@@ -252,13 +461,14 @@ export default function Home() {
       <div className="flex flex-1 min-h-0">
         <RealtimeAlertToasts />
 
+        {/* Desktop Sidebar */}
         <aside className={`hidden lg:flex flex-col shrink-0 bg-slate-50 dark:bg-slate-900 border-e transition-all duration-200 sidebar-rtl ${sidebarOpen ? 'w-56' : 'w-16'}`} role="complementary" aria-label={t('app.sidebar')}>
           <div className={`flex items-center gap-2 px-4 h-14 border-b shrink-0 ${sidebarOpen ? '' : 'justify-center px-2'}`}>
             <Radio className="h-5 w-5 text-primary shrink-0" />
             {sidebarOpen && <span className="font-bold text-sm">{t('app.brand')}</span>}
           </div>
           <ScrollArea className="flex-1">
-            <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate} />
+            <SidebarNav collapsed={!sidebarOpen} onNavigate={handleNavigate}  />
           </ScrollArea>
           {sidebarOpen && <RealtimeSidebarStats />}
           <div className="border-t p-2 shrink-0 flex items-center gap-1">
@@ -268,6 +478,7 @@ export default function Home() {
           </div>
         </aside>
 
+        {/* Main Content */}
         <main id="main-content" className="flex-1 flex flex-col min-w-0 content-rtl">
           <header className="hidden lg:flex items-center justify-between h-14 px-6 border-b shrink-0">
             <div>
@@ -276,9 +487,28 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <WsStatusIndicator className="mr-1" />
-              <span data-tour="tour-bell"><NotificationCenter /></span>
+              <NotificationCenter />
               <LocaleToggle />
               <ThemeToggle />
+              {/* AUTH DISABLED — user badge hidden
+              {user && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <UserCircle className="h-4 w-4" />
+                        <span className="hidden xl:inline max-w-24 truncate">{user.name}</span>
+                        <PowerOff className="h-3 w-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{user.email} · {user.roles?.[0] ?? ''}</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              */}
             </div>
           </header>
 
@@ -286,12 +516,9 @@ export default function Home() {
             <ViewRenderer />
           </div>
 
-          <footer className="footer-safe-area border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background"><span>{t('app.footer')}</span></footer>
+          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background"><span>{t('app.footer')}</span></footer>
         </main>
       </div>
-
-      <MobileBottomNav />
-      <OnboardingTour />
     </div>
   );
 }

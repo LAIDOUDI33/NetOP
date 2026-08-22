@@ -408,7 +408,7 @@ function renderDataTable(
   });
 
   // Return Y position after the table
-  return (tableResult as any).finalY ?? startY + 20;
+  return tableResult.finalY ?? startY + 20;
 }
 
 // ========== FORMATTING UTILITIES ==========
