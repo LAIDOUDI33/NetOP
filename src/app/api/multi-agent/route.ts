@@ -171,17 +171,86 @@ export async function GET(request: Request) {
     chat = generateAgentChatFallback();
   }
 
-  // ---- Real task queue from detected anomalies ----
+  // ---- AI-powered task queue from detected anomalies ----
   const anomalyAgent = rows.find(a => a.type === 'anomaly_detection' || a.name.toLowerCase().includes('anomaly'));
   const rcaAgent = rows.find(a => a.type === 'root_cause' || a.name.toLowerCase().includes('root cause'));
+
+  // Generate AI-powered recommendations for detected anomalies
+  let aiRecommendations: Array<{ anomalyId: string; recommendation: string; confidence: number }> = [];
+  try {
+    const anomalySummary = detectedAnomalies.slice(0, 5).map((a, i) => ({
+      index: i,
+      anomalyId: a.id,
+      site: a.site?.name ?? 'Unknown',
+      region: a.site?.region ?? 'N/A',
+      technology: a.site?.technology ?? a.technology,
+      metric: a.metric,
+      actualValue: a.actualValue,
+      expectedValue: a.expectedValue,
+      zScore: a.zScore,
+      severity: a.severity,
+      description: a.description,
+    }));
+
+    if (anomalySummary.length > 0) {
+      const zai = await getZai();
+      const taskSystemPrompt = `You are a network AI agent in Djezzy's NOC (Algeria). Given a list of network anomalies, generate a specific root-cause recommendation and confidence score for EACH anomaly.
+
+Rules:
+- Each recommendation must reference the specific site, metric, and values
+- Be specific about the probable root cause and remediation steps
+- Confidence: 0.0 to 1.0 — based on how clear the data pattern is
+- For critical severity, recommend immediate action
+- Use Algeria/wilaya context and realistic telecom terminology
+
+Return ONLY a JSON array with objects: {"anomalyId": "...", "recommendation": "...", "confidence": 0.xx}`;
+
+      const taskCompletion = await zai.chat.completions.create({
+        messages: [
+          { role: 'system', content: taskSystemPrompt },
+          { role: 'user', content: JSON.stringify(anomalySummary, null, 2) },
+        ],
+        thinking: { type: 'disabled' },
+      });
+
+      const taskRaw = taskCompletion.choices?.[0]?.message?.content || '';
+      const taskJsonMatch = taskRaw.match(/\[[\s\S]*\]/);
+      if (taskJsonMatch) {
+        const parsed = JSON.parse(taskJsonMatch[0]);
+        if (Array.isArray(parsed)) {
+          aiRecommendations = parsed.map((r: any) => ({
+            anomalyId: String(r.anomalyId ?? ''),
+            recommendation: String(r.recommendation ?? ''),
+            confidence: typeof r.confidence === 'number' ? Math.max(0.5, Math.min(1, r.confidence)) : 0.85,
+          }));
+        }
+      }
+    }
+  } catch {
+    // AI recommendation failed — will use deterministic fallback below
+  }
 
   const taskQueue = detectedAnomalies.slice(0, 5).map((anomaly, idx) => {
     const isCompleted = idx < 2; // first 2 marked as completed
     const assignedAgent = idx < 2
       ? (rcaAgent ?? anomalyAgent ?? rows[0])
       : (anomalyAgent ?? rows[0]);
-    const completedAt = isCompleted ? new Date(anomaly.createdAt.getTime() + 30000 + Math.random() * 60000).toISOString() : null;
-    const latencyMs = isCompleted ? Math.round(2000 + Math.random() * 8000) : null;
+    // Deterministic timestamps based on index (no Math.random)
+    const completedAt = isCompleted ? new Date(anomaly.createdAt.getTime() + 30000 + idx * 15000).toISOString() : null;
+    const latencyMs = isCompleted ? 2000 + idx * 1500 : null;
+
+    // Use AI recommendation if available, otherwise deterministic fallback
+    const aiRec = aiRecommendations.find(r => r.anomalyId === anomaly.id);
+    const output = isCompleted
+      ? {
+          recommendation: aiRec?.recommendation || (
+            anomaly.severity === 'critical'
+              ? `Critical ${anomaly.metric} deviation at ${anomaly.site?.name ?? 'site'} (${anomaly.site?.region ?? 'N/A'}): actual=${anomaly.actualValue}, expected=${anomaly.expectedValue}, zScore=${anomaly.zScore.toFixed(2)}. Immediate investigation and remediation required — check recent maintenance activities and configuration changes.`
+              : `${anomaly.metric} anomaly detected at ${anomaly.site?.name ?? 'site'}: actual=${anomaly.actualValue} vs expected=${anomaly.expectedValue}. Schedule diagnostic analysis and review neighbor cell configuration.`
+          ),
+          confidence: aiRec?.confidence ?? (anomaly.severity === 'critical' ? 0.92 : anomaly.severity === 'high' ? 0.85 : 0.78),
+        }
+      : null;
 
     return {
       id: `task-${anomaly.id}`,
@@ -194,14 +263,10 @@ export async function GET(request: Request) {
         technology: anomaly.site?.technology ?? anomaly.technology,
         metric: anomaly.metric,
       },
-      output: isCompleted
-        ? {
-            recommendation: `Investigate ${anomaly.metric} deviation at ${anomaly.site?.name ?? 'site'}: actual=${anomaly.actualValue}, expected=${anomaly.expectedValue}. ${anomaly.severity === 'critical' ? 'Immediate action required.' : 'Monitor and schedule maintenance.'}`,
-            confidence: Math.round(0.75 + Math.random() * 0.23 * 100) / 100,
-          }
-        : null,
+      output,
       latencyMs,
-      tokensUsed: isCompleted ? Math.round(2000 + Math.random() * 6000) : Math.round(500 + Math.random() * 1500),
+      // Deterministic token counts based on output length
+      tokensUsed: isCompleted ? 2000 + (output?.recommendation?.length ?? 50) * 3 : 500 + idx * 200,
       createdAt: anomaly.createdAt.toISOString(),
       completedAt,
     };
