@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const zai = await getZai();
     const completion = await zai.chat.completions.create({
       messages: [
-        { role: 'assistant', content: `You are a telecom network expert. Explain this ${type} in simple terms for a NOC operator. What does it mean? Why did it happen? What should be done? Keep under 150 words.` },
+        { role: 'system', content: `You are a telecom network expert. Explain this ${type} in simple terms for a NOC operator. What does it mean? Why did it happen? What should be done? Keep under 150 words.` },
         { role: 'user', content: JSON.stringify(record) },
       ],
       thinking: { type: 'disabled' },

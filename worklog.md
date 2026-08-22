@@ -3260,3 +3260,41 @@ Stage Summary:
 - Backend: 4 new mutation endpoints (user POST/PATCH/DELETE, role POST/PATCH/DELETE)
 - Frontend: 449-line AdminView with dialogs, tables, search, status filters
 - i18n: 75+ keys in en/fr/ar
+---
+Task ID: AI-Audit
+Agent: Main
+Task: Audit all AI tools for production readiness
+
+Work Log:
+- Searched entire codebase for AI-related files (z-ai-web-dev-sdk usage, AI views)
+- Found 6 API routes that use z-ai-web-dev-sdk: /assistant/chat, /assistant/query, /assistant/explain, /assistant/insight, /assistant (base), /optimizer
+- Found AI-labelled features that are fake/demo: Multi-Agent, Digital Twin, SON execute, Predictive
+- Identified 5 bugs total
+
+Bugs Fixed:
+1. CRITICAL: /api/optimizer POST used wrong SDK API `(zai as any).createChatCompletion()` + hardcoded model 'deepseek-chat'. Fixed to `zai.chat.completions.create()` with `thinking: { type: 'disabled' }`
+2. HIGH: /api/assistant/query used `role: 'assistant'` for system prompt. Fixed to `role: 'system'`
+3. HIGH: /api/assistant/explain used `role: 'assistant'` for system prompt. Fixed to `role: 'system'`
+4. HIGH: /api/assistant/insight used `role: 'assistant'` for system prompt. Fixed to `role: 'system'`
+5. HIGH: /api/assistant (base) used `role: 'assistant'` for system prompt. Fixed to `role: 'system'`
+
+Production Readiness Assessment:
+- ✅ /assistant/chat: READY (streaming, auth, rate limit, Zod, system role)
+- ✅ /assistant/query: READY (after fix)
+- ✅ /assistant/explain: READY (after fix)
+- ✅ /assistant/insight: READY (after fix)
+- ✅ /assistant (base): READY (after fix)
+- ✅ /optimizer: READY (after fix)
+- ✅ /assistant/summary: READY (DB-only, no AI needed)
+- ⚠️ /multi-agent: DEMO ONLY (fake orchestrator chat, no real AI)
+- ⚠️ /digital-twin/simulate: DEMO ONLY (Math.random)
+- ⚠️ /son: DEMO ONLY (Math.random)
+- ⚠️ /predictive/*: DB READ ONLY (no ML)
+
+Lint: 0 errors, 799 warnings (all pre-existing)
+Dev server: Running clean
+
+Stage Summary:
+- 5 bugs fixed across 5 API route files
+- All real AI routes are now production-ready
+- Demo/fake AI features flagged for future enhancement

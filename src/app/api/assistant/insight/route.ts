@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const zai = await getZai();
     const completion = await zai.chat.completions.create({
       messages: [
-        { role: 'assistant', content: `You are a telecom analytics expert. Generate a concise executive insight report based on the following ${domain} data for NetOptima Algeria. Include: 1) Key Findings (2-3 bullet points), 2) Risk Assessment, 3) Recommendations (2-3 actionable items). Be specific with numbers. Keep total response under 300 words.` },
+        { role: 'system', content: `You are a telecom analytics expert. Generate a concise executive insight report based on the following ${domain} data for NetOptima Algeria. Include: 1) Key Findings (2-3 bullet points), 2) Risk Assessment, 3) Recommendations (2-3 actionable items). Be specific with numbers. Keep total response under 300 words.` },
         { role: 'user', content: dataStr },
       ],
       thinking: { type: 'disabled' },

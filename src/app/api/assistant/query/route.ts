@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
     const completion = await zai.chat.completions.create({
       messages: [
         {
-          role: 'assistant',
+          role: 'system',
           content: [
             'You are NetOptima Algérie AI Assistant, an expert telecom data analyst.',
             'You have REAL-TIME access to the following network data from the NetOptima DZ database.',

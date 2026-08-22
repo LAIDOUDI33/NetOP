@@ -100,16 +100,15 @@ Focus on:
 - Parameter tuning (specific 3GPP parameters)
 
 Be specific with parameter names, values, and expected impact.
-Format your response with clear sections and bullet points.`;
+Format your response with clear sections and bullet points.
+Keep the response under 500 words.`;
 
-    const completion = await (zai as any).createChatCompletion({
-      model: 'deepseek-chat',
+    const completion = await zai.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt + healthContext },
       ],
-      max_tokens: 2048,
-      temperature: 0.7,
+      thinking: { type: 'disabled' },
     });
 
     const response = completion.choices?.[0]?.message?.content || 'No response generated.';
