@@ -181,7 +181,7 @@ export default function ValuePropositionView() {
   // Feature score pie
   const featureScoreData = [
     { name: t('vp.unique'), value: uniqueCount, fill: '#10B981' },
-    { name: t('vp.parity'), value: data.totalFeatures - uniqueCount, fill: '#94A3B8' },
+    { name: t('vp.parity'), value: data.summary.totalFeatures - uniqueCount, fill: '#94A3B8' },
   ];
 
   const maturityBadge = (level: string) => {

@@ -357,7 +357,7 @@ export default function LiveView() {
           icon={Zap}
           color="text-amber-600 dark:text-amber-400"
           bg="bg-amber-500/10"
-          trend="neutral" as const
+          trend="neutral"
           isLive={false}
         />
         <KpiSparkCard

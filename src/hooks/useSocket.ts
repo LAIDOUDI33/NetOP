@@ -36,9 +36,19 @@ export interface LiveAlertItem {
   createdAt: string;
 }
 
+export interface DashboardSummary {
+  totalSites: number;
+  sitesByStatus: { active: number; degraded: number; down: number; maintenance: number };
+  totalActiveUsers: number;
+  avgAvailability: number;
+  avgThroughput: { download: number; upload: number };
+  timestamp: string;
+}
+
 type KpiUpdateCallback = (data: KpiUpdateItem[]) => void;
 type AlertPulseCallback = (data: AlertPulseData) => void;
 type LiveAlertCallback = (alerts: LiveAlertItem[]) => void;
+type DashboardSummaryCallback = (data: DashboardSummary) => void;
 
 // ── Singleton socket instance (shared across all hook consumers) ───────────────
 
@@ -75,6 +85,7 @@ export function useSocket() {
   const kpiSubsRef = useRef<Set<KpiUpdateCallback>>(new Set());
   const alertSubsRef = useRef<Set<AlertPulseCallback>>(new Set());
   const liveAlertSubsRef = useRef<Set<LiveAlertCallback>>(new Set());
+  const dashSummarySubsRef = useRef<Set<DashboardSummaryCallback>>(new Set());
   const criticalCountRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -108,11 +119,16 @@ export function useSocket() {
       liveAlertSubsRef.current.forEach((cb) => cb(alerts));
     };
 
+    const onDashboardSummary = (data: DashboardSummary) => {
+      dashSummarySubsRef.current.forEach((cb) => cb(data));
+    };
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('kpi-update', onKpiUpdate);
     socket.on('alert-pulse', onAlertPulse);
     socket.on('live-alerts', onLiveAlerts);
+    socket.on('dashboard-summary', onDashboardSummary);
 
     // Sync initial connection state
     if (socket.connected) {
@@ -125,6 +141,7 @@ export function useSocket() {
       socket.off('kpi-update', onKpiUpdate);
       socket.off('alert-pulse', onAlertPulse);
       socket.off('live-alerts', onLiveAlerts);
+      socket.off('dashboard-summary', onDashboardSummary);
 
       connectionCount--;
       if (connectionCount <= 0 && socketInstance) {
@@ -168,6 +185,13 @@ export function useSocket() {
     };
   }, []);
 
+  const onDashboardSummary = useCallback((callback: DashboardSummaryCallback) => {
+    dashSummarySubsRef.current.add(callback);
+    return () => {
+      dashSummarySubsRef.current.delete(callback);
+    };
+  }, []);
+
   return {
     socket: socketInstance,
     isConnected,
@@ -176,5 +200,6 @@ export function useSocket() {
     onKpiUpdate,
     onAlertPulse,
     onLiveAlerts,
+    onDashboardSummary,
   };
 }

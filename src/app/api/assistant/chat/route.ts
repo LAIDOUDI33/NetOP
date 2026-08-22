@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     // Build message array: system + last 20 messages
     const recentMessages = messages.slice(-20);
-    const apiMessages: Array<{ role: string; content: string }> = [
+    const apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: systemPrompt },
       ...recentMessages,
     ];

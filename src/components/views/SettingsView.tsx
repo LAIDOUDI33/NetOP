@@ -10,11 +10,17 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Save, RefreshCw, Users, Shield, FileSearch, HeartPulse, Clock, Settings2, Radio } from 'lucide-react';
+import { Save, RefreshCw, Users, Shield, FileSearch, HeartPulse, Clock, Settings2, Radio, User } from 'lucide-react';
 import type { NetworkParameterItem, Technology } from '@/types';
 import { toast } from 'sonner';
 import { useT } from '@/lib/i18n';
 import { ExportButton } from '@/components/ExportButton';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useTheme } from 'next-themes';
+import { useAppStore } from '@/store/app';
+import type { Locale } from '@/lib/i18n';
 
 const TECH_COLORS: Record<Technology, string> = {
   '2G': '#94A3B8',
@@ -44,6 +50,7 @@ export default function SettingsView() {
           <TabsTrigger value="audit" className="text-xs gap-1.5"><FileSearch className="h-3.5 w-3.5" /> {t('set.audit')}</TabsTrigger>
           <TabsTrigger value="health" className="text-xs gap-1.5"><HeartPulse className="h-3.5 w-3.5" /> {t('set.health')}</TabsTrigger>
           <TabsTrigger value="retention" className="text-xs gap-1.5"><Clock className="h-3.5 w-3.5" /> {t('set.retention')}</TabsTrigger>
+          <TabsTrigger value="preferences" className="text-xs gap-1.5"><User className="h-3.5 w-3.5" /> {t('set.preferences')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="parameters" className="mt-4">
@@ -63,6 +70,9 @@ export default function SettingsView() {
         </TabsContent>
         <TabsContent value="retention" className="mt-4">
           <RetentionTab />
+        </TabsContent>
+        <TabsContent value="preferences" className="mt-4">
+          <PreferencesTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -413,5 +423,168 @@ function RetentionTab() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/* =================== PREFERENCES TAB =================== */
+const PREFS_STORAGE_KEY = 'netoptima-prefs';
+
+interface UserPrefs {
+  notifEmail: boolean;
+  notifPush: boolean;
+  notifSound: boolean;
+  digestFrequency: 'realtime' | 'hourly' | 'daily' | 'off';
+  alertSeverities: string[];
+}
+
+const DEFAULT_PREFS: UserPrefs = {
+  notifEmail: true,
+  notifPush: true,
+  notifSound: false,
+  digestFrequency: 'realtime',
+  alertSeverities: ['critical', 'high', 'medium', 'low'],
+};
+
+function loadPrefs(): UserPrefs {
+  if (typeof window === 'undefined') return DEFAULT_PREFS;
+  try {
+    const raw = localStorage.getItem(PREFS_STORAGE_KEY);
+    if (!raw) return DEFAULT_PREFS;
+    return { ...DEFAULT_PREFS, ...JSON.parse(raw) };
+  } catch {
+    return DEFAULT_PREFS;
+  }
+}
+
+function savePrefs(prefs: UserPrefs) {
+  try { localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignore */ }
+}
+
+function PreferencesTab() {
+  const t = useT();
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useAppStore();
+  const [prefs, setPrefs] = useState<UserPrefs>(() => loadPrefs());
+
+  const updatePref = <K extends keyof UserPrefs>(key: K, value: UserPrefs[K]) => {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    savePrefs(next);
+  };
+
+  const toggleSeverity = (sev: string) => {
+    const next = prefs.alertSeverities.includes(sev)
+      ? prefs.alertSeverities.filter((s) => s !== sev)
+      : [...prefs.alertSeverities, sev];
+    updatePref('alertSeverities', next);
+  };
+
+  const themeOptions = [
+    { value: 'light', label: t('set.themeLight') },
+    { value: 'dark', label: t('set.themeDark') },
+    { value: 'system', label: t('set.themeSystem') },
+  ];
+
+  const localeOptions: { value: Locale; label: string }[] = [
+    { value: 'fr', label: t('lang.fr') },
+    { value: 'en', label: t('lang.en') },
+    { value: 'ar', label: t('lang.ar') },
+  ];
+
+  const severityOptions = ['critical', 'high', 'medium', 'low'];
+
+  return (
+    <div className="space-y-4">
+      {/* Appearance */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">{t('set.appearance')}</CardTitle></CardHeader>
+        <CardContent className="p-4 space-y-5">
+          {/* Theme */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('set.theme')}</p>
+            <div className="flex gap-2">
+              {themeOptions.map((opt) => (
+                <Button
+                  key={opt.value}
+                  size="sm"
+                  variant={theme === opt.value ? 'default' : 'outline'}
+                  className="text-xs h-8"
+                  onClick={() => setTheme(opt.value)}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Language */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('set.language')}</p>
+            <div className="flex gap-2">
+              {localeOptions.map((opt) => (
+                <Button
+                  key={opt.value}
+                  size="sm"
+                  variant={locale === opt.value ? 'default' : 'outline'}
+                  className="text-xs h-8"
+                  onClick={() => setLocale(opt.value)}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Notification Settings */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">{t('set.notifSettings')}</CardTitle></CardHeader>
+        <CardContent className="p-4 space-y-5">
+          <div className="flex items-center justify-between">
+            <div><p className="text-sm font-medium">{t('set.notifEmail')}</p></div>
+            <Switch checked={prefs.notifEmail} onCheckedChange={(v) => updatePref('notifEmail', v)} />
+          </div>
+          <div className="flex items-center justify-between">
+            <div><p className="text-sm font-medium">{t('set.notifPush')}</p></div>
+            <Switch checked={prefs.notifPush} onCheckedChange={(v) => updatePref('notifPush', v)} />
+          </div>
+          <div className="flex items-center justify-between">
+            <div><p className="text-sm font-medium">{t('set.notifSound')}</p></div>
+            <Switch checked={prefs.notifSound} onCheckedChange={(v) => updatePref('notifSound', v)} />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('set.digestFrequency')}</p>
+            <Select value={prefs.digestFrequency} onValueChange={(v) => updatePref('digestFrequency', v as UserPrefs['digestFrequency'])}>
+              <SelectTrigger className="w-40 h-8 text-xs" size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="realtime">{t('set.realtime')}</SelectItem>
+                <SelectItem value="hourly">{t('set.hourly')}</SelectItem>
+                <SelectItem value="daily">{t('set.daily')}</SelectItem>
+                <SelectItem value="off">{t('set.off')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('set.alertSeverities')}</p>
+            <div className="flex flex-wrap gap-4">
+              {severityOptions.map((sev) => (
+                <label key={sev} className="flex items-center gap-2 text-xs cursor-pointer">
+                  <Checkbox
+                    checked={prefs.alertSeverities.includes(sev)}
+                    onCheckedChange={() => toggleSeverity(sev)}
+                  />
+                  {t(`set.${sev}`)}
+                </label>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

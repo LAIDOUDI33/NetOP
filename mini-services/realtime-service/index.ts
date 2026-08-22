@@ -260,6 +260,56 @@ async function broadcastAlertPulse() {
   }
 }
 
+// ── 3b. Dashboard Summary Broadcast (every 12 seconds) ────────────────────────
+
+async function broadcastDashboardSummary() {
+  try {
+    const siteStats = await prisma.networkSite.groupBy({
+      by: ['status'],
+      _count: { id: true },
+    });
+    const statusMap: Record<string, number> = {};
+    for (const s of siteStats) statusMap[s.status] = s._count.id;
+
+    const totalSites = siteStats.reduce((sum, s) => sum + s._count.id, 0);
+    const totalUsers = await prisma.kpiMetric.aggregate({
+      _avg: { activeUsers: true },
+      where: { timestamp: { gte: new Date(Date.now() - 3600000) } },
+    });
+    const avgAvailability = await prisma.kpiMetric.aggregate({
+      _avg: { availability: true },
+      where: { timestamp: { gte: new Date(Date.now() - 3600000) } },
+    });
+    const avgDl = await prisma.kpiMetric.aggregate({
+      _avg: { downloadThroughput: true },
+      where: { timestamp: { gte: new Date(Date.now() - 3600000) } },
+    });
+    const avgUl = await prisma.kpiMetric.aggregate({
+      _avg: { uploadThroughput: true },
+      where: { timestamp: { gte: new Date(Date.now() - 3600000) } },
+    });
+
+    io.emit("dashboard-summary", {
+      totalSites,
+      sitesByStatus: {
+        active: statusMap['active'] ?? 0,
+        degraded: statusMap['degraded'] ?? 0,
+        down: statusMap['down'] ?? 0,
+        maintenance: statusMap['maintenance'] ?? 0,
+      },
+      totalActiveUsers: Math.round(totalUsers._avg.activeUsers ?? 0) * totalSites,
+      avgAvailability: Number((avgAvailability._avg.availability ?? 0).toFixed(1)),
+      avgThroughput: {
+        download: Number((avgDl._avg.downloadThroughput ?? 0).toFixed(1)),
+        upload: Number((avgUl._avg.uploadThroughput ?? 0).toFixed(1)),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("[Dashboard Summary] Error:", error);
+  }
+}
+
 // ── 4. Per-Site Subscription ───────────────────────────────────────────────────
 
 const siteSubscriptions = new Map<string, NodeJS.Timeout>();
@@ -328,11 +378,14 @@ loadSiteNames().then(() => {
   setInterval(broadcastKpiUpdate, 10_000);
   // Alert pulse: every 15 seconds
   setInterval(broadcastAlertPulse, 15_000);
+  // Dashboard summary: every 12 seconds
+  setInterval(broadcastDashboardSummary, 12_000);
 
   // Initial runs after short delay
   setTimeout(generateFreshKpiData, 2_000);
   setTimeout(broadcastKpiUpdate, 3_000);
   setTimeout(broadcastAlertPulse, 4_000);
+  setTimeout(broadcastDashboardSummary, 5_000);
 });
 
 // ── 7. Graceful Shutdown ───────────────────────────────────────────────────────

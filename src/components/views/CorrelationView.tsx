@@ -234,7 +234,7 @@ export default function CorrelationView() {
     (Object.values(monitoringCache) as MonitoringData[]).forEach(mon => {
       if (!mon) return;
       mon.sites.forEach(site => {
-        const vendor = (site as Record<string, unknown>).vendor as string ?? 'Unknown';
+        const vendor = (site as unknown as Record<string, unknown>).vendor as string ?? 'Unknown';
         if (!vendorMap[vendor]) {
           vendorMap[vendor] = { avail: [], dl: [], lat: [], sig: [], ho: [] };
         }

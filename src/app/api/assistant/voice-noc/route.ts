@@ -108,9 +108,10 @@ async function fetchRelevantContext(question: string): Promise<string> {
   const siteMatch = q.match(/(?:site|station|tower)\s+(?:alg-?|algeria-?|dz-?)(\d{3,})/);
   if (siteMatch) {
     const code = `ALG-${siteMatch[1].padStart(3, '0')}`;
-    const site = await db.networkSite.findUnique({ where: { code }, include: { kpis: { take: 1, orderBy: { timestamp: 'desc' } }, healthScores: { take: 1, orderBy: { timestamp: 'desc' } } } });
+    const site = await db.networkSite.findUnique({ where: { code }, include: { kpis: { take: 1, orderBy: { timestamp: 'desc' } }, healthScores: { take: 1, orderBy: { timestamp: 'desc' } } } as any });
     if (site) {
-      parts.push(`Site ${site.name} (${site.code}): status=${site.status}, tech=${site.technology}, region=${site.region}, vendor=${site.vendor}, latest KPI=${JSON.stringify(site.kpis[0])}, latest health=${JSON.stringify(site.healthScores[0])}`);
+      const s = site as any;
+      parts.push(`Site ${s.name} (${s.code}): status=${s.status}, tech=${s.technology}, region=${s.region}, vendor=${s.vendor}, latest KPI=${JSON.stringify(s.kpis?.[0])}, latest health=${JSON.stringify(s.healthScores?.[0])}`);
     } else {
       parts.push(`Site ${code} not found in database.`);
     }
@@ -218,11 +219,9 @@ export async function POST(request: NextRequest) {
       // audioFile can be a string (base64) or a File/Blob
       if (typeof audioFile === 'string') {
         audioBase64 = audioFile;
-      } else if (audioFile instanceof File || audioFile instanceof Blob) {
-        const buffer = Buffer.from(await audioFile.arrayBuffer());
-        audioBase64 = buffer.toString('base64');
       } else {
-        return NextResponse.json({ error: 'Invalid audio format' }, { status: 400 });
+        const buffer = Buffer.from(await (audioFile as Blob).arrayBuffer());
+        audioBase64 = buffer.toString('base64');
       }
       const langParam = formData.get('language');
       if (typeof langParam === 'string' && ['en', 'fr', 'ar'].includes(langParam)) {

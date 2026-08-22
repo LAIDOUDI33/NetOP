@@ -13,6 +13,8 @@ import { ViewRenderer } from '@/lib/view-registry';
 import { RealtimeAlertToasts } from '@/components/RealtimeAlertToasts';
 import { WsStatusIndicator } from '@/components/WsStatusIndicator';
 import { RealtimeSidebarStats } from '@/components/RealtimeSidebarStats';
+import { MobileBottomNav } from '@/components/MobileBottomNav';
+import { OnboardingTour } from '@/components/OnboardingTour';
 import {
   LayoutDashboard, Activity, BarChart3, Bell, Sparkles,
   MapPin, FileText, Settings, ChevronLeft, Sun, Moon, Menu, Radio,
@@ -176,6 +178,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate:
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => { setCurrentView(item.view); onNavigate(item.view); }}
+                    data-tour={item.view === 'dashboard' ? 'tour-dashboard' : item.view === 'assistant' ? 'tour-assistant' : item.view === 'coverage' ? 'tour-coverage' : undefined}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all w-full text-start
                       ${isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}
                       ${collapsed ? 'justify-center px-2' : ''}`}
@@ -225,21 +228,21 @@ export default function Home() {
               </SheetTrigger>
               <SheetContent side="left" className="w-64 p-0 bg-slate-50 dark:bg-slate-900">
                 <SheetTitle className="sr-only">{t('app.navigation')}</SheetTitle>
-                <div className="flex items-center gap-2 px-4 py-3 border-b">
+                <div className="flex items-center gap-2 px-4 py-3 border-b" data-tour="tour-logo">
                   <Radio className="h-5 w-5 text-primary" />
                   <span className="font-bold text-sm">{t('app.brand')}</span>
                 </div>
                 <SidebarNav collapsed={false} onNavigate={handleNavigate} />
               </SheetContent>
             </Sheet>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-tour="tour-logo">
               <Radio className="h-5 w-5 text-primary" />
               <span className="font-bold">{t('app.brand')}</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <WsStatusIndicator className="mr-1" />
-            <NotificationCenter />
+            <span data-tour="tour-bell"><NotificationCenter /></span>
             <LocaleToggle />
             <ThemeToggle />
           </div>
@@ -273,7 +276,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <WsStatusIndicator className="mr-1" />
-              <NotificationCenter />
+              <span data-tour="tour-bell"><NotificationCenter /></span>
               <LocaleToggle />
               <ThemeToggle />
             </div>
@@ -283,9 +286,12 @@ export default function Home() {
             <ViewRenderer />
           </div>
 
-          <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background"><span>{t('app.footer')}</span></footer>
+          <footer className="footer-safe-area border-t px-4 py-3 text-center text-xs text-muted-foreground mt-auto shrink-0 bg-background"><span>{t('app.footer')}</span></footer>
         </main>
       </div>
+
+      <MobileBottomNav />
+      <OnboardingTour />
     </div>
   );
 }

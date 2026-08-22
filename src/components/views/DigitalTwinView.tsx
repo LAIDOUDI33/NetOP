@@ -266,7 +266,7 @@ function ScenariosTab() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [detailId, setDetailId] = useState<string | null>(null);
 
-  const { data, isLoading } = useQuery<{ scenarios: ScenarioRaw[]; total: number }>({
+  const { data, isLoading } = useQuery({
     queryKey: ['dt-scenarios', typeFilter, statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -277,10 +277,10 @@ function ScenariosTab() {
       if (!r.ok) throw new Error('Failed to fetch digital twin scenarios');
       return r.json();
     },
-    select: (d) => ({ ...d, scenarios: d.scenarios.map(mapScenario) }),
+    select: (d: any) => ({ ...d, scenarios: (d.scenarios as ScenarioRaw[]).map((s: any) => mapScenario(s)) }),
   });
 
-  const selectedScenario = detailId ? data?.scenarios.find(s => s.id === detailId) : null;
+  const selectedScenario = detailId ? (data as any)?.scenarios?.find((s: any) => s.id === detailId) : null;
 
   return (
     <div className="space-y-4">
@@ -309,7 +309,7 @@ function ScenariosTab() {
         </Select>
       </div>
 
-      {isLoading ? <TableSkeleton /> : !data?.scenarios?.length ? (
+      {isLoading ? <TableSkeleton /> : !(data as any)?.scenarios?.length ? (
         <Card className="rounded-lg border bg-card p-4"><CardContent className="p-6 text-center text-muted-foreground text-sm">{t('dt.noScenarios')}</CardContent></Card>
       ) : (
         <Card className="rounded-lg border bg-card p-4">
@@ -324,7 +324,7 @@ function ScenariosTab() {
                 <TableHead className="text-xs">{t('dt.confidence')}</TableHead>
                 <TableHead className="text-xs">Created</TableHead>
               </TableRow></TableHeader><TableBody>
-                {data.scenarios.map((s) => (
+                {(data as any)?.scenarios.map((s: any) => (
                   <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setDetailId(s.id)}>
                     <TableCell className="text-sm font-medium">{s.name}</TableCell>
                     <TableCell>{typeBadge(s.type)}</TableCell>

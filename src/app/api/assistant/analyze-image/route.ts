@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     const imageUrl = isBase64 ? `data:image/jpeg;base64,${image}` : image;
 
     const response = await zai.chat.completions.createVision({
+      model: 'default',
       messages: [
         {
           role: 'user',

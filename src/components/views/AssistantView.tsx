@@ -18,6 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ReactMarkdown from 'react-markdown';
 import { useT } from '@/lib/i18n';
+import type { ViewType } from '@/types';
 import { useAppStore } from '@/store/app';
 
 // ─── Types ─────────────────────────────────────────────────────────────
@@ -578,11 +579,11 @@ function ExecutiveReportTool() {
                   Score: {report.overallScore as number}/100
                 </Badge>
               )}
-              {report.riskLevel && (
+              {report.riskLevel ? (
                 <Badge variant={report.riskLevel === 'low' ? 'secondary' : report.riskLevel === 'medium' ? 'outline' : 'destructive'} className="text-xs">
                   {report.riskLevel as string}
                 </Badge>
-              )}
+              ) : null}
             </div>
             {Array.isArray(report.sections) && (report.sections as Array<{ heading: string; content: string; priority: string }>).map((section, i) => (
               <div key={i} className="space-y-1">
@@ -787,7 +788,7 @@ export default function AssistantView() {
   }, [input]);
 
   const handleNavigate = useCallback((view: string) => {
-    if (VIEW_NAMES.includes(view)) setCurrentView(view);
+    if (VIEW_NAMES.includes(view)) setCurrentView(view as ViewType);
   }, [setCurrentView]);
 
   // Handle voice transcription → inject into chat
