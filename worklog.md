@@ -3212,3 +3212,28 @@ Stage Summary:
 - Realistic protocols: SNMP, REST, SOAP, NETCONF per vendor convention
 - Nokia FM marked as degraded with sync error (adds realism)
 - Both seed file and live database updated
+
+---
+Task ID: 2-b
+Agent: Frontend AdminView Builder
+Task: Create AdminView component and i18n keys
+
+Work Log:
+- Read worklog.md and existing project patterns (SettingsView.tsx, UI component APIs)
+- Verified available shadcn/ui components: Dialog, AlertDialog, Select, Alert, Checkbox, Badge, Table, ScrollArea, Skeleton, Tabs, Card, Button, Input, Label, Textarea
+- Created /src/components/views/AdminView.tsx (449 lines) with 5 tabs:
+  1. Users Tab — table with search, add/edit dialog, toggle active/inactive, role badges
+  2. Roles Tab — table with system role lock icon, add/edit dialog, delete with AlertDialog (blocked for system roles)
+  3. API Keys Tab — table with monospace key prefix, create dialog, key reveal alert with copy button, toggle enable/disable, delete
+  4. Webhooks Tab — table with event badges, add/edit dialog with checkbox multi-select events, toggle, delete
+  5. Data Sources Tab — table with status filter buttons (All/Active/Inactive/Error/Maintenance), add/edit dialog with Select for type, delete
+- All tabs use useQuery/useMutation with queryKey invalidation on success
+- All mutations show toast success/error via sonner
+- All text uses t() with admin. prefix
+- Created /src/lib/i18n/locales/admin-keys.ts with 60+ keys in en, fr, ar
+
+Stage Summary:
+- AdminView.tsx: 449 lines, 5 complete CRUD tabs, follows existing SettingsView patterns
+- admin-keys.ts: 60+ i18n keys across 3 locales (en/fr/ar)
+- No existing files modified
+- Registration in page.tsx not handled (as instructed)

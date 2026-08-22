@@ -22,7 +22,7 @@ import {
   Settings2, TrendingUp, Layers, Zap, Users, AlertTriangle,
   Heart, Target, Scale, MapPinOff, GitBranch, PowerOff, BookOpen, MessageSquare,
   FlaskConical, DollarSign, RadioTower, ArrowRightLeft as ArrowSwap, Gauge, Globe, FileSearch, Crown, GitCompare, Phone,
-  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart, Box,
+  CreditCardIcon, Languages, Bot, FolderTree, Building2, Trophy, LineChart, Box, ShieldCheck,
 } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { useT } from '@/lib/i18n';
@@ -90,6 +90,7 @@ const WilayaIntelligenceView = lazy(() => import('@/components/views/WilayaIntel
 const ValuePropositionView = lazy(() => import('@/components/views/ValuePropositionView'));
 const PredictiveAnalyticsView = lazy(() => import('@/components/views/PredictiveAnalyticsView'));
 const DigitalTwinView = lazy(() => import('@/components/views/DigitalTwinView'));
+const AdminView = lazy(() => import('@/components/views/AdminView'));
 
 const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboard; group?: string }[] = [
   // Operations
@@ -155,6 +156,7 @@ const NAV_ITEMS: { view: ViewType; labelKey: string; icon: typeof LayoutDashboar
   { view: 'sla', labelKey: 'nav.sla', icon: Shield, group: 'System' },
   { view: 'config', labelKey: 'nav.config', icon: Settings2, group: 'System' },
   { view: 'settings', labelKey: 'nav.settings', icon: Settings, group: 'System' },
+  { view: 'admin', labelKey: 'nav.admin', icon: ShieldCheck, group: 'System' },
 ];
 
 const VIEW_TITLE_KEYS: Record<ViewType, string> = {
@@ -215,6 +217,7 @@ const VIEW_TITLE_KEYS: Record<ViewType, string> = {
   'value-proposition': 'title.valueProposition',
   predictive: 'title.predictive',
   'digital-twin': 'title.digitalTwin',
+  admin: 'title.admin',
 };
 
 function ViewFallback() {
@@ -405,6 +408,7 @@ function ViewRenderer() {
           {currentView === 'network-commercial' && <NetworkCommercialView />}
           {currentView === 'wilaya-intelligence' && <WilayaIntelligenceView />}
           {currentView === 'value-proposition' && <ValuePropositionView />}
+          {currentView === 'admin' && <AdminView />}
           </ErrorBoundary>
         </Suspense>
       </motion.div>
