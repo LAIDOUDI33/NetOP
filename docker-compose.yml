@@ -1,13 +1,66 @@
+# ═══════════════════════════════════════════════════════════════
+# NetOP – Docker Compose (development)
+# ═══════════════════════════════════════════════════════════════
+# Usage:
+#   docker compose up -d          # start all services
+#   docker compose exec app sh   # shell into app
+#   docker compose exec app npx prisma db push  # apply schema
+#   docker compose logs -f app   # follow app logs
+# ═══════════════════════════════════════════════════════════════
+
 services:
+  # ── PostgreSQL 16 ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: netop-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-netop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-netop_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-netop}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netop} -d ${POSTGRES_DB:-netop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis 7 ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: netop-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Next.js App ───────────────────────────────────────────────
   app:
     build: .
-    ports: ["3000:3000"]
+    container_name: netop-app
+    ports:
+      - "3000:3000"
     env_file: .env
-    volumes:
-      - db-data:/app/db
-      - ./mini-services:/app/mini-services
     environment:
-      - NODE_ENV=production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-netop}:${POSTGRES_PASSWORD:-netop_secret}@postgres:5432/${POSTGRES_DB:-netop}?schema=public&connect_timeout=10&pool_size=20
+      REDIS_URL: redis://redis:6379/0
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./mini-services:/app/mini-services
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health-check"]
       interval: 30s
@@ -15,16 +68,22 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # ── ETL Service ───────────────────────────────────────────────
   etl-service:
     build:
       context: ./mini-services/etl-service
       dockerfile: Dockerfile
-    ports: ["3010:3010"]
+    container_name: netop-etl
+    ports:
+      - "3010:3010"
     environment:
-      - DATABASE_PATH=/app/db/custom.db
-    volumes:
-      - db-data:/app/db
+      DATABASE_URL: postgresql://${POSTGRES_USER:-netop}:${POSTGRES_PASSWORD:-netop_secret}@postgres:5432/${POSTGRES_DB:-netop}?schema=public&connect_timeout=10&pool_size=20
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  db-data:
+  postgres-data:
+  redis-data:

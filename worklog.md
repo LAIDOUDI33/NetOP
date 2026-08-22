@@ -3607,3 +3607,109 @@ Stage Summary:
 - Commit b8d999a pushed to GitHub
 - Production readiness improved from ~5.8 to ~7.0/10
 - Remaining blockers: auth enforcement, PostgreSQL migration, test coverage
+
+---
+Task ID: 1-a
+Agent: PostgreSQL Migration Agent
+Task: Prepare Prisma schema and infra for PostgreSQL migration
+
+Work Log:
+- Read worklog.md and full prisma/schema.prisma (1816 lines, 70+ models) to understand existing state
+- Updated datasource block: provider="postgresql", added relationMode="prisma"
+- Added 30 PostgreSQL-optimized composite indexes across 15 NOC time-series models:
+  - KpiMetric: [siteId, timestamp], [technology, timestamp]
+  - Alert: [siteId, createdAt], [severity, createdAt], [technology, severity]
+  - AnomalyEvent: [siteId, createdAt], [technology, severity, status]
+  - QoEMetric: [siteId, timestamp], [technology, timestamp]
+  - EnergyMetric: [siteId, timestamp], [technology, timestamp]
+  - HealthScore: [region, timestamp], [grade, region]
+  - Incident: [status, severity, createdAt], [technology, status]
+  - CellLoad: [siteId, timestamp], [region, technology, timestamp]
+  - OutageEvent: [status, severity], [region, status]
+  - SonAction: [siteId, createdAt], [technology, status, createdAt]
+  - CapacityForecast: [siteId, timestamp], [region, riskLevel]
+  - OssFaultEvent: [neId, timestamp], [severity, acknowledged]
+  - AuditLog: [entityType, action, createdAt]
+  - AuditTrail: [entityType, action, createdAt]
+  - PipelineExecution: [pipelineId, startedAt], [status, startedAt]
+- Replaced .env.example: PostgreSQL URL with pool_size=20, added REDIS_URL, POSTGRES_USER/PASSWORD/DB vars
+- Replaced docker-compose.yml: PostgreSQL 16-alpine + Redis 7-alpine with healthchecks, persistent volumes, proper service dependencies
+- Updated src/lib/db.ts: error/warn logging in dev, explicit datasourceUrl, removed verbose query logging
+- Created .env.production.example: complete production template with all service URLs, SMTP, ETL, domain config
+- Did NOT run prisma generate or prisma db push (no PostgreSQL available in sandbox)
+
+Stage Summary:
+- Schema fully migrated from SQLite to PostgreSQL provider with relationMode="prisma"
+- 30 new composite indexes added for NOC time-series query optimization
+- Infrastructure files (docker-compose, .env examples) aligned for PostgreSQL + Redis stack
+- db.ts connection pool configured via DATABASE_URL with connect_timeout and pool_size params
+---
+Task ID: 2-a
+Agent: Test Coverage Agent
+Task: Write API route tests for 60%+ coverage
+
+Work Log:
+- Read all 20 API route files and 5 library files to understand implementations
+- Created `src/__tests__/api/setup.ts` — comprehensive mock setup covering: Prisma (all models used by routes), z-ai-web-dev-sdk, next-auth, api-auth (passthrough), rate-limit, cache-helper, demo-time, bcryptjs
+- Updated `vitest.config.ts` with environmentOptions.jsdom.url for URL parsing in API tests
+- Created 15 API route test files:
+  1. `api/health-check.test.ts` — 7 tests: healthy, unhealthy DB, cache-control, version, latency, auth, rate-limit
+  2. `api/alerts.test.ts` — 11 tests: GET (filters, stats, mapping), PATCH (acknowledge, resolve, toggleRule, validation)
+  3. `api/dashboard.test.ts` — 4 tests: summary, empty, tech health, error
+  4. `api/monitoring.test.ts` — 6 tests: sites+trend+summary, tech filter, no KPI, empty, buckets, error
+  5. `api/kpi.test.ts` — 8 tests: default metric, invalid metric, all 15 valid metrics, tech filter, all, empty, grouping, error
+  6. `api/son.test.ts` — 12 tests: GET (modules, filter, ALL, JSON parse, error), POST (create, validation), PATCH (toggle, 404, execute fallback, disabled, rollback, validation)
+  7. `api/anomalies.test.ts` — 10 tests: GET (list+stats, tech/severity/status filters, all, mapping, error), PATCH (update, resolvedAt, 404, validation)
+  8. `api/policies.test.ts` — 10 tests: GET (stats, no execs, JSON parse, error), POST (create, validation), PATCH (toggle, 404, trigger, trigger reason, validation)
+  9. `api/incidents.test.ts` — 14 tests: GET (list+summary, filters, avgMTTR, SLA, JSON, error), POST (create, site+tags, validation), PATCH (resolve, missing fields, assign, investigate, 404, validation)
+  10. `api/outages.test.ts` — 8 tests: list+summary, tech/severity/status filters, avg duration, malformed JSON, field mapping, error
+  11. `api/faults.test.ts` — 7 tests: list+summary, tech/severity/status/component filters, summary stats, JSON parse, error
+  12. `api/integration-hub.test.ts` — 6 tests: full response, summary counts, health timeline, sync history, empty, error
+  13. `api/oss-integration.test.ts` — 8 tests: full response, NE mapping, fault mapping, distributions, summary, performance trend, empty, error
+  14. `api/etl/dashboard.test.ts` — 7 tests: full stats, execution stats, quality stats, source stats, throughput, recent execs formatting, error
+  15. `api/predictive/dashboard.test.ts` — 8 tests: all summaries, capacity, churn, fault, traffic (growing+declining), revenue, empty, error
+- Created 5 library test files:
+  16. `lib/rbac.test.ts` — 14 tests: hasPermission (wildcards, exact, none), hasAnyPermission, getAllowedViews (all, specific, module:*, empty), RBAC constants
+  17. `lib/pagination.test.ts` — 17 tests: parsePagination (defaults, params, limit alias, clamping, max, custom, NaN), paginationMeta (first/middle/last/empty/boundary), paginatedResponse
+  18. `lib/response.test.ts` — 9 tests: success (envelope, meta, status, no meta), paginated (envelope, metadata, last/first page, min 1), error (delegate, non-Error)
+  19. `lib/logger.test.ts` — 5 tests: info (message, context, no context key), warn, error, debug (suppressed in default level), timestamp format
+  20. `lib/errors.test.ts` — 22 tests: all error classes (AppError, NotFound, Validation, Auth, Forbidden, RateLimit, ServiceUnavailable, ExternalService), requestId, handleApiError (AppError, details, retryAfter, service, ZodError issues/errors, standard Error, production sanitization, unknown, null), withErrorHandling (success, error, params)
+- Lint passed: 0 errors (only pre-existing warnings)
+- Total new test cases: ~166 across 20 test files
+
+Stage Summary:
+- Created 20 new test files covering 15 API routes and 5 library modules
+- All tests use mock-based approach (no real DB/AI SDK needed)
+- Each test reads actual route code to match response shapes and parameters
+- Vitest config updated with jsdom URL support for API route testing
+- Common setup file provides reusable mocks for all Prisma models, AI SDK, auth, rate-limit, cache, demo-time
+
+---
+Task ID: 3-a
+Agent: Main
+Task: Build Real OSS Collector framework for 5 vendors
+
+Work Log:
+- Sub-agent created foundation: types.ts, config.ts, base.ts, 5 vendor collectors (ericsson, huawei, nokia, zte, samsung)
+- Sub-agent was interrupted before completing orchestrator, normalizer, pipeline, scheduler, and index.ts
+- Completed remaining 5 files manually:
+  1. src/normalizer.ts — Vendor-agnostic data normalization with field mappings for all 5 vendors (20 metrics × 5 vendors = 100 field mappings), severity normalization, flat KPI record aggregation
+  2. src/pipeline.ts — Database write pipeline with batch upserts for KPIs, faults, NE inventory. Demo mode skips DB writes. Uses Prisma client with lazy init.
+  3. src/scheduler.ts — Lightweight cron scheduler with 5s tick interval, concurrency control (MAX_CONCURRENT_COLLECTIONS), schedule CRUD operations
+  4. src/collector.ts — Main orchestrator: manages all 5 collectors, coordinates collect→normalize→pipeline flow, Prometheus metrics export, startup auto-collection
+  5. index.ts — Bun HTTP server on port 3005 with 7 REST endpoints (health, status, vendors, schedules, collect/:vendor, collect/all, metrics), graceful shutdown (SIGINT/SIGTERM)
+- Fixed Bun parser error: unescaped * in comment in scheduler.ts
+- Fixed recursive require() bug in index.ts (replaced with static import)
+- Installed dependencies (bun install): 53 packages
+- Tested in demo mode: 5 vendors initialized, 18 schedules registered, all collections succeeded (13+ KPIs, 3-7 faults, 8-13 PM counters per vendor)
+- Added OSS collector to docker-compose.prod.yml with all vendor credential env vars and healthcheck
+- Added vendor-specific OSS env vars to .env.production.example (5 vendors × 3 vars + region)
+
+Stage Summary:
+- 14 files total in mini-services/oss-collector/ (package.json, Dockerfile, tsconfig.json, index.ts, 6 src/ files, 5 vendor files)
+- 5 vendor collectors: Ericsson (ENM/OSS-RC), Huawei (U2000/NETECO), Nokia (NetAct/NSP), ZTE (NetNumen U31), Samsung (5G RIC)
+- Each vendor: real API integration + demo mode fallback, specific auth types (basic/bearer/token/oauth2), vendor field→normalized field mappings
+- REST API on port 3005: health, status, vendors, schedules CRUD, manual collection triggers, Prometheus metrics
+- Cron scheduler: 18 default schedules (5G every 60s, 4G/3G every 5min, 2G every 15min), configurable per vendor
+- Data pipeline: batch upsert to PostgreSQL (KpiMetric, OssFaultEvent, OssNetworkElement), demo mode skips writes
+- Fully integrated into docker-compose.prod.yml and .env.production.example

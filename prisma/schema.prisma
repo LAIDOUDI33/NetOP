@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model NetworkSite {
@@ -81,6 +82,8 @@ model KpiMetric {
 
   @@unique([siteId, timestamp])
   @@index([technology])
+  @@index([siteId, timestamp])
+  @@index([technology, timestamp])
 }
 
 model AlertRule {
@@ -120,6 +123,9 @@ model Alert {
   @@index([severity])
   @@index([createdAt])
   @@index([correlatedGroupId])
+  @@index([siteId, createdAt])
+  @@index([severity, createdAt])
+  @@index([technology, severity])
 }
 
 model OptimizationLog {
@@ -189,6 +195,8 @@ model AnomalyEvent {
   @@index([technology])
   @@index([severity])
   @@index([status])
+  @@index([siteId, createdAt])
+  @@index([technology, severity, status])
 }
 
 model AuditLog {
@@ -204,6 +212,7 @@ model AuditLog {
 
   @@index([entityType])
   @@index([createdAt])
+  @@index([entityType, action, createdAt])
 }
 
 // ========== PHASE A: SON & AUTOMATION MODELS ==========
@@ -251,6 +260,8 @@ model SonAction {
   @@index([technology])
   @@index([status])
   @@index([createdAt])
+  @@index([siteId, createdAt])
+  @@index([technology, status, createdAt])
 }
 
 model NeighborRelation {
@@ -331,6 +342,8 @@ model QoEMetric {
   @@index([siteId])
   @@index([technology])
   @@index([timestamp])
+  @@index([siteId, timestamp])
+  @@index([technology, timestamp])
 }
 
 model VendorProfile {
@@ -402,6 +415,8 @@ model CapacityForecast {
   @@index([region])
   @@index([riskLevel])
   @@index([timestamp])
+  @@index([siteId, timestamp])
+  @@index([region, riskLevel])
 }
 
 model NetworkSlice {
@@ -456,6 +471,8 @@ model EnergyMetric {
 
   @@unique([siteId, technology, timestamp])
   @@index([mode])
+  @@index([siteId, timestamp])
+  @@index([technology, timestamp])
 }
 
 model FaultPrediction {
@@ -534,6 +551,8 @@ model Incident {
   @@index([category])
   @@index([priority])
   @@index([createdAt])
+  @@index([status, severity, createdAt])
+  @@index([technology, status])
 }
 
 model ConfigTemplate {
@@ -574,6 +593,8 @@ model HealthScore {
   @@unique([siteId, technology, timestamp])
   @@index([region])
   @@index([grade])
+  @@index([region, timestamp])
+  @@index([grade, region])
 }
 
 model BenchmarkRecord {
@@ -647,6 +668,8 @@ model CellLoad {
   @@unique([siteId, technology, timestamp])
   @@index([region])
   @@index([congestionLevel])
+  @@index([siteId, timestamp])
+  @@index([region, technology, timestamp])
 }
 
 model InterferenceEvent {
@@ -759,6 +782,8 @@ model OutageEvent {
   @@index([region])
   @@index([severity])
   @@index([status])
+  @@index([status, severity])
+  @@index([region, status])
 }
 
 model Playbook {
@@ -981,6 +1006,7 @@ model AuditTrail {
   @@index([technology])
   @@index([category])
   @@index([createdAt])
+  @@index([entityType, action, createdAt])
 }
 
 // ========== RBAC MODELS ==========
@@ -1152,6 +1178,8 @@ model PipelineExecution {
   @@index([status])
   @@index([startedAt])
   @@index([triggerType])
+  @@index([pipelineId, startedAt])
+  @@index([status, startedAt])
 }
 
 model DataSource {
@@ -1267,6 +1295,8 @@ model OssFaultEvent {
   @@index([severity])
   @@index([category])
   @@index([timestamp])
+  @@index([neId, timestamp])
+  @@index([severity, acknowledged])
 }
 
 model CrmCustomer {
