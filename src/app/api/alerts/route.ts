@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { alertCache, cachedQuery } from '@/lib/cache-helper';
 
 const patchAlertSchema = z.object({
   action: z.enum(['acknowledge', 'resolve', 'toggleRule']),
@@ -19,8 +20,18 @@ export async function GET(request: NextRequest) {
   const severity = searchParams.get('severity');
   const technology = searchParams.get('technology');
   const showResolved = searchParams.get('resolved') === 'true';
+  const cacheKey = `alerts:list:${severity || 'all'}:${technology || 'all'}:${showResolved ? 'resolved' : 'active'}`;
 
   try {
+    return NextResponse.json(
+      await cachedQuery(alertCache, cacheKey, 5_000, () => buildAlertsData(severity, technology, showResolved))
+    );
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+async function buildAlertsData(severity: string | null, technology: string | null, showResolved: boolean) {
     const where: any = {};
     if (severity && severity !== 'all') where.severity = severity;
     if (technology && technology !== 'all') where.technology = technology;
@@ -50,7 +61,7 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    return NextResponse.json({
+    return {
       alerts: alerts.map(a => ({
         id: a.id,
         siteName: a.site?.name,
@@ -76,10 +87,7 @@ export async function GET(request: NextRequest) {
         enabled: r.enabled,
       })),
       stats,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    };
 }
 
 export async function PATCH(request: NextRequest) {
@@ -96,14 +104,17 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'acknowledge' && alertId) {
       await db.alert.update({ where: { id: alertId }, data: { acknowledged: true } });
+      alertCache.invalidatePattern('alerts:list');
       return NextResponse.json({ success: true });
     }
     if (action === 'resolve' && alertId) {
       await db.alert.update({ where: { id: alertId }, data: { resolvedAt: new Date() } });
+      alertCache.invalidatePattern('alerts:list');
       return NextResponse.json({ success: true });
     }
     if (action === 'toggleRule' && ruleId) {
       await db.alertRule.update({ where: { id: ruleId }, data: { enabled } });
+      alertCache.invalidatePattern('alerts:list');
       return NextResponse.json({ success: true });
     }
 

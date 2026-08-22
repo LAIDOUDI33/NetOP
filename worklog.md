@@ -3454,3 +3454,128 @@ Stage Summary:
 - SON, Digital Twin, Multi-Agent, Predictive Analytics all production-ready
 - Zero Math.random() in API routes
 - Committed and pushed: ad62fcb..7db8b8a
+
+---
+Task ID: 2
+Agent: Cache & Error Infra
+Task: Build server-side caching layer and centralized error handling
+
+Work Log:
+- Created src/lib/cache.ts — ProductionCache<T> class
+  - Generic class-based LRU cache with per-entry TTL support
+  - Configurable max size (default 500) and default TTL (default 30s)
+  - Methods: get, set, invalidate, invalidatePattern, clear, has, stats
+  - LRU eviction via Map insertion order (delete + re-insert on read)
+  - Stats tracking: hits, misses, hitRate, evictions, size
+  - Async-safe lock (acquireLock/releaseLock) for stampede prevention
+  - Expired entries purged on stats() and transparently on get/has
+- Created src/lib/cache-helper.ts
+  - cachedQuery<T>(cache, key, ttlMs, queryFn) — check-then-populate pattern
+  - 5 pre-configured cache instances:
+    - dashboardCache (15s TTL, 100 max)
+    - kpiCache (10s TTL, 500 max)
+    - alertCache (5s TTL, 200 max)
+    - analyticsCache (30s TTL, 200 max)
+    - predictionCache (60s TTL, 100 max)
+- Created src/lib/errors.ts — centralized error handling
+  - AppError base class: code, statusCode, isOperational, timestamp
+  - 7 specific error classes: NotFoundError(404), ValidationError(400)+details, AuthenticationError(401), ForbiddenError(403), RateLimitError(429)+retryAfter, ServiceUnavailableError(503), ExternalServiceError(502)+service
+  - handleApiError(error) — handles AppError, ZodError-like objects, Error, and unknowns; returns consistent { error: { code, message, details?, requestId } } JSON
+  - withErrorHandling(handler) — HOF wrapping Next.js route handlers in try/catch
+  - requestId() — crypto.randomUUID-based tracing IDs
+  - Production mode sanitizes internal error messages
+- Created src/lib/response.ts — standardized API response helpers
+  - success(data, meta?) — wraps in { success: true, data, meta }
+  - paginated(data, total, page, pageSize) — wraps with pagination metadata (totalPages, hasNext, hasPrev)
+  - error(err) — delegates to handleApiError
+- Lint: 0 errors/warnings on all 4 new files
+- Dev server compiles cleanly
+
+Stage Summary:
+- 4 new production infrastructure files created (cache, cache-helper, errors, response)
+- No existing files modified
+- Zero lint issues on new code
+- Ready for adoption by existing and future API routes
+
+---
+Task ID: 4-5-10
+Agent: DevOps Infra
+Task: Build CD pipeline, Docker Compose, and K8s manifests
+
+Work Log:
+- Read existing CI workflow (.github/workflows/ci.yml), Dockerfile, docker-compose.yml, Caddyfile for context
+- Created .github/workflows/cd.yml — 4-job CD pipeline:
+  - test: checkout, bun install, lint, typecheck, vitest with coverage, upload artifact
+  - build-and-push: docker/login-action, metadata-action (latest+SHA+branch tags), build-push-action with GHA cache
+  - deploy-staging (staging branch): SSH deploy via appleboy/ssh-action, health-check loop (120s), auto-rollback on failure, smoke test
+  - deploy-production (main branch, manual approval via environment): same pattern with 180s timeout, prisma migrate deploy, Slack notification stubs
+- Created docker-compose.prod.yml — 6-service production compose:
+  - app: uses ghcr.io image or local Dockerfile, healthcheck, depends_on db+redis+realtime, resource limits (2 CPU/2G), JSON log driver
+  - realtime: Socket.IO from mini-services/realtime-service, port 3003, dedicated volume, resource limits (1 CPU/1G)
+  - etl-service: from mini-services/etl-service, port 3010, configurable cron schedule, dedicated volume
+  - notification-service: new service on port 3004, SMTP + Slack env vars, Redis DB 1, depends_on db+redis
+  - postgres: PostgreSQL 16 Alpine, port 5432, pg_isready healthcheck, 4G memory limit, 50G volume
+  - redis: Redis 7 Alpine, port 6379, maxmemory 512mb allkeys-lru, AOF persistence, 768M limit
+  - caddy: reverse proxy on 80/443/443-udp (HTTP/3), mounts Caddyfile.prod, depends_on app health
+  - Two networks: netop-internal (bridge, no internet), netop-external (bridge)
+  - Six named volumes: postgres-data, redis-data, realtime-db, etl-db, caddy-data, caddy-config
+- Created .env.production.example — all required env vars with descriptions:
+  - General (NODE_ENV, DOMAIN, DOCKER_IMAGE_NAME)
+  - Database (DATABASE_URL, POSTGRES_*)
+  - Redis, NextAuth, Realtime, ETL, Notification (SMTP, Slack)
+  - AI SDK key, logging/Sentry
+- Created k8s/ directory with 12 manifest files:
+  - namespace.yml: netop namespace with standard labels
+  - configmap.yml: 4 ConfigMaps (app config, postgres config, redis config, caddy config with full Caddyfile)
+  - secret.yml: template Secret with stringData placeholders + kubectl create command reference
+  - postgres.yml: StatefulSet (1 replica), pg_isready liveness/readiness probes, 4G/50G PVC, security context (uid 999)
+  - redis.yml: Deployment + PVC (5G) + Service, redis-cli ping probes, envFrom configMap
+  - app-deployment.yml: 2 replicas, rolling update (maxSurge 1, maxUnavailable 0), pod anti-affinity, zone spread, startup+readiness+liveness probes, preStop sleep 5, non-root + readOnlyRootFilesystem + drop ALL caps
+  - app-service.yml: ClusterIP Service on port 3000
+  - realtime-deployment.yml: 2 replicas with anti-affinity, Service on 3003
+  - etl-deployment.yml: 1 replica with anti-affinity, Service on 3010
+  - notification-deployment.yml: 2 replicas with anti-affinity, Service on 3004, Redis DB 1
+  - ingress.yml: nginx IngressClass, TLS secret, WebSocket annotations, path routing (/socket.io→realtime, /etl→etl, /→app)
+  - hpas.yml: 3 HPAs (app 2-10 pods, realtime 2-5, notification 2-5) with CPU+memory metrics, scale-up/down behavior policies
+
+Stage Summary:
+- 14 new files created, zero existing files modified
+- CD pipeline: test → build → deploy (staging auto / production manual approval) with rollback
+- Docker Compose: 7-service production stack with healthchecks, resource limits, volumes, dual networks
+- Kubernetes: complete manifest set (12 files) with security hardening, anti-affinity, HPA, probes, TLS ingress
+- All manifests use consistent labeling (app.kubernetes.io/name, component, environment)
+
+---
+Task ID: 9
+Agent: Notification Service
+Task: Build notification mini-service for NOC alert dispatching
+
+Work Log:
+- Examined /home/z/my-project/mini-services/realtime-service/ for reference structure (package.json, index.ts pattern)
+- Created /home/z/my-project/mini-services/notification-service/package.json (@netop/notification-service, bun runtime, deps: express, nodemailer, socket.io)
+- Created /home/z/my-project/mini-services/notification-service/index.ts — full TypeScript implementation (~500 lines)
+- Installed dependencies (express@4.22.2, nodemailer@6.10.1, socket.io@4.8.3)
+- Verified service starts on port 3004, pre-seeds 4 notification rules
+- Tested all REST endpoints successfully:
+  - GET /health — returns service status, uptime, counts
+  - POST /notify — single notification (email, sms, in-app)
+  - POST /notify/bulk — batch notifications with summary
+  - GET /notify/rules — lists all rules (4 pre-seeded)
+  - POST /notify/rules — creates new rule with validation
+  - DELETE /notify/rules/:id — deletes rule by UUID
+  - GET /notify/history — paginated history with filters (channel, severity, status)
+- Verified Socket.IO server accepts connections on same port (3004) with CORS enabled
+- Verified structured JSON logging throughout (timestamp, level, channel, alertId)
+- Verified rate limiting logic (100/min per recipient)
+- Verified nodemailer SMTP fallback to jsonTransport when no env vars set
+
+Stage Summary:
+- Notification mini-service created at /home/z/my-project/mini-services/notification-service/
+- 2 files: package.json, index.ts
+- Express + Socket.IO server on port 3004 with 7 REST endpoints
+- 4 channel implementations: email (nodemailer), sms (stub with TODO for Twilio/Infobip/Mobilis), webhook (fetch POST), in-app (in-memory history)
+- Rules engine: severity + technology filtering, auto-dispatch on socket new-alert events
+- Pre-seeded rules: critical→SMS+email, major→email, warning→in-app
+- Rate limiting: 100 notifications/minute/recipient
+- Structured JSON logging with timestamp, level, channel, alertId
+- Zero existing files modified

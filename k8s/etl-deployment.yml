@@ -1,0 +1,106 @@
+# ──────────────────────────────────────────────
+# ETL Pipeline Service Deployment
+# ──────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netop-etl
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/part-of: netop-platform
+    app.kubernetes.io/component: etl
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netop
+      app.kubernetes.io/component: etl
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netop
+        app.kubernetes.io/component: etl
+        environment: production
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/component
+                      operator: In
+                      values: ["app", "postgres"]
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: etl
+          image: ghcr.io/YOUR_ORG/netop-etl:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3010
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3010"
+            - name: DATABASE_PATH
+              value: "/app/db/etl.db"
+            - name: SCHEDULE_CRON
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: ETL_CRON
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3010
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3010
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-etl
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/component: etl
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3010
+      targetPort: 3010
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/component: etl

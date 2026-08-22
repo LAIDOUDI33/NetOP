@@ -1,0 +1,56 @@
+# ──────────────────────────────────────────────
+# Ingress with TLS
+# ──────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: netop-ingress
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/part-of: netop-platform
+    app.kubernetes.io/component: ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # WebSocket support for Socket.IO
+    nginx.ingress.kubernetes.io/websocket-services: "netop-realtime"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - netop.example.com
+      secretName: netop-tls-secret
+  rules:
+    - host: netop.example.com
+      http:
+        paths:
+          # Realtime / WebSocket
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: netop-realtime
+                port:
+                  number: 3003
+          # ETL
+          - path: /etl
+            pathType: Prefix
+            backend:
+              service:
+                name: netop-etl
+                port:
+                  number: 3010
+          # Everything else → main app
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: netop-app
+                port:
+                  number: 3000

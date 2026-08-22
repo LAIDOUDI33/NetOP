@@ -3,6 +3,7 @@ import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { kpiCache, cachedQuery } from '@/lib/cache-helper';
 
 export async function GET(request: NextRequest) {
   try { await checkApiAuth(request); } catch { return authError(); }
@@ -10,10 +11,22 @@ export async function GET(request: NextRequest) {
   if (limited) return rateLimitResponse(resetMs);
   const { searchParams } = new URL(request.url);
   const technology = searchParams.get('technology') || '4G';
-  const oneHourAgo = await demoHoursAgo(1);
-  const sixHoursAgo = await demoHoursAgo(6);
+  const cacheKey = `monitoring:${technology}`;
 
   try {
+    return NextResponse.json(
+      await cachedQuery(kpiCache, cacheKey, 10_000, async () => {
+        return await buildMonitoringData(technology);
+      })
+    );
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+async function buildMonitoringData(technology: string) {
+  const oneHourAgo = await demoHoursAgo(1);
+  const sixHoursAgo = await demoHoursAgo(6);
     // Sites with their latest KPI
     const sites = await db.networkSite.findMany({
       where: { technology },
@@ -99,7 +112,7 @@ export async function GET(request: NextRequest) {
       totalUsers: Math.round(avg(Object.values(buckets).flatMap(b => b.users))),
     };
 
-    return NextResponse.json({
+    return {
       sites: siteSummaries,
       trend: {
         timestamps,
@@ -114,8 +127,5 @@ export async function GET(request: NextRequest) {
         },
       },
       summary,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    };
 }

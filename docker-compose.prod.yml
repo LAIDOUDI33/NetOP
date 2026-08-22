@@ -1,0 +1,311 @@
+# ──────────────────────────────────────────────────────
+# NetOP — Production Docker Compose
+# ──────────────────────────────────────────────────────
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Required: .env.production file (see .env.production.example)
+# ──────────────────────────────────────────────────────
+
+services:
+  # ── Main Application ─────────────────────────────
+  app:
+    image: ghcr.io/${DOCKER_IMAGE_NAME:-netop/netop}:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: netop-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env.production
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379/0
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - REALTIME_SERVICE_URL=http://realtime:3003
+      - ETL_SERVICE_URL=http://etl-service:3010
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      realtime:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "sf", "http://localhost:3000/api/health-check"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ── Realtime / Socket.IO Service ──────────────────
+  realtime:
+    build:
+      context: ./mini-services/realtime-service
+      dockerfile: Dockerfile
+    container_name: netop-realtime
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=${REALTIME_DATABASE_URL:-file:/app/db/realtime.db}
+      - CORS_ORIGIN=${NEXTAUTH_URL}
+    volumes:
+      - realtime-db:/app/db
+    healthcheck:
+      test: ["CMD", "curl", "sf", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ── ETL Pipeline Service ──────────────────────────
+  etl-service:
+    build:
+      context: ./mini-services/etl-service
+      dockerfile: Dockerfile
+    container_name: netop-etl
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - PORT=3010
+      - DATABASE_PATH=/app/db/etl.db
+      - SCHEDULE_CRON=${ETL_CRON:-"0 */6 * * *"}
+    volumes:
+      - etl-db:/app/db
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ── Notification Service ──────────────────────────
+  notification-service:
+    build:
+      context: ./mini-services/notification-service
+      dockerfile: Dockerfile
+    container_name: netop-notifications
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379/1
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── PostgreSQL Database ───────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: netop-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-netop}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-netop}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-netop} -d ${POSTGRES_DB:-netop}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # ── Redis Cache ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: netop-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --save 60 1000
+      --save 300 100
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      start_period: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    networks:
+      - netop-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  # ── Caddy Reverse Proxy ──────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    container_name: netop-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-netop.example.com}
+      - APP_HOST=app:3000
+      - REALTIME_HOST=realtime:3003
+      - ETL_HOST=etl-service:3010
+      - NOTIFICATION_HOST=notification-service:3004
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/health-check"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+    networks:
+      - netop-internal
+      - netop-external
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+# ── Networks ────────────────────────────────────────
+networks:
+  netop-internal:
+    driver: bridge
+    internal: true  # no outbound internet
+  netop-external:
+    driver: bridge
+
+# ── Volumes ─────────────────────────────────────────
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  realtime-db:
+    driver: local
+  etl-db:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local

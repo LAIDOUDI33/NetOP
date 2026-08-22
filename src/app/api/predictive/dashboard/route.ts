@@ -2,12 +2,26 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { predictionCache, cachedQuery } from '@/lib/cache-helper';
 
 export async function GET(request: Request) {
   try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, remaining } = rateLimit(request, { windowMs: 60_000, max: 60 });
   if (limited) return rateLimitResponse(remaining);
   try {
+    return NextResponse.json(
+      await cachedQuery(predictionCache, 'predictive:dashboard', 30_000, buildPredictiveDashboard)
+    );
+  } catch (error) {
+    console.error('[predictive/dashboard] Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to load dashboard summary' },
+      { status: 500 }
+    );
+  }
+}
+
+async function buildPredictiveDashboard() {
     const [
       capacityForecasts,
       churnPredictions,
@@ -90,7 +104,7 @@ export async function GET(request: Request) {
       (r) => r.trendDirection === 'declining'
     ).length;
 
-    return NextResponse.json({
+    return {
       capacity: {
         total: capacityForecasts.length,
         highRisk: capacityHighRisk.length,
@@ -117,12 +131,5 @@ export async function GET(request: Request) {
         avgGrowth: Math.round(revenueAvgGrowth * 100) / 100,
         riskCount,
       },
-    });
-  } catch (error) {
-    console.error('[predictive/dashboard] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to load dashboard summary' },
-      { status: 500 }
-    );
-  }
+    };
 }

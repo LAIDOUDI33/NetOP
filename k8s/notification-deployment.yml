@@ -1,0 +1,131 @@
+# ──────────────────────────────────────────────
+# Notification Service Deployment
+# ──────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netop-notifications
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/part-of: netop-platform
+    app.kubernetes.io/component: notification
+    environment: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netop
+      app.kubernetes.io/component: notification
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netop
+        app.kubernetes.io/component: notification
+        environment: production
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/component
+                      operator: In
+                      values: ["notification"]
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: notification
+          image: ghcr.io/YOUR_ORG/netop-notifications:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3004
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3004"
+            - name: REDIS_URL
+              value: "redis://netop-redis:6379/1"
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_HOST
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_PORT
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_USER
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_PASS
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SLACK_WEBHOOK_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "500m"
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-notifications
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/component: notification
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3004
+      targetPort: 3004
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/component: notification

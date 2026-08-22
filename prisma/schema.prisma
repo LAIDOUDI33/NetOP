@@ -45,6 +45,11 @@ model NetworkSite {
   npiRecords     NpiRecord[]
   ossNetworkElements OssNetworkElement[]
   digitalTwinScenarios DigitalTwinScenario[]
+
+  @@index([technology])
+  @@index([region])
+  @@index([status])
+  @@index([vendor])
 }
 
 model KpiMetric {

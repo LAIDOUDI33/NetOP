@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────
+# Main Application Service
+# ──────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-app
+  namespace: netop
+  labels:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/part-of: netop-platform
+    app.kubernetes.io/component: app
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: netop
+    app.kubernetes.io/component: app

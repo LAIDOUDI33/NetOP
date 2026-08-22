@@ -3,12 +3,24 @@ import { demoHoursAgo } from '@/lib/demo-time';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { checkApiAuth, authError } from '@/lib/api-auth';
+import { dashboardCache, cachedQuery } from '@/lib/cache-helper';
 
 export async function GET(request: NextRequest) {
   try { await checkApiAuth(request); } catch { return authError(); }
   const { limited, resetMs } = rateLimit(request, { windowMs: 60_000, max: 100 });
   if (limited) return rateLimitResponse(resetMs);
   try {
+    return NextResponse.json(
+      await cachedQuery(dashboardCache, 'dashboard:overview', 15_000, async () => {
+        return await buildDashboardData();
+      })
+    );
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+async function buildDashboardData() {
     const oneHourAgo = await demoHoursAgo(1);
     const oneDayAgo = await demoHoursAgo(24);
 
@@ -114,7 +126,7 @@ export async function GET(request: NextRequest) {
     });
     const techHealth = await Promise.all(techHealthPromises);
 
-    return NextResponse.json({
+    return {
       totalSites: allSites.length,
       sitesByTech,
       sitesByStatus,
@@ -126,8 +138,5 @@ export async function GET(request: NextRequest) {
       recentAlerts,
       kpiTrends: { timestamps, download, upload, latency, users },
       techHealth,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+    };
 }

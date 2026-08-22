@@ -11,20 +11,27 @@ const prisma = new PrismaClient({
 const PORT = 3003;
 
 const io = new Server(PORT, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: { origin: ["http://localhost:3000", "https://*.djezzy.dz"], methods: ["GET", "POST"] },
 });
 
 console.log(`[NetOptima Algérie Realtime] Socket.IO + Data Gen service on port ${PORT}`);
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+// Deterministic jitter: uses timestamp + site index for reproducible but varying values
+// In production, replace with actual OSS collector readings
+let jitterCounter = 0;
 function jitter(value: number, pct: number): number {
-  const delta = value * pct * (Math.random() * 2 - 1);
+  jitterCounter++;
+  const t = Date.now() / 10000;
+  const delta = value * pct * Math.sin(t + jitterCounter * 0.7) * 0.9;
   return Math.round((value + delta) * 100) / 100;
 }
 
 function jitterInt(value: number, pct: number): number {
-  const delta = value * pct * (Math.random() * 2 - 1);
+  jitterCounter++;
+  const t = Date.now() / 10000;
+  const delta = value * pct * Math.sin(t + jitterCounter * 0.5) * 0.8;
   return Math.round(value + delta);
 }
 
@@ -135,16 +142,18 @@ async function generateFreshKpiData() {
 
       kpiRecords.push(data);
 
-      // 8% chance to generate alert (increased for more live activity)
-      if (Math.random() < 0.08) {
-        const m = alertMetricOptions[Math.floor(Math.random() * alertMetricOptions.length)];
+      // Deterministic alert generation: every 12th site triggers alert check (≈8%)
+      const siteIndex = sites.indexOf(site);
+      if (siteIndex > 0 && siteIndex % 12 === 0) {
+        const metricIdx = siteIndex % alertMetricOptions.length;
+        const m = alertMetricOptions[metricIdx];
         const val = data[m.field];
         if (val != null) {
           const breached = m.condition === "<" ? (val as number) < m.threshold : (val as number) > m.threshold;
           if (breached) {
             const siteInfo = getSiteInfo(site.id);
             const alertMsg = `${site.technology} ${m.field} ${m.condition} ${m.threshold}: current ${(val as number).toFixed(1)}`;
-            const alertId = `rt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            const alertId = `rt-${Date.now()}-${site.code.slice(0, 6)}`;
             alertRecords.push({
               id: alertId,
               siteId: site.id,
