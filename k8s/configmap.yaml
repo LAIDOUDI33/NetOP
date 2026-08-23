@@ -1,0 +1,25 @@
+# ==============================================================================
+# NetOP ConfigMap — non-sensitive runtime configuration
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: netop-config
+  namespace: netop
+  labels:
+    app: netop
+    component: config
+    tier: platform
+data:
+  LOG_LEVEL: "info"
+  NODE_ENV: "production"
+  TZ: "Africa/Algiers"
+  NEXTAUTH_URL: "https://netop.djezzy.dz"
+  # Pool configuration (shared reference)
+  POOL_MODE: "transaction"
+  MAX_CLIENT_CONN: "1000"
+  DEFAULT_POOL_SIZE: "20"
+  RESERVE_POOL_SIZE: "10"
+  SERVER_IDLE_TIMEOUT: "300"
+  # SMTP defaults
+  SMTP_PORT: "587"

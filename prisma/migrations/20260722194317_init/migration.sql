@@ -6,15 +6,15 @@ CREATE TABLE "NetworkSite" (
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'active',
-    "latitude" REAL NOT NULL,
-    "longitude" REAL NOT NULL,
-    "altitude" REAL NOT NULL DEFAULT 0,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
+    "altitude" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "frequency" TEXT NOT NULL DEFAULT '',
-    "bandwidth" REAL NOT NULL DEFAULT 0,
+    "bandwidth" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "maxCapacity" INTEGER NOT NULL DEFAULT 0,
     "vendor" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -22,28 +22,28 @@ CREATE TABLE "KpiMetric" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "rssi" REAL,
-    "rsrp" REAL,
-    "rsrq" REAL,
-    "sinr" REAL,
-    "rscp" REAL,
-    "ecno" REAL,
-    "rxlev" REAL,
-    "cqichannel" REAL,
-    "downloadThroughput" REAL,
-    "uploadThroughput" REAL,
-    "latency" REAL,
-    "jitter" REAL,
-    "packetLoss" REAL,
-    "availability" REAL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "rssi" DOUBLE PRECISION,
+    "rsrp" DOUBLE PRECISION,
+    "rsrq" DOUBLE PRECISION,
+    "sinr" DOUBLE PRECISION,
+    "rscp" DOUBLE PRECISION,
+    "ecno" DOUBLE PRECISION,
+    "rxlev" DOUBLE PRECISION,
+    "cqichannel" DOUBLE PRECISION,
+    "downloadThroughput" DOUBLE PRECISION,
+    "uploadThroughput" DOUBLE PRECISION,
+    "latency" DOUBLE PRECISION,
+    "jitter" DOUBLE PRECISION,
+    "packetLoss" DOUBLE PRECISION,
+    "availability" DOUBLE PRECISION,
     "activeUsers" INTEGER,
-    "handoverSuccessRate" REAL,
-    "dropRate" REAL,
-    "blockedCallRate" REAL,
-    "prbUtilization" REAL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "KpiMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "handoverSuccessRate" DOUBLE PRECISION,
+    "dropRate" DOUBLE PRECISION,
+    "blockedCallRate" DOUBLE PRECISION,
+    "prbUtilization" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "KpiMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -53,11 +53,11 @@ CREATE TABLE "AlertRule" (
     "technology" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
     "condition" TEXT NOT NULL,
-    "threshold" REAL NOT NULL,
+    "threshold" DOUBLE PRECISION NOT NULL,
     "severity" TEXT NOT NULL DEFAULT 'warning',
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -67,17 +67,17 @@ CREATE TABLE "Alert" (
     "siteId" TEXT,
     "technology" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
-    "value" REAL NOT NULL,
-    "threshold" REAL NOT NULL,
+    "value" DOUBLE PRECISION NOT NULL,
+    "threshold" DOUBLE PRECISION NOT NULL,
     "condition" TEXT NOT NULL,
     "severity" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "acknowledged" BOOLEAN NOT NULL DEFAULT false,
     "correlatedGroupId" TEXT,
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Alert_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "AlertRule" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Alert_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Alert_ruleId_fkey" FOREIGN KEY ("ruleId") REFERENCES "AlertRule" ("id") ON DELETE SET NULL,
+    CONSTRAINT "Alert_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -91,8 +91,8 @@ CREATE TABLE "OptimizationLog" (
     "recommendation" TEXT NOT NULL,
     "impact" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -107,8 +107,8 @@ CREATE TABLE "NetworkParameter" (
     "maxRange" TEXT,
     "description" TEXT NOT NULL,
     "category" TEXT NOT NULL DEFAULT 'general',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -116,12 +116,12 @@ CREATE TABLE "SLATarget" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "technology" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
-    "targetValue" REAL NOT NULL,
+    "targetValue" DOUBLE PRECISION NOT NULL,
     "condition" TEXT NOT NULL,
     "severity" TEXT NOT NULL DEFAULT 'warning',
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -130,15 +130,15 @@ CREATE TABLE "AnomalyEvent" (
     "siteId" TEXT,
     "technology" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
-    "actualValue" REAL NOT NULL,
-    "expectedValue" REAL NOT NULL,
-    "zScore" REAL NOT NULL,
+    "actualValue" DOUBLE PRECISION NOT NULL,
+    "expectedValue" DOUBLE PRECISION NOT NULL,
+    "zScore" DOUBLE PRECISION NOT NULL,
     "severity" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'detected',
     "description" TEXT NOT NULL,
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "AnomalyEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "AnomalyEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -151,7 +151,7 @@ CREATE TABLE "AuditLog" (
     "newValue" TEXT,
     "description" TEXT NOT NULL,
     "technology" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -166,8 +166,8 @@ CREATE TABLE "SonModule" (
     "schedule" TEXT,
     "parameters" TEXT NOT NULL DEFAULT '{}',
     "stats" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -184,14 +184,14 @@ CREATE TABLE "SonAction" (
     "status" TEXT NOT NULL DEFAULT 'pending',
     "kpiBefore" TEXT NOT NULL DEFAULT '{}',
     "kpiAfter" TEXT,
-    "impactScore" REAL,
+    "impactScore" DOUBLE PRECISION,
     "rollbackReason" TEXT,
-    "appliedAt" DATETIME,
-    "rolledBackAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "SonAction_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "SonModule" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "SonAction_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "appliedAt" TIMESTAMP(3),
+    "rolledBackAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "SonAction_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "SonModule" ("id") ON DELETE CASCADE,
+    CONSTRAINT "SonAction_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -205,9 +205,9 @@ CREATE TABLE "NeighborRelation" (
     "relationType" TEXT NOT NULL,
     "hoType" TEXT NOT NULL DEFAULT 'manual',
     "status" TEXT NOT NULL DEFAULT 'active',
-    "hoSuccessRate" REAL,
-    "lastUpdated" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "NeighborRelation_servingCellId_fkey" FOREIGN KEY ("servingCellId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "hoSuccessRate" DOUBLE PRECISION,
+    "lastUpdated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "NeighborRelation_servingCellId_fkey" FOREIGN KEY ("servingCellId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -225,8 +225,8 @@ CREATE TABLE "Policy" (
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "cooldownMins" INTEGER NOT NULL DEFAULT 30,
     "stats" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -240,9 +240,9 @@ CREATE TABLE "PolicyExecution" (
     "kpiImpact" TEXT NOT NULL DEFAULT '{}',
     "rollbackReason" TEXT,
     "durationMs" INTEGER,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "completedAt" DATETIME,
-    CONSTRAINT "PolicyExecution_policyId_fkey" FOREIGN KEY ("policyId") REFERENCES "Policy" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completedAt" TIMESTAMP(3),
+    CONSTRAINT "PolicyExecution_policyId_fkey" FOREIGN KEY ("policyId") REFERENCES "Policy" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -250,20 +250,20 @@ CREATE TABLE "QoEMetric" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "mosScore" REAL,
-    "dataRateExperienced" REAL,
-    "callSetupTime" REAL,
-    "callDropRate" REAL,
-    "webPageLoadTime" REAL,
-    "videoStartTime" REAL,
-    "pingLatency" REAL,
-    "jitterExperience" REAL,
-    "satisfactionIndex" REAL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "mosScore" DOUBLE PRECISION,
+    "dataRateExperienced" DOUBLE PRECISION,
+    "callSetupTime" DOUBLE PRECISION,
+    "callDropRate" DOUBLE PRECISION,
+    "webPageLoadTime" DOUBLE PRECISION,
+    "videoStartTime" DOUBLE PRECISION,
+    "pingLatency" DOUBLE PRECISION,
+    "jitterExperience" DOUBLE PRECISION,
+    "satisfactionIndex" DOUBLE PRECISION,
     "subscriberCount" INTEGER,
     "complaintCount" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "QoEMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "QoEMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -276,10 +276,10 @@ CREATE TABLE "VendorProfile" (
     "apiEndpoint" TEXT,
     "credentials" TEXT,
     "status" TEXT NOT NULL DEFAULT 'active',
-    "lastSync" DATETIME,
+    "lastSync" TIMESTAMP(3),
     "stats" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -290,11 +290,11 @@ CREATE TABLE "SiteOnboarding" (
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
     "vendor" TEXT NOT NULL,
-    "latitude" REAL NOT NULL,
-    "longitude" REAL NOT NULL,
-    "altitude" REAL NOT NULL DEFAULT 0,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
+    "altitude" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "frequency" TEXT NOT NULL DEFAULT '',
-    "bandwidth" REAL NOT NULL DEFAULT 0,
+    "bandwidth" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "maxCapacity" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "assignedPci" TEXT,
@@ -302,9 +302,9 @@ CREATE TABLE "SiteOnboarding" (
     "initialNeighbors" TEXT NOT NULL DEFAULT '[]',
     "kpiBaseline" TEXT NOT NULL DEFAULT '{}',
     "errorMessage" TEXT,
-    "completedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "completedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -314,18 +314,18 @@ CREATE TABLE "CapacityForecast" (
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
-    "currentValue" REAL NOT NULL,
-    "forecastValue" REAL NOT NULL,
+    "currentValue" DOUBLE PRECISION NOT NULL,
+    "forecastValue" DOUBLE PRECISION NOT NULL,
     "forecastHorizon" TEXT NOT NULL DEFAULT '7d',
-    "growthRate" REAL NOT NULL,
-    "capacityLimit" REAL,
-    "utilizationAtLimit" REAL,
-    "confidence" REAL NOT NULL DEFAULT 0.85,
+    "growthRate" DOUBLE PRECISION NOT NULL,
+    "capacityLimit" DOUBLE PRECISION,
+    "utilizationAtLimit" DOUBLE PRECISION,
+    "confidence" DOUBLE PRECISION NOT NULL DEFAULT 0.85,
     "riskLevel" TEXT NOT NULL DEFAULT 'low',
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "CapacityForecast_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "CapacityForecast_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -338,22 +338,22 @@ CREATE TABLE "NetworkSlice" (
     "siteId" TEXT,
     "sst" TEXT,
     "sd" TEXT,
-    "maxBandwidth" REAL NOT NULL DEFAULT 100,
-    "guaranteedBw" REAL NOT NULL DEFAULT 30,
+    "maxBandwidth" DOUBLE PRECISION NOT NULL DEFAULT 100,
+    "guaranteedBw" DOUBLE PRECISION NOT NULL DEFAULT 30,
     "maxUsers" INTEGER NOT NULL DEFAULT 100,
     "priorityLevel" INTEGER NOT NULL DEFAULT 5,
-    "latencyTarget" REAL,
-    "reliabilityTarget" REAL,
-    "currentLoad" REAL NOT NULL DEFAULT 0,
+    "latencyTarget" DOUBLE PRECISION,
+    "reliabilityTarget" DOUBLE PRECISION,
+    "currentLoad" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "activeUsers" INTEGER NOT NULL DEFAULT 0,
-    "avgThroughput" REAL,
-    "avgLatency" REAL,
+    "avgThroughput" DOUBLE PRECISION,
+    "avgLatency" DOUBLE PRECISION,
     "qci" INTEGER,
     "FiveQi" INTEGER,
     "parameters" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "NetworkSlice_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "NetworkSlice_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -361,19 +361,19 @@ CREATE TABLE "EnergyMetric" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "powerConsumption" REAL NOT NULL,
-    "energyConsumed" REAL NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "powerConsumption" DOUBLE PRECISION NOT NULL,
+    "energyConsumed" DOUBLE PRECISION NOT NULL,
     "activeUsers" INTEGER,
-    "trafficLoad" REAL,
-    "temperature" REAL,
+    "trafficLoad" DOUBLE PRECISION,
+    "temperature" DOUBLE PRECISION,
     "sleepMode" BOOLEAN NOT NULL DEFAULT false,
     "mode" TEXT NOT NULL DEFAULT 'normal',
-    "co2Emission" REAL,
-    "solarGeneration" REAL,
-    "batteryLevel" REAL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "EnergyMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "co2Emission" DOUBLE PRECISION,
+    "solarGeneration" DOUBLE PRECISION,
+    "batteryLevel" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "EnergyMetric_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -383,17 +383,17 @@ CREATE TABLE "FaultPrediction" (
     "technology" TEXT NOT NULL,
     "component" TEXT NOT NULL,
     "faultType" TEXT NOT NULL,
-    "probability" REAL NOT NULL,
+    "probability" DOUBLE PRECISION NOT NULL,
     "severity" TEXT NOT NULL DEFAULT 'medium',
     "status" TEXT NOT NULL DEFAULT 'predicted',
-    "confidence" REAL NOT NULL DEFAULT 0.0,
+    "confidence" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     "indicators" TEXT NOT NULL DEFAULT '[]',
     "recommendedAction" TEXT NOT NULL DEFAULT '',
     "estimatedTimeToFail" TEXT,
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "FaultPrediction_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "FaultPrediction_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -403,15 +403,15 @@ CREATE TABLE "SubscriberSegment" (
     "technology" TEXT NOT NULL,
     "criteria" TEXT NOT NULL DEFAULT '{}',
     "subscriberCount" INTEGER NOT NULL DEFAULT 0,
-    "avgDataUsage" REAL NOT NULL DEFAULT 0,
-    "avgVoiceMinutes" REAL NOT NULL DEFAULT 0,
-    "arpu" REAL NOT NULL DEFAULT 0,
-    "churnRisk" REAL NOT NULL DEFAULT 0,
-    "satisfactionScore" REAL,
+    "avgDataUsage" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "avgVoiceMinutes" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "arpu" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "churnRisk" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "satisfactionScore" DOUBLE PRECISION,
     "topServices" TEXT NOT NULL DEFAULT '[]',
     "peakHour" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -428,17 +428,17 @@ CREATE TABLE "Incident" (
     "assignedTo" TEXT,
     "reportedBy" TEXT NOT NULL DEFAULT 'system',
     "mttrTarget" INTEGER,
-    "mtbfValue" REAL,
+    "mtbfValue" DOUBLE PRECISION,
     "rootCause" TEXT,
     "resolution" TEXT,
     "affectedSites" TEXT NOT NULL DEFAULT '[]',
     "relatedAlerts" TEXT NOT NULL DEFAULT '[]',
     "tags" TEXT NOT NULL DEFAULT '[]',
     "slaBreach" BOOLEAN NOT NULL DEFAULT false,
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Incident_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Incident_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -452,9 +452,9 @@ CREATE TABLE "ConfigTemplate" (
     "parameters" TEXT NOT NULL DEFAULT '{}',
     "isDefault" BOOLEAN NOT NULL DEFAULT false,
     "applyCount" INTEGER NOT NULL DEFAULT 0,
-    "lastApplied" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "lastApplied" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -463,18 +463,18 @@ CREATE TABLE "HealthScore" (
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
-    "overallScore" REAL NOT NULL,
-    "coverageScore" REAL NOT NULL,
-    "capacityScore" REAL NOT NULL,
-    "qualityScore" REAL NOT NULL,
-    "reliabilityScore" REAL NOT NULL,
-    "experienceScore" REAL NOT NULL,
+    "overallScore" DOUBLE PRECISION NOT NULL,
+    "coverageScore" DOUBLE PRECISION NOT NULL,
+    "capacityScore" DOUBLE PRECISION NOT NULL,
+    "qualityScore" DOUBLE PRECISION NOT NULL,
+    "reliabilityScore" DOUBLE PRECISION NOT NULL,
+    "experienceScore" DOUBLE PRECISION NOT NULL,
     "grade" TEXT NOT NULL DEFAULT 'B',
     "trend" TEXT NOT NULL DEFAULT 'stable',
     "issues" TEXT NOT NULL DEFAULT '[]',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "HealthScore_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "HealthScore_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -484,15 +484,15 @@ CREATE TABLE "BenchmarkRecord" (
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
     "metric" TEXT NOT NULL,
-    "actualValue" REAL NOT NULL,
-    "benchmarkValue" REAL NOT NULL,
-    "targetValue" REAL NOT NULL,
-    "percentileRank" REAL NOT NULL,
-    "gap" REAL NOT NULL,
+    "actualValue" DOUBLE PRECISION NOT NULL,
+    "benchmarkValue" DOUBLE PRECISION NOT NULL,
+    "targetValue" DOUBLE PRECISION NOT NULL,
+    "percentileRank" DOUBLE PRECISION NOT NULL,
+    "gap" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'on_track',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "BenchmarkRecord_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "BenchmarkRecord_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -506,17 +506,17 @@ CREATE TABLE "HandoverKpi" (
     "hoAttempts" INTEGER NOT NULL DEFAULT 0,
     "hoSuccess" INTEGER NOT NULL DEFAULT 0,
     "hoFailures" INTEGER NOT NULL DEFAULT 0,
-    "hoSuccessRate" REAL NOT NULL,
-    "avgPrepTime" REAL,
-    "avgExecTime" REAL,
+    "hoSuccessRate" DOUBLE PRECISION NOT NULL,
+    "avgPrepTime" DOUBLE PRECISION,
+    "avgExecTime" DOUBLE PRECISION,
     "pingPongCount" INTEGER NOT NULL DEFAULT 0,
     "tooEarlyCount" INTEGER NOT NULL DEFAULT 0,
     "tooLateCount" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'normal',
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "HandoverKpi_servingCellId_fkey" FOREIGN KEY ("servingCellId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "HandoverKpi_servingCellId_fkey" FOREIGN KEY ("servingCellId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -525,19 +525,19 @@ CREATE TABLE "CellLoad" (
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
-    "prbUtilDownlink" REAL NOT NULL,
-    "prbUtilUplink" REAL NOT NULL,
+    "prbUtilDownlink" DOUBLE PRECISION NOT NULL,
+    "prbUtilUplink" DOUBLE PRECISION NOT NULL,
     "activeUsers" INTEGER NOT NULL,
     "maxUsers" INTEGER NOT NULL,
-    "userLoadPct" REAL NOT NULL,
-    "throughputDown" REAL NOT NULL,
-    "throughputUp" REAL NOT NULL,
-    "balancedScore" REAL NOT NULL,
+    "userLoadPct" DOUBLE PRECISION NOT NULL,
+    "throughputDown" DOUBLE PRECISION NOT NULL,
+    "throughputUp" DOUBLE PRECISION NOT NULL,
+    "balancedScore" DOUBLE PRECISION NOT NULL,
     "congestionLevel" TEXT NOT NULL DEFAULT 'low',
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "CellLoad_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "CellLoad_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -555,12 +555,12 @@ CREATE TABLE "InterferenceEvent" (
     "frequency" TEXT,
     "pci" TEXT,
     "affectedKpis" TEXT NOT NULL DEFAULT '[]',
-    "impactScore" REAL NOT NULL DEFAULT 0,
+    "impactScore" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "InterferenceEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "InterferenceEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -568,22 +568,22 @@ CREATE TABLE "CoverageHole" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
-    "latitude" REAL NOT NULL,
-    "longitude" REAL NOT NULL,
-    "radiusMeters" REAL NOT NULL DEFAULT 500,
-    "areaKm2" REAL NOT NULL,
-    "signalStrength" REAL NOT NULL,
-    "expectedSignal" REAL NOT NULL,
-    "gapDb" REAL NOT NULL,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
+    "radiusMeters" DOUBLE PRECISION NOT NULL DEFAULT 500,
+    "areaKm2" DOUBLE PRECISION NOT NULL,
+    "signalStrength" DOUBLE PRECISION NOT NULL,
+    "expectedSignal" DOUBLE PRECISION NOT NULL,
+    "gapDb" DOUBLE PRECISION NOT NULL,
     "severity" TEXT NOT NULL DEFAULT 'medium',
     "nearestSite" TEXT,
     "nearestSiteName" TEXT,
-    "nearestSiteDistKm" REAL,
+    "nearestSiteDistKm" DOUBLE PRECISION,
     "affectedUsers" INTEGER NOT NULL DEFAULT 0,
     "recommendation" TEXT NOT NULL DEFAULT '',
     "status" TEXT NOT NULL DEFAULT 'open',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -603,11 +603,11 @@ CREATE TABLE "ChangeRequest" (
     "status" TEXT NOT NULL DEFAULT 'pending',
     "requestedBy" TEXT NOT NULL DEFAULT 'system',
     "approvedBy" TEXT,
-    "implementedAt" DATETIME,
+    "implementedAt" TIMESTAMP(3),
     "rollbackReason" TEXT,
     "kpiImpact" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -619,18 +619,18 @@ CREATE TABLE "OutageEvent" (
     "outageType" TEXT NOT NULL,
     "severity" TEXT NOT NULL DEFAULT 'medium',
     "status" TEXT NOT NULL DEFAULT 'active',
-    "startedAt" DATETIME NOT NULL,
-    "detectedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "startedAt" TIMESTAMP(3) NOT NULL,
+    "detectedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "estimatedDuration" TEXT,
     "actualDuration" INTEGER,
     "affectedUsers" INTEGER NOT NULL DEFAULT 0,
     "rootCause" TEXT,
     "compensationApplied" TEXT NOT NULL DEFAULT 'none',
     "compensationSites" TEXT NOT NULL DEFAULT '[]',
-    "resolvedAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "OutageEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "resolvedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "OutageEvent_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -643,11 +643,11 @@ CREATE TABLE "Playbook" (
     "severity" TEXT NOT NULL DEFAULT 'medium',
     "estimatedTime" TEXT NOT NULL DEFAULT '30min',
     "usageCount" INTEGER NOT NULL DEFAULT 0,
-    "successRate" REAL NOT NULL DEFAULT 0.85,
+    "successRate" DOUBLE PRECISION NOT NULL DEFAULT 0.85,
     "tags" TEXT NOT NULL DEFAULT '[]',
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -661,8 +661,8 @@ CREATE TABLE "PlaybookStep" (
     "target" TEXT,
     "expectedOutcome" TEXT,
     "isBlocking" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "PlaybookStep_playbookId_fkey" FOREIGN KEY ("playbookId") REFERENCES "Playbook" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PlaybookStep_playbookId_fkey" FOREIGN KEY ("playbookId") REFERENCES "Playbook" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -677,13 +677,13 @@ CREATE TABLE "SimulationScenario" (
     "parameters" TEXT NOT NULL DEFAULT '{}',
     "baselineKpis" TEXT NOT NULL DEFAULT '{}',
     "simulatedKpis" TEXT NOT NULL DEFAULT '{}',
-    "impactScore" REAL NOT NULL DEFAULT 0,
+    "impactScore" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "confidence" REAL NOT NULL DEFAULT 0.8,
+    "confidence" DOUBLE PRECISION NOT NULL DEFAULT 0.8,
     "status" TEXT NOT NULL DEFAULT 'completed',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "SimulationScenario_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "SimulationScenario_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -696,11 +696,11 @@ CREATE TABLE "TrendForecast" (
     "forecastPoints" TEXT NOT NULL DEFAULT '[]',
     "horizon" TEXT NOT NULL DEFAULT '30d',
     "trendDirection" TEXT NOT NULL DEFAULT 'stable',
-    "confidence" REAL NOT NULL DEFAULT 0.8,
+    "confidence" DOUBLE PRECISION NOT NULL DEFAULT 0.8,
     "recommendation" TEXT NOT NULL DEFAULT '',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "TrendForecast_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "TrendForecast_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE SET NULL
 );
 
 -- CreateTable
@@ -711,38 +711,38 @@ CREATE TABLE "RoiRecord" (
     "technology" TEXT NOT NULL DEFAULT 'ALL',
     "siteId" TEXT,
     "siteName" TEXT,
-    "investmentCost" REAL NOT NULL,
-    "annualSaving" REAL NOT NULL,
+    "investmentCost" DOUBLE PRECISION NOT NULL,
+    "annualSaving" DOUBLE PRECISION NOT NULL,
     "paybackMonths" INTEGER NOT NULL,
-    "roiPercentage" REAL NOT NULL,
+    "roiPercentage" DOUBLE PRECISION NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'projected',
     "kpiImpact" TEXT NOT NULL DEFAULT '{}',
     "period" TEXT NOT NULL DEFAULT 'monthly',
-    "periodValue" REAL NOT NULL DEFAULT 0,
-    "cumulativeSaving" REAL NOT NULL DEFAULT 0,
+    "periodValue" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "cumulativeSaving" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "notes" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "SpectrumBlock" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "band" TEXT NOT NULL,
-    "bandwidth" REAL NOT NULL,
+    "bandwidth" DOUBLE PRECISION NOT NULL,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
     "channelCount" INTEGER NOT NULL,
     "utilizedChannels" INTEGER NOT NULL,
-    "utilizationPct" REAL NOT NULL,
-    "avgInterference" REAL NOT NULL,
-    "avgRsrp" REAL NOT NULL,
+    "utilizationPct" DOUBLE PRECISION NOT NULL,
+    "avgInterference" DOUBLE PRECISION NOT NULL,
+    "avgRsrp" DOUBLE PRECISION NOT NULL,
     "refarmCandidate" BOOLEAN NOT NULL DEFAULT false,
     "refarmTargetTech" TEXT,
-    "refarmPotentialSaving" REAL,
+    "refarmPotentialSaving" DOUBLE PRECISION,
     "status" TEXT NOT NULL DEFAULT 'active',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -754,17 +754,17 @@ CREATE TABLE "EvolutionPlan" (
     "region" TEXT NOT NULL,
     "siteCount" INTEGER NOT NULL,
     "sitesCompleted" INTEGER NOT NULL DEFAULT 0,
-    "estimatedCost" REAL NOT NULL,
-    "spentBudget" REAL NOT NULL DEFAULT 0,
-    "startDate" DATETIME,
-    "targetDate" DATETIME,
+    "estimatedCost" DOUBLE PRECISION NOT NULL,
+    "spentBudget" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "startDate" TIMESTAMP(3),
+    "targetDate" TIMESTAMP(3),
     "status" TEXT NOT NULL DEFAULT 'planned',
     "spectrumGain" TEXT NOT NULL DEFAULT '[]',
     "capacityGain" TEXT NOT NULL DEFAULT '{}',
     "riskLevel" TEXT NOT NULL DEFAULT 'medium',
     "notes" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -773,17 +773,17 @@ CREATE TABLE "NpiRecord" (
     "siteId" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
-    "overallNpi" REAL NOT NULL,
-    "coverageNpi" REAL NOT NULL,
-    "capacityNpi" REAL NOT NULL,
-    "qualityNpi" REAL NOT NULL,
-    "reliabilityNpi" REAL NOT NULL,
-    "costEfficiencyNpi" REAL NOT NULL,
+    "overallNpi" DOUBLE PRECISION NOT NULL,
+    "coverageNpi" DOUBLE PRECISION NOT NULL,
+    "capacityNpi" DOUBLE PRECISION NOT NULL,
+    "qualityNpi" DOUBLE PRECISION NOT NULL,
+    "reliabilityNpi" DOUBLE PRECISION NOT NULL,
+    "costEfficiencyNpi" DOUBLE PRECISION NOT NULL,
     "rank" INTEGER NOT NULL,
     "totalSites" INTEGER NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "NpiRecord_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "NpiRecord_siteId_fkey" FOREIGN KEY ("siteId") REFERENCES "NetworkSite" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -793,19 +793,19 @@ CREATE TABLE "ServiceOrchestration" (
     "serviceType" TEXT NOT NULL,
     "technology" TEXT NOT NULL,
     "region" TEXT NOT NULL,
-    "mosScore" REAL NOT NULL,
-    "latencyMs" REAL NOT NULL,
-    "jitterMs" REAL NOT NULL,
-    "packetLoss" REAL NOT NULL,
-    "throughputMbps" REAL NOT NULL,
-    "availabilityPct" REAL NOT NULL,
-    "userSatisfaction" REAL NOT NULL,
+    "mosScore" DOUBLE PRECISION NOT NULL,
+    "latencyMs" DOUBLE PRECISION NOT NULL,
+    "jitterMs" DOUBLE PRECISION NOT NULL,
+    "packetLoss" DOUBLE PRECISION NOT NULL,
+    "throughputMbps" DOUBLE PRECISION NOT NULL,
+    "availabilityPct" DOUBLE PRECISION NOT NULL,
+    "userSatisfaction" DOUBLE PRECISION NOT NULL,
     "activeSessions" INTEGER NOT NULL,
     "kpiViolations" INTEGER NOT NULL DEFAULT 0,
     "slaCompliant" BOOLEAN NOT NULL DEFAULT true,
     "issues" TEXT NOT NULL DEFAULT '[]',
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -823,7 +823,7 @@ CREATE TABLE "AuditTrail" (
     "requestedBy" TEXT NOT NULL DEFAULT 'system',
     "approvedBy" TEXT,
     "impact" TEXT NOT NULL DEFAULT '',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -836,9 +836,9 @@ CREATE TABLE "User" (
     "phone" TEXT,
     "department" TEXT NOT NULL DEFAULT 'NOC',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "lastLoginAt" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "lastLoginAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -848,8 +848,8 @@ CREATE TABLE "Role" (
     "displayName" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "isSystem" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -857,7 +857,7 @@ CREATE TABLE "Permission" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "module" TEXT NOT NULL,
     "action" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -865,8 +865,8 @@ CREATE TABLE "UserRole" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
     "roleId" TEXT NOT NULL,
-    CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "UserRole_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE,
+    CONSTRAINT "UserRole_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role" ("id") ON DELETE CASCADE
 );
 
 -- CreateTable
@@ -874,8 +874,8 @@ CREATE TABLE "RolePermission" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "roleId" TEXT NOT NULL,
     "permissionId" TEXT NOT NULL,
-    CONSTRAINT "RolePermission_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "RolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "RolePermission_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role" ("id") ON DELETE CASCADE,
+    CONSTRAINT "RolePermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission" ("id") ON DELETE CASCADE
 );
 
 -- CreateIndex

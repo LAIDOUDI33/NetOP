@@ -1,0 +1,344 @@
+# ==============================================================================
+# NetOP Production Docker Compose — Djezzy NOC Platform
+# ==============================================================================
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Required .env variables:
+#   POSTGRES_PASSWORD, NEXTAUTH_URL, NEXTAUTH_SECRET, SENTRY_DSN,
+#   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMS_API_URL, SMS_API_KEY
+# ==============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 (internal only — not exposed to host)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: netop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: netop
+      POSTGRES_USER: netop
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U netop -d netop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2Gi
+          cpus: "2"
+        reservations:
+          memory: 512Mi
+          cpus: "0.5"
+
+  # ---------------------------------------------------------------------------
+  # PgBouncer — connection pooler (internal only)
+  # ---------------------------------------------------------------------------
+  pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: netop-pgbouncer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@postgres:5432/netop
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: "1000"
+      DEFAULT_POOL_SIZE: "20"
+      RESERVE_POOL_SIZE: "10"
+      SERVER_IDLE_TIMEOUT: "300"
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U netop"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256Mi
+          cpus: "0.5"
+        reservations:
+          memory: 64Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # Next.js Application
+  # ---------------------------------------------------------------------------
+  netop-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: netop-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@pgbouncer:6432/netop
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://netop.djezzy.dz}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_healthy
+    networks:
+      - netop-internal
+      - netop-front
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1Gi
+          cpus: "1"
+        reservations:
+          memory: 256Mi
+          cpus: "0.25"
+
+  # ---------------------------------------------------------------------------
+  # Realtime Service (WebSocket / Socket.io)
+  # ---------------------------------------------------------------------------
+  netop-realtime:
+    build:
+      context: ./mini-services/realtime-service
+      dockerfile: Dockerfile
+    container_name: netop-realtime
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@pgbouncer:6432/netop
+    depends_on:
+      netop-app:
+        condition: service_healthy
+    networks:
+      - netop-internal
+      - netop-front
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512Mi
+          cpus: "0.5"
+        reservations:
+          memory: 128Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # Notification Service (Email + SMS)
+  # ---------------------------------------------------------------------------
+  netop-notification:
+    build:
+      context: ./mini-services/notification-service
+      dockerfile: Dockerfile
+    container_name: netop-notification
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@pgbouncer:6432/netop
+      SMTP_HOST: ${SMTP_HOST:?SMTP_HOST is required}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:?SMTP_USER is required}
+      SMTP_PASS: ${SMTP_PASS:?SMTP_PASS is required}
+      SMS_API_URL: ${SMS_API_URL:-}
+      SMS_API_KEY: ${SMS_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512Mi
+          cpus: "0.5"
+        reservations:
+          memory: 128Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # OSS Collector
+  # ---------------------------------------------------------------------------
+  netop-oss-collector:
+    build:
+      context: ./mini-services/oss-collector
+      dockerfile: Dockerfile
+    container_name: netop-oss-collector
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@pgbouncer:6432/netop
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512Mi
+          cpus: "0.5"
+        reservations:
+          memory: 128Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # ETL Service
+  # ---------------------------------------------------------------------------
+  netop-etl:
+    build:
+      context: ./mini-services/etl-service
+      dockerfile: Dockerfile
+    container_name: netop-etl
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://netop:${POSTGRES_PASSWORD}@pgbouncer:6432/netop
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 512Mi
+          cpus: "0.5"
+        reservations:
+          memory: 128Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # Redis (needed by netop-app for caching/sessions)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: netop-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - netop-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512Mi
+          cpus: "0.5"
+        reservations:
+          memory: 64Mi
+          cpus: "0.1"
+
+  # ---------------------------------------------------------------------------
+  # Backup — daily pg_dump at 02:00 with 7-day retention
+  # ---------------------------------------------------------------------------
+  netop-backup:
+    image: postgres:16-alpine
+    container_name: netop-backup
+    restart: unless-stopped
+    entrypoint: >
+      sh -c '
+        while true; do
+          BACKUP_FILE="/backups/netop_$$(date +%Y%m%d_%H%M%S).sql.gz";
+          pg_dump -h postgres -U netop -d netop | gzip > "$$BACKUP_FILE";
+          echo "[$$(date)] Backup completed: $$BACKUP_FILE";
+          find /backups -name "netop_*.sql.gz" -mtime +7 -delete;
+          echo "[$$(date)] Cleaned up backups older than 7 days";
+          sleep 86400;
+        done
+      '
+    environment:
+      PGHOST: postgres
+      PGUSER: netop
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - pgdata:/var/lib/postgresql/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - netop-internal
+    deploy:
+      resources:
+        limits:
+          memory: 256Mi
+          cpus: "0.25"
+        reservations:
+          memory: 64Mi
+          cpus: "0.05"
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  netop-internal:
+    driver: bridge
+    internal: true          # no external access
+  netop-front:
+    driver: bridge         # exposes ports 3000, 3003 to host
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  pgdata:
+    driver: local
+  redis-data:
+    driver: local

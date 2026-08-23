@@ -1,0 +1,140 @@
+# ==============================================================================
+# NetOP PostgreSQL — StatefulSet + PVC + Headless Service
+# ==============================================================================
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: postgres
+    tier: data
+spec:
+  clusterIP: None                       # headless for StatefulSet
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: netop
+    component: postgres
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: netop
+  labels:
+    app: netop
+    component: postgres
+    tier: data
+spec:
+  serviceName: postgres-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netop
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: netop
+        component: postgres
+        tier: data
+      annotations:
+        prometheus.io/scrape: "false"
+    spec:
+      # ---------------------------------------------------------------
+      # Anti-affinity: only one Postgres pod per node
+      # ---------------------------------------------------------------
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: netop
+                  component: postgres
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 999                        # postgres group in alpine image
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: "netop"
+            - name: POSTGRES_USER
+              value: "netop"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+              cpu: "2"
+          # -----------------------------------------------------------
+          # Probes
+          # -----------------------------------------------------------
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - netop
+                - -d
+                - netop
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - netop
+                - -d
+                - netop
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      # Share a tmpdir for Postgres stats / temp files
+      volumes:
+        - name: tmp
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          app: netop
+          component: postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: standard               # override for your cloud
+        resources:
+          requests:
+            storage: 20Gi

@@ -3212,3 +3212,112 @@ Stage Summary:
 - Project inventory: 105 API routes, 57 views, 118 components, 79 Prisma models, 2739 i18n keys, 4 mini-services, 5 test files
 - 0 lint errors — code is syntactically and type-correct
 - Dev server requires ~512MB+ RAM to compile (sandbox has ~118MB) — will work fine on real deployment
+---
+Task ID: 4
+Agent: notification-service-builder
+Task: Build notification-service microservice
+
+Work Log:
+- Created `mini-services/notification-service/` as independent bun project (package.json, tsconfig.json)
+- Built 8 TypeScript modules totaling ~900 lines:
+  - `types.ts` — Full type system (NotificationChannel, Priority, Status, Locale, EscalationLevel, records, templates, rules)
+  - `channels.ts` — 4 real channel dispatchers: Email (SMTP with TCP socket, configurable via env), SMS (HTTP API with Algerian phone validation + 160-char GSM truncation), Push (WebSocket relay to realtime-service on :3003), In-App (in-memory store, capped at 10K)
+  - `templates.ts` — Template engine with `{{variable}}` substitution, 5 pre-seeded Djezzy NOC templates (Site Down, KPI Breach, SMS Alert, Push Alert, Escalation Notice) each with FR/AR locale overrides
+  - `queue.ts` — Priority queue (min-heap: critical>high>medium>low, FIFO within priority), max 3 retries with exponential backoff (2s/4s/8s), processes 20/batch every 500ms, 50K notification store cap
+  - `rate-limiter.ts` — Sliding window rate limiter: 100 notifications/minute/recipient, auto-cleanup every 30s, per-recipient tracking
+  - `escalation.ts` — 4 default Djezzy escalation rules (Critical→L2 after 5min, Critical→L3 after 15min, High→Critical after 15min, Medium→High after 30min), tracks already-escalated notifications, auto-generates escalation notifications to supervisors
+  - `i18n.ts` — Full EN/FR/AR support: status labels, priority labels, channel labels, error messages, template function with variable interpolation
+  - `index.ts` — Bun.serve() entry on port 3004 with 11 REST endpoints
+- All 11 REST endpoints tested and verified:
+  - `GET /health` → Full service health (channels, queue, rate limiter, in-app stats, escalation rules count, templates count)
+  - `POST /notify` → Single notification with validation, rate limiting, template resolution, priority queuing
+  - `POST /notify/bulk` → Batch send (max 500), per-item validation, mixed accept/reject results
+  - `GET /notify/status/:id` → Full delivery tracking (status lifecycle: pending→sending→sent→delivered/failed)
+  - `POST /notify/acknowledge/:id` → Acknowledge stops escalation
+  - `GET /notify/templates` → List all templates with locale overrides
+  - `POST /notify/templates` → Create template with auto-variable extraction
+  - `GET /notify/in-app/:recipient` → Query in-app notifications for a user
+  - `GET /notify/stats` → Queue statistics by status, priority, channel
+  - `GET /notify/escalation-rules` → List all escalation rules
+  - `GET /notify/rate-limit/:recipient` → Rate limit info for a recipient
+- Service installed deps (`uuid`, `@prisma/client`), `bun --hot` auto-restart confirmed working
+- Service started on port 3004, background process running
+
+Stage Summary:
+- Full notification microservice on port 3004 with 4 channels, priority queue, templates, rate limiting, escalation, i18n (EN/FR/AR)
+- 11 REST endpoints, all tested and returning correct JSON
+- 5 pre-seeded Djezzy NOC templates with French and Arabic translations
+- 4 escalation rules matching telecom NOC operational procedures
+- Rate limiting: 100/minute/recipient with sliding window
+- Exponential backoff retry: 3 retries (2s, 4s, 8s delays)
+
+---
+Task ID: 3
+Agent: Main
+Task: Create Sentry configuration files for client, server, and edge runtimes
+
+Work Log:
+- Created sentry.client.config.ts with browserTracingIntegration, replayIntegration, PII stripping in beforeSend, localhost trace filtering, env/release config
+- Created sentry.server.config.ts with postgresIntegration, httpIntegration, denyUrls for health-check/internal paths, sensitive header/PII stripping, env/release config
+- Created sentry.edge.config.ts with minimal config (empty integrations array) — Edge Runtime has limited API access
+- Updated .env: appended NEXT_PUBLIC_SENTRY_DSN, SENTRY_DSN, NEXT_PUBLIC_SENTRY_RELEASE=netop@1.0.0
+- Created src/lib/env.ts with Zod schema validating all project env vars including the 3 Sentry vars (all optional, empty-string defaults)
+
+Stage Summary:
+- 3 Sentry config files (client/server/edge) at project root, ready for @sentry/nextjs instrumentation
+- PII/credential stripping in both client and server beforeSend hooks
+- Edge config intentionally minimal (no tracing/replay integrations available)
+- .env and env.ts updated with Sentry variables
+
+---
+Task ID: 6
+Agent: Main
+Task: Create docker-compose.prod.yml
+
+Work Log:
+- Read existing docker-compose.yml (dev setup with app + etl-service) and worklog.md for project context
+- Created docker-compose.prod.yml with 8 services: netop-app, netop-realtime, netop-notification, netop-oss-collector, netop-etl, postgres, pgbouncer, netop-backup
+- Added Redis service (required by netop-app for caching/sessions)
+- Configured two networks: netop-internal (internal, no external access) and netop-front (exposes ports 3000, 3003)
+- PostgreSQL not exposed to host (internal only), all app services use pgbouncer:6432 for connection pooling
+- PgBouncer configured with pool_mode=transaction, max_client_conn=1000, default_pool_size=20
+- All services have resource limits and reservations
+- Backup service: daily pg_dump loop with 7-day retention, reads from ./backups and pgdata:ro
+- Health checks on all services (pg_isready for postgres, curl for HTTP services)
+- Required .env variables documented in header (POSTGRES_PASSWORD, NEXTAUTH_URL, NEXTAUTH_SECRET, etc.)
+
+Stage Summary:
+- Production docker-compose with 8 services, 2 networks, 2 volumes (pgdata, redis-data)
+- Network segmentation: internal services isolated, only app+realtime on front network
+- PgBouncer connection pooling between app services and PostgreSQL
+- Zero-downtime health checks with appropriate start periods
+
+---
+Task ID: 7
+Agent: Main
+Task: Create K8s manifests (12 files)
+
+Work Log:
+- Created k8s/ directory with 12 manifest files
+- k8s/namespace.yaml: netop namespace with standard labels
+- k8s/configmap.yaml: non-sensitive config (LOG_LEVEL, NODE_ENV, TZ=Africa/Algiers, pool settings, SMTP_PORT)
+- k8s/secret.yaml: placeholder secrets (DATABASE_URL, POSTGRES_PASSWORD, NEXTAUTH_SECRET, SENTRY_DSN, SMTP_*, SMS_*) with 'changeit' values
+- k8s/postgres.yaml: StatefulSet (1 replica), headless Service, 20Gi PVC, required anti-affinity, liveness/readiness probes via pg_isready, securityContext (runAsNonRoot, runAsUser=999)
+- k8s/pgbouncer.yaml: ConfigMap (pgbouncer.ini + users.txt), Deployment (2 replicas), ClusterIP Service, preferred anti-affinity, securityContext (runAsUser=1001), probes via pg_isready
+- k8s/app-deployment.yaml: Next.js Deployment (3 replicas, rollingUpdate maxUnavailable=0), HPA (min 3, max 10, target CPU 70%) with scale-up/down behavior policies, preferred anti-affinity, startup/liveness/readiness probes, non-root (runAsUser=1001), readOnlyRootFilesystem, drop ALL capabilities
+- k8s/app-service.yaml: ClusterIP Service for app on port 3000
+- k8s/realtime-deployment.yaml: Deployment (2 replicas) + HPA (min 2, max 5, CPU 70%) + ClusterIP Service, preferred anti-affinity, full probes, non-root, readOnlyRootFilesystem
+- k8s/notification-deployment.yaml: Deployment (2 replicas) + ClusterIP Service, preferred anti-affinity, SMTP/SMS env from secrets, full probes, non-root, readOnlyRootFilesystem
+- k8s/oss-collector-deployment.yaml: Deployment (1 replica, NOT horizontally scalable — maintains per-NES connection state), ClusterIP Service, full probes, non-root, readOnlyRootFilesystem
+- k8s/etl-deployment.yaml: Deployment (1 replica) + ClusterIP Service, full probes, non-root, readOnlyRootFilesystem
+- k8s/ingress.yaml: nginx IngressClass, host netop.djezzy.dz, TLS (placeholder secret), /ws → realtime:3003 (WebSocket), / → app:3000, security headers (CSP, X-Frame-Options, etc.), 1hr proxy timeouts for WebSocket
+
+Stage Summary:
+- 12 K8s manifest files in k8s/ directory covering full production deployment
+- All resources in namespace: netop with consistent labels (app, component, tier)
+- Resource requests AND limits on every container
+- Security: non-root (runAsUser 1001/999), readOnlyRootFilesystem, drop ALL capabilities, fsGroup set
+- Probes on every container (startup where appropriate, liveness, readiness)
+- HPA on app (3-10) and realtime (2-5) with behavior policies for controlled scaling
+- Anti-affinity on all multi-replica deployments (required on postgres, preferred on others)
+- Ingress with WebSocket support, security headers, and TLS termination

@@ -70,3 +70,10 @@ test
 prompt
 local-*
 worklog.md
+
+# Docker backups
+/backups/
+
+# Mini-service databases (local SQLite buffers)
+mini-services/*/oss-collector.db*
+mini-services/*/data/

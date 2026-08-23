@@ -1,58 +1,46 @@
-# ──────────────────────────────────────────────
-# NetOptima Algérie — Multi-stage Docker build
-# ──────────────────────────────────────────────
+# NetOP — Production Dockerfile for Next.js 16
+# Multi-stage build for minimal image size
 
-# ---------- Stage 1: Dependencies ----------
-FROM oven/bun:1 AS deps
+# ── Stage 1: Dependencies ──────────────────────────────────────
+FROM oven/bun:1-alpine AS deps
 WORKDIR /app
-COPY package.json bun.lockb* ./
-RUN bun install --frozen-lockfile
+COPY package.json bun.lock* ./
+RUN bun install --frozen-lockfile --production
 
-# ---------- Stage 2: Build ----------
-FROM oven/bun:1 AS builder
+# ── Stage 2: Build ─────────────────────────────────────────────
+FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Generate Prisma client
-RUN bunx prisma generate
-
-# Build Next.js (standalone output)
-# ignoreBuildErrors is false → build will fail on type errors (intentional)
+RUN bun run prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run build
 
-# ---------- Stage 3: Production ----------
-FROM oven/bun:1 AS runner
+# ── Stage 3: Production ────────────────────────────────────────
+FROM oven/bun:1-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Run as non-root user
+RUN addgroup --system --gid 1001 netop && \
+    adduser --system --uid 1001 --ingroup netop netop
 
-# Copy standalone build
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static    ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public             ./public
+# Copy standalone output
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
-# Copy Prisma schema for migrations
-COPY --from=builder --chown=nextjs:nodejs /app/prisma             ./prisma
+# Copy Prisma client
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Database directory (SQLite)
-RUN mkdir -p /app/db && chown nextjs:nodejs /app/db
-VOLUME ["/app/db"]
-
-USER nextjs
+USER netop
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health-check || exit 1
 
 CMD ["bun", "server.js"]

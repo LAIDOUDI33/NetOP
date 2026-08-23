@@ -1,0 +1,12 @@
+{
+  "name": "netoptima-algerie-oss-collector",
+  "version": "1.0.0",
+  "description": "OSS data collection microservice for Djezzy NOC - multi-vendor telecom metrics collector",
+  "scripts": {
+    "dev": "bun --hot index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "bun-types": "^1.2.0"
+  }
+}

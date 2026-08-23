@@ -1,0 +1,122 @@
+# ==============================================================================
+# NetOP ETL Service — Deployment (1 replica)
+# ==============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netop-etl
+  namespace: netop
+  labels:
+    app: netop
+    component: etl
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netop
+      component: etl
+  template:
+    metadata:
+      labels:
+        app: netop
+        component: etl
+        tier: backend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: netop-etl
+          image: netop-etl:latest
+          ports:
+            - containerPort: 3006
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: NODE_ENV
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: LOG_LEVEL
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: TZ
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: DATABASE_URL
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3006
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: "0.5"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-etl-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: etl
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3006
+      targetPort: 3006
+      protocol: TCP
+  selector:
+    app: netop
+    component: etl

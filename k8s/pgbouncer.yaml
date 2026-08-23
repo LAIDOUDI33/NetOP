@@ -1,0 +1,147 @@
+# ==============================================================================
+# NetOP PgBouncer — Deployment (2 replicas) + ConfigMap + Service
+# ==============================================================================
+
+---
+# PgBouncer configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+  namespace: netop
+  labels:
+    app: netop
+    component: pgbouncer
+    tier: data
+data:
+  pgbouncer.ini: |
+    [databases]
+    netop = host=postgres-svc port=5432 dbname=netop
+
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = 6432
+    pool_mode = transaction
+    max_client_conn = 1000
+    default_pool_size = 20
+    reserve_pool_size = 10
+    reserve_pool_timeout = 3
+    server_idle_timeout = 300
+    server_lifetime = 3600
+    auth_type = md5
+    auth_file = /etc/pgbouncer/users.txt
+    admin_users = netop
+    stats_period = 60
+    log_connections = 0
+    log_disconnections = 0
+    logfile = /dev/stdout
+  users.txt: |
+    "netop" "changeit"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgbouncer-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: pgbouncer
+    tier: data
+spec:
+  ports:
+    - port: 6432
+      targetPort: 6432
+      protocol: TCP
+  selector:
+    app: netop
+    component: pgbouncer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgbouncer
+  namespace: netop
+  labels:
+    app: netop
+    component: pgbouncer
+    tier: data
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: netop
+      component: pgbouncer
+  template:
+    metadata:
+      labels:
+        app: netop
+        component: pgbouncer
+        tier: data
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: netop
+                    component: pgbouncer
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: pgbouncer
+          image: edoburu/pgbouncer:latest
+          ports:
+            - containerPort: 6432
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: DATABASE_URL
+          volumeMounts:
+            - name: pgbouncer-config-vol
+              mountPath: /etc/pgbouncer/pgbouncer.ini
+              subPath: pgbouncer.ini
+            - name: pgbouncer-config-vol
+              mountPath: /etc/pgbouncer/users.txt
+              subPath: users.txt
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: "0.5"
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-h", "localhost", "-p", "6432", "-U", "netop"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h", "localhost", "-p", "6432", "-U", "netop"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: pgbouncer-config-vol
+          configMap:
+            name: pgbouncer-config
+        - name: tmp
+          emptyDir: {}

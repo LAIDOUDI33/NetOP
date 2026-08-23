@@ -1,0 +1,23 @@
+# ==============================================================================
+# NetOP App — ClusterIP Service
+# ==============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-app-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: app
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: netop
+    component: app

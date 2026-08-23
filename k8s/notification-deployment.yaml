@@ -1,0 +1,162 @@
+# ==============================================================================
+# NetOP Notification Service — Deployment (2 replicas)
+# ==============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netop-notification
+  namespace: netop
+  labels:
+    app: netop
+    component: notification
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: netop
+      component: notification
+  template:
+    metadata:
+      labels:
+        app: netop
+        component: notification
+        tier: backend
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: netop
+                    component: notification
+                topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: netop-notification
+          image: netop-notification:latest
+          ports:
+            - containerPort: 3004
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: NODE_ENV
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: LOG_LEVEL
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: TZ
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: DATABASE_URL
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_HOST
+            - name: SMTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: SMTP_PORT
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_USER
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMTP_PASS
+            - name: SMS_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMS_API_URL
+            - name: SMS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: SMS_API_KEY
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: "0.5"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-notification-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: notification
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3004
+      targetPort: 3004
+      protocol: TCP
+  selector:
+    app: netop
+    component: notification

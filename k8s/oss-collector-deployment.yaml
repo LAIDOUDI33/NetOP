@@ -1,0 +1,125 @@
+# ==============================================================================
+# NetOP OSS Collector — Deployment (1 replica, NOT horizontally scalable)
+# ==============================================================================
+# Collector maintains per-NES connection state; scaling horizontally would
+# cause duplicate polling. Use vertical scaling instead.
+# ==============================================================================
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netop-oss-collector
+  namespace: netop
+  labels:
+    app: netop
+    component: oss-collector
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netop
+      component: oss-collector
+  template:
+    metadata:
+      labels:
+        app: netop
+        component: oss-collector
+        tier: backend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: netop-oss-collector
+          image: netop-oss-collector:latest
+          ports:
+            - containerPort: 3005
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: NODE_ENV
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: LOG_LEVEL
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: netop-config
+                  key: TZ
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: netop-secrets
+                  key: DATABASE_URL
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: "0.5"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: netop-oss-collector-svc
+  namespace: netop
+  labels:
+    app: netop
+    component: oss-collector
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3005
+      targetPort: 3005
+      protocol: TCP
+  selector:
+    app: netop
+    component: oss-collector
