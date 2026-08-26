@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://ieeexplore.ieee.org/iel7/9739/5451756/07041163.pdf",
+    "name": "Energy-Efficient Base Stations Sleep Mode Techniques in Green Cellular",
+    "snippet": "While energy saving can be achieved by adopting renewable energy resources or improving design of certain hardware (e.g., power amplifier) to make it more.",
+    "host_name": "ieeexplore.ieee.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://piworks.net/solutions/smartenergysaving",
+    "name": "Smart Energy Saving - P.I. Works",
+    "snippet": "PI Works offers a fully flexible smart energy solution for operators to minimize their radio network costs and carbon footprint. Missing: sleep shutdown",
+    "host_name": "piworks.net",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/abs/pii/S1570870525002756",
+    "name": "Energy efficient sleep mode strategies for communication and computing",
+    "snippet": "This paper aims to propose a multi-agent deep reinforcement learning (DRL)-based framework to significantly reduce energy consumption in cellular networks with ... Missing: Pi shutdown",
+    "host_name": "www.sciencedirect.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://verkotan.com/2023/artificial-intelligence-for-green-networks-project",
+    "name": "Artificial Intelligence for Green networks -project - Verkotan",
+    "snippet": "AI is used to adaptively configure 5G base stations advanced sleep modes bringing in energy savings in the range of 30 to 90%.",
+    "host_name": "verkotan.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://piworks.net/blog/detail/31/performance-aware-energy-saving-with-crowd-movement-modeling",
+    "name": "Performance Aware Energy Saving with Crowd Movement Modeling",
+    "snippet": "By employing this approach, predictive carrier shutdown that achieves up to 9% energy saving, can be safely activated with minimal risk based on ... Missing: sleep mode\nBy employing this approach, predictive carrier shutdown that achieves up to 9% energy saving, can be safely activated with minimal risk based ... Missing: sleep mode",
+    "host_name": "piworks.net",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://publications.tno.nl/publication/34643575/MXFnJ6Qa/erfanian-2021-green.pdf",
+    "name": "[PDF] network energy efficiency - TNO (Publications)",
+    "snippet": "White Paper details various techniques for automatic wake-up/sleep modes including shutdown on symbol, channel or carrier basis and usage of ...",
+    "host_name": "publications.tno.nl",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net/publication/276140368_Energy-Efficient_Base-Stations_Sleep-Mode_Techniques_in_Green_Cellular_Networks_A_Survey",
+    "name": "(PDF) Energy-Efficient Base-Stations Sleep-Mode Techniques in Green",
+    "snippet": "In this survey, we first present facts and figures that highlight the importance of green mobile networking and then review existing green ...",
+    "host_name": "www.researchgate.net",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ericsson.com/en/blog/2023/8/breaking-the-energy-curve",
+    "name": "Network energy consumption modeling and performance - Ericsson",
+    "snippet": "According to the energy model described above, putting a gNB into sleep mode when it is in idle mode is an effective energy-saving method. Under ... Missing: Pi shutdown",
+    "host_name": "www.ericsson.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://8928696.fs1.hubspotusercontent-na1.net/hubfs/8928696/Telco%20Sustainability%20Forum%202025/The%20Intelligent%20Operations%20guide_Ericsson.pdf",
+    "name": "[PDF] Sustainable networks. The Intelligent Operations guide",
+    "snippet": "An energy consumption saving of 4% is achieved for the L26 radio cell when the agent is handed over control of cell sleep mode (compared to best practice). Time ... Missing: Pi shutdown",
+    "host_name": "8928696.fs1.hubspotusercontent-na1.net",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10674620",
+    "name": "An Energy-Efficient Multi-Level Sleep Strategy for Periodic Uplink  - PMC",
+    "snippet": "This paper proposes an energy-efficient multi-level sleep mode control for periodic transmission (MSC-PUT) in private fifth-generation (5G) networks. Missing: Pi | Show results with: Pi",
+    "host_name": "pmc.ncbi.nlm.nih.gov",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

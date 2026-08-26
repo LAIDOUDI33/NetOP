@@ -3321,3 +3321,51 @@ Stage Summary:
 - HPA on app (3-10) and realtime (2-5) with behavior policies for controlled scaling
 - Anti-affinity on all multi-replica deployments (required on postgres, preferred on others)
 - Ingress with WebSocket support, security headers, and TLS termination
+
+---
+Task ID: fix-parsing-errors-17-files
+Agent: Main
+Task: Fix ESLint parsing errors in 17 files (')' expected or ',' expected)
+
+## Summary
+
+All 17 files had the same root cause: the colon (`:`) in TypeScript type annotations was replaced with a space before the `unknown` keyword, producing invalid syntax. Fixed all instances.
+
+## Fixes per file
+
+### Category A: `catch (error unknown)` → `catch (error: unknown)` (10 files, 13 occurrences)
+
+| # | File | Occurrences | Fix |
+|---|------|-------------|-----|
+| 1 | `src/app/api/assistant/nl-query/route.ts` | 1 | `catch (error unknown)` → `catch (error: unknown)` |
+| 2 | `src/app/api/backup/route.ts` | 3 | Same fix, 3 catch blocks |
+| 3 | `src/app/api/metrics/route.ts` | 1 | `catch (__error unknown)` → `catch (__error: unknown)` |
+| 4 | `src/app/api/restore/route.ts` | 1 | Same fix |
+| 5 | `src/app/api/user/preferences/route.ts` | 2 | Same fix, 2 catch blocks |
+| 6 | `src/app/api/user/profile/route.ts` | 2 | Same fix, 2 catch blocks |
+| 7 | `src/app/api/wilayas/list/route.ts` | 1 | Same fix |
+| 8 | `src/lib/redis-rate-limit.ts` | 1 | Same fix |
+| 9 | `src/lib/with-auth.ts` | 1 | Same fix |
+
+### Category B: Tooltip function params `(props } unknown)` → `(props }: any)` (4 files, 5 occurrences)
+
+| # | File | Fix |
+|---|------|-----|
+| 8 | `src/components/views/AiAnomalyEngineView.tsx` | `ChartTooltipContent({...} unknown)` → `({...}: any)` + map callback |
+| 9 | `src/components/views/AiDemandForecastView.tsx` | Same 2 fixes |
+| 10 | `src/components/views/AiDigitalTwinView.tsx` | Same 2 fixes × 2 tooltip functions (4 total) |
+| 11 | `src/components/views/AiNlQueryView.tsx` | `PieTooltipContent({...} unknown)` → `({...}: any)` |
+| 12 | `src/components/views/AiParameterOptimizerView.tsx` | Same 2 fixes |
+
+### Category C: Arrow function params `(var unknown)` → `(var: any)` (3 files, 10 occurrences)
+
+| # | File | Fix |
+|---|------|-----|
+| 13 | `src/components/views/ApiKeysView.tsx` | `(k unknown)` → `(k: any)` × 3, `(body unknown)` → `(body: any)` × 1 |
+| 14 | `src/components/views/DataSourcesView.tsx` | `(s unknown)` → `(s: any)` × 2, `(body unknown)` → `(body: any)` × 1 |
+| 15 | `src/components/views/WebhooksView.tsx` | `(w unknown)` → `(w: any)` × 3, `(body unknown)` → `(body: any)` × 1 |
+
+## Total
+- 17 files fixed
+- ~33 individual syntax errors corrected
+- All fixes were minimal (single character `:` insertion or `unknown` → `: any` replacement)

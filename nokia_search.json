@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.nokia.com/mobile-networks/ran-operations/network-management",
+    "name": "MantaRay NM - Nokia",
+    "snippet": "Nokia MantaRay NM delivers powerful tools for troubleshooting, administration, software management, configuration management and 4G/5G slice management. ... Missing: assurance modules",
+    "host_name": "www.nokia.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nokia.com/mobile-networks/ran-operations/network-management-son",
+    "name": "MantaRay SON | Nokia.com",
+    "snippet": "With a variety of modules, you can automate planning, provisioning and veriﬁcation of your network. MantaRay SON is a key component of our comprehensive ... Missing: assurance | Show results with: assurance",
+    "host_name": "www.nokia.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nokia.com/mobile-networks/ran-operations/mantaray-smo",
+    "name": "MantaRay SMO | Nokia.com",
+    "snippet": "MantaRay SMO applies AI driven analytics and automation to enable closed loop network operations, allowing the network to detect conditions, make decisions,",
+    "host_name": "www.nokia.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://infinitytdc.com/nokia-mantaray-portfolio",
+    "name": "Nokia's MantaRay Portfolio | Infinity Technology Solutions",
+    "snippet": "Nokia's MantaRay SON include: Self-Configuring Streamlined automated configuration tasks, such as site creations. Maintained efficiency",
+    "host_name": "infinitytdc.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scribd.com/document/859994828/System-Overview-20Rx",
+    "name": "MantaRay NM System Overview Guide | PDF - Scribd",
+    "snippet": "Rating 5.0 (1) Nokia's MantaRay NM, a network management system. It outlines the system's capabilities, including fault, configuration, performance, security management, and ... Missing: slice | Show results with: slice",
+    "host_name": "www.scribd.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://the-mobile-network.com/2025/06/nokia-evolves-mantaray-to-open-ran-smo-solution",
+    "name": "Nokia evolves MantaRAY to Open RAN SMO solution",
+    "snippet": "It provides dynamic orchestration and resource management capabilities, so that each network slice meets specific service level agreements. Missing: analytics | Show results with: analytics",
+    "host_name": "the-mobile-network.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nokia.com/network-slicing",
+    "name": "Network slicing | Nokia.com",
+    "snippet": "The Nokia Assurance Center module of the Digital Operations Center leverages AIOps to support SLAs during slice service runtime Missing: features | Show results with: features",
+    "host_name": "www.nokia.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=RJbEql2R_ns",
+    "name": "Advanced automation for advanced networks with MantaRay SMO",
+    "snippet": "... Nokia's MantaRay Service Management and Orchestration solution, a multi-vendor, AI-driven service management and orchestration solution. Missing: analytics slice assurance features modules",
+    "host_name": "www.youtube.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nokia.com/mobile-networks/monetization/network-slicing",
+    "name": "4G/5G slicing | Nokia.com",
+    "snippet": "Nokia provides an automated RAN slice management solution for 4G, 5G NSA and 5G SA slices. It allows operators to select, deploy and manage slices across ... Missing: features | Show results with: features",
+    "host_name": "www.nokia.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://telecomreview.com/articles/telecom-vendors/26543-nokia-strengthens-mantaray-smo-with-hpes-ran-expertise",
+    "name": "Nokia Strengthens MantaRay SMO with HPE's RAN Expertise",
+    "snippet": "At its highest load, the Nokia's MantaRay SON made over 15,000 autonomous network adjustments per hour, a 50% increase over 2024, and reduced ... Missing: analytics slice assurance features",
+    "host_name": "telecomreview.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

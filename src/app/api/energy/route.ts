@@ -84,8 +84,8 @@ export async function GET(request: NextRequest) {
     let sleepModeCount = 0;
     const byTech: Record<string, number> = {};
     const byMode: Record<string, number> = {};
-    let normalPower: number[] = [];
-    let nonNormalPower: number[] = [];
+    const normalPower: number[] = [];
+    const nonNormalPower: number[] = [];
 
     for (const m of uniqueMetrics) {
       totalPowerKw += m.powerConsumption / 1000;

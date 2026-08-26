@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://en.wikipedia.org/wiki/Large_language_model",
+    "name": "Large language model",
+    "snippet": "A large language model (LLM) is an AI model (typically a neural network ) trained on a vast amount of text for natural language processing tasks,",
+    "host_name": "en.wikipedia.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ibm.com/think/topics/large-language-models",
+    "name": "What Are Large Language Models (LLMs)?",
+    "snippet": "Large language models are AI systems capable of understanding and generating human language by processing vast amounts of text data.",
+    "host_name": "www.ibm.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloud.google.com/ai/llms",
+    "name": "Large Language Models (LLMs) with Google AI",
+    "snippet": "A large language model (LLM) is a statistical language model, trained on a massive amount of data , that can be used to generate and translate text and other ... Read more",
+    "host_name": "cloud.google.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-are-large-language-models-llms",
+    "name": "What are large language models (LLMs)?",
+    "snippet": "Large language models (LLMs) are advanced AI systems that understand and generate natural language , or human-like text,",
+    "host_name": "azure.microsoft.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ask.library.arizona.edu/faq/407985",
+    "name": "What is a large language model (LLM)?",
+    "snippet": "A large language model (LLM) is a type of AI system trained on massive text datasets , often billions of words, that can generate and work with human language.",
+    "host_name": "ask.library.arizona.edu",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LLM",
+    "name": "r/LLM",
+    "snippet": "No information is available for this page. Learn why",
+    "host_name": "www.reddit.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.databricks.com/blog/what-are-large-language-models",
+    "name": "What are Large Language Models (LLM)?",
+    "snippet": "Large language models are AI systems trained on massive collections of text so they can generate and understand human language.",
+    "host_name": "www.databricks.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org/html/2405.10825v1",
+    "name": "Large Language Model (LLM) for Telecommunications: A",
+    "snippet": "It measures how well an LLM can understand and process natural language queries , generate relevant and correct responses, and perform specific tasks like ...",
+    "host_name": "arxiv.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.nokia.com/blog/the-rise-of-the-telco-llm",
+    "name": "The rise of the telco LLM | Nokia Bell Labs",
+    "snippet": "Dec 15, 2025 — Telco -LLMs make it easier to solve telco -specific business issues using local languages , which can't be done quickly or easily with generic ...",
+    "host_name": "www.nokia.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=Xss43TzJsuI",
+    "name": "Specializing Large Language Models for Telecom Networks",
+    "snippet": "A large language model can bridge the gap between the engineer and the researcher in term required technical expertise.",
+    "host_name": "www.youtube.com",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

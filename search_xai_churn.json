@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1748799/full",
+    "name": "Explainable AI-driven customer churn prediction: a multi-",
+    "snippet": "2026 · Cited by 8 — Our methodology integrates predictive modeling, explainable AI techniques, and customer segmentation to develop both accurate and interpretable churn ...\n2026 · Cited by 8 — SHAP analysis revealed that contract type, tenure, and technical support were the features contributing most to the model's churn predictions . Threshold ... Read more",
+    "host_name": "www.frontiersin.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12929532",
+    "name": "Explainable AI-driven customer churn prediction - PMC - NIH",
+    "snippet": "2026 · Cited by 8 — SHAP analysis revealed that contract type, tenure, and technical support were the features contributing most to the model's churn predictions . Threshold ... Read more",
+    "host_name": "pmc.ncbi.nlm.nih.gov",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.sciencedirect.com/science/article/pii/S2590123025007066",
+    "name": "A data-driven approach with explainable artificial",
+    "snippet": "2025 · Cited by 80 — XAI-Churn TriBoost, an explainable and interpretable model for telecom customer churn prediction . • XAI-Churn TriBoost achieved 96.44% accuracy, 92.80% ...",
+    "host_name": "www.sciencedirect.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.iieta.org/journals/mmep/paper/10.18280/mmep.121226",
+    "name": "Explainable Customer Churn Prediction in Telecom Using",
+    "snippet": "The proposed framework offers a reliable and transparent tool for churn prediction applicable in business contexts requiring explainable AI . Future work will ... Read more\nModel interpretability is enhanced through Shapley additive explanations ( SHAP ), highlighting total day minutes, international plan subscription, and account ... Read more",
+    "host_name": "www.iieta.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://nano-gpt.com/blog/explainable-ai-in-churn-prediction-models",
+    "name": "Explainable AI in Churn Prediction Models | NanoGPT",
+    "snippet": "May 9, 2025 — Explore how Explainable AI transforms churn prediction models , making them transparent, actionable, and essential for customer retention.\nMay 9, 2025 — SHAP simplifies the interpretation of complex churn prediction models by attributing portions of a prediction to specific variables. For ... Read more",
+    "host_name": "nano-gpt.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discovery.researcher.life/article/an-explainable-ai-approach-for-telecom-churn-prediction-and-retention-strategy-design-using-xgboost-and-shap/b3a7688bacc43273a7a298bd4ae5c424",
+    "name": "An Explainable AI Approach for Telecom Churn Prediction",
+    "snippet": "Sep 12, 2025 — This study describes an end-to-end explainable AI framework for predicting and intervening with telco churn.",
+    "host_name": "discovery.researcher.life",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.scribd.com/document/991007355/paper-4",
+    "name": "Paper 4 | PDF | Machine Learning | Deep Learning",
+    "snippet": "The document presents a study on predicting customer churn in the telecommunications sector using various machine. Explainable Artificial Intelligence ( XAI ) ...",
+    "host_name": "www.scribd.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://faith.futuretechsci.org/index.php/FAITH/article/view/110",
+    "name": "A Deployable Machine Learning Pipeline with Explainable AI",
+    "snippet": "2025 · Cited by 9 — This study presents RetenNet, a comprehensive framework for managing customer churn in telecommunications , integrating predictive modelling, prescriptive ... Read more",
+    "host_name": "faith.futuretechsci.org",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/ayushabrol13/Explainable-Customer-Churn-Prediction",
+    "name": "ayushabrol13/Explainable-Customer-Churn-Prediction",
+    "snippet": "This repository contains the code for Predicting customer churn in a subscription-based business such as a telecom or an online streaming service Read more",
+    "host_name": "github.com",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ieeexplore.ieee.org/iel8/11412393/11412396/11412808.pdf",
+    "name": "Customer Churn Prediction Using Machine Learning and",
+    "snippet": "2026 — Abstract—This paper presents a complete customer churn prediction system for the telecommunications industry using machine learning and explainable AI (XAI). Read more",
+    "host_name": "ieeexplore.ieee.org",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

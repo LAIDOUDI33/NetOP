@@ -39,7 +39,7 @@ export function SparkLine({
       d += ` L ${points[i].x} ${points[i].y}`;
     }
 
-    let areaD = d + ` L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
+    const areaD = d + ` L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
 
     return { path: d, areaPath: areaD, min: minVal, max: maxVal };
   }, [data, width, height]);

@@ -79,7 +79,7 @@ export async function seedRbac() {
 
     const permStrings = ROLE_DEFAULTS[roleName] ?? [];
     for (const permStr of permStrings) {
-      let keysToGrant: string[] = [];
+      const keysToGrant: string[] = [];
       if (permStr === '*:*') {
         for (const mod of ALL_MODULES) {
           for (const action of ALL_ACTIONS) {

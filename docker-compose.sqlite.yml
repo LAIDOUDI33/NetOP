@@ -1,0 +1,28 @@
+version: "3.9"
+
+# Lightweight SQLite-only stack for development
+services:
+  netoptima:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/netoptima.db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-dev-secret}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - LOG_LEVEL=debug
+    volumes:
+      - netoptima-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  netoptima-data:

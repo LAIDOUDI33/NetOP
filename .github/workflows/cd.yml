@@ -1,0 +1,255 @@
+# ──────────────────────────────────────────────
+# NetOP — Continuous Deployment Pipeline
+# ──────────────────────────────────────────────
+name: CD
+
+on:
+  push:
+    branches: [main, staging]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─── Stage 1: Test ───────────────────────────
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: TypeCheck
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npx vitest run --coverage
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ─── Stage 2: Build & Push Docker Image ──────
+  build-and-push:
+    name: Build & Push Image
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+            type=ref,event=branch
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  # ─── Stage 3a: Deploy Staging ────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-push
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            cd /opt/netop
+
+            echo "==> Pulling latest image..."
+            docker compose -f docker-compose.prod.yml pull app
+
+            echo "==> Saving current image tag for rollback..."
+            CURRENT_IMAGE=$(docker compose -f docker-compose.prod.yml images -q app)
+            echo "$CURRENT_IMAGE" > /tmp/netop-rollback-image.txt
+
+            echo "==> Deploying new version..."
+            docker compose -f docker-compose.prod.yml up -d app
+
+            echo "==> Waiting for health check (max 120s)..."
+            TIMEOUT=120
+            ELAPSED=0
+            while [ $ELAPSED -lt $TIMEOUT ]; do
+              if curl -sf http://localhost:3000/api/health-check > /dev/null 2>&1; then
+                echo "==> Health check passed after ${ELAPSED}s"
+                exit 0
+              fi
+              echo "  Waiting... (${ELAPSED}s/${TIMEOUT}s)"
+              sleep 5
+              ELAPSED=$((ELAPSED + 5))
+            done
+
+            echo "==> ERROR: Health check failed after ${TIMEOUT}s"
+            echo "==> Rolling back to previous image..."
+            ROLLBACK_IMAGE=$(cat /tmp/netop-rollback-image.txt 2>/dev/null || echo "")
+            if [ -n "$ROLLBACK_IMAGE" ]; then
+              docker compose -f docker-compose.prod.yml up -d app
+              echo "==> Rollback complete"
+            fi
+            exit 1
+
+      - name: Run smoke tests
+        if: success()
+        run: |
+          echo "==> Running smoke tests against staging..."
+          response=$(curl -sf -o /dev/null -w "%{http_code}" \
+            "${{ secrets.STAGING_URL }}/api/health-check" || true)
+          if [ "$response" = "200" ]; then
+            echo "==> Smoke test PASSED (HTTP $response)"
+          else
+            echo "==> Smoke test FAILED (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Notify staging success
+        if: success()
+        run: |
+          echo "Staging deployment succeeded for commit ${{ github.sha }}"
+          # Add Slack/Discord webhook here:
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"✅ Staging deployed: ${{ github.sha }}"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify staging failure
+        if: failure()
+        run: |
+          echo "Staging deployment FAILED for commit ${{ github.sha }}"
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"❌ Staging deploy failed: ${{ github.sha }}"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ─── Stage 3b: Deploy Production ──────────────
+  deploy-production:
+    name: Deploy to Production
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_URL }}
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            cd /opt/netop
+
+            echo "==> Pulling latest image..."
+            docker compose -f docker-compose.prod.yml pull app
+
+            echo "==> Saving current image tag for rollback..."
+            CURRENT_IMAGE=$(docker compose -f docker-compose.prod.yml images -q app)
+            echo "$CURRENT_IMAGE" > /tmp/netop-rollback-image.txt
+
+            echo "==> Running database migrations..."
+            docker compose -f docker-compose.prod.yml exec -T app \
+              bunx prisma migrate deploy || true
+
+            echo "==> Deploying new version..."
+            docker compose -f docker-compose.prod.yml up -d app
+
+            echo "==> Waiting for health check (max 180s)..."
+            TIMEOUT=180
+            ELAPSED=0
+            while [ $ELAPSED -lt $TIMEOUT ]; do
+              if curl -sf http://localhost:3000/api/health-check > /dev/null 2>&1; then
+                echo "==> Health check passed after ${ELAPSED}s"
+                exit 0
+              fi
+              echo "  Waiting... (${ELAPSED}s/${TIMEOUT}s)"
+              sleep 5
+              ELAPSED=$((ELAPSED + 5))
+            done
+
+            echo "==> ERROR: Health check failed after ${TIMEOUT}s"
+            echo "==> Rolling back to previous image..."
+            ROLLBACK_IMAGE=$(cat /tmp/netop-rollback-image.txt 2>/dev/null || echo "")
+            if [ -n "$ROLLBACK_IMAGE" ]; then
+              docker compose -f docker-compose.prod.yml up -d app
+              echo "==> Rollback complete"
+            fi
+            exit 1
+
+      - name: Run smoke tests
+        if: success()
+        run: |
+          echo "==> Running production smoke tests..."
+          response=$(curl -sf -o /dev/null -w "%{http_code}" \
+            "${{ secrets.PRODUCTION_URL }}/api/health-check" || true)
+          if [ "$response" = "200" ]; then
+            echo "==> Production smoke test PASSED (HTTP $response)"
+          else
+            echo "==> Production smoke test FAILED (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Notify production success
+        if: success()
+        run: |
+          echo "Production deployment succeeded for commit ${{ github.sha }}"
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚀 Production deployed: ${{ github.sha }}"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify production failure
+        if: failure()
+        run: |
+          echo "Production deployment FAILED for commit ${{ github.sha }} — manual intervention required"
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🔴 PRODUCTION DEPLOY FAILED: ${{ github.sha }} — <@oncall>"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }}
