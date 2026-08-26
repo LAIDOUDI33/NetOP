@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
-import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
+import { getDemoNow } from '@/lib/demo-time';
 import { checkApiAuth, authError } from '@/lib/api-auth';
 
 function generateHealthTimeline() {
   return Array.from({ length: 48 }, (_, i) => {
     const hourAgo = 48 - i;
-    const seed = (hourAgo * 7 + 3) % 100;
+    const _seed = (hourAgo * 7 + 3) % 100;
     const isDown = (hourAgo === 38 || hourAgo === 15);
     const isDegraded = (hourAgo === 27 || hourAgo === 8);
     return {
@@ -78,7 +78,8 @@ export async function GET(request: Request) {
   };
 
   return NextResponse.json({ integrations, syncHistory, healthTimeline, summary });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

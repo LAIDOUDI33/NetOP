@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (technology && technology !== 'all') where.technology = technology;
     if (severity && severity !== 'all') where.severity = severity;
     if (status && status !== 'all') where.status = status;
@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
       byTech: { '2G': 0, '3G': 0, '4G': 0, '5G': 0 },
     };
     for (const a of allAnomalies) {
-      if (a.severity in stats.bySeverity) (stats.bySeverity as any)[a.severity]++;
-      if (a.status in stats.byStatus) (stats.byStatus as any)[a.status]++;
-      if (a.technology in stats.byTech) (stats.byTech as any)[a.technology]++;
+      if (a.severity in stats.bySeverity) (stats.bySeverity as Record<string, number>)[a.severity]++;
+      if (a.status in stats.byStatus) (stats.byStatus as Record<string, number>)[a.status]++;
+      if (a.technology in stats.byTech) (stats.byTech as Record<string, number>)[a.technology]++;
     }
 
     return NextResponse.json({
@@ -55,8 +55,9 @@ export async function GET(request: NextRequest) {
       })),
       stats,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -90,7 +91,8 @@ export async function PATCH(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, anomaly: updated });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

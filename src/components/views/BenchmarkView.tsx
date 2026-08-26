@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Target, Frown, Radio } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
@@ -146,12 +146,17 @@ function TableSkeleton() {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -479,7 +484,7 @@ export default function BenchmarkView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={benchmarks as unknown as Record<string, any>[]} filenamePrefix="benchmark" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'actualValue', header: 'Actual' }, { key: 'benchmarkValue', header: 'Benchmark' }, { key: 'targetValue', header: 'Target' }, { key: 'percentileRank', header: 'Percentile' }, { key: 'gap', header: 'Gap' }, { key: 'status', header: 'Status' }, { key: 'region', header: 'Region' }]} />
+            <ExportButton data={benchmarks as unknown as Record<string, unknown>[]} filenamePrefix="benchmark" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'actualValue', header: 'Actual' }, { key: 'benchmarkValue', header: 'Benchmark' }, { key: 'targetValue', header: 'Target' }, { key: 'percentileRank', header: 'Percentile' }, { key: 'gap', header: 'Gap' }, { key: 'status', header: 'Status' }, { key: 'region', header: 'Region' }]} />
           </div>
         </CardHeader>
         <CardContent>

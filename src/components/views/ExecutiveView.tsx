@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { TECH_COLORS, formatNumber } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
-import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
 
@@ -64,11 +63,15 @@ function mosColor(score: number): string {
 
 // ─── Custom Pie Tooltip ────────────────────────────────────────────────
 
-function PieTooltipContent({ active, payload }: any) {
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+}
+function PieTooltipContent({ active, payload }: PieTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>

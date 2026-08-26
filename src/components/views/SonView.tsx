@@ -34,16 +34,12 @@ import {
   Play,
   Filter,
   RefreshCw,
-  CheckCircle2,
   XCircle,
-  Clock,
-  AlertTriangle,
   ArrowRight,
   Radio,
   Settings2,
   ShieldCheck,
   Gauge,
-  TrendingUp,
   Layers,
   Network,
 } from 'lucide-react';
@@ -199,7 +195,7 @@ export default function SonView() {
   const {
     data: actionsData,
     isLoading: actionsLoading,
-  } = useQuery<{ actions: SonActionItem[]; pagination?: any }>({
+  } = useQuery<{ actions: SonActionItem[]; pagination?: Record<string, unknown> }>({
     queryKey: ['son-actions'],
     queryFn: () =>
       fetch('/api/son/actions?limit=50').then((r) => { if (!r.ok) throw new Error('SON Actions API error: ' + r.status); return r.json(); }),
@@ -242,8 +238,9 @@ export default function SonView() {
       queryClient.invalidateQueries({ queryKey: ['son-modules'] });
       queryClient.invalidateQueries({ queryKey: ['son-actions'] });
     },
-    onError: (error: any, variables: any) => {
-      toast.error(error.error || t('son.failedToAction', { action: error.action || variables.action }));
+    onError: (error: unknown, variables: { moduleId: string; action: string }) => {
+      const err = error instanceof Error ? error : (typeof error === 'object' && error !== null ? error as Record<string, unknown> : {});
+      toast.error((err.error as string) || t('son.failedToAction', { action: (err.action as string) || variables.action }));
     },
   });
 
@@ -262,8 +259,9 @@ export default function SonView() {
       queryClient.invalidateQueries({ queryKey: ['son-actions'] });
       queryClient.invalidateQueries({ queryKey: ['son-modules'] });
     },
-    onError: (error: any) => {
-      toast.error(error.error || t('son.failedToRollback'));
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : (typeof error === 'object' && error !== null ? error as Record<string, unknown> : {});
+      toast.error((err.error as string) || t('son.failedToRollback'));
     },
   });
 
@@ -874,8 +872,8 @@ function StatsCard({
 
 interface ModuleCardProps {
   module: SonModuleItem;
-  onToggle: (moduleId: string) => void;
-  onExecute: (moduleId: string, displayName: string) => void;
+  onToggle: (_moduleId: string) => void;
+  onExecute: (_moduleId: string, _displayName: string) => void;
   isMutating: boolean;
 }
 

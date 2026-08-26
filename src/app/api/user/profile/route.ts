@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await import('next-auth').then(m => m.getServerSession());
     if (!session?.user) return authError();
-    const userId = (session.user as any).id;
+    const userId = (session.user as Record<string, unknown>).id as string | undefined;
     if (!userId) return authError();
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     const roles = await db.userRole.findMany({ where: { userId }, include: { role: { select: { name: true, displayName: true } } } });
     return NextResponse.json({ ...user, roles: roles.map(r => r.role) });
   } catch (error: unknown) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -27,7 +28,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await import('next-auth').then(m => m.getServerSession());
     if (!session?.user) return authError();
-    const userId = (session.user as any).id;
+    const userId = (session.user as Record<string, unknown>).id as string | undefined;
     if (!userId) return authError();
     const body = await request.json();
     const { name, phone, department, avatar } = body;
@@ -40,6 +41,7 @@ export async function PATCH(request: NextRequest) {
     logAudit({ entityType: 'user_profile', entityId: userId, entityName: user.name, action: 'update', category: 'config', requestedBy: user.name || userId });
     return NextResponse.json(user);
   } catch (error: unknown) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

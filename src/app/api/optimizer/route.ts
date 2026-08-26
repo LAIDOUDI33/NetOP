@@ -7,7 +7,7 @@ import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const optimizerSchema = z.object({
   prompt: z.string().min(1),
-  healthSummary: z.array(z.any()).optional(),
+  healthSummary: z.array(z.unknown()).optional(),
 });
 
 export async function GET(request: Request) {
@@ -65,8 +65,9 @@ export async function GET(request: Request) {
       })),
       healthSummary,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -102,7 +103,7 @@ Focus on:
 Be specific with parameter names, values, and expected impact.
 Format your response with clear sections and bullet points.`;
 
-    const completion = await (zai as any).createChatCompletion({
+    const completion = await (zai as unknown as { createChatCompletion: (_opts: Record<string, unknown>) => Promise<{ choices?: { message?: { content?: string } }[] }> }).createChatCompletion({
       model: 'deepseek-chat',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -127,7 +128,8 @@ Format your response with clear sections and bullet points.`;
     });
 
     return NextResponse.json({ response });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

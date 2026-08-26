@@ -31,7 +31,8 @@ export default function WebhooksView() {
   const t = useT();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState<any>(null);
+  interface WebhookItem { id: string; name: string; url: string; events?: string[]; isEnabled?: boolean; description?: string; secret?: string; deliveryCount?: number; successCount?: number; failureCount?: number; successRate?: number; lastDeliveryAt?: string; createdAt: string; }
+  const [edit, setEdit] = useState<WebhookItem | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -42,7 +43,7 @@ export default function WebhooksView() {
   });
   const webhooks = data?.webhooks ?? [];
 
-  const filtered = webhooks.filter((w: any) => {
+  const filtered = webhooks.filter((w: WebhookItem) => {
     const matchSearch = `${w.name} ${w.url}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all'
       || (statusFilter === 'enabled' && w.isEnabled !== false)
@@ -51,7 +52,7 @@ export default function WebhooksView() {
   });
 
   const save = useMutation({
-    mutationFn: (body: any) => fetch('/api/webhooks', {
+    mutationFn: (body: Record<string, unknown>) => fetch('/api/webhooks', {
       method: edit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -61,7 +62,7 @@ export default function WebhooksView() {
   });
 
   const toggleWh = useMutation({
-    mutationFn: (w: any) => fetch('/api/webhooks', {
+    mutationFn: (w: WebhookItem) => fetch('/api/webhooks', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: w.id, isEnabled: !w.isEnabled }),
@@ -81,7 +82,7 @@ export default function WebhooksView() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       name: fd.get('name'),
       url: fd.get('url'),
       events: fd.getAll('events'),
@@ -135,7 +136,7 @@ export default function WebhooksView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((w: any) => (
+                    {filtered.map((w: WebhookItem) => (
                       <TableRow key={w.id}>
                         <TableCell className="text-xs font-medium">{w.name}</TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground max-w-[200px] truncate">{w.url}</TableCell>

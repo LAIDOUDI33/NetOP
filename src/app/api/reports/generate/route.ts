@@ -106,7 +106,6 @@ async function fetchSonData(): Promise<Record<string, unknown>> {
 
   const moduleSummaries = modules.map((mod) => {
     const applied = mod.actions.filter((a) => a.status === 'applied').length;
-    const failed = mod.actions.filter((a) => a.status === 'failed').length;
     return {
       name: mod.name,
       displayName: mod.displayName,
@@ -348,9 +347,10 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canCreate = perms.includes('*:*') || perms.includes('reports:*') || perms.includes('reports:create');
     if (!canCreate) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -449,7 +449,8 @@ export async function POST(request: Request) {
       format,
       generatedAt: report.createdAt.toISOString(),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

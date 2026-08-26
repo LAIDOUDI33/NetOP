@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer,
+  Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,12 +18,11 @@ import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import {
   Brain, ShieldAlert, ShieldCheck, Frown, AlertTriangle,
 } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -66,8 +65,6 @@ interface FaultsResponse {
 
 const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const;
 const COMPONENTS = ['RRU', 'BBU', 'PSU', 'Antenna', 'Fiber', 'Transport'] as const;
-const STATUSES = ['predicted', 'confirmed', 'mitigated', 'false_positive'] as const;
-
 const SEVERITY_BAR_COLORS: Record<string, string> = {
   low: '#64748B',
   medium: '#F59E0B',
@@ -204,12 +201,17 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1 capitalize">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>

@@ -260,13 +260,13 @@ function LocaleToggle() {
   const { locale, setLocale } = useAppStore();
   const t = useT();
   const locales: Array<'en' | 'fr' | 'ar'> = ['en', 'fr', 'ar'];
-  const idx = locales.indexOf(locale as any);
+  const idx = locales.indexOf(locale as 'en' | 'fr' | 'ar');
   const next = locales[(idx + 1) % locales.length];
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as any)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setLocale(next as 'en' | 'fr' | 'ar')}>
             <Languages className="h-4 w-4" />
             <span className="sr-only">{t(`lang.${locale}`)}</span>
           </Button>
@@ -286,7 +286,7 @@ const NAV_GROUP_KEYS: Record<string, string> = {
   'System': 'nav.group.system',
 };
 
-function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (view: ViewType) => void }) {
+function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate: (_view: ViewType) => void }) {
   const { currentView, setCurrentView, allowedViews } = useAppStore();
   const t = useT();
   const groups = ['Operations', 'Analytics', 'Intelligence', 'AI Engine', 'Automation', 'System'] as const;
@@ -414,7 +414,7 @@ function ViewRenderer() {
 
 
 export default function Home() {
-  const { sidebarOpen, toggleSidebar, user, currentView } = useAppStore();
+  const { sidebarOpen, toggleSidebar, user: _user, currentView } = useAppStore();
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const t = useT();
 

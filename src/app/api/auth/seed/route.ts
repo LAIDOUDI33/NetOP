@@ -11,16 +11,18 @@ export async function POST(request: Request) {
   try {
     // When auth is enforced, require admin permission to seed
     await checkPermission('users', 'admin');
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
   try {
     await seedRbac();
     return NextResponse.json({ success: true, message: 'RBAC seeded successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

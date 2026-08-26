@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FlaskConical, Frown, Zap, Target, TrendingUp } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
@@ -32,9 +32,9 @@ interface SimulationItem {
   siteId: string;
   siteName: string;
   category: string;
-  parameters: Record<string, any>;
-  baselineKpis: Record<string, any>;
-  simulatedKpis: Record<string, any>;
+  parameters: Record<string, unknown>;
+  baselineKpis: Record<string, unknown>;
+  simulatedKpis: Record<string, unknown>;
   impactScore: number;
   recommendation: string;
   confidence: number;
@@ -111,7 +111,7 @@ function confidenceBarColor(c: number): string {
   return 'bg-red-500';
 }
 
-function formatKpiChange(baseline: Record<string, any>, simulated: Record<string, any>): string {
+function formatKpiChange(baseline: Record<string, unknown>, simulated: Record<string, unknown>): string {
   if (!baseline || !simulated) return '—';
   const keys = Object.keys(baseline);
   if (keys.length === 0) return '—';
@@ -176,12 +176,17 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -226,25 +231,6 @@ export default function SimulationsView() {
         fill: CATEGORY_COLORS[cat] ?? '#94A3B8',
       }))
     : [];
-
-  // Impact vs Confidence per category (scatter or grouped bar)
-  const impactByCategory = (() => {
-    if (!simulations.length) return [];
-    const map = new Map<string, { totalImpact: number; totalConf: number; count: number }>();
-    simulations.forEach((s) => {
-      const existing = map.get(s.category) ?? { totalImpact: 0, totalConf: 0, count: 0 };
-      existing.totalImpact += s.impactScore;
-      existing.totalConf += s.confidence;
-      existing.count += 1;
-      map.set(s.category, existing);
-    });
-    return Array.from(map.entries()).map(([cat, vals]) => ({
-      category: cat.charAt(0).toUpperCase() + cat.slice(1),
-      avgImpact: Number((vals.totalImpact / vals.count).toFixed(1)),
-      avgConfidence: Number((vals.totalConf / vals.count).toFixed(1)),
-      fill: CATEGORY_COLORS[cat] ?? '#94A3B8',
-    }));
-  })();
 
   // Scatter data for Impact vs Confidence
   const scatterData = simulations.map((s) => ({
@@ -528,7 +514,7 @@ export default function SimulationsView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={simulations as unknown as Record<string, any>[]} filenamePrefix="simulations" columns={[{ key: 'name', header: t('th.name') }, { key: 'technology', header: t('th.technology') }, { key: 'category', header: t('th.category') }, { key: 'status', header: t('th.status') }, { key: 'confidence', header: t('th.confidence') }, { key: 'impactScore', header: t('th.impactScore') }, { key: 'estimatedSaving', header: t('th.estimatedSaving') }, { key: 'createdAt', header: t('th.createdAt') }]} />
+            <ExportButton data={simulations as unknown as Record<string, unknown>[]} filenamePrefix="simulations" columns={[{ key: 'name', header: t('th.name') }, { key: 'technology', header: t('th.technology') }, { key: 'category', header: t('th.category') }, { key: 'status', header: t('th.status') }, { key: 'confidence', header: t('th.confidence') }, { key: 'impactScore', header: t('th.impactScore') }, { key: 'estimatedSaving', header: t('th.estimatedSaving') }, { key: 'createdAt', header: t('th.createdAt') }]} />
           </div>
         </CardHeader>
         <CardContent>

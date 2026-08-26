@@ -48,14 +48,6 @@ const RADAR_METRICS = [
   { key: 'signal', label: 'Signal Quality', max: 100 },
 ] as const;
 
-// Vendor chart colors
-const VENDOR_COLORS: Record<string, string> = {
-  Ericsson: '#10B981',
-  Huawei: '#EF4444',
-  Nokia: '#06B6D4',
-  ZTE: '#F59E0B',
-};
-
 // ─── Loading Skeleton ─────────────────────────────────────────────────
 function CorrelationLoadingSkeleton() {
   return (

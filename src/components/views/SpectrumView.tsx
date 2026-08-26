@@ -172,24 +172,6 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
   );
 }
 
-// ─── Custom Chart Tooltip ─────────────────────────────────────────────
-
-function ChartTooltipContent({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
-      <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
-        <div key={idx} className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
-          <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-medium">{formatNumber(entry.value)}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 // ─── Main Component ────────────────────────────────────────────────────
 
 export default function SpectrumView() {
@@ -540,7 +522,7 @@ export default function SpectrumView() {
                 <SelectItem value="reserved">Reserved</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={items as unknown as Record<string, any>[]} filenamePrefix="spectrum" columns={[{ key: 'band', header: 'Band' }, { key: 'bandwidth', header: 'Bandwidth (MHz)' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'utilizationPct', header: 'Utilization (%)' }]} />
+            <ExportButton data={items as unknown as Record<string, unknown>[]} filenamePrefix="spectrum" columns={[{ key: 'band', header: 'Band' }, { key: 'bandwidth', header: 'Bandwidth (MHz)' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'utilizationPct', header: 'Utilization (%)' }]} />
           </div>
         </CardHeader>
         <CardContent>

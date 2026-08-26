@@ -119,12 +119,6 @@ const STATUS_OPTIONS = [
 
 // ─── Helper Functions ──────────────────────────────────────────────
 
-function gapColor(gap: number): string {
-  if (gap > 15) return 'bg-red-500';
-  if (gap > 10) return 'bg-amber-500';
-  return 'bg-emerald-500';
-}
-
 function gapTextColor(gap: number): string {
   if (gap > 15) return 'text-red-600 dark:text-red-400';
   if (gap > 10) return 'text-amber-600 dark:text-amber-400';
@@ -175,7 +169,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, _cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -195,12 +189,18 @@ function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ──────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>

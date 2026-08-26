@@ -10,8 +10,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import {
   TrendingUp, TrendingDown, DollarSign, Activity, Users, MapPin, Zap,
   UserMinus, Clock, Unlock, BellOff, Shield, ShieldOff, Check, X, Minus,
-  Trophy, Target, BarChart3, Globe, Crown, Brain, ArrowRight, Sparkles,
-  Star, Eye, Layers, ChevronDown, ChevronUp, AlertTriangle,
+  Trophy, Target, BarChart3, Crown, Brain, ArrowRight, Sparkles,
+  Star, Eye, Layers, AlertTriangle,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Cell,
@@ -68,8 +68,18 @@ interface ValuePropData {
   minimize: MaxMinItem[];
   pillars: PillarData[];
   vendors: Record<string, VendorProfile>;
-  roiCalculator: any;
-  tcoComparison: any[];
+  roiCalculator: {
+    estimatedROI: number;
+    paybackMonths: number;
+    estimatedAnnualSavings: number;
+  };
+  tcoComparison: Array<{
+    item: string;
+    huawei: number;
+    ericsson: number;
+    zte: number;
+    ours: number;
+  }>;
   tco3Year: Record<string, number>;
   summary: {
     uniqueFeatures: number;
@@ -118,7 +128,7 @@ const DEFAULT_REVENUE_LEAKAGE_M = 296.8;
 export default function ValuePropositionView() {
   const t = useT();
   const [data, setData] = useState<ValuePropData | null>(null);
-  const [expandedPillar, setExpandedPillar] = useState<string | null>(null);
+  const [_expandedPillar, _setExpandedPillar] = useState<string | null>(null);
   const [activeVendor, setActiveVendor] = useState<string>('huawei');
 
   useEffect(() => {
@@ -289,8 +299,8 @@ export default function ValuePropositionView() {
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           <IconComp className="h-5 w-5 mt-0.5 shrink-0" />
                           <div className="min-w-0">
-                            <p className="font-semibold text-sm">{t(`vp.max.${item.label}` as any) || item.label}</p>
-                            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{t(`vp.maxDesc.${item.label}` as any) || item.description}</p>
+                            <p className="font-semibold text-sm">{t(`vp.max.${item.label}`) || item.label}</p>
+                            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{t(`vp.maxDesc.${item.label}`) || item.description}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
@@ -334,8 +344,8 @@ export default function ValuePropositionView() {
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           <IconComp className="h-5 w-5 mt-0.5 shrink-0" />
                           <div className="min-w-0">
-                            <p className="font-semibold text-sm">{t(`vp.min.${item.label}` as any) || item.label}</p>
-                            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{t(`vp.minDesc.${item.label}` as any) || item.description}</p>
+                            <p className="font-semibold text-sm">{t(`vp.min.${item.label}`) || item.label}</p>
+                            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{t(`vp.minDesc.${item.label}`) || item.description}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
@@ -474,7 +484,7 @@ export default function ValuePropositionView() {
                       {maturityBadge(pillar.maturityLevel)}
                       <Badge variant="outline" className="text-xs">{pillar.roiPotential}</Badge>
                     </div>
-                    <CardTitle className="text-base mt-2">{t(`vp.pillar.${pillar.id}` as any) || pillar.name}</CardTitle>
+                    <CardTitle className="text-base mt-2">{t(`vp.pillar.${pillar.id}`) || pillar.name}</CardTitle>
                     <CardDescription className="text-xs italic">{pillar.tagline}</CardDescription>
                   </CardHeader>
                   <CardContent>

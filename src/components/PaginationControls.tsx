@@ -14,7 +14,7 @@ import { useT } from '@/lib/i18n';
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  onPageChange: (_page: number) => void;
 }
 
 function getPageNumbers(current: number, total: number): (number | 'ellipsis')[] {

@@ -12,7 +12,7 @@ interface UsePaginationReturn<T> {
   currentPage: number;
   totalPages: number;
   totalItems: number;
-  setCurrentPage: (page: number) => void;
+  setCurrentPage: (_page: number) => void;
   nextPage: () => void;
   prevPage: () => void;
   pageSize: number;

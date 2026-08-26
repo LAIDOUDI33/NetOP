@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
-import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
 import { checkApiAuth, authError } from '@/lib/api-auth';
 
 function generateAgentChat() {
@@ -22,7 +21,6 @@ export async function GET(request: Request) {
   if (limited) return rateLimitResponse(resetMs);
 
   try {
-  const now = await getDemoNow();
   const rows = await db.aiAgent.findMany({ take: 500 });
 
   const agents = rows.map(a => ({
@@ -71,7 +69,8 @@ export async function GET(request: Request) {
   };
 
   return NextResponse.json({ agents, taskQueue, metrics, chat, summary });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

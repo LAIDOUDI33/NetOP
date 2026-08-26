@@ -102,6 +102,29 @@ const KEYWORDS = [
   'recharge', 'carte SIM', 'wifi', 'mobile', 'algérie télécom',
 ];
 
+interface SocialPost {
+  id: string;
+  source: string;
+  keyword: string;
+  operatorMentioned: string;
+  sentiment: string;
+  sentimentScore: number;
+  textSnippet: string;
+  topic: string;
+  likes: number;
+  shares: number;
+  comments: number;
+  reach: number;
+  isViral: boolean;
+  urgency: string;
+  wilayaMentioned: string;
+  wilayaCode: string;
+  geoLocated: boolean;
+  authorFollowers: number;
+  language: string;
+  collectedAt: string;
+}
+
 const URGENCY_FOR_TOPIC: Record<string, string[]> = {
   outage: ['high', 'high', 'high', 'medium'],
   customer_service: ['medium', 'medium', 'low'],
@@ -132,7 +155,7 @@ function generatePosts(rng: () => number, filters: Record<string, string | undef
   const topicW = [0.25, 0.20, 0.15, 0.12, 0.18, 0.10];
   const sentimentW = [0.25, 0.35, 0.30, 0.10];
 
-  const posts: any[] = [];
+  const posts: SocialPost[] = [];
   const now = new Date('2025-07-15T14:30:00Z');
 
   for (let i = 0; i < 100; i++) {
@@ -232,7 +255,7 @@ function pickWeighted<T>(items: readonly T[], weights: number[], rng: () => numb
   return items[items.length - 1];
 }
 
-function buildSummary(posts: any[]) {
+function buildSummary(posts: SocialPost[]) {
   const bySentiment: Record<string, number> = { positive: 0, neutral: 0, negative: 0, mixed: 0 };
   const bySource: Record<string, number> = { twitter: 0, facebook: 0, instagram: 0, youtube: 0, google_play: 0 };
   const byOperator: Record<string, number> = { Us: 0, Mobilis: 0, Djezzy: 0, Ooredoo: 0 };
@@ -281,7 +304,7 @@ function buildSummary(posts: any[]) {
   };
 }
 
-function buildTrendByDay(posts: any[]) {
+function buildTrendByDay(posts: SocialPost[]) {
   const dayMap: Record<string, { positive: number; neutral: number; negative: number; mixed: number; scores: number[] }> = {};
   for (const p of posts) {
     const day = p.collectedAt.slice(0, 10);
@@ -304,7 +327,7 @@ function buildTrendByDay(posts: any[]) {
     });
 }
 
-function buildWordCloud(posts: any[]) {
+function buildWordCloud(posts: SocialPost[]) {
   const wordMap: Record<string, { count: number; scores: number[] }> = {};
   for (const p of posts) {
     for (const w of [p.keyword, ...p.textSnippet.split(/[\s,!.?;:'"()\-]+/).filter((x: string) => x.length > 3)]) {
@@ -339,24 +362,24 @@ export async function GET(request: Request) {
   };
 
   // Validate filters
-  if (filters.source && !SOURCES.includes(filters.source as any)) {
+  if (filters.source && !SOURCES.includes(filters.source as typeof SOURCES[number])) {
     return NextResponse.json({ error: 'Invalid source. Use: twitter, facebook, instagram, youtube, google_play' }, { status: 400 });
   }
-  if (filters.sentiment && !SENTIMENTS.includes(filters.sentiment as any)) {
+  if (filters.sentiment && !SENTIMENTS.includes(filters.sentiment as typeof SENTIMENTS[number])) {
     return NextResponse.json({ error: 'Invalid sentiment. Use: positive, neutral, negative, mixed' }, { status: 400 });
   }
-  if (filters.operator && !OPERATORS.includes(filters.operator as any)) {
+  if (filters.operator && !OPERATORS.includes(filters.operator as typeof OPERATORS[number])) {
     return NextResponse.json({ error: 'Invalid operator. Use: Us, Mobilis, Djezzy, Ooredoo' }, { status: 400 });
   }
-  if (filters.topic && !TOPICS.includes(filters.topic as any)) {
+  if (filters.topic && !TOPICS.includes(filters.topic as typeof TOPICS[number])) {
     return NextResponse.json({ error: 'Invalid topic. Use: coverage, speed, pricing, customer_service, outage, promotion' }, { status: 400 });
   }
   if (filters.wilaya && !WILAYA_69.some(w => w.name === filters.wilaya)) {
     return NextResponse.json({ error: 'Invalid wilaya name' }, { status: 400 });
   }
 
-  const seed = 42 + (filters.source ? SOURCES.indexOf(filters.source as any) * 17 : 0)
-    + (filters.operator ? OPERATORS.indexOf(filters.operator as any) * 13 : 0);
+  const seed = 42 + (filters.source ? SOURCES.indexOf(filters.source as typeof SOURCES[number]) * 17 : 0)
+    + (filters.operator ? OPERATORS.indexOf(filters.operator as typeof OPERATORS[number]) * 13 : 0);
   const rng = seededRandom(seed);
   const posts = generatePosts(rng, filters);
 

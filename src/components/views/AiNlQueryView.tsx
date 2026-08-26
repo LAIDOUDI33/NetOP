@@ -186,7 +186,9 @@ function MainSkeleton() {
 
 // ─── Pie Chart Tooltip ─────────────────────────────────────────────────
 
-function PieTooltipContent({ active, payload }: any) {
+interface PieTooltipProps { active?: boolean; payload?: Array<{ color?: string; name?: string; value?: number }>; }
+
+function PieTooltipContent({ active, payload }: PieTooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (

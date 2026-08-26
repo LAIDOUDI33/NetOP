@@ -201,7 +201,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, cols: _cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -221,12 +221,17 @@ function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -248,7 +253,7 @@ function TimelineDialog({
   siteId: string;
   siteName: string;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange: (_open: boolean) => void;
 }) {
   const t = useT();
   const { data, isLoading, error } = useQuery<QoETimelineResponse>({

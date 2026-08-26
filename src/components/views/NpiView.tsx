@@ -19,7 +19,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Gauge, TrendingUp, TrendingDown } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
 import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -128,12 +128,17 @@ function getDimensionAverages(summary: NpiSummary) {
 
 // ─── Custom Chart Tooltip ──────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -273,7 +278,7 @@ export default function NpiView() {
                     ))}
               </SelectContent>
             </Select>
-            <ExportButton data={npis as unknown as Record<string, any>[]} filenamePrefix="npi" columns={[{ key: 'networkElement', header: 'Network Element' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'siteName', header: 'Site' }, { key: 'npiScore', header: 'NPI Score' }, { key: 'category', header: 'Category' }, { key: 'trend', header: 'Trend' }]} />
+            <ExportButton data={npis as unknown as Record<string, unknown>[]} filenamePrefix="npi" columns={[{ key: 'networkElement', header: 'Network Element' }, { key: 'technology', header: 'Technology' }, { key: 'region', header: 'Region' }, { key: 'siteName', header: 'Site' }, { key: 'npiScore', header: 'NPI Score' }, { key: 'category', header: 'Category' }, { key: 'trend', header: 'Trend' }]} />
           </div>
         </div>
         <Separator className="mt-4" />

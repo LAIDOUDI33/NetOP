@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Users, DollarSign, TrendingDown, Building2,
-  Layers, MapPin, AlertTriangle, Target, BarChart3, Radar,
+  Layers, MapPin, AlertTriangle, Target, BarChart3,
   Wifi, WifiOff, ShieldAlert, CircleDollarSign, TrendingUp, Wrench,
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
@@ -22,7 +22,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar as RRadar,
-  ScatterChart, Scatter, ZAxis,
 } from 'recharts';
 
 import 'leaflet/dist/leaflet.css';
@@ -46,15 +45,6 @@ const Popup = dynamic(
 );
 
 // ==================== TYPES ====================
-
-interface GeoSummary {
-  totalPopulation: number;
-  avgArpu: number;
-  avgChurnRate: number;
-  totalCompetitorSites: number;
-  avgMarketPenetration: number;
-  highTierZones: number;
-}
 
 interface GeoDemographicRow {
   id: string;
@@ -258,11 +248,11 @@ function formatCurrency(n: number): string {
 const MAP_CENTER: [number, number] = [28.0, 2.0];
 const MAP_ZOOM = 5;
 
-type TFn = (k: string) => string;
+type TFn = (_k: string) => string;
 
 // ==================== REGION FILTER ====================
 
-function RegionFilter({ regions, value, onChange, t }: { regions: string[]; value: string; onChange: (v: string) => void; t: TFn }) {
+function RegionFilter({ regions, value, onChange, t }: { regions: string[]; value: string; onChange: (_v: string) => void; t: TFn }) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-muted-foreground whitespace-nowrap">{t('th.region')}:</span>
@@ -290,12 +280,18 @@ function useRegionFilter<T extends { region: string }>(data: T[], filterRegion: 
 
 // ==================== CHART COMPONENTS ====================
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number | string; color?: string }>;
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-popover border border-border rounded-lg p-2.5 shadow-lg text-xs">
       <p className="font-semibold mb-1.5">{label}</p>
-      {payload.map((p: any, i: number) => (
+      {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
           <span className="text-muted-foreground">{p.name}:</span>
@@ -766,7 +762,9 @@ function RevenueZonesTable({ revenueZones, loading, t }: { revenueZones: GeoReve
 
 // ==================== CHURN TAB ====================
 
-function ChurnSummaryCards({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface ChurnSummary { totalClusters: number; totalAtRisk: number; criticalCount: number; avgChurnRate: number; }
+
+function ChurnSummaryCards({ summary, t }: { summary: ChurnSummary | null | undefined; loading: boolean; t: TFn }) {
   const cards = [
     { label: t('geo.churnClusters'), value: summary?.totalClusters ?? '—', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
     { label: t('geo.totalAtRisk'), value: summary ? formatNum(summary.totalAtRisk) : '—', icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -960,7 +958,9 @@ function ChurnTable({ clusters, loading, t }: { clusters: GeoChurnClusterRow[]; 
 
 // ==================== COMPETITOR TAB ====================
 
-function CompetitorSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface CompetitorSummaryData { totalSites: number; avgConfidence: number; byCompetitor: Record<string, number>; }
+
+function CompetitorSummary({ summary, loading, t }: { summary: CompetitorSummaryData | null; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   return (
@@ -1140,7 +1140,9 @@ function CompetitorTable({ sites, loading, t }: { sites: GeoCompetitorSiteRow[];
 
 // ==================== SITE SCORER TAB ====================
 
-function ScorerSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface ScorerSummaryData { totalSites: number; avgScore: number; totalCapex: number; avgPayback: number; }
+
+function ScorerSummary({ summary, loading, t }: { summary: ScorerSummaryData | null; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   return (
@@ -1324,7 +1326,9 @@ function ScorerTable({ sites, loading, t }: { sites: GeoSiteAcquisitionRow[]; lo
 
 // ==================== DEMOGRAPHICS TAB ====================
 
-function DemographicsSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface DemographicsSummaryData { totalPopulation: number; avgDensity: number; avgIncome: number; totalAreaKm2: number; }
+
+function DemographicsSummary({ summary, loading, t }: { summary: DemographicsSummaryData | null; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   const cards = [
@@ -1474,7 +1478,9 @@ function DemographicsTable({ demographics, loading, t }: { demographics: GeoDemo
 
 // ==================== COVERAGE GAPS TAB ====================
 
-function GapsSummaryCards({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface GapsSummaryData { totalGaps: number; totalSitesNeeded: number; totalPopServed: number; totalEstRevenue: number; }
+
+function GapsSummaryCards({ summary, loading, t }: { summary: GapsSummaryData | null; loading: boolean; t: TFn }) {
   if (loading) return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>)}</div>;
   if (!summary) return null;
   const cards = [
@@ -1681,7 +1687,9 @@ function GapsTable({ gaps, loading, t }: { gaps: GeoCoverageGapRow[]; loading: b
 
 // ==================== REVENUE IMPACT TAB ====================
 
-function RevenueImpactSummary({ summary, loading, t }: { summary: any; loading: boolean; t: TFn }) {
+interface RevenueImpactSummaryData { totalAffected: number; totalAnnualRisk: number; totalMonthlyRisk: number; totalFixCost: number; avgChurnProb: number; avgRoiRatio: number; }
+
+function RevenueImpactSummary({ summary, loading, t }: { summary: RevenueImpactSummaryData | null | undefined; loading: boolean; t: TFn }) {
   const cards = [
     { label: t('geo.totalAnnualRisk'), value: summary ? formatCurrency(summary.totalAnnualRisk) : '—', icon: CircleDollarSign, color: 'text-red-500', bg: 'bg-red-500/10' },
     { label: t('geo.totalMonthlyRisk'), value: summary ? formatCurrency(summary.totalMonthlyRisk) : '—', icon: DollarSign, color: 'text-amber-500', bg: 'bg-amber-500/10' },

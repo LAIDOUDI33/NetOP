@@ -134,7 +134,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, cols: _cols = 8 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -154,13 +154,18 @@ function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   const t = useT();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1 capitalize">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{t('view.playbooksColon')}</span>
@@ -452,7 +457,7 @@ export default function PlaybooksView() {
                 <SelectItem value="5G">5G</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={playbooks as unknown as Record<string, any>[]} filenamePrefix="playbooks" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'severity', header: t('th.severity') }, { key: 'estimatedTime', header: t('th.estimatedTime') }, { key: 'steps', header: t('pb.steps') }, { key: 'successRate', header: t('th.successRate') }, { key: 'usageCount', header: t('th.usage') }, { key: 'enabled', header: t('th.enabled') }]} />
+            <ExportButton data={playbooks as unknown as Record<string, unknown>[]} filenamePrefix="playbooks" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'severity', header: t('th.severity') }, { key: 'estimatedTime', header: t('th.estimatedTime') }, { key: 'steps', header: t('pb.steps') }, { key: 'successRate', header: t('th.successRate') }, { key: 'usageCount', header: t('th.usage') }, { key: 'enabled', header: t('th.enabled') }]} />
           </div>
         </CardHeader>
         <CardContent>

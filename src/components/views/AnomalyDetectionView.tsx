@@ -28,9 +28,9 @@ import {
 import { useT } from '@/lib/i18n';
 import { ExportButton } from '@/components/ExportButton';
 import {
-  TECH_COLORS, TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber,
+  TECH_COLORS, TECH_BG_CLASSES, TECHNOLOGIES, formatNumber,
 } from '@/lib/constants';
-import type { Technology, AlertSeverity } from '@/types';
+import type { Technology } from '@/types';
 
 // ─── Types matching the API response ───────────────────────────────────
 type AnomalySeverity = 'critical' | 'major' | 'minor';
@@ -193,13 +193,6 @@ export default function AnomalyDetectionView() {
     minor: t('status.minor'),
   };
 
-  const statusLabels: Record<string, string> = {
-    detected: t('status.detected'),
-    investigating: t('status.investigating'),
-    resolved: t('status.resolved'),
-    false_positive: t('status.falsePositive'),
-  };
-
   return (
     <div className="space-y-6">
       {/* ── Stat Cards ─────────────────────────────────────────────── */}
@@ -306,7 +299,7 @@ export default function AnomalyDetectionView() {
             <Badge variant="outline" className="ml-auto">
               {t('anomaly.results', { n: anomalies.length })}
             </Badge>
-            <ExportButton data={anomalies as unknown as Record<string, any>[]} filenamePrefix="anomaly" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'severity', header: 'Severity' }, { key: 'zScore', header: 'Z-Score' }, { key: 'actualValue', header: 'Actual Value' }, { key: 'expectedValue', header: 'Expected Range' }, { key: 'status', header: 'Status' }, { key: 'createdAt', header: 'Detected At' }]} />
+            <ExportButton data={anomalies as unknown as Record<string, unknown>[]} filenamePrefix="anomaly" columns={[{ key: 'siteName', header: 'Site' }, { key: 'technology', header: 'Technology' }, { key: 'metric', header: 'Metric' }, { key: 'severity', header: 'Severity' }, { key: 'zScore', header: 'Z-Score' }, { key: 'actualValue', header: 'Actual Value' }, { key: 'expectedValue', header: 'Expected Range' }, { key: 'status', header: 'Status' }, { key: 'createdAt', header: 'Detected At' }]} />
           </div>
         </CardContent>
       </Card>

@@ -10,7 +10,7 @@ const createReportSchema = z.object({
   format: z.string().optional(),
   name: z.string().optional(),
   description: z.string().optional(),
-  filters: z.record(z.string(), z.any()).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
 });
 
 // ── Statistics helpers ──
@@ -32,7 +32,7 @@ function stats(values: number[]) {
   };
 }
 
-function extractField(items: any[], field: string): number[] {
+function extractField(items: Record<string, unknown>[], field: string): number[] {
   return items
     .map((i) => i[field])
     .filter((v): v is number => typeof v === 'number' && !isNaN(v));
@@ -68,8 +68,9 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json({ error: `Unknown report type: ${type}` }, { status: 400 });
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -82,7 +83,7 @@ async function handleKpiReport(
   techFilter: string | undefined,
   period: string,
 ) {
-  const where: Record<string, any> = { timestamp: { gte: since } };
+  const where: Record<string, unknown> = { timestamp: { gte: since } };
   if (techFilter) where.technology = techFilter;
 
   const kpis = await db.kpiMetric.findMany({
@@ -149,7 +150,7 @@ async function handleKpiReport(
 // SLA: compliance per technology with breaches
 // ────────────────────────────────────────────
 async function handleSlaReport(techFilter: string | undefined) {
-  const targetWhere: Record<string, any> = { enabled: true };
+  const targetWhere: Record<string, unknown> = { enabled: true };
   if (techFilter) targetWhere.technology = techFilter;
 
   const targets = await db.sLATarget.findMany({ where: targetWhere, take: 50 });
@@ -168,12 +169,12 @@ async function handleSlaReport(techFilter: string | undefined) {
     },
   });
 
-  const avgMap: Record<string, any> = {};
+  const avgMap: Record<string, unknown> = {};
   for (const t of techAvgs) {
     avgMap[t.technology] = t._avg;
   }
 
-  const breaches: any[] = [];
+  const breaches: Record<string, unknown>[] = [];
   const complianceByTech: Record<string, { total: number; compliant: number; breached: number; rate: number }> = {};
 
   for (const t of targets) {
@@ -239,7 +240,7 @@ async function handleSlaReport(techFilter: string | undefined) {
 // SON: module execution summary
 // ────────────────────────────────────────────
 async function handleSonReport(techFilter: string | undefined) {
-  const moduleWhere: Record<string, any> = {};
+  const moduleWhere: Record<string, unknown> = {};
   if (techFilter && techFilter !== 'ALL') moduleWhere.technology = techFilter;
 
   const modules = await db.sonModule.findMany({
@@ -264,7 +265,7 @@ async function handleSonReport(techFilter: string | undefined) {
       totalActions > 0 ? Number(((applied / totalActions) * 100).toFixed(1)) : 0;
 
     // Parse stats JSON
-    let parsedStats: any = {};
+    let parsedStats: Record<string, unknown> = {};
     try {
       parsedStats = typeof mod.stats === 'string' ? JSON.parse(mod.stats) : mod.stats;
     } catch {}
@@ -350,7 +351,7 @@ async function handleQoeReport(
   since: Date,
   now: Date,
 ) {
-  const where: Record<string, any> = { timestamp: { gte: since } };
+  const where: Record<string, unknown> = { timestamp: { gte: since } };
   if (techFilter) where.technology = techFilter;
 
   const qoeData = await db.qoEMetric.findMany({
@@ -516,7 +517,8 @@ export async function POST(request: NextRequest) {
       createdAt: now.toISOString(),
       expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -12,20 +12,20 @@ interface UserSession {
 
 interface AppState {
   currentView: ViewType;
-  setCurrentView: (view: ViewType) => void;
+  setCurrentView: (_view: ViewType) => void;
   selectedTechnology: Technology;
-  setSelectedTechnology: (tech: Technology) => void;
+  setSelectedTechnology: (_tech: Technology) => void;
   sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
+  setSidebarOpen: (_open: boolean) => void;
   toggleSidebar: () => void;
   refreshKey: number;
   triggerRefresh: () => void;
   locale: Locale;
-  setLocale: (locale: Locale) => void;
+  setLocale: (_locale: Locale) => void;
   user: UserSession | null;
-  setUser: (user: UserSession | null) => void;
+  setUser: (_user: UserSession | null) => void;
   allowedViews: Set<string>;
-  setAllowedViews: (views: Set<string>) => void;
+  setAllowedViews: (_views: Set<string>) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({

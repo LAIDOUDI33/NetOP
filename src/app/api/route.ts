@@ -7,7 +7,8 @@ export async function GET(request: NextRequest) {
 
   try {
     return NextResponse.json({ status: 'ok', service: 'NetOP Algerie NOC', version: process.env.npm_package_version ?? '0.2.0', timestamp: new Date().toISOString() });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

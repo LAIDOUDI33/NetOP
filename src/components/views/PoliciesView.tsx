@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/tooltip';
 import {
   Play,
-  Pause,
   RotateCcw,
   Zap,
   Clock,
@@ -47,7 +46,6 @@ import type {
   PolicyTriggerType,
   PolicyScope,
   PolicyExecutionStatus,
-  Technology,
 } from '@/types';
 import { useAppStore } from '@/store/app';
 import { useT } from '@/lib/i18n';
@@ -58,12 +56,7 @@ import { toast } from 'sonner';
 // Constants
 // ──────────────────────────────────────────────
 
-const TECH_COLORS: Record<string, string> = {
-  '2G': '#94A3B8',
-  '3G': '#06B6D4',
-  '4G': '#10B981',
-  '5G': '#F59E0B',
-};
+
 
 const TRIGGER_CONFIG: Record<PolicyTriggerType, { label: string; color: string; bgClass: string; icon: typeof Zap }> = {
   kpi_breach: { label: 'KPI Breach', color: 'text-red-600 dark:text-red-400', bgClass: 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-300', icon: AlertTriangle },
@@ -215,12 +208,12 @@ function PolicyCard({
   isMutating,
 }: {
   policy: PolicyItem;
-  onToggle: (id: string) => void;
-  onTrigger: (id: string) => void;
+  onToggle: (_id: string) => void;
+  onTrigger: (_id: string) => void;
   isMutating: boolean;
 }) {
   const t = useT();
-  const [expandedSites, setExpandedSites] = useState(false);
+  const [_expandedSites, _setExpandedSites] = useState(false);
 
   return (
     <Card className="flex flex-col">
@@ -812,7 +805,7 @@ export default function PoliciesView() {
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <ExportButton data={filteredPolicies as unknown as Record<string, any>[]} filenamePrefix="policies" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'enabled', header: t('th.enabled') }, { key: 'executionStats.totalRuns', header: t('pol.totalRuns') }, { key: 'executionStats.successRate', header: t('pol.successRatePct') }, { key: 'lastExecution.status', header: t('pol.lastStatus') }]} />
+            <ExportButton data={filteredPolicies as unknown as Record<string, unknown>[]} filenamePrefix="policies" columns={[{ key: 'name', header: t('th.name') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'enabled', header: t('th.enabled') }, { key: 'executionStats.totalRuns', header: t('pol.totalRuns') }, { key: 'executionStats.successRate', header: t('pol.successRatePct') }, { key: 'lastExecution.status', header: t('pol.lastStatus') }]} />
           </div>
         </div>
 

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const region = searchParams.get('region');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (technology && technology !== 'all') where.technology = technology;
     if (region && region !== 'all') where.region = region;
 
@@ -71,7 +71,8 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ sites: siteData, regionStats });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

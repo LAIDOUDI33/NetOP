@@ -11,10 +11,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // Hook to check permissions on client side
 export function usePermissions() {
   const { data: session } = useSession();
-  const permissions = (session?.user as any)?.permissions ?? [];
+  const user = session?.user;
+  const permissions = (user as { permissions?: string[] } | undefined)?.permissions ?? [];
+  const roles = (user as { roles?: string[] } | undefined)?.roles ?? [];
 
   return {
-    user: session?.user,
+    user,
     permissions,
     hasPermission: (module: string, action: string) => {
       if (permissions.includes('*:*')) return true;
@@ -24,12 +26,12 @@ export function usePermissions() {
     hasAnyPermission: (perms: string[]) => {
       if (permissions.includes('*:*')) return true;
       return perms.some((p) => {
-        const [mod, act] = p.split(':');
+        const [mod] = p.split(':');
         if (permissions.includes(`${mod}:*`)) return true;
         return permissions.includes(p);
       });
     },
-    roles: (session?.user as any)?.roles ?? [],
-    isSuperAdmin: ((session?.user as any)?.roles ?? []).includes('superadmin'),
+    roles,
+    isSuperAdmin: roles.includes('superadmin'),
   };
 }

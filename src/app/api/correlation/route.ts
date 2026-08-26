@@ -40,8 +40,9 @@ export async function GET(request: NextRequest) {
       return handleAlarmCorrelation(technology, sixHoursAgo, now);
     }
     return handleKpiCorrelation(technology, sixHoursAgo, now);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -54,7 +55,7 @@ async function handleAlarmCorrelation(
   since: Date,
   now: Date,
 ) {
-  const where: Record<string, any> = {
+  const where: Record<string, unknown> = {
     createdAt: { gte: since },
     resolvedAt: null,
   };
@@ -82,7 +83,7 @@ async function handleAlarmCorrelation(
     alertCount: number;
     startAt: string;
     endAt: string;
-    alerts: any[];
+    alerts: Record<string, unknown>[];
   }> = [];
 
   // Sort alerts by time for sequential scanning
@@ -194,7 +195,7 @@ async function handleKpiCorrelation(
   since: Date,
   now: Date,
 ) {
-  const where: Record<string, any> = { timestamp: { gte: since } };
+  const where: Record<string, unknown> = { timestamp: { gte: since } };
   if (technology && technology !== 'all') where.technology = technology;
 
   // Fetch all KPI fields needed for correlation pairs

@@ -2,9 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -13,8 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Bot, Cpu, Zap, Activity, CheckCircle2, XCircle, Clock, Timer,
-  RefreshCw, Brain, Play, Square, MessageSquare, Sparkles, AlertTriangle,
+  Bot, Cpu, Zap, Activity, CheckCircle2,
+  RefreshCw, Brain, Play, Sparkles, AlertTriangle,
 } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -47,9 +47,6 @@ interface MultiAgentData {
   };
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-emerald-500', idle: 'bg-amber-500', error: 'bg-red-500', disabled: 'bg-slate-400',
-};
 const TASK_STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   completed: 'default', failed: 'destructive', running: 'secondary', queued: 'outline', cancelled: 'outline',
 };

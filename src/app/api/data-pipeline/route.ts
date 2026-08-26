@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
-import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
 import { checkApiAuth, authError } from '@/lib/api-auth';
 
 function generateFlowNodes() {
@@ -78,7 +77,8 @@ export async function GET(request: Request) {
   };
 
   return NextResponse.json({ pipelines, flowNodes, flowEdges, throughput, summary });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

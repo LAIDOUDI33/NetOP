@@ -108,9 +108,9 @@ async function fetchRelevantContext(question: string): Promise<string> {
   const siteMatch = q.match(/(?:site|station|tower)\s+(?:alg-?|algeria-?|dz-?)(\d{3,})/);
   if (siteMatch) {
     const code = `ALG-${siteMatch[1].padStart(3, '0')}`;
-    const site = await db.networkSite.findUnique({ where: { code }, include: { kpis: { take: 1, orderBy: { timestamp: 'desc' } }, healthScores: { take: 1, orderBy: { timestamp: 'desc' } } } as any });
+    const site = await db.networkSite.findUnique({ where: { code }, include: { kpis: { take: 1, orderBy: { timestamp: 'desc' } }, healthScores: { take: 1, orderBy: { timestamp: 'desc' } } } as Parameters<typeof db.networkSite.findUnique>[0] });
     if (site) {
-      const s = site as any;
+      const s = site as { name: string; code: string; status: string; technology: string; region: string; vendor: string; kpis?: unknown[]; healthScores?: unknown[] };
       parts.push(`Site ${s.name} (${s.code}): status=${s.status}, tech=${s.technology}, region=${s.region}, vendor=${s.vendor}, latest KPI=${JSON.stringify(s.kpis?.[0])}, latest health=${JSON.stringify(s.healthScores?.[0])}`);
     } else {
       parts.push(`Site ${code} not found in database.`);

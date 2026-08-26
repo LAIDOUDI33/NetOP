@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GitBranch, Frown, CheckCircle2, AlertTriangle, RotateCcw, Clock } from 'lucide-react';
-import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { TECH_BG_CLASSES, TECHNOLOGIES } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
@@ -185,12 +185,17 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -204,7 +209,15 @@ function ChartTooltipContent({ active, payload, label }: any) {
 // ─── Pie Label ─────────────────────────────────────────────────────────
 
 const RADIAN = Math.PI / 180;
-function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) {
+interface PieLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+}
+function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -497,7 +510,7 @@ export default function ChangesView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={changes as unknown as Record<string, any>[]} filenamePrefix="changes" columns={[{ key: 'title', header: 'Title' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'priority', header: 'Priority' }, { key: 'siteName', header: 'Site' }, { key: 'createdBy', header: 'Created By' }, { key: 'createdAt', header: 'Created At' }]} />
+            <ExportButton data={changes as unknown as Record<string, unknown>[]} filenamePrefix="changes" columns={[{ key: 'title', header: 'Title' }, { key: 'category', header: 'Category' }, { key: 'technology', header: 'Technology' }, { key: 'status', header: 'Status' }, { key: 'priority', header: 'Priority' }, { key: 'siteName', header: 'Site' }, { key: 'createdBy', header: 'Created By' }, { key: 'createdAt', header: 'Created At' }]} />
           </div>
         </CardHeader>
         <CardContent>

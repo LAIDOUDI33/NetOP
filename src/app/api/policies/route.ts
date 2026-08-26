@@ -9,8 +9,8 @@ const createPolicySchema = z.object({
   description: z.string().optional(),
   technology: z.string().min(1),
   triggerType: z.enum(['kpi_breach', 'anomaly_detected', 'schedule', 'manual']),
-  triggerConfig: z.record(z.string(), z.any()).optional(),
-  actionModules: z.array(z.any()).optional(),
+  triggerConfig: z.record(z.string(), z.unknown()).optional(),
+  actionModules: z.array(z.unknown()).optional(),
   scope: z.string().optional(),
   scopeValue: z.string().nullable().optional(),
   priority: z.number().int().min(1).max(10).optional(),
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
           where: { policyId: p.id, status: 'completed' },
         });
 
-        const stats: Record<string, any> =
+        const stats: Record<string, unknown> =
           typeof p.stats === 'string' ? JSON.parse(p.stats) : p.stats;
 
         const successRate = totalCount > 0 ? Number(((successCount / totalCount) * 100).toFixed(1)) : 0;
@@ -94,8 +94,9 @@ export async function GET(request: Request) {
     );
 
     return NextResponse.json({ policies: result });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -164,8 +165,9 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -258,7 +260,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ error: `Invalid action: ${action}. Must be "toggle" or "trigger"` }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

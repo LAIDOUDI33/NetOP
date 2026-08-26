@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Layers, Users, Wifi, Zap, Cpu, ServerOff } from 'lucide-react';
-import { TECH_COLORS, formatNumber } from '@/lib/constants';
+import { formatNumber } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 
 // ─── API Response Types ────────────────────────────────────────────────
@@ -81,11 +81,6 @@ const SLICE_TYPE_BG: Record<string, string> = {
   mMTC: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
 };
 
-const SLICE_TYPE_BADGE_BG: Record<string, string> = {
-  eMBB: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25',
-  URLLC: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 hover:bg-amber-500/25',
-  mMTC: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/25',
-};
 
 const STATUS_BADGE_VARIANT: Record<string, 'default' | 'outline' | 'secondary'> = {
   active: 'default',
@@ -93,11 +88,6 @@ const STATUS_BADGE_VARIANT: Record<string, 'default' | 'outline' | 'secondary'> 
   deactivated: 'secondary',
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  active: 'Active',
-  suspended: 'Suspended',
-  deactivated: 'Deactivated',
-};
 
 // ─── Helper Functions ──────────────────────────────────────────────────
 
@@ -196,7 +186,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 8 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, cols: _cols = 8 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>

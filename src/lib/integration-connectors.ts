@@ -253,8 +253,10 @@ export class MetricsConnector extends BaseConnector {
       method: 'POST',
       body: JSON.stringify({ query, time }),
     });
+    const resultObj = result as Record<string, unknown>;
+    const dataObj = resultObj.data as Record<string, unknown> | undefined;
     const items =
-      ((result as any).data?.result as Record<string, unknown>[]) ||
+      (dataObj?.result as Record<string, unknown>[]) ||
       [];
     return items.map((item) => ({
       connectorId: this.id,

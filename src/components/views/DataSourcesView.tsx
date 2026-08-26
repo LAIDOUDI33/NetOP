@@ -41,7 +41,8 @@ export default function DataSourcesView() {
   const t = useT();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState<any>(null);
+  interface DataSourceItem { id: string; name: string; type: string; status: string; protocol?: string; endpoint?: string; vendor?: string; region?: string; description?: string; recordsAvailable?: number; freshnessSeconds?: number; lastSyncAt?: string; }
+  const [edit, setEdit] = useState<DataSourceItem | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -53,7 +54,7 @@ export default function DataSourcesView() {
   });
   const sources = data?.sources ?? [];
 
-  const filtered = sources.filter((s: any) => {
+  const filtered = sources.filter((s: DataSourceItem) => {
     const matchSearch = `${s.name} ${s.type} ${s.vendor ?? ''} ${s.region ?? ''}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || s.status === statusFilter;
     const matchType = typeFilter === 'all' || s.type === typeFilter;
@@ -61,7 +62,7 @@ export default function DataSourcesView() {
   });
 
   const save = useMutation({
-    mutationFn: (body: any) => fetch('/api/etl/sources', {
+    mutationFn: (body: Record<string, unknown>) => fetch('/api/etl/sources', {
       method: edit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -81,7 +82,7 @@ export default function DataSourcesView() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       name: fd.get('name'),
       type: fd.get('type'),
       protocol: fd.get('protocol') || undefined,
@@ -115,7 +116,7 @@ export default function DataSourcesView() {
               <div className="flex gap-1">
                 {SOURCE_STATUSES.map(s => (
                   <Button key={s} size="sm" variant={statusFilter === s ? 'default' : 'outline'} className="h-7 text-[10px] px-2" onClick={() => setStatusFilter(s)}>
-                    {s === 'all' ? t('admin.allStatus') : t(`admin.${s}` as any)}
+                    {s === 'all' ? t('admin.allStatus') : t(`admin.${s}`)}
                   </Button>
                 ))}
               </div>
@@ -145,7 +146,7 @@ export default function DataSourcesView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((s: any) => (
+                    {filtered.map((s: DataSourceItem) => (
                       <TableRow key={s.id}>
                         <TableCell className="text-xs font-medium">{s.name}</TableCell>
                         <TableCell className="text-xs"><Badge variant="outline" className="text-[10px]">{s.type}</Badge></TableCell>

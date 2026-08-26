@@ -23,13 +23,6 @@ import type { Technology } from '@/types';
 
 // ─── API Response Types ────────────────────────────────────────────────
 
-interface ForecastPoint {
-  date: string;
-  predicted: number;
-  lower: number;
-  upper: number;
-}
-
 interface TrendRecord {
   id: string;
   siteId: string;
@@ -168,7 +161,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, cols: _cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -188,12 +181,17 @@ function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -498,7 +496,7 @@ export default function TrendsView() {
                 <SelectItem value="Tamanrasset">Tamanrasset</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={trends as unknown as Record<string, any>[]} filenamePrefix="trends" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'metric', header: t('th.metric') }, { key: 'region', header: t('filter.region') }, { key: 'horizon', header: t('trd.horizon') }, { key: 'trendDirection', header: t('trd.direction') }, { key: 'confidence', header: t('trd.confidence') }, { key: 'recommendation', header: t('trd.recommendation') }]} />
+            <ExportButton data={trends as unknown as Record<string, unknown>[]} filenamePrefix="trends" columns={[{ key: 'siteName', header: t('th.site') }, { key: 'technology', header: t('th.technology') }, { key: 'metric', header: t('th.metric') }, { key: 'region', header: t('filter.region') }, { key: 'horizon', header: t('trd.horizon') }, { key: 'trendDirection', header: t('trd.direction') }, { key: 'confidence', header: t('trd.confidence') }, { key: 'recommendation', header: t('trd.recommendation') }]} />
           </div>
         </CardHeader>
         <CardContent>

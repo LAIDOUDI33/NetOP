@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const technology = searchParams.get('technology');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (servingCellId) where.servingCellId = servingCellId;
     if (technology && technology !== 'ALL') where.technology = technology;
 
@@ -53,7 +53,8 @@ export async function GET(request: NextRequest) {
         lastUpdated: n.lastUpdated.toISOString(),
       })),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

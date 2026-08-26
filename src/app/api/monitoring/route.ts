@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
         siteId: site.id,
         siteName: site.name,
         code: site.code,
-        technology: site.technology as any,
-        status: site.status as any,
+        technology: site.technology as string,
+        status: site.status as string,
         region: site.region,
         frequency: site.frequency,
         vendor: site.vendor,
@@ -115,7 +115,8 @@ export async function GET(request: NextRequest) {
       },
       summary,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

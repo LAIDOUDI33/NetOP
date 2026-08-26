@@ -64,7 +64,7 @@ export default function OptimizerView() {
   }, [chatHistory, data?.optimizations]);
 
   const postMutation = useMutation({
-    mutationFn: (body: { prompt: string; healthSummary?: any[] }) =>
+    mutationFn: (body: { prompt: string; healthSummary?: OptimizerResponse['healthSummary'] }) =>
       fetch('/api/optimizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

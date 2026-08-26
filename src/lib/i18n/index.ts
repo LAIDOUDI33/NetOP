@@ -31,7 +31,7 @@ export function useT() {
   };
 }
 
-export function timeAgo(dateStr: string, tFn: (key: string, params?: Record<string, string | number>) => string): string {
+export function timeAgo(dateStr: string, tFn: (_key: string, _params?: Record<string, string | number>) => string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
   const diffMs = now - then;

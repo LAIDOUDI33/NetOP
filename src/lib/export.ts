@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 // ========== CSV EXPORT ==========
 
 export function exportToCSV(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   filename: string,
   options?: { columns?: { key: string; header?: string }[]; sheetName?: string }
 ) {
@@ -11,7 +11,7 @@ export function exportToCSV(
 
   const columns = options?.columns;
   let headers: string[];
-  let rows: any[][];
+  let rows: unknown[][];
 
   if (columns) {
     headers = columns.map(c => c.header ?? c.key);
@@ -34,7 +34,7 @@ export function exportToCSV(
 // ========== EXCEL EXPORT ==========
 
 export function exportToExcel(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   filename: string,
   options?: {
     columns?: { key: string; header?: string; width?: number }[];
@@ -74,7 +74,7 @@ export function exportToExcel(
 // ========== MULTI-SHEET EXCEL EXPORT ==========
 
 export function exportToExcelMultiSheet(
-  sheets: { name: string; data: Record<string, any>[]; columns?: { key: string; header?: string; width?: number }[] }[],
+  sheets: { name: string; data: Record<string, unknown>[]; columns?: { key: string; header?: string; width?: number }[] }[],
   filename: string
 ) {
   const wb = XLSX.utils.book_new();
@@ -105,7 +105,7 @@ export function exportToExcelMultiSheet(
 
 // ========== HELPERS ==========
 
-function formatCellValue(val: any): any {
+function formatCellValue(val: unknown): string | number {
   if (val == null) return '';
   if (typeof val === 'boolean') return val ? 'Yes' : 'No';
   if (typeof val === 'object' && val instanceof Date) return val.toISOString().slice(0, 19).replace('T', ' ');

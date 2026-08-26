@@ -8,7 +8,7 @@ import { useT } from '@/lib/i18n';
 import { exportToCSV, exportToExcel, getExportFilename, type ExportColumn } from '@/lib/export';
 
 interface ExportButtonProps {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   filenamePrefix: string;
   columns?: ExportColumn[];
   sheetName?: string;

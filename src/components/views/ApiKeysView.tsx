@@ -29,7 +29,8 @@ export default function ApiKeysView() {
   const t = useT();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState<any>(null);
+  interface ApiKeyItem { id: string; name: string; keyPrefix?: string; permissions?: string[]; isEnabled?: boolean; createdAt: string; lastUsedAt?: string; expiresAt?: string; requestCount?: number; description?: string; }
+  const [edit, setEdit] = useState<ApiKeyItem | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -41,14 +42,14 @@ export default function ApiKeysView() {
   });
   const keys = data?.keys ?? [];
 
-  const filtered = keys.filter((k: any) => {
+  const filtered = keys.filter((k: ApiKeyItem) => {
     const matchSearch = `${k.name} ${k.keyPrefix ?? ''}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'all' || (statusFilter === 'enabled' && k.isEnabled !== false) || (statusFilter === 'disabled' && k.isEnabled === false);
     return matchSearch && matchStatus;
   });
 
   const save = useMutation({
-    mutationFn: (body: any) => fetch('/api/api-keys', {
+    mutationFn: (body: Record<string, unknown>) => fetch('/api/api-keys', {
       method: edit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -58,7 +59,7 @@ export default function ApiKeysView() {
   });
 
   const toggleKey = useMutation({
-    mutationFn: (k: any) => fetch('/api/api-keys', {
+    mutationFn: (k: ApiKeyItem) => fetch('/api/api-keys', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: k.id, isEnabled: !k.isEnabled }),
@@ -78,7 +79,7 @@ export default function ApiKeysView() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       name: fd.get('name'),
       description: fd.get('description') || undefined,
       permissions: fd.get('permissions')?.toString().split(',').map((s: string) => s.trim()).filter(Boolean) ?? [],
@@ -146,7 +147,7 @@ export default function ApiKeysView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((k: any) => (
+                    {filtered.map((k: ApiKeyItem) => (
                       <TableRow key={k.id}>
                         <TableCell className="text-xs font-medium">{k.name}</TableCell>
                         <TableCell className="text-xs font-mono text-muted-foreground">{k.keyPrefix ?? '••••••••'}</TableCell>

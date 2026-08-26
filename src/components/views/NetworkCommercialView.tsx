@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
-  ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell, RadarChart, Radar,
+  ResponsiveContainer, ScatterChart, Scatter, Cell, RadarChart, Radar,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts';
 
@@ -37,7 +37,7 @@ interface NCZone {
   revenueLeakageEst: number;
 }
 
-type TFn = (k: string) => string;
+type TFn = (_k: string) => string;
 
 // ==================== HELPERS ====================
 
@@ -75,7 +75,7 @@ export default function NetworkCommercialView() {
   });
 
   const zones = (data?.zones ?? []) as NCZone[];
-  const summary = data?.summary;
+  const summary = data?.summary as NCSummary | undefined;
 
   const cards = [
     { label: t('nc.totalZones'), value: summary ? String(summary.totalZones) : '—', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
@@ -142,7 +142,18 @@ export default function NetworkCommercialView() {
 
 // ==================== TAB 1: CORRELATION MATRIX ====================
 
-function CorrelationMatrixTab({ zones, summary, loading, t }: { zones: NCZone[]; summary: any; loading: boolean; t: TFn }) {
+interface NCSummary {
+  totalZones: number;
+  avgCompositeScore: number;
+  avgCorrelationStrength: number;
+  totalRevenueLeakage: number;
+  avgNetworkScore: number;
+  avgCommercialScore: number;
+  strongestCorrelation?: { pair: string; value: string } | null;
+  weakestCorrelation?: { pair: string; value: string } | null;
+}
+
+function CorrelationMatrixTab({ zones, summary, loading, t }: { zones: NCZone[]; summary: NCSummary | null | undefined; loading: boolean; t: TFn }) {
   const matrix = useMemo(() => {
     if (!zones.length) return [];
     const pairs = [
@@ -290,8 +301,8 @@ function ScatterAnalysisTab({ zones, loading, t }: { zones: NCZone[]; loading: b
                     <XAxis dataKey="x" name={plot.xLabel} type="number" domain={plot.xDomain} tick={{ fontSize: 10 }} />
                     <YAxis dataKey="y" name={plot.yLabel} type="number" domain={plot.yDomain} tick={{ fontSize: 10 }} tickFormatter={(v: number) => formatNum(v)} />
                     <RTooltip
-                      formatter={(_v: number, _n: string, p: any) => [p.payload?.z, '']}
-                      labelFormatter={(_l: string, p: any) => `${plot.xLabel}: ${p.payload?.x}, ${plot.yLabel}: ${typeof p.payload?.y === 'number' ? formatNum(p.payload.y) : p.payload?.y}`}
+                      formatter={(_v: number, _n: string, p: { payload?: { z?: string } }) => [p.payload?.z, '']}
+                      labelFormatter={(_l: string, p: { payload?: { x?: number; y?: number | string } }) => `${plot.xLabel}: ${p.payload?.x}, ${plot.yLabel}: ${typeof p.payload?.y === 'number' ? formatNum(p.payload.y) : p.payload?.y}`}
                       contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
                     />
                     <Scatter data={plot.data} fill={plot.color}>
@@ -314,7 +325,6 @@ function ScatterAnalysisTab({ zones, loading, t }: { zones: NCZone[]; loading: b
 
 function ZoneScoresTab({ zones, loading, t }: { zones: NCZone[]; loading: boolean; t: TFn }) {
   const top5 = zones.slice(0, 5);
-  const bottom5 = [...zones].reverse().slice(0, 5);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

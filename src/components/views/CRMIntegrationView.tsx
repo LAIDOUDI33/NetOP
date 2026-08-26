@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Users, TrendingDown, TrendingUp, DollarSign, Star, AlertTriangle,
-  RefreshCw, Search, Heart, ShieldCheck, Phone,
+  RefreshCw, Search, Heart,
 } from 'lucide-react';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
-    const params = JSON.parse(scenario.parameters);
+    const _params = JSON.parse(scenario.parameters);
     const isDisaster = scenario.scenarioType === 'disaster';
 
     const before = {

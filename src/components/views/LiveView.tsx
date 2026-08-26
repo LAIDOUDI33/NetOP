@@ -2,7 +2,7 @@
 import { useT } from '@/lib/i18n';
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSocket, type KpiUpdateItem, type LiveAlertItem, type AlertPulseData } from '@/hooks/useSocket';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

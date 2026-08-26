@@ -9,7 +9,7 @@ interface CircularGaugeProps {
   strokeWidth?: number;
   label: string;
   unit?: string;
-  colorFn?: (value: number, max: number) => string;
+  colorFn?: (_value: number, _max: number) => string;
   showValue?: boolean;
 }
 
@@ -27,8 +27,6 @@ export function CircularGauge({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(value / max, 1);
-  const offset = circumference - pct * circumference;
-
   const defaultColor = pct >= 0.95
     ? 'text-emerald-500'
     : pct >= 0.85

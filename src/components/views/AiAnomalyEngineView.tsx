@@ -205,7 +205,10 @@ function TableSkeleton({ rows = 5 }: { rows?: number }) {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipPayloadEntry { color?: string; name?: string; value?: number; }
+interface ChartTooltipProps { active?: boolean; payload?: ChartTooltipPayloadEntry[]; label?: string; }
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">

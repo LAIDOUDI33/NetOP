@@ -36,9 +36,9 @@ export interface LiveAlertItem {
   createdAt: string;
 }
 
-type KpiUpdateCallback = (data: KpiUpdateItem[]) => void;
-type AlertPulseCallback = (data: AlertPulseData) => void;
-type LiveAlertCallback = (alerts: LiveAlertItem[]) => void;
+type KpiUpdateCallback = (_data: KpiUpdateItem[]) => void;
+type AlertPulseCallback = (_data: AlertPulseData) => void;
+type LiveAlertCallback = (_alerts: LiveAlertItem[]) => void;
 
 // ── Singleton socket instance (shared across all hook consumers) ───────────────
 

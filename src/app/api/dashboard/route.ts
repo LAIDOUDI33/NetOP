@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       const techKpis = latestKpis.filter(k => k.technology === tech);
       const avg = (field: string) => {
         if (!techKpis.length) return 0;
-        const sum = techKpis.reduce((s, k) => s + (k._avg as any)[field] || 0, 0);
+        const sum = techKpis.reduce((s, k) => s + (k._avg as Record<string, number | null>)[field] || 0, 0);
         return Number((sum / techKpis.length).toFixed(2));
       };
       return {
@@ -127,7 +127,8 @@ export async function GET(request: NextRequest) {
       kpiTrends: { timestamps, download, upload, latency, users },
       techHealth,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

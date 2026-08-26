@@ -128,7 +128,7 @@ function ParametersTab() {
       <div className="flex flex-wrap gap-2">
         {CATEGORIES.map((cat) => (
           <Button key={cat} size="sm" variant={category === cat ? 'default' : 'outline'} className="h-8 text-xs" onClick={() => setCategory(cat)}>
-            {cat === 'all' ? t('set.allCategories') : t(`set.${cat.toLowerCase()}` as any)}
+            {cat === 'all' ? t('set.allCategories') : t(`set.${cat.toLowerCase()}`)}
           </Button>
         ))}
       </div>
@@ -136,7 +136,7 @@ function ParametersTab() {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-semibold">
-              {category !== 'all' ? t('set.paramsFor', { tech: technology, category: t(`set.${category.toLowerCase()}` as any) }) : t('set.params', { tech: technology })}
+              {category !== 'all' ? t('set.paramsFor', { tech: technology, category: t(`set.${category.toLowerCase()}`) }) : t('set.params', { tech: technology })}
             </CardTitle>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => queryClient.invalidateQueries({ queryKey: ['parameters'] })}>
@@ -145,7 +145,7 @@ function ParametersTab() {
               <Button size="sm" className="h-8 text-xs" disabled={!hasChanges || saveMutation.isPending} onClick={() => saveMutation.mutate(filteredEdits)}>
                 <Save className="h-3 w-3 mr-1" /> {t('set.save')} ({Object.keys(filteredEdits).length})
               </Button>
-              <ExportButton data={(data?.parameters ?? []) as unknown as Record<string, any>[]} filenamePrefix="settings" columns={[{ key: 'displayName', header: t('set.exportParameter') }, { key: 'category', header: t('set.exportCategory') }, { key: 'currentValue', header: t('set.exportCurrentValue') }, { key: 'minRange', header: t('set.exportMin') }, { key: 'maxRange', header: t('set.exportMax') }, { key: 'unit', header: t('set.exportUnit') }]} />
+              <ExportButton data={(data?.parameters ?? []) as unknown as Record<string, unknown>[]} filenamePrefix="settings" columns={[{ key: 'displayName', header: t('set.exportParameter') }, { key: 'category', header: t('set.exportCategory') }, { key: 'currentValue', header: t('set.exportCurrentValue') }, { key: 'minRange', header: t('set.exportMin') }, { key: 'maxRange', header: t('set.exportMax') }, { key: 'unit', header: t('set.exportUnit') }]} />
             </div>
           </div>
         </CardHeader>

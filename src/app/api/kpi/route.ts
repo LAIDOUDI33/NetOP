@@ -20,8 +20,10 @@ export async function GET(request: NextRequest) {
   const sixHoursAgo = await demoHoursAgo(6);
 
   try {
-    const where: any = { timestamp: { gte: sixHoursAgo } };
-    if (technology !== 'all') where.technology = technology;
+    const where = {
+      timestamp: { gte: sixHoursAgo },
+      ...(technology !== 'all' ? { technology } : {}),
+    };
 
     const kpis = await db.kpiMetric.findMany({
       where,
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Group by technology
     const byTech: Record<string, { timestamps: string[]; values: number[] }> = {};
     for (const kpi of kpis) {
-      const val = (kpi as any)[metric];
+      const val = (kpi as Record<string, unknown>)[metric];
       if (val == null) continue;
       const tech = kpi.technology;
       if (!byTech[tech]) byTech[tech] = { timestamps: [], values: [] };
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest) {
     const allTimestamps = [...tsMap.entries()].sort((a, b) => a[1].getTime() - b[1].getTime()).map(([k]) => k);
 
     // Build unified data: map tech -> { values indexed to allTimestamps }
-    const data: Record<string, { values: number[]; sites: any[] }> = {};
+    const data: Record<string, { values: number[]; sites: { siteId: string; siteName: string; code: string; technology: string; region: string; status: string; value: number }[] }> = {};
     for (const [tech, techData] of Object.entries(byTech)) {
       const valueMap = new Map(techData.timestamps.map((t, i) => [t, techData.values[i]]));
       data[tech] = {
@@ -90,7 +92,7 @@ export async function GET(request: NextRequest) {
       technology: s.technology,
       region: s.region,
       status: s.status,
-      value: s.kpiMetrics[0] ? Number(((s.kpiMetrics[0] as any)[metric] || 0).toFixed(2)) : 0,
+      value: s.kpiMetrics[0] ? Number(((s.kpiMetrics[0] as Record<string, unknown>)[metric] || 0).toFixed(2)) : 0,
     }));
 
     // Attach sites to their technology
@@ -107,7 +109,8 @@ export async function GET(request: NextRequest) {
       metric,
       technologies: Object.keys(byTech),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

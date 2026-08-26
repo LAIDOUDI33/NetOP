@@ -22,7 +22,8 @@ export async function GET(request: Request) {
       roles: user.roles ?? [],
       permissions: user.permissions ?? [],
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

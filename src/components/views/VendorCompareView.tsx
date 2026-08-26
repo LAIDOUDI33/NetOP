@@ -8,7 +8,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GitCompare, Signal, ArrowDownToLine, ArrowUpFromLine, Timer, ShieldCheck, ArrowRightLeft, TrendingDown, Building2 } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { formatNumber, TECHNOLOGIES } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
@@ -86,12 +86,18 @@ const VENDOR_PALETTE = [
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -313,7 +319,7 @@ export default function VendorCompareView() {
               ))}
             </SelectContent>
           </Select>
-          <ExportButton data={comparisons as unknown as Record<string, any>[]} filenamePrefix="vendor-compare" columns={[{ key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'siteCount', header: 'Sites' }, { key: 'avgRsrp', header: 'RSRP (dBm)' }, { key: 'avgDownloadThroughput', header: 'DL (Mbps)' }, { key: 'avgUploadThroughput', header: 'UL (Mbps)' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'avgAvailability', header: 'Availability (%)' }, { key: 'avgHandoverSuccessRate', header: 'HO Rate (%)' }, { key: 'avgDropRate', header: 'Drop Rate (%)' }]} />
+          <ExportButton data={comparisons as unknown as Record<string, unknown>[]} filenamePrefix="vendor-compare" columns={[{ key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'siteCount', header: 'Sites' }, { key: 'avgRsrp', header: 'RSRP (dBm)' }, { key: 'avgDownloadThroughput', header: 'DL (Mbps)' }, { key: 'avgUploadThroughput', header: 'UL (Mbps)' }, { key: 'avgLatency', header: 'Latency (ms)' }, { key: 'avgAvailability', header: 'Availability (%)' }, { key: 'avgHandoverSuccessRate', header: 'HO Rate (%)' }, { key: 'avgDropRate', header: 'Drop Rate (%)' }]} />
         </div>
       </div>
 

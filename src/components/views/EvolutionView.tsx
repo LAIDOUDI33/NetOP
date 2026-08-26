@@ -88,13 +88,6 @@ const STATUS_VARIANTS: Record<EvolutionStatus, 'default' | 'secondary' | 'destru
   cancelled: 'outline',
 };
 
-const RISK_COLORS: Record<RiskLevel, string> = {
-  low: 'text-emerald-600 dark:text-emerald-400',
-  medium: 'text-amber-600 dark:text-amber-400',
-  high: 'text-red-600 dark:text-red-400',
-  critical: 'text-red-700 dark:text-red-500 font-bold',
-};
-
 const RISK_BG_CLASSES: Record<RiskLevel, string> = {
   low: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
   medium: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
@@ -180,12 +173,17 @@ function TableSkeleton() {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -530,7 +528,7 @@ export default function EvolutionView() {
                 <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={plans as unknown as Record<string, any>[]} filenamePrefix="evolution" columns={[{ key: 'name', header: 'Name' }, { key: 'sourceTech', header: 'Source Tech' }, { key: 'targetTech', header: 'Target Tech' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'sitesAffected', header: 'Sites' }, { key: 'budget', header: 'Budget ($)' }, { key: 'progress', header: 'Progress (%)' }]} />
+            <ExportButton data={plans as unknown as Record<string, unknown>[]} filenamePrefix="evolution" columns={[{ key: 'name', header: 'Name' }, { key: 'sourceTech', header: 'Source Tech' }, { key: 'targetTech', header: 'Target Tech' }, { key: 'region', header: 'Region' }, { key: 'status', header: 'Status' }, { key: 'sitesAffected', header: 'Sites' }, { key: 'budget', header: 'Budget ($)' }, { key: 'progress', header: 'Progress (%)' }]} />
           </div>
         </CardHeader>
         <CardContent>

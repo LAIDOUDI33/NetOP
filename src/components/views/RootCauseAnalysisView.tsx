@@ -178,7 +178,7 @@ Provide analysis in this format:
               <Brain className="h-5 w-5 text-primary" />
               {t('rca.title')}
             </CardTitle>
-            <ExportButton data={history as unknown as Record<string, any>[]} filenamePrefix="rca" columns={[{ key: 'timestamp', header: t('th.time') }, { key: 'technology', header: t('th.technology') }, { key: 'site', header: t('th.site') }, { key: 'symptom', header: t('rca.symptom') }, { key: 'response', header: t('rca.analysis') }]} />
+            <ExportButton data={history as unknown as Record<string, unknown>[]} filenamePrefix="rca" columns={[{ key: 'timestamp', header: t('th.time') }, { key: 'technology', header: t('th.technology') }, { key: 'site', header: t('th.site') }, { key: 'symptom', header: t('rca.symptom') }, { key: 'response', header: t('rca.analysis') }]} />
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Row: Tech + Site */}

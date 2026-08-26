@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const avgMap: Record<string, any> = {};
+    const avgMap: Record<string, unknown> = {};
     for (const t of techAvgs) {
       avgMap[t.technology] = t._avg;
     }
@@ -57,7 +57,8 @@ export async function GET(request: NextRequest) {
       targets: results,
       summary: { total, compliant, breached, complianceRate },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

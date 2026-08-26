@@ -36,9 +36,10 @@ export async function GET(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canView = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:view');
     if (!canView) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -99,9 +100,10 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canCreate = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:create');
     if (!canCreate) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -167,9 +169,10 @@ export async function PATCH(request: Request) {
     const perms = (currentUser.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:edit');
     if (!canEdit) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -243,9 +246,10 @@ export async function DELETE(request: Request) {
     const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('apikeys:*') || perms.includes('apikeys:delete');
     if (!canDelete) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 

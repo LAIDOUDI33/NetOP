@@ -185,7 +185,7 @@ export interface SonModuleItem {
   enabled: boolean;
   mode: SonModuleMode;
   schedule: string | null;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   stats: Record<string, number>;
   actionCount: number;
   recentActions: SonActionItem[];
@@ -255,14 +255,14 @@ export interface PolicyItem {
   description: string;
   technology: string;
   triggerType: PolicyTriggerType;
-  triggerConfig: Record<string, any>;
+  triggerConfig: Record<string, unknown>;
   actionModules: string[];
   scope: PolicyScope;
   scopeValue: string | null;
   priority: number;
   enabled: boolean;
   cooldownMins: number;
-  stats: Record<string, any>;
+  stats: Record<string, unknown>;
   executionStats: {
     totalRuns: number;
     successRate: number;
@@ -283,7 +283,7 @@ export interface PolicyExecutionItem {
   triggerReason: string;
   affectedSites: string[];
   actionsTaken: string[];
-  kpiImpact: Record<string, any>;
+  kpiImpact: Record<string, unknown>;
   rollbackReason?: string;
   durationMs: number | null;
   createdAt: string;
@@ -311,7 +311,7 @@ export interface SiteOnboardingItem {
   assignedPci?: string;
   assignedFreq?: string;
   initialNeighbors: string[];
-  kpiBaseline: Record<string, any>;
+  kpiBaseline: Record<string, unknown>;
   errorMessage?: string;
   completedAt?: string;
   createdAt: string;

@@ -118,7 +118,7 @@ export default function UserPreferences() {
 
   const handleSaveDisplay = () => {
     savePrefs.mutate(displayState);
-    setTheme(displayState.theme as any);
+    setTheme(displayState.theme);
     setLocale(displayState.locale as Locale);
     toast.success(t('prefs.displaySaved'));
   };

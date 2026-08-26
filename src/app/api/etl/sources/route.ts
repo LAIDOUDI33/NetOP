@@ -42,9 +42,9 @@ export async function GET(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canView = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:view');
     if (!canView) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -88,8 +88,9 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ sources: result });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -103,9 +104,9 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canCreate = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:create');
     if (!canCreate) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -146,8 +147,9 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -161,9 +163,9 @@ export async function PATCH(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:edit');
     if (!canEdit) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -200,8 +202,9 @@ export async function PATCH(request: Request) {
       vendor: source.vendor,
       updatedAt: source.updatedAt.toISOString(),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -215,9 +218,9 @@ export async function DELETE(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:delete');
     if (!canDelete) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -235,7 +238,8 @@ export async function DELETE(request: Request) {
 
     await db.dataSource.delete({ where: { id } });
     return NextResponse.json({ success: true, deleted: id });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

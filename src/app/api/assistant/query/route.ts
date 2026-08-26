@@ -149,7 +149,7 @@ async function fetchNetworkDataSummary() {
  */
 function inferDataSources(
   question: string,
-  data: Awaited<ReturnType<typeof fetchNetworkDataSummary>>,
+  _data: Awaited<ReturnType<typeof fetchNetworkDataSummary>>,
 ): string[] {
   const q = question.toLowerCase();
   const sources: string[] = [];

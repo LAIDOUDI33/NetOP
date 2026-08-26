@@ -13,7 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TrendingUp, TrendingDown, Minus, Box, Zap, AlertTriangle, Plus, Play, Eye, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -94,7 +94,7 @@ const typeBadge = (type: string) => {
   );
 };
 
-const statusBadge = (status: string, t: (k: string) => string) => {
+const statusBadge = (status: string, t: (_k: string) => string) => {
   const variants: Record<string, 'secondary' | 'outline' | 'default'> = {
     draft: 'secondary',
     simulated: 'outline',

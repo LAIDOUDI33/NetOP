@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DollarSign, Frown, CheckCircle2 } from 'lucide-react';
-import { TECH_COLORS, TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
+import { TECH_BG_CLASSES, formatNumber } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import { useT } from '@/lib/i18n';
 import type { Technology } from '@/types';
@@ -68,13 +68,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   outage_reduction: '#F97316',
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  energy_saving: 'Energy Saving',
-  capacity_deferred: 'Capacity Deferred',
-  churn_reduction: 'Churn Reduction',
-  sla_improvement: 'SLA Improvement',
-  outage_reduction: 'Outage Reduction',
-};
+
 
 const CATEGORIES = ['all', 'energy_saving', 'capacity_deferred', 'churn_reduction', 'sla_improvement', 'outage_reduction'];
 const STATUSES = ['all', 'realized', 'projected', 'cancelled'];
@@ -118,7 +112,7 @@ function paybackColor(months: number): string {
 }
 
 function categoryBadgeClass(category: string): string {
-  const color = CATEGORY_COLORS[category] ?? '#94A3B8';
+  const _color = CATEGORY_COLORS[category] ?? '#94A3B8';
   const map: Record<string, string> = {
     energy_saving: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
     capacity_deferred: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20',
@@ -162,7 +156,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, cols: _cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -182,12 +176,18 @@ function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -526,7 +526,7 @@ export default function RoiView() {
                 ))}
               </SelectContent>
             </Select>
-            <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="roi" columns={[{ key: 'initiative', header: 'Initiative' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'investment', header: 'Investment ($)' }, { key: 'projectedReturn', header: 'Projected Return ($)' }, { key: 'roiPercentage', header: 'ROI (%)' }, { key: 'paybackMonths', header: 'Payback (months)' }]} />
+            <ExportButton data={records as unknown as Record<string, unknown>[]} filenamePrefix="roi" columns={[{ key: 'initiative', header: 'Initiative' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'status', header: 'Status' }, { key: 'investment', header: 'Investment ($)' }, { key: 'projectedReturn', header: 'Projected Return ($)' }, { key: 'roiPercentage', header: 'ROI (%)' }, { key: 'paybackMonths', header: 'Payback (months)' }]} />
           </div>
         </CardHeader>
         <CardContent>

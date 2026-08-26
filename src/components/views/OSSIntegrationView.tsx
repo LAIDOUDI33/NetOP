@@ -14,7 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Server, Radio, AlertTriangle, RefreshCw, Search,
+  Server, AlertTriangle, RefreshCw, Search,
   CheckCircle2, XCircle, Clock, Cpu, Signal,
 } from 'lucide-react';
 import { ExportButton } from '@/components/ExportButton';

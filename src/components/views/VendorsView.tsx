@@ -101,7 +101,7 @@ const MATRIX_TECHS: Technology[] = ['2G', '3G', '4G', '5G'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatTimeAgo(dateStr?: string, t?: (key: string) => string): string {
+function formatTimeAgo(dateStr?: string, t?: (_key: string) => string): string {
   if (!dateStr) return t ? t('vnd.never') : 'Never';
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -115,12 +115,6 @@ function formatTimeAgo(dateStr?: string, t?: (key: string) => string): string {
   return `${diffDay}d ago`;
 }
 
-function truncateMiddle(str: string, maxLen: number): string {
-  if (str.length <= maxLen) return str;
-  const start = str.slice(0, Math.ceil(maxLen / 2) - 1);
-  const end = str.slice(-(Math.floor(maxLen / 2) - 2));
-  return `${start}…${end}`;
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -198,7 +192,7 @@ export default function VendorsView() {
     return t('vnd.syncedOf', { n: synced.length, total });
   })();
 
-  const isSyncing = syncMutation.isPending || toggleMutation.isPending;
+  const _isSyncing = syncMutation.isPending || toggleMutation.isPending;
 
   // ─── Skeleton ───────────────────────────────────────────────────────────
 
@@ -248,7 +242,7 @@ export default function VendorsView() {
             {t('vnd.subtitle')}
           </p>
         </div>
-        <ExportButton data={vendors as unknown as Record<string, any>[]} filenamePrefix="vendors" columns={[{ key: 'displayName', header: t('th.vendor') }, { key: 'vendor', header: t('th.code') }, { key: 'status', header: t('th.status') }, { key: 'apiType', header: t('th.apiType') }, { key: 'technologies', header: t('th.technologies') }, { key: 'stats.sitesManaged', header: t('th.sitesManaged') }, { key: 'stats.syncStatus', header: t('th.syncStatus') }]} />
+        <ExportButton data={vendors as unknown as Record<string, unknown>[]} filenamePrefix="vendors" columns={[{ key: 'displayName', header: t('th.vendor') }, { key: 'vendor', header: t('th.code') }, { key: 'status', header: t('th.status') }, { key: 'apiType', header: t('th.apiType') }, { key: 'technologies', header: t('th.technologies') }, { key: 'stats.sitesManaged', header: t('th.sitesManaged') }, { key: 'stats.syncStatus', header: t('th.syncStatus') }]} />
       </div>
 
       {/* ─── Stats Row ──────────────────────────────────────────────────── */}

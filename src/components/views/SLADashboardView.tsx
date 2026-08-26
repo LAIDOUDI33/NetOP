@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer, ReferenceLine,
+  ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,7 @@ import { ShieldCheck, AlertTriangle, Target, TrendingUp } from 'lucide-react';
 import { useT } from '@/lib/i18n';
 import { ExportButton } from '@/components/ExportButton';
 import { TECH_BG_CLASSES, SEVERITY_BADGE_VARIANT, TECHNOLOGIES, formatNumber } from '@/lib/constants';
-import type { Technology, AlertSeverity } from '@/types';
+import type { Technology } from '@/types';
 
 // ─── Types for the SLA API response ───────────────────────────────────
 // API returns targetValue/actualValue, we derive unit from metric name

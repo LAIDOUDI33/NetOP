@@ -25,19 +25,6 @@ const TECH_COLORS: Record<Technology, string> = {
   '5G': '#F59E0B',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'text-emerald-600 dark:text-emerald-400',
-  degraded: 'text-amber-600 dark:text-amber-400',
-  down: 'text-red-600 dark:text-red-400',
-  maintenance: 'text-slate-500',
-};
-
-const SEVERITY_VARIANT: Record<string, 'destructive' | 'secondary' | 'default' | 'outline'> = {
-  critical: 'destructive',
-  warning: 'secondary',
-  info: 'default',
-};
-
 function formatTimestamp(ts: string) {
   // ts is already formatted as "HH:MM" from the API
   return ts;

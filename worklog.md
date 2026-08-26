@@ -3369,3 +3369,373 @@ All 17 files had the same root cause: the colon (`:`) in TypeScript type annotat
 - 17 files fixed
 - ~33 individual syntax errors corrected
 - All fixes were minimal (single character `:` insertion or `unknown` → `: any` replacement)
+
+---
+Task ID: 3a
+Agent: Sub-agent (general-purpose)
+Task: Fix `@typescript-eslint/no-explicit-any` warnings in API routes batch 1 (17 files)
+
+Work Log:
+- Fixed all 17 API route files, removing every `any` occurrence
+- Verified zero `any` remains in all 17 files via grep
+
+Changes by file:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `src/app/api/alerts/route.ts` | `where: any` → `Record<string, unknown>`, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 2 | `src/app/api/anomalies/detect/route.ts` | 2× `as any` → `as Record<string, number | null>`, `saved: any[]` → `Record<string, unknown>[]`, `catch (error: any)` → `catch (error: unknown)` |
+| 3 | `src/app/api/anomalies/route.ts` | `where: any` → `Record<string, unknown>`, 3× `as any` → `as Record<string, number>`, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 4 | `src/app/api/api-keys/route.ts` | 4× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard |
+| 5 | `src/app/api/assistant/voice-noc/route.ts` | `as any` → `as Parameters<typeof db.networkSite.findUnique>[0]`, `site as any` → typed struct literal |
+| 6 | `src/app/api/auth/me/route.ts` | `catch (error: any)` → `catch (error: unknown)` |
+| 7 | `src/app/api/auth/seed/route.ts` | 2× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard |
+| 8 | `src/app/api/competitive/social-sentiment/route.ts` | Added `SocialPost` interface, `any[]` → `SocialPost[]`, 5× `as any` → `as typeof CONST[number]`, 3 function signatures typed |
+| 9 | `src/app/api/correlation/route.ts` | `Record<string, any>` → `Record<string, unknown>` ×2, `alerts: any[]` → `Record<string, unknown>[]`, `catch (error: any)` → `catch (error: unknown)` |
+| 10 | `src/app/api/coverage/route.ts` | `where: any` → `Record<string, unknown>`, `catch (error: any)` → `catch (error: unknown)` |
+| 11 | `src/app/api/dashboard/route.ts` | `as any` → `as Record<string, number | null>`, `catch (error: any)` → `catch (error: unknown)` |
+| 12 | `src/app/api/etl/dashboard/route.ts` | `catch (e: any)` → `catch (e: unknown)`, `catch (error: any)` → `catch (error: unknown)` |
+| 13 | `src/app/api/etl/executions/route.ts` | `catch (e: any)` → `catch (e: unknown)`, `catch (error: any)` → `catch (error: unknown)` |
+| 14 | `src/app/api/etl/pipelines/route.ts` | 2× `z.any()` → `z.unknown()`, 4× `catch (e: any)` → `catch (e: unknown)`, 4× `catch (error: any)` → `catch (error: unknown)` |
+| 15 | `src/app/api/etl/pipelines/run/route.ts` | `catch (e: any)` → `catch (e: unknown)`, `catch (error: any)` → `catch (error: unknown)` |
+| 16 | `src/app/api/etl/quality/results/route.ts` | `catch (e: any)` → `catch (e: unknown)`, `catch (error: any)` → `catch (error: unknown)` |
+| 17 | `src/app/api/etl/quality/rules/route.ts` | 2× `z.any()` → `z.unknown()`, 4× `catch (e: any)` → `catch (e: unknown)`, 4× `catch (error: any)` → `catch (error: unknown)` |
+
+Stage Summary:
+- 17 files fixed, 0 `any` remaining in any of them
+- ~60 individual `any` occurrences replaced
+- No logic changes, only type replacements
+- No eslint-disable or ts-expect-error comments added
+
+---
+Task ID: 3b
+Agent: Sub-agent (general-purpose)
+Task: Fix `@typescript-eslint/no-explicit-any` warnings in API routes batch 2 (17 files)
+
+Work Log:
+- Fixed all 17 API route files, removing every `any` occurrence
+- Verified zero `any` remains in all 17 files via rg grep
+
+Changes by file:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `src/app/api/etl/quality/summary/route.ts` | 1× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 2 | `src/app/api/etl/sources/route.ts` | 4× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard, 4× `catch (error: any)` → `catch (error: unknown)` |
+| 3 | `src/app/api/geomarketing/churn-map/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 4 | `src/app/api/geomarketing/competitor-map/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 5 | `src/app/api/geomarketing/coverage-gaps/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 6 | `src/app/api/geomarketing/demographics/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 7 | `src/app/api/geomarketing/revenue-impact/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 8 | `src/app/api/geomarketing/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 9 | `src/app/api/geomarketing/site-scorer/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 10 | `src/app/api/kpi/route.ts` | `where: any` → conditional spread object, 2× `as any` → `as Record<string, unknown>`, `sites: any[]` → explicit inline type, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 11 | `src/app/api/monitoring/route.ts` | 2× `as any` → `as string`, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 12 | `src/app/api/network-commercial/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 13 | `src/app/api/onboarding/route.ts` | 1× `z.any()` → `z.unknown()`, `where: any` → `Record<string, unknown>`, 3× `catch (error: any)` → `catch (error: unknown)` |
+| 14 | `src/app/api/optimizer/route.ts` | 1× `z.any()` → `z.unknown()`, `(zai as any)` → `as unknown as { createChatCompletion: ... }` with explicit interface, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 15 | `src/app/api/parameters/route.ts` | `where: any` → `Record<string, unknown>`, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 16 | `src/app/api/policies/executions/route.ts` | `where: any` → `Record<string, unknown>`, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 17 | `src/app/api/policies/route.ts` | 2× `z.any()` → `z.unknown()`, `Record<string, any>` → `Record<string, unknown>`, 3× `catch (error: any)` → `catch (error: unknown)` |
+
+Stage Summary:
+- 17 files fixed, 0 `any` remaining in any of them
+- ~38 individual `any` occurrences replaced
+- No logic changes, only type replacements
+- No eslint-disable or ts-expect-error comments added
+---
+Task ID: 3c
+Agent: Sub-agent (general-purpose)
+Task: Fix `@typescript-eslint/no-explicit-any` warnings in API routes batch 3 (18 files)
+
+Work Log:
+- Fixed all 18 files, removing every `any` occurrence
+- Verified zero `any` remains in all 18 files via rg grep
+
+Changes by file:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `src/app/api/qoe/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` with `instanceof Error` guard |
+| 2 | `src/app/api/reports/history/route.ts` | 2× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard, `Record<string, any>` → `Record<string, unknown>`, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 3 | `src/app/api/reports/route.ts` | `z.any()` → `z.unknown()`, `any[]` → `Record<string, unknown>[]`, 5× `Record<string, any>` → `Record<string, unknown>`, `let parsedStats: any` → `Record<string, unknown>`, 3× `catch (error: any)` → `catch (error: unknown)` |
+| 4 | `src/app/api/reports/schedules/route.ts` | 4× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard, 4× `catch (error: any)` → `catch (error: unknown)` |
+| 5 | `src/app/api/reports/templates/route.ts` | 3× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard, 3× `catch (error: any)` → `catch (error: unknown)` |
+| 6 | `src/app/api/route.ts` | 1× `catch (error: any)` → `catch (error: unknown)` |
+| 7 | `src/app/api/sla/route.ts` | `Record<string, any>` → `Record<string, unknown>`, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 8 | `src/app/api/son/actions/route.ts` | `where: any` → `Record<string, unknown>`, 2× `catch (error: any)` → `catch (error: unknown)` |
+| 9 | `src/app/api/son/neighbors/route.ts` | `where: any` → `Record<string, unknown>`, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 10 | `src/app/api/son/route.ts` | `z.any()` → `z.unknown()`, `where: any` → `Record<string, unknown>`, `Record<string, any>` → `Record<string, unknown>` + extracted typed locals, 3× `catch (error: any)` → `catch (error: unknown)` |
+| 11 | `src/app/api/user/preferences/route.ts` | 2× `as any` → `as Record<string, unknown>`, 2× `error.message` on `unknown` → `instanceof Error` guard |
+| 12 | `src/app/api/user/profile/route.ts` | 2× `as any` → `as Record<string, unknown>`, 2× `error.message` on `unknown` → `instanceof Error` guard |
+| 13 | `src/app/api/vendors/route.ts` | `z.any()` → `z.unknown()`, `Record<string, any>` → `Record<string, unknown>`, 3× `catch (error: any)` → `catch (error: unknown)` |
+| 14 | `src/app/api/webhooks/deliveries/route.ts` | 1× `catch (e: any)` → `catch (e: unknown)` with `instanceof Error` guard |
+| 15 | `src/app/api/wilaya-intelligence/route.ts` | `where: any` → `Record<string, unknown>`, `w: any` → `w: Record<string, unknown>`, 3× `w as any` → proper typed access, 1× `catch (error: any)` → `catch (error: unknown)` |
+| 16 | `src/app/page.tsx` | 2× `as any` → `as 'en' | 'fr' | 'ar'` |
+| 17 | `src/types/index.ts` | 5× `Record<string, any>` → `Record<string, unknown>` (parameters, triggerConfig, stats, kpiImpact, kpiBaseline) |
+| 18 | `src/lib/integration-connectors.ts` | `(result as any)` → intermediate typed variables with proper casts |
+
+Stage Summary:
+- 18 files fixed, 0 `any` remaining in any of them
+- ~63 individual `any` occurrences replaced
+- No logic changes, only type replacements
+- No eslint-disable or ts-expect-error comments added
+
+---
+Task ID: 3d
+Agent: Main
+Task: Fix @typescript-eslint/no-explicit-any in components + lib (22 files)
+
+Work Log:
+- Scanned all 22 files for `any` occurrences using grep
+- store/app.ts had zero `any` — no changes needed
+- Fixed 21 files with the following patterns:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `src/components/ExportButton.tsx` | `Record<string, any>[]` → `Record<string, unknown>[]` (1 occurrence) |
+| 2 | `src/components/UserPreferences.tsx` | `setTheme(theme as any)` → `setTheme(theme)` (1 occurrence; setTheme already accepts string) |
+| 3 | `src/components/views/AiAnomalyEngineView.tsx` | Added `ChartTooltipPayloadEntry` + `ChartTooltipProps` interfaces; `: any` → `: ChartTooltipProps` (1 occurrence) |
+| 4 | `src/components/views/AiDemandForecastView.tsx` | Same pattern as #3 (1 occurrence) |
+| 5 | `src/components/views/AiDigitalTwinView.tsx` | Same interfaces + fixed 2 tooltip functions: `ChartTooltipContent` and `CapexTooltipContent` (2 occurrences) |
+| 6 | `src/components/views/AiNlQueryView.tsx` | Added `PieTooltipProps` interface; `PieTooltipContent({ active, payload }: any)` → proper type (1 occurrence) |
+| 7 | `src/components/views/AiParameterOptimizerView.tsx` | Same tooltip pattern as #3 (1 occurrence) |
+| 8 | `src/components/views/ApiKeysView.tsx` | Added `ApiKeyItem` interface; `useState<any>`, `(k: any)`, `(body: any)`, `(k: any)` → proper types (6 occurrences) |
+| 9 | `src/components/views/ConfigView.tsx` | `Record<string, any>[]` → `Record<string, unknown>[]` in ExportButton cast (1 occurrence) |
+| 10 | `src/components/views/DataSourcesView.tsx` | Added `DataSourceItem` interface; `useState<any>`, `(s: any)`, `(body: any)`, `(s: any)`, `t(\`key\` as any)` → proper types (6 occurrences) |
+| 11 | `src/components/views/HealthView.tsx` | Added tooltip + pie label interfaces; 3 `any` → proper types with default values for arithmetic (3 occurrences) |
+| 12 | `src/components/views/LoadBalancingView.tsx` | Added tooltip interfaces; function + entry `any` → proper types (2 occurrences) |
+| 13 | `src/components/views/OptimizerView.tsx` | `healthSummary?: any[]` → `healthSummary?: OptimizerResponse['healthSummary']` (1 occurrence) |
+| 14 | `src/components/views/RootCauseAnalysisView.tsx` | `Record<string, any>[]` → `Record<string, unknown>[]` in ExportButton cast (1 occurrence) |
+| 15 | `src/components/views/ServicesView.tsx` | Added tooltip interfaces; `entry: any` removed; `Record<string, any>[]` → `Record<string, unknown>[]` (3 occurrences) |
+| 16 | `src/components/views/SettingsView.tsx` | 2× `t(\`key\` as any)` → `t(\`key\`)` (useT accepts string); `Record<string, any>[]` → `Record<string, unknown>[]` (3 occurrences) |
+| 17 | `src/components/views/WebhooksView.tsx` | Added `WebhookItem` interface; `useState<any>`, `(w: any)`, `(body: any)`, `(w: any)` → proper types (6 occurrences) |
+| 18 | `src/lib/auth-client.tsx` | 3× `(session?.user as any)?.field` → extracted `user` var + `(user as { field?: type })` pattern (3 occurrences) |
+| 19 | `src/lib/auth.ts` | `(user as any).roles` → `(user as { roles?: string[] }).roles`; 3× `(session.user as any)` → typed casts to `{ id: string }`, `{ roles: string[] }`, `{ permissions: string[] }` (4 occurrences) |
+| 20 | `src/lib/export.ts` | 3× `Record<string, any>` → `Record<string, unknown>`; `any[][]` → `unknown[][]`; `formatCellValue(val: any): any` → `(val: unknown): string | number` (6 occurrences) |
+| 21 | `src/lib/redis-rate-limit.ts` | `let redisClient: any` → `RedisClient` interface + `as unknown as RedisClient` cast at assignment (1 occurrence) |
+
+Stage Summary:
+- 21 of 22 files modified (store/app.ts had zero `any`)
+- ~48 individual `any` occurrences replaced across all files
+- Verified with `npx eslint --rule '@typescript-eslint/no-explicit-any: error'` — 0 errors, 0 explicit-any warnings
+- No logic changes, only type replacements
+- No eslint-disable or ts-expect-error comments added
+---
+Task ID: 4a
+Agent: general-purpose
+Task: Fix @typescript-eslint/no-unused-vars in API routes + hooks + components + lib/store
+
+Work Log:
+- Linted all 26 target files, identified every no-unused-vars warning
+- Fixed API routes (7 of 10 had issues):
+  - data-pipeline/route.ts: removed unused import `getDemoNow, demoHoursAgo`
+  - integration-hub/route.ts: removed unused `demoHoursAgo` from import
+  - integrations/billing/route.ts: removed unused import `getDemoNow, demoHoursAgo`
+  - integrations/crm/route.ts: removed unused import `getDemoNow, demoHoursAgo`
+  - integrations/oss/route.ts: removed unused import `getDemoNow, demoHoursAgo`
+  - multi-agent/route.ts: removed unused import `getDemoNow` and unused `now` variable
+  - reports/generate/route.ts: removed unused `failed` local variable
+  - webhooks/route.ts: removed unused `deleteWebhookSchema` constant
+  - assistant/query/route.ts: prefixed unused `data` param with `_`
+  - digital-twin/simulate/route.ts: prefixed unused `params` with `_`
+- Fixed Components (4 of 7 had issues):
+  - CircularGauge.tsx: removed unused `offset` variable, prefixed `colorFn` type params
+  - NotificationCenter.tsx: removed unused `X` import from lucide-react
+  - WsStatusIndicator.tsx: removed unused `Wifi, WifiOff` import
+  - PaginationControls.tsx: prefixed `page` in interface callback
+  - carousel.tsx: prefixed `api` in type callback
+  - chart.tsx: prefixed `k` in mapped type
+  - sidebar.tsx: prefixed 4 unused callback params in types
+- Fixed Hooks (2 of 3 had issues):
+  - use-toast.ts: renamed `actionTypes` to `_actionTypes`, prefixed `state` in listener type
+  - usePagination.ts: prefixed `page` in interface callback
+  - useSocket.ts: prefixed `data`/`alerts` in 3 type alias callbacks
+- Fixed Lib/Store (4 of 6 had issues):
+  - api-auth.ts: prefixed unused `request` param and `act` destructure
+  - WilayaFilterContext.tsx: prefixed `to` in interface callback
+  - i18n/index.ts: prefixed `key`/`params` in `timeAgo`'s `tFn` type param
+  - rbac.ts: prefixed `act` destructure
+  - report-templates.ts: removed unused `PdfSection` type import
+  - store/app.ts: prefixed 6 callback params in `AppState` interface
+- Verified: 0 no-unused-vars warnings across all 26 files
+- No logic changes, no eslint-disable comments
+
+Stage Summary:
+- Fixed 26 files total across API routes, components, hooks, and lib/store
+- All fixes were either removing unused imports/variables or prefixing with `_`
+- Zero remaining no-unused-vars warnings
+---
+Task ID: 4b
+Agent: general-purpose
+Task: Fix @typescript-eslint/no-unused-vars in views batch 1 (26 files)
+
+Work Log:
+- Linted all 26 target files, identified every no-unused-vars warning
+- Fixed all 26 files with zero no-unused-vars remaining
+- Verified with `npx eslint` — 0 no-unused-vars warnings (only no-explicit-any remain, outside scope)
+
+Changes by file:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `AlertsView.tsx` | Removed unused `Separator` import |
+| 2 | `AnomalyDetectionView.tsx` | Removed unused `SEVERITY_BADGE_VARIANT` from import, removed unused `AlertSeverity` type import, removed unused `statusLabels` local variable |
+| 3 | `AssistantView.tsx` | Prefixed unused `view` param with `_` in `MarkdownContent` type |
+| 4 | `AuditView.tsx` | Removed unused `formatNumber` from import, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 5 | `BenchmarkView.tsx` | Removed unused `TECH_COLORS` from import |
+| 6 | `CRMIntegrationView.tsx` | Removed unused `ShieldCheck`, `Phone` from lucide import |
+| 7 | `CapacityView.tsx` | Removed unused `ScrollArea` import, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 8 | `ChangesView.tsx` | Removed unused `formatNumber` from import |
+| 9 | `CompetitorBenchmarkView.tsx` | Removed unused `Pie` from recharts import |
+| 10 | `CorrelationView.tsx` | Removed unused `VENDOR_COLORS` constant |
+| 11 | `CoverageHolesView.tsx` | Removed unused `gapColor` function, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 12 | `DashboardView.tsx` | Removed unused `STATUS_COLORS` and `SEVERITY_VARIANT` constants |
+| 13 | `DataPipelineView.tsx` | Removed unused `HardDrive`, `Radio`, `FileText`, `CircleDot`, `Timer` from lucide import, removed unused `QualityResultsResponse` interface, removed unused `qualityLoading` destructure |
+| 14 | `DigitalTwinView.tsx` | Removed unused `DialogTrigger` from dialog import, prefixed unused `k` param with `_` in `statusBadge` type |
+| 15 | `EnergyView.tsx` | Removed unused `Separator` and `ScrollArea` imports |
+| 16 | `EvolutionView.tsx` | Removed unused `RISK_COLORS` constant |
+| 17 | `ExecutiveView.tsx` | Removed unused `Technology` type import |
+| 18 | `FaultsView.tsx` | Removed unused `Legend` from recharts import, removed unused `Separator` import, removed unused `TECH_COLORS` and `TECHNOLOGIES` from constants import, removed unused `STATUSES` constant |
+| 19 | `GeomarketingView.tsx` | Removed unused `Radar` from lucide import, removed unused `ScatterChart`, `Scatter`, `ZAxis` from recharts import, removed unused `GeoSummary` interface, prefixed unused `k` in `TFn` type alias with `_`, prefixed unused `v` in `RegionFilter` type with `_`, removed unused `loading` param from `ChurnSummaryCards` |
+| 20 | `HandoverView.tsx` | Removed unused `TECH_COLORS` from import |
+| 21 | `IncidentsView.tsx` | Removed unused `TECH_COLORS` from import |
+| 22 | `IntegrationHubView.tsx` | Removed unused `AlertTriangle`, `WifiOff`, `Clock` from lucide import |
+| 23 | `InterferenceView.tsx` | Removed unused `TYPE_LABELS` constant, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 24 | `LiveView.tsx` | Removed unused `useCallback` from react import |
+| 25 | `MultiAgentView.tsx` | Removed unused `BarChart`, `Bar` from recharts import, removed unused `CardDescription` from card import, removed unused `XCircle`, `Clock`, `Timer`, `Square`, `MessageSquare` from lucide import, removed unused `STATUS_COLORS` constant |
+| 26 | `NetworkCommercialView.tsx` | Removed unused `ZAxis` from recharts import, prefixed unused `k` in `TFn` type with `_`, removed unused `bottom5` local variable |
+
+Stage Summary:
+- Fixed all 26 view files, 0 no-unused-vars warnings remaining
+- ~50 individual unused identifiers removed or prefixed
+- No logic changes, no eslint-disable comments added
+---
+Task ID: 4c
+Agent: general-purpose
+Task: Fix @typescript-eslint/no-unused-vars in views batch 2 (23 files)
+
+Work Log:
+- Linted all 23 target files, identified every no-unused-vars warning
+- Fixed all 21 files that had issues (2 files — HealthView, LoadBalancingView — had zero warnings)
+- Verified with `npx eslint` — 0 no-unused-vars warnings across all 23 files
+
+Changes by file:
+
+| # | File | Changes |
+|---|------|--------|
+| 1 | `NpiView.tsx` | Removed unused `TECH_COLORS` from import |
+| 2 | `OSSIntegrationView.tsx` | Removed unused `Radio` from lucide import |
+| 3 | `OnboardingView.tsx` | Removed unused `Tabs`, `TabsContent`, `TabsList`, `TabsTrigger` import, removed unused `STATUS_COLORS` constant, prefixed unused `isFuture` with `_` |
+| 4 | `OutagesView.tsx` | Removed unused `AlertTriangle` from lucide import, removed unused `formatNumber` from constants import |
+| 5 | `PlaybooksView.tsx` | Prefixed unused `cols` param with `_` in `TableSkeleton` via destructuring |
+| 6 | `PoliciesView.tsx` | Removed unused `Pause` from lucide import, removed unused `Technology` type import, removed unused `TECH_COLORS` constant, prefixed unused `id` params with `_` in interface callbacks, prefixed unused `expandedSites`/`setExpandedSites` with `_` |
+| 7 | `QoEView.tsx` | Prefixed unused `cols` param with `_` in `TableSkeleton`, prefixed unused `open` param with `_` in `onOpenChange` callback type |
+| 8 | `ReportsView.tsx` | Removed unused `useCallback` from react import, removed unused `CardDescription` from card import |
+| 9 | `RoiView.tsx` | Removed unused `TECH_COLORS` from import, removed unused `CATEGORY_LABELS` constant, prefixed unused `color` with `_`, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 10 | `SLADashboardView.tsx` | Removed unused `Legend` from recharts import, removed unused `AlertSeverity` type import |
+| 11 | `SimulationsView.tsx` | Removed unused `TECH_COLORS` from import, removed unused `impactByCategory` local variable (entire IIFE) |
+| 12 | `SlicingView.tsx` | Removed unused `TECH_COLORS` from import, removed unused `SLICE_TYPE_BADGE_BG` constant, removed unused `STATUS_LABEL` constant, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 13 | `SocialSentimentView.tsx` | Removed unused `Scatter` from recharts import |
+| 14 | `SonView.tsx` | Removed unused `CheckCircle2`, `Clock`, `AlertTriangle`, `TrendingUp` from lucide import, prefixed unused `moduleId` and `displayName` params with `_` in interface callback types |
+| 15 | `SpectrumView.tsx` | Removed unused `ChartTooltipContent` function |
+| 16 | `SubscribersView.tsx` | Removed unused `ScrollArea` import |
+| 17 | `TrendsView.tsx` | Removed unused `ForecastPoint` interface, prefixed unused `cols` param with `_` in `TableSkeleton` |
+| 18 | `ValuePropositionView.tsx` | Removed unused `Globe`, `ChevronDown`, `ChevronUp` from lucide import, prefixed unused `expandedPillar`/`setExpandedPillar` with `_` |
+| 19 | `VendorCompareView.tsx` | Removed unused `Badge` import, removed unused `TECH_COLORS` and `TECH_BG_CLASSES` from constants import |
+| 20 | `VendorsView.tsx` | Prefixed unused `key` param with `_` in `formatTimeAgo` callback type, removed unused `truncateMiddle` function, prefixed unused `isSyncing` with `_` |
+| 21 | `WilayaIntelligenceView.tsx` | Prefixed unused `k` with `_` in `TFn` type, removed unused `scoreBg` function, removed unused `DIM_ICONS` constant, prefixed unused `p`/`prev` with `_` in `setPage` callback type, prefixed unused `clusters` param with `_` in 4 dimension tab components, prefixed unused `wilayas` param with `_` in `ClusterComparisonTab` |
+| 22 | `HealthView.tsx` | No changes needed (zero warnings) |
+| 23 | `LoadBalancingView.tsx` | No changes needed (zero warnings) |
+
+Stage Summary:
+- Fixed 21 of 23 view files, 2 had zero warnings
+- ~55 individual unused identifiers removed or prefixed
+- 0 no-unused-vars warnings remaining across all 23 files
+- No logic changes, no eslint-disable comments added
+---
+Task ID: 5a
+Agent: Sub-agent
+Task: Fix remaining no-explicit-any and no-unused-vars warnings in API routes and lib files
+
+Work Log:
+- Fixed `error: any` → `error: unknown` + `instanceof Error` guard in 8 API route files:
+  1. src/app/api/data-pipeline/route.ts (line 80)
+  2. src/app/api/integration-hub/route.ts (line 81)
+  3. src/app/api/integrations/billing/route.ts (line 117)
+  4. src/app/api/integrations/crm/route.ts (lines 38, 110) — also fixed `as any` → `as keyof typeof segCounts`
+  5. src/app/api/integrations/oss/route.ts (line 75)
+  6. src/app/api/multi-agent/route.ts (line 72)
+  7. src/app/api/reports/generate/route.ts (lines 350, 451) — auth catch blocks + main error catch
+  8. src/app/api/webhooks/route.ts (lines 86, 161, 235, 313) — 4 auth catch blocks
+- Fixed no-unused-vars in 5 files:
+  1. src/app/api/optimizer/route.ts — prefixed `opts` → `_opts` in type assertion
+  2. src/app/api/wilaya-intelligence/route.ts — prefixed `totalDairas`, `totalCommunes`, `totalSuperficieKm2` with `_`
+  3. src/app/page.tsx — prefixed `view` → `_view` in callback type, renamed `user` → `user: _user` in destructuring
+  4. src/lib/auth-client.tsx — removed unused `act` from destructuring
+  5. src/lib/redis-rate-limit.ts — prefixed interface params `event`, `callback`, `key`, `ms` with `_`
+
+Stage Summary:
+- Fixed 12 `any` occurrences across 8 API route files (11 `error: any` → `error: unknown`, 1 `as any` → proper type)
+- Fixed 9 no-unused-vars warnings across 5 files
+- All 13 files pass eslint with zero warnings/errors
+- No logic changes, no eslint-disable comments added
+---
+Task ID: 5b
+Agent: general-purpose
+Task: Fix @typescript-eslint/no-explicit-any warnings in 30 view files
+
+Work Log:
+- Searched all 30 view files for `any` occurrences (as any, : any, <any>, any[])
+- 5 files (AnomalyDetectionView, OnboardingView, VendorsView, PoliciesView, SpectrumView) had no real `any` — only false positives (e.g. "Company") — but AnomalyDetectionView, OnboardingView, VendorsView, PoliciesView, SpectrumView did have `Record<string, any>` in ExportButton data props
+- Fixed 25 files with actual `any` usage across 4 major patterns
+
+Changes by pattern:
+
+**Pattern 1: ChartTooltipContent/PieTooltipContent** (18 files)
+Added `ChartTooltipProps` / `PieTooltipProps` / `PieLabelProps` interfaces and replaced `any` typed parameters:
+- VendorCompareView, RoiView, CoverageHolesView, IncidentsView, FaultsView, SimulationsView, OutagesView, PlaybooksView, NpiView, QoEView, TrendsView, BenchmarkView, HandoverView, ChangesView, AuditView, EvolutionView, SubscribersView, EnergyView, CapacityView, InterferenceView, ExecutiveView
+
+**Pattern 2: renderPieLabel** (3 files)
+Added `PieLabelProps` interface with cx, cy, midAngle, innerRadius, outerRadius, percent fields:
+- IncidentsView, OutagesView, ChangesView
+
+**Pattern 3: ExportButton `Record<string, any>[]`** (14 files)
+Replaced with `Record<string, unknown>[]`:
+- VendorCompareView, RoiView, AnomalyDetectionView, AuditView, BenchmarkView, ChangesView, EvolutionView, NpiView, OnboardingView, PlaybooksView, PoliciesView, SimulationsView, SpectrumView, TrendsView, VendorsView
+
+**Pattern 4: Unique per-file fixes** (4 files)
+- SonView: `pagination?: any` → `Record<string, unknown>`, `onError: (error: any)` → `(error: unknown)` with instanceof Error guard
+- ValuePropositionView: `roiCalculator: any` → proper inline interface, `tcoComparison: any[]` → `Array<{item, huawei, ericsson, zte, ours}>`, removed 5× `as any` from `t()` dynamic key calls
+- GeomarketingView: CustomTooltip `: any` → `CustomTooltipProps` interface, 6× `summary: any` → typed interfaces (ChurnSummary, CompetitorSummaryData, ScorerSummaryData, DemographicsSummaryData, GapsSummaryData, RevenueImpactSummaryData)
+- NetworkCommercialView: `summary: any` → `NCSummary` interface, RTooltip formatter/labelFormatter `p: any` → typed `{ payload?: { z?: string; x?: number; y?: number | string } }`
+- SimulationsView: 3× `Record<string, any>` in interface → `Record<string, unknown>`, `formatKpiChange` params → `Record<string, unknown>`
+
+Stage Summary:
+- Fixed all no-explicit-any warnings in 30 view files (~60+ individual occurrences)
+- 0 warnings/errors remaining across all 30 files
+- No logic changes, no eslint-disable comments added
+---
+Task ID: 3a-5b
+Agent: Main + 8 subagents
+Task: Fix all lint warnings (661 total: 331 no-explicit-any + 330 no-unused-vars)
+
+Work Log:
+- Verified AssistantView.tsx and ValuePropositionView.tsx already have real API calls (false alarm from prior session)
+- Dispatched 8 parallel subagents to fix lint warnings across 90+ files
+- Agent 3a: Fixed no-explicit-any in 17 API route files (alerts through etl/quality/rules)
+- Agent 3b: Fixed no-explicit-any in 17 API route files (etl/quality/summary through policies)
+- Agent 3c: Fixed no-explicit-any in 18 files (remaining API routes + page.tsx + types + lib)
+- Agent 3d: Fixed no-explicit-any in 21 component/lib files (ExportButton, views, auth, export, redis)
+- Agent 4a: Fixed no-unused-vars in 26 files (API routes, components, hooks, lib, store)
+- Agent 4b: Fixed no-unused-vars in 26 view files (AlertsView through NetworkCommercialView)
+- Agent 4c: Fixed no-unused-vars in 23 view files (NpiView through LoadBalancingView)
+- Agent 5a: Fixed remaining any in 8 API routes + unused-vars in 5 non-view files
+- Agent 5b: Fixed remaining any in 30 view files
+- Final verification: `bun run lint` outputs 0 warnings, 0 errors
+
+Stage Summary:
+- 661 lint warnings reduced to 0
+- 331 no-explicit-any fixes: catch clauses → unknown, Record<string,any> → unknown, z.any() → z.unknown(), as any → proper casts, chart tooltips → interfaces, useState<any> → typed
+- 330 no-unused-vars fixes: removed unused imports (TECH_COLORS, formatNumber, Recharts components, Lucide icons, shadcn components), prefixed unused params with _, removed unused local vars
+- No logic changes made, no eslint-disable comments added

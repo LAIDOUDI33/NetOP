@@ -38,7 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -57,14 +57,7 @@ const TECH_COLORS: Record<string, string> = {
   '5G': '#F59E0B',
 };
 
-const STATUS_COLORS: Record<OnboardingStatus, string> = {
-  pending: 'slate',
-  provisioning: 'blue',
-  configuring: 'amber',
-  verifying: 'cyan',
-  completed: 'green',
-  failed: 'red',
-};
+
 
 const PIPELINE_STEPS: OnboardingStatus[] = [
   'pending',
@@ -126,7 +119,7 @@ function StatusPipelineIndicator({ status }: { status: OnboardingStatus }) {
       {PIPELINE_STEPS.map((step, idx) => {
         const isCompleted = !isFailed && idx < currentStepIdx;
         const isCurrent = !isFailed && idx === currentStepIdx;
-        const isFuture = !isCompleted && !isCurrent;
+        const _isFuture = !isCompleted && !isCurrent;
 
         return (
           <div key={step} className="flex items-center">
@@ -665,7 +658,7 @@ export default function OnboardingView() {
               <Badge variant="secondary" className="ml-auto text-[10px]">
                 Auto-refresh: 15s
               </Badge>
-              <ExportButton data={records as unknown as Record<string, any>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: t('th.siteName') }, { key: 'siteCode', header: t('th.siteCode') }, { key: 'technology', header: t('th.technology') }, { key: 'status', header: t('th.status') }, { key: 'vendor', header: t('th.vendor') }, { key: 'region', header: t('th.region') }, { key: 'progress', header: t('th.progress') }, { key: 'createdAt', header: t('th.createdAt') }]} />
+              <ExportButton data={records as unknown as Record<string, unknown>[]} filenamePrefix="onboarding" columns={[{ key: 'siteName', header: t('th.siteName') }, { key: 'siteCode', header: t('th.siteCode') }, { key: 'technology', header: t('th.technology') }, { key: 'status', header: t('th.status') }, { key: 'vendor', header: t('th.vendor') }, { key: 'region', header: t('th.region') }, { key: 'progress', header: t('th.progress') }, { key: 'createdAt', header: t('th.createdAt') }]} />
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

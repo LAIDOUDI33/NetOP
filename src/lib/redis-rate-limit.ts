@@ -16,7 +16,9 @@ setInterval(() => {
   }
 }, 300_000);
 
-let redisClient: any = null;
+interface RedisClient { on(_event: string, _callback: () => void): void; connect(): Promise<void>; incr(_key: string): Promise<number>; pexpire(_key: string, _ms: number): Promise<number>; pttl(_key: string): Promise<number>; }
+
+let redisClient: RedisClient | null = null;
 let redisAvailable = false;
 
 /**
@@ -32,7 +34,7 @@ export async function initRedisRateLimit(): Promise<boolean> {
       maxRetriesPerRequest: 3,
       enableReadyCheck: true,
       lazyConnect: true,
-    });
+    }) as unknown as RedisClient;
 
     redisClient.on('error', () => { redisAvailable = false; });
     redisClient.on('ready', () => { redisAvailable = true; });
@@ -42,7 +44,7 @@ export async function initRedisRateLimit(): Promise<boolean> {
     console.log('[redis-rate-limit] Connected to Redis');
     return true;
   } catch (error: unknown) {
-    console.warn(`[redis-rate-limit] Redis unavailable, using in-memory: ${error.message}`);
+    console.warn(`[redis-rate-limit] Redis unavailable, using in-memory: ${error instanceof Error ? error.message : error}`);
     return false;
   }
 }

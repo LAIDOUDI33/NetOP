@@ -75,14 +75,6 @@ const TYPE_COLORS_MAP: Record<string, string> = {
   inter_modulation: '#FB7185',
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  pci_conflict: 'PCI Conflict',
-  co_channel: 'Co-Channel',
-  adjacent_channel: 'Adjacent Channel',
-  external: 'External',
-  inter_modulation: 'Inter-Modulation',
-};
-
 const SEVERITY_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   low: 'outline',
   medium: 'secondary',
@@ -175,7 +167,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 5, _cols = 5 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -195,12 +187,17 @@ function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number })
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -211,7 +208,11 @@ function ChartTooltipContent({ active, payload, label }: any) {
   );
 }
 
-function PieTooltipContent({ active, payload }: any) {
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+}
+function PieTooltipContent({ active, payload }: PieTooltipProps) {
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   return (

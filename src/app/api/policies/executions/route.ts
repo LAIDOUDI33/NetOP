@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (policyId) where.policyId = policyId;
     if (status && status !== 'ALL') where.status = status;
 
@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
         completedAt: e.completedAt?.toISOString(),
       })),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

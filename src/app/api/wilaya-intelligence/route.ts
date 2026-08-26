@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const wilayaFilter = searchParams.get('wilaya');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (clusterFilter) where.cluster = clusterFilter;
     if (wilayaFilter) where.wilayaName = wilayaFilter;
 
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
     const clusters = Array.from(clusterMap.entries()).map(([name, wilayas]) => {
       const sum = (key: string) =>
-        wilayas.reduce((s: number, w: any) => s + (typeof w[key] === 'number' ? w[key] : 0), 0);
+        wilayas.reduce((s: number, w: Record<string, unknown>) => s + (typeof w[key] === 'number' ? w[key] as number : 0), 0);
       const avg = (key: string) =>
         Number((sum(key) / wilayas.length).toFixed(2));
 
@@ -128,9 +128,9 @@ export async function GET(request: Request) {
     // ── Global summary ─────────────────────────────────────────
     const totalWilayas = mapped.length;
     const totalPopulation = mapped.reduce((s, w) => s + w.population, 0);
-    const totalDairas = mapped.reduce((s, w) => s + (w as any).dairas, 0);
-    const totalCommunes = mapped.reduce((s, w) => s + (w as any).communes, 0);
-    const totalSuperficieKm2 = mapped.reduce((s, w) => s + (w as any).superficieKm2, 0);
+    const _totalDairas = mapped.reduce((s, w) => s + (w.dairas as number), 0);
+    const _totalCommunes = mapped.reduce((s, w) => s + (w.communes as number), 0);
+    const _totalSuperficieKm2 = mapped.reduce((s, w) => s + (w.superficieKm2 as number), 0);
     const totalSites = mapped.reduce((s, w) => s + w.totalSites, 0);
     const totalSubscribers = mapped.reduce((s, w) => s + w.totalSubscribers, 0);
     const totalRevenue = mapped.reduce((s, w) => s + w.totalRevenue, 0);
@@ -166,7 +166,8 @@ export async function GET(request: Request) {
         worstWilaya: worstWilaya ? { name: worstWilaya.wilayaName, score: worstWilaya.compositeScore, cluster: worstWilaya.cluster } : null,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

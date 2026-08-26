@@ -16,7 +16,7 @@ const createOnboardingSchema = z.object({
   frequency: z.string().optional(),
   bandwidth: z.number().optional(),
   maxCapacity: z.number().optional(),
-  initialNeighbors: z.array(z.any()).optional(),
+  initialNeighbors: z.array(z.unknown()).optional(),
 });
 
 const patchOnboardingSchema = z.object({
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   const technology = searchParams.get('technology');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (status && status !== 'ALL') where.status = status;
     if (technology && technology !== 'ALL') where.technology = technology;
 
@@ -82,8 +82,9 @@ export async function GET(request: NextRequest) {
       })),
       countsByStatus: statusCounts,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -159,8 +160,9 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -308,7 +310,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ error: `Invalid action: ${action}. Must be "advance" or "error"` }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

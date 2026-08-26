@@ -1,5 +1,3 @@
-import type { PdfSection } from './pdf-generator';
-
 // ========== TYPES ==========
 
 export interface ReportTemplateConfig {

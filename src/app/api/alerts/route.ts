@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const showResolved = searchParams.get('resolved') === 'true';
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (severity && severity !== 'all') where.severity = severity;
     if (technology && technology !== 'all') where.technology = technology;
     if (!showResolved) where.resolvedAt = null;
@@ -77,8 +77,9 @@ export async function GET(request: NextRequest) {
       })),
       stats,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -108,7 +109,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

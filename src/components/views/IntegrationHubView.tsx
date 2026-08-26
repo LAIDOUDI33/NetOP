@@ -24,8 +24,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  Plug, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Wifi, WifiOff,
-  Activity, Clock, Database, ShieldCheck, Zap, Webhook, Key, Plus, Copy, Trash2,
+  Plug, RefreshCw, CheckCircle2, XCircle, Wifi,
+  Activity, Database, ShieldCheck, Zap, Webhook, Key, Plus, Copy, Trash2,
   Send, CalendarIcon, AlertCircle,
 } from 'lucide-react';
 import { useT, timeAgo } from '@/lib/i18n';

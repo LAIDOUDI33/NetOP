@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category') || 'all';
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (technology !== 'all') where.technology = technology;
     if (category !== 'all') where.category = category;
 
@@ -42,8 +42,9 @@ export async function GET(request: NextRequest) {
         category: p.category,
       })),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -67,7 +68,8 @@ export async function PATCH(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, parameter: updated });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

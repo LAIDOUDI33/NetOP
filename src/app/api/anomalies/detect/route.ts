@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       const key = kpi.siteId;
       if (!siteMetricData[key]) siteMetricData[key] = {};
       for (const m of metrics) {
-        const val = (kpi as any)[m];
+        const val = (kpi as Record<string, number | null>)[m];
         if (val != null) {
           if (!siteMetricData[key][m]) siteMetricData[key][m] = [];
           siteMetricData[key][m].push(val);
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
       for (const m of metrics) {
         const values = historical[m];
-        const current = (latest as any)[m];
+        const current = (latest as Record<string, number | null>)[m];
         if (!values || values.length < 3 || current == null) continue;
 
         const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save detected anomalies
-    const saved: any[] = [];
+    const saved: Record<string, unknown>[] = [];
     for (const d of detected) {
       const anomaly = await db.anomalyEvent.create({
         data: {
@@ -110,7 +110,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ detected: saved.length, anomalies: saved });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

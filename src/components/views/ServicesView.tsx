@@ -190,12 +190,15 @@ function TableSkeleton() {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipPayloadEntry { color?: string; name?: string; value?: number; }
+interface ChartTooltipProps { active?: boolean; payload?: ChartTooltipPayloadEntry[]; label?: string; }
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -540,7 +543,7 @@ export default function ServicesView() {
                 <SelectItem value="Tizi Ouzou">{t('svc.regions.tiziOuzou')}</SelectItem>
               </SelectContent>
             </Select>
-            <ExportButton data={services as unknown as Record<string, any>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: t('th.serviceName') }, { key: 'serviceType', header: t('th.type') }, { key: 'technology', header: t('th.technology') }, { key: 'region', header: t('th.region') }, { key: 'status', header: t('th.status') }, { key: 'qoeScore', header: t('th.qoeScore') }, { key: 'activeSessions', header: t('th.sessions') }, { key: 'avgLatency', header: t('th.avgLatencyMs') }]} />
+            <ExportButton data={services as unknown as Record<string, unknown>[]} filenamePrefix="services" columns={[{ key: 'serviceName', header: t('th.serviceName') }, { key: 'serviceType', header: t('th.type') }, { key: 'technology', header: t('th.technology') }, { key: 'region', header: t('th.region') }, { key: 'status', header: t('th.status') }, { key: 'qoeScore', header: t('th.qoeScore') }, { key: 'activeSessions', header: t('th.sessions') }, { key: 'avgLatency', header: t('th.avgLatencyMs') }]} />
           </div>
         </CardHeader>
         <CardContent>

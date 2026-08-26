@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { db } from '@/lib/db';
-import { getDemoNow, demoHoursAgo } from '@/lib/demo-time';
 import { checkApiAuth, authError } from '@/lib/api-auth';
 
 const REGIONS = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Tlemcen', 'Sétif', 'Blida', 'Batna', 'Béjaïa', 'Tizi Ouzou', 'Biskra', 'Ouargla'];
@@ -36,7 +35,7 @@ export async function GET(request: Request) {
   const active = customers.filter(c => c.status === 'active');
 
   const segCounts = { prepaid: 0, postpaid: 0, corporate: 0 };
-  for (const c of customers) { if (c.type in segCounts) (segCounts as any)[c.type]++; }
+  for (const c of customers) { if (c.type in segCounts) segCounts[c.type as keyof typeof segCounts]++; }
   const segmentDistribution = [
     { name: 'Prepaid', value: segCounts.prepaid, color: '#10B981' },
     { name: 'Postpaid', value: segCounts.postpaid, color: '#3B82F6' },
@@ -108,7 +107,8 @@ export async function GET(request: Request) {
   };
 
   return NextResponse.json({ customers, segmentDistribution, arpuByRegion, churnAnalysis, satisfactionTrend, topComplaints, summary });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -27,9 +27,9 @@ export async function GET(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canView = perms.includes('*:*') || perms.includes('reports:*') || perms.includes('reports:view');
     if (!canView) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10) || 50, 1), 200);
     const offset = Math.max(parseInt(searchParams.get('offset') || '0', 10) || 0, 0);
 
-    const where: Record<string, any> = {};
+    const where: Record<string, unknown> = {};
     if (templateId) where.templateId = templateId;
 
     const [reports, total] = await Promise.all([
@@ -76,8 +76,9 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({ reports: result, total });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -93,9 +94,9 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canCreate = perms.includes('*:*') || perms.includes('reports:*') || perms.includes('reports:create');
     if (!canCreate) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -141,7 +142,8 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -20,8 +20,8 @@ import { Separator } from '@/components/ui/separator';
 import {
   ArrowRight, Play, RefreshCw, Database, ShieldCheck, Activity, AlertTriangle,
   Search, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, Zap,
-  Loader2, Server, HardDrive, Radio, ArrowDownToLine, FileText, Layers,
-  CircleDot, Timer, BarChart3, Filter,
+  Loader2, Server, ArrowDownToLine, Layers,
+  BarChart3, Filter,
 } from 'lucide-react';
 import { useT, timeAgo } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -163,11 +163,6 @@ interface QualityResult {
   expectedValue: string;
   evaluatedAt: string;
   details: string;
-}
-
-interface QualityResultsResponse {
-  results: QualityResult[];
-  total: number;
 }
 
 interface QualitySummary {
@@ -326,7 +321,7 @@ export default function DataPipelineView() {
   });
 
   // ---- Data Quality Tab ----
-  const { data: qualitySummary, isLoading: qualityLoading, refetch: refetchQuality } = useQuery<QualitySummary>({
+  const { data: qualitySummary, refetch: refetchQuality } = useQuery<QualitySummary>({
     queryKey: ['etl-quality-summary'],
     queryFn: () => fetch('/api/etl/quality/summary').then(r => { if (!r.ok) throw new Error('API error'); return r.json(); }),
     refetchInterval: 30000,

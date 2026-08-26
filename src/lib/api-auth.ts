@@ -11,7 +11,7 @@ const AUTH_ENFORCED = false;
  * Check the current user's session and return the user object.
  * When AUTH_ENFORCED is false, returns a default admin user so all routes work.
  */
-export async function checkApiAuth(request: Request): Promise<Record<string, unknown>> {
+export async function checkApiAuth(_request: Request): Promise<Record<string, unknown>> {
   if (!AUTH_ENFORCED) {
     return {
       id: 'default-admin',
@@ -54,7 +54,7 @@ export async function checkAnyPermission(permissions: string[]): Promise<Record<
   if (perms.includes('*:*')) return user;
 
   const hasAny = permissions.some((p) => {
-    const [mod, act] = p.split(':');
+    const [mod, _act] = p.split(':');
     if (perms.includes(`${mod}:*`)) return true;
     return perms.includes(p);
   });

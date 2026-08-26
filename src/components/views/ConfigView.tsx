@@ -283,7 +283,7 @@ export default function ConfigView() {
         <span className="text-sm text-muted-foreground ml-auto">
           {templates.length} template{templates.length !== 1 ? 's' : ''}
         </span>
-        <ExportButton data={templates as unknown as Record<string, any>[]} filenamePrefix="config" columns={[{ key: 'name', header: 'Template Name' }, { key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'version', header: 'Version' }, { key: 'paramCount', header: 'Parameters' }, { key: 'applicationCount', header: 'Applications' }]} />
+        <ExportButton data={templates as unknown as Record<string, unknown>[]} filenamePrefix="config" columns={[{ key: 'name', header: 'Template Name' }, { key: 'vendor', header: 'Vendor' }, { key: 'technology', header: 'Technology' }, { key: 'category', header: 'Category' }, { key: 'version', header: 'Version' }, { key: 'paramCount', header: 'Parameters' }, { key: 'applicationCount', header: 'Applications' }]} />
       </div>
 
       {/* Template Cards Grid */}

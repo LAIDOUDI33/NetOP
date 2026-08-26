@@ -10,7 +10,7 @@ const createVendorSchema = z.object({
   technologies: z.array(z.string()).optional(),
   apiType: z.enum(['rest', 'netconf', 'snmp', 'cli']).optional(),
   apiEndpoint: z.string().nullable().optional(),
-  credentials: z.any().optional(),
+  credentials: z.unknown().optional(),
   status: z.string().optional(),
 });
 
@@ -45,8 +45,9 @@ export async function GET(request: Request) {
         updatedAt: v.updatedAt.toISOString(),
       })),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -98,8 +99,9 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -165,7 +167,7 @@ export async function PATCH(request: NextRequest) {
 
     if (action === 'sync') {
       const now = new Date();
-      const currentStats: Record<string, any> =
+      const currentStats: Record<string, unknown> =
         typeof existing.stats === 'string' ? JSON.parse(existing.stats) : existing.stats;
 
       const updatedStats = {
@@ -208,7 +210,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ error: `Invalid action: ${action}. Must be "update_status" or "sync"` }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

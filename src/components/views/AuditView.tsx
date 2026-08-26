@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileSearch, Users, Tag, BarChart3, Clock } from 'lucide-react';
-import { TECH_BG_CLASSES, formatNumber, TECHNOLOGIES } from '@/lib/constants';
+import { TECH_BG_CLASSES, TECHNOLOGIES } from '@/lib/constants';
 import { ExportButton } from '@/components/ExportButton';
 import type { Technology } from '@/types';
 
@@ -101,12 +101,17 @@ const CATEGORY_OPTIONS = ['all', 'parameter', 'config', 'site', 'policy', 'incid
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string }>;
+  label?: string;
+}
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -149,7 +154,7 @@ function ChartSkeleton() {
   );
 }
 
-function TableSkeleton({ rows = 6, cols = 8 }: { rows?: number; cols?: number }) {
+function TableSkeleton({ rows = 6, _cols = 8 }: { rows?: number; cols?: number }) {
   return (
     <Card>
       <CardHeader>
@@ -254,7 +259,7 @@ export default function AuditView() {
             {t('aud.subtitle')}
           </p>
         </div>
-        <ExportButton data={trails as unknown as Record<string, any>[]} filenamePrefix="audit" columns={[{ key: 'entityType', header: t('th.entityType') }, { key: 'entityName', header: t('aud.entityName') }, { key: 'action', header: t('aud.actionCol') }, { key: 'user', header: t('aud.user') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'details', header: t('aud.details') }, { key: 'createdAt', header: t('th.time') }]} />
+        <ExportButton data={trails as unknown as Record<string, unknown>[]} filenamePrefix="audit" columns={[{ key: 'entityType', header: t('th.entityType') }, { key: 'entityName', header: t('aud.entityName') }, { key: 'action', header: t('aud.actionCol') }, { key: 'user', header: t('aud.user') }, { key: 'category', header: t('th.category') }, { key: 'technology', header: t('th.technology') }, { key: 'details', header: t('aud.details') }, { key: 'createdAt', header: t('th.time') }]} />
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────── */}

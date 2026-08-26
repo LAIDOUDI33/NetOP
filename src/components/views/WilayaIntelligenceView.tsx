@@ -72,7 +72,7 @@ interface ClusterData {
   wilayas: string[];
 }
 
-type TFn = (k: string) => string;
+type TFn = (_k: string) => string;
 
 // ==================== HELPERS ====================
 
@@ -91,11 +91,6 @@ function scoreColor(s: number): string {
   return '#EF4444';
 }
 
-function scoreBg(s: number): string {
-  if (s >= 80) return 'bg-emerald-500/10 text-emerald-600';
-  if (s >= 65) return 'bg-amber-500/10 text-amber-600';
-  return 'bg-red-500/10 text-red-600';
-}
 
 const CLUSTER_COLORS: Record<string, string> = {
   'Grand Alger': '#059669',
@@ -110,7 +105,7 @@ const CLUSTER_COLORS: Record<string, string> = {
   'Nouvelles 2023 Sud': '#A855F7',
 };
 
-const DIM_ICONS = { kpis: BarChart3, network: Radio, commercial: DollarSign, geomarketing: MapPin };
+
 
 // ==================== MAIN VIEW ====================
 
@@ -279,7 +274,7 @@ export default function WilayaIntelligenceView() {
 
 // ==================== TAB: OVERVIEW ====================
 
-function OverviewTab({ wilayas, filteredWilayas, pagedWilayas, page, totalPages, setPage, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; pagedWilayas: WilayaData[]; page: number; totalPages: number; setPage: (p: (prev: number) => number) => void; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function OverviewTab({ wilayas: _wilayas, filteredWilayas, pagedWilayas, page, totalPages, setPage, clusters: _clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; pagedWilayas: WilayaData[]; page: number; totalPages: number; setPage: (_p: (_prev: number) => number) => void; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const sorted = [...filteredWilayas].sort((a, b) => b.compositeScore - a.compositeScore);
 
   // Radar data for top 5
@@ -436,7 +431,7 @@ function OverviewTab({ wilayas, filteredWilayas, pagedWilayas, page, totalPages,
 
 // ==================== TAB: KPIs ====================
 
-function KpiDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function KpiDimensionTab({ wilayas, filteredWilayas, clusters: _clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const sorted = [...filteredWilayas].sort((a, b) => a.avgRsrp - b.avgRsrp);
 
   const rsrpChart = [...wilayas].sort((a, b) => a.avgRsrp - b.avgRsrp).map(w => ({ name: w.wilayaName, rsrp: w.avgRsrp, sinr: w.avgSinr, throughput: w.avgThroughputDl, fill: CLUSTER_COLORS[w.cluster] ?? '#6B7280' }));
@@ -527,7 +522,7 @@ function KpiDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { w
 
 // ==================== TAB: NETWORK ====================
 
-function NetworkDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function NetworkDimensionTab({ wilayas, filteredWilayas, clusters: _clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const techChart = [...wilayas].sort((a, b) => b.totalSites - a.totalSites).map(w => ({
     name: w.wilayaName,
     '4G': w.tech4gSites,
@@ -629,7 +624,7 @@ function NetworkDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }:
 
 // ==================== TAB: COMMERCIAL ====================
 
-function CommercialDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function CommercialDimensionTab({ wilayas, filteredWilayas, clusters: _clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const revenueChart = [...wilayas].sort((a, b) => b.totalRevenue - a.totalRevenue).map(w => ({
     name: w.wilayaName,
     revenue: w.totalRevenue / 1_000_000,
@@ -727,7 +722,7 @@ function CommercialDimensionTab({ wilayas, filteredWilayas, clusters, loading, t
 
 // ==================== TAB: GEOMARKETING ====================
 
-function GeomarketingDimensionTab({ wilayas, filteredWilayas, clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
+function GeomarketingDimensionTab({ wilayas, filteredWilayas, clusters: _clusters, loading, t }: { wilayas: WilayaData[]; filteredWilayas: WilayaData[]; clusters: ClusterData[]; loading: boolean; t: TFn }) {
   const competitorChart = [...wilayas].sort((a, b) => b.competitorSites - a.competitorSites).map(w => ({
     name: w.wilayaName,
     competitors: w.competitorSites,
@@ -827,7 +822,7 @@ function GeomarketingDimensionTab({ wilayas, filteredWilayas, clusters, loading,
 
 // ==================== TAB: CLUSTER COMPARISON ====================
 
-function ClusterComparisonTab({ clusters, wilayas, loading, t }: { clusters: ClusterData[]; wilayas: WilayaData[]; loading: boolean; t: TFn }) {
+function ClusterComparisonTab({ clusters, wilayas: _wilayas, loading, t }: { clusters: ClusterData[]; wilayas: WilayaData[]; loading: boolean; t: TFn }) {
   const radarData = clusters.map(c => ({
     name: c.name,
     [t('wi.networkScore')]: c.networkScore,

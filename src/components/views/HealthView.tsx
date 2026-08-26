@@ -161,12 +161,15 @@ function TableSkeleton() {
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────
 
-function ChartTooltipContent({ active, payload, label }: any) {
+interface ChartTooltipPayloadEntry { color?: string; name?: string; value?: number; }
+interface ChartTooltipProps { active?: boolean; payload?: ChartTooltipPayloadEntry[]; label?: string; }
+
+function ChartTooltipContent({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 shadow-md text-xs">
       <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, idx: number) => (
+      {payload.map((entry, idx) => (
         <div key={idx} className="flex items-center gap-2">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
@@ -181,7 +184,9 @@ function ChartTooltipContent({ active, payload, label }: any) {
 
 const RADIAN = Math.PI / 180;
 
-function renderPieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) {
+interface PieLabelProps { cx?: number; cy?: number; midAngle?: number; innerRadius?: number; outerRadius?: number; percent?: number; name?: string; }
+
+function renderPieLabel({ cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0, name }: PieLabelProps) {
   const radius = innerRadius + (outerRadius - innerRadius) * 1.6;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);

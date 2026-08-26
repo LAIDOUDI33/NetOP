@@ -30,7 +30,7 @@ export async function hasAnyPermission(permissions: string[]): Promise<boolean> 
   const perms = user.permissions as string[];
   if (perms.includes('*:*')) return true;
   return permissions.some((p) => {
-    const [mod, act] = p.split(':');
+    const [mod, _act] = p.split(':');
     if (perms.includes(`${mod}:*`)) return true;
     return perms.includes(p);
   });

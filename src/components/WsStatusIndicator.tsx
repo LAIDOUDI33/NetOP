@@ -3,7 +3,6 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSocket } from '@/hooks/useSocket';
 import { useT } from '@/lib/i18n';
-import { Wifi, WifiOff } from 'lucide-react';
 
 export function WsStatusIndicator({ className = '' }: { className?: string }) {
   const { isConnected } = useSocket();

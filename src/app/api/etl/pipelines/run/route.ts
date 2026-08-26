@@ -19,9 +19,10 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canExecute = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:execute');
     if (!canExecute) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -92,7 +93,8 @@ export async function POST(request: Request) {
       },
       { status: 202 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

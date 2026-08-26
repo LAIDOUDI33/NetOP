@@ -85,7 +85,7 @@ function ThinkingDots() {
 
 // ─── Markdown Renderer ────────────────────────────────────────────────
 
-function MarkdownContent({ content, onNavigate }: { content: string; onNavigate: (view: string) => void }) {
+function MarkdownContent({ content, onNavigate }: { content: string; onNavigate: (_view: string) => void }) {
   return (
     <div className="prose prose-sm dark:prose-invert max-w-none">
       <ReactMarkdown

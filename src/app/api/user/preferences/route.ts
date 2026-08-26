@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await import('next-auth').then(m => m.getServerSession());
     if (!session?.user) return authError();
-    const userId = (session.user as any).id;
+    const userId = (session.user as Record<string, unknown>).id as string | undefined;
     if (!userId) return authError();
     let prefs = await db.userPreferences.findUnique({ where: { userId } });
     if (!prefs) {
@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json(prefs);
   } catch (error: unknown) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -25,7 +26,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await import('next-auth').then(m => m.getServerSession());
     if (!session?.user) return authError();
-    const userId = (session.user as any).id;
+    const userId = (session.user as Record<string, unknown>).id as string | undefined;
     if (!userId) return authError();
     const body = await request.json();
     const { bio, timezone, phone, locale, theme, density, defaultView, dateFormat, timeFormat, sidebarCollapsed, notifyCritical, notifyMajor, notifyMinor, notifyWarning, notifyInfo, notifySound, notifyBrowser, quietHoursEnabled, quietHoursStart, quietHoursEnd, digestFrequency } = body;
@@ -61,6 +62,7 @@ export async function PATCH(request: NextRequest) {
     logAudit({ entityType: 'user_preferences', entityId: userId, action: 'update', category: 'config', requestedBy: userId });
     return NextResponse.json(prefs);
   } catch (error: unknown) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

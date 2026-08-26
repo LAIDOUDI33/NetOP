@@ -40,7 +40,7 @@ export interface WilayaFilterContextValue {
   setWilaya: (_code: string | null) => void;
   setCluster: (_name: string | null) => void;
   setTimeRange: (_range: TimeRange) => void;
-  setCus_tomRange: (_from: string, to: string) => void;
+  setCus_tomRange: (_from: string, _to: string) => void;
   clearAll: () => void;
   // Derived helpers
   selectedWilaya: WilayaItem | null;

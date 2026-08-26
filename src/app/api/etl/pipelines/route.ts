@@ -11,7 +11,7 @@ const createPipelineSchema = z.object({
   target: z.string().optional(),
   schedule: z.string().optional(),
   description: z.string().optional(),
-  transformationSteps: z.array(z.record(z.string(), z.any())).optional(),
+  transformationSteps: z.array(z.record(z.string(), z.unknown())).optional(),
   retryMaxAttempts: z.number().int().min(1).max(10).optional(),
 });
 
@@ -21,7 +21,7 @@ const updatePipelineSchema = z.object({
   description: z.string().optional(),
   schedule: z.string().optional(),
   enabled: z.boolean().optional(),
-  transformationSteps: z.array(z.record(z.string(), z.any())).optional(),
+  transformationSteps: z.array(z.record(z.string(), z.unknown())).optional(),
   retryMaxAttempts: z.number().int().min(1).max(10).optional(),
   status: z.string().optional(),
 });
@@ -36,9 +36,10 @@ export async function GET(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canView = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:view');
     if (!canView) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -126,8 +127,9 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({ pipelines: result, total });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -141,9 +143,10 @@ export async function POST(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canCreate = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:create');
     if (!canCreate) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -185,8 +188,9 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -201,9 +205,10 @@ export async function PATCH(request: Request) {
     const perms = (currentUser.permissions as string[]) ?? [];
     const canEdit = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:edit');
     if (!canEdit) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -252,8 +257,9 @@ export async function PATCH(request: Request) {
       enabled: pipeline.enabled,
       updatedAt: pipeline.updatedAt.toISOString(),
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -268,9 +274,10 @@ export async function DELETE(request: Request) {
     const perms = (currentUser.permissions as string[]) ?? [];
     const canDelete = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:delete');
     if (!canDelete) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : '';
+    if (msg === 'UNAUTHENTICATED') return authError();
+    if (msg === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -304,7 +311,8 @@ export async function DELETE(request: Request) {
 
     await db.dataPipeline.delete({ where: { id } });
     return NextResponse.json({ success: true, deleted: id });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

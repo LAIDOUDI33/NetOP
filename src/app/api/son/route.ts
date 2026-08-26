@@ -12,7 +12,7 @@ const createSonModuleSchema = z.object({
   enabled: z.boolean().optional(),
   mode: z.enum(['open-loop', 'semi-automated', 'closed-loop']).optional(),
   schedule: z.string().nullable().optional(),
-  parameters: z.record(z.string(), z.any()).optional(),
+  parameters: z.record(z.string(), z.unknown()).optional(),
 });
 
 const patchSonModuleSchema = z.object({
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const technology = searchParams.get('technology');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (technology && technology !== 'ALL') {
       where.technology = technology;
     }
@@ -93,8 +93,9 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ modules: result });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -144,8 +145,9 @@ export async function POST(request: NextRequest) {
         updatedAt: newModule.updatedAt.toISOString(),
       },
     }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -251,11 +253,13 @@ export async function PATCH(request: NextRequest) {
       });
 
       // Update module stats
-      const currentStats: Record<string, any> = JSON.parse(existing.stats);
-      currentStats.totalActions = (currentStats.totalActions || 0) + 1;
+      const currentStats: Record<string, unknown> = JSON.parse(existing.stats);
+      const totalActions = ((typeof currentStats.totalActions === 'number' ? currentStats.totalActions : 0) || 0) + 1;
+      const failCount = typeof currentStats.failCount === 'number' ? currentStats.failCount : 0;
+      currentStats.totalActions = totalActions;
       currentStats.successRate = Math.min(
         100,
-        ((currentStats.totalActions - (currentStats.failCount || 0)) / currentStats.totalActions) * 100
+        ((totalActions - failCount) / totalActions) * 100
       );
       currentStats.lastExecution = new Date().toISOString();
 
@@ -320,7 +324,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

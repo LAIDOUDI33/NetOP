@@ -13,9 +13,9 @@ export async function GET(request: Request) {
     const perms = (user.permissions as string[]) ?? [];
     const canView = perms.includes('*:*') || perms.includes('etl:*') || perms.includes('etl:view');
     if (!canView) return forbiddenError();
-  } catch (e: any) {
-    if (e.message === 'UNAUTHENTICATED') return authError();
-    if (e.message === 'FORBIDDEN') return forbiddenError();
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message === 'UNAUTHENTICATED') return authError();
+    if (e instanceof Error && e.message === 'FORBIDDEN') return forbiddenError();
     return authError();
   }
 
@@ -124,7 +124,8 @@ export async function GET(request: Request) {
       rulesByModel,
       trend,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
